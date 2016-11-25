@@ -1,0 +1,7 @@
+local
+Build
+.cproject
+.project
+.settings/
+*~
+*.pyc
