@@ -20,7 +20,7 @@ else()
 endif()
 
 # Force OpenCVPCL versions if ROS is installed
-set(OpenCV_INCLUDE_DIRS "/home/bruno/Lib/opencv-2.4.13/local/include")
+# set(OpenCV_INCLUDE_DIRS "/home/bruno/Lib/opencv-2.4.13/local/include")
 
 include_directories(${OpenCV_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} common io tracking motion_estimation
                     visualization)

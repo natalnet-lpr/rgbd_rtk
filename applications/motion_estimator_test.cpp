@@ -29,6 +29,7 @@
 #include <Eigen/Geometry>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 #include <geometry.h>
 #include <rgbd_loader.h>

@@ -5,7 +5,7 @@ project(RGBD_RTK)
 message(STATUS ">>> common subdirectory")
 
 set(RGBD_RTK_COMMON_SRC geometry.cpp)
-set(RGBD_RTK_COMMON_INCLUDES geometry.h)
+set(RGBD_RTK_COMMON_INCLUDES common_types.h geometry.h)
 
 add_library(rgbd_rtk_common SHARED ${RGBD_RTK_COMMON_SRC})
 target_link_libraries(rgbd_rtk_common ${PCL_LIBS})
