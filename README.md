@@ -1,31 +1,22 @@
-============================
-Natalnet/LPR RGB-D Reconstruction Toolkit
-============================
+# Natalnet/LPR RGB-D Reconstruction Toolkit
 
-------------
-Introduction
-------------
+
+### Introduction
 
 A set of utility code built by the Natalnet/LPR group for 3D reconstruction
 applications using RGB-D (e.g. Microsoft Kinect) cameras.
 
-------------
-Requirements
-------------
+### Requirements
 
-- OpenCV: www.opencv.org
+- OpenCV: www.opencv.org (version 2.4.13.x)
 - PCL: www.pointclouds.org
 
-<!--
---------
-Building
---------
---
+### Building
 
--------
-License
--------
+To build thhe rgbd-rtk,
 
--------
-Authors
-------->
+
+### License
+
+
+### Authors
