@@ -1,12 +1,13 @@
 # Natalnet/LPR RGB-D Reconstruction Toolkit
 
 
-### Introduction
+Introduction
+------------
 
 A set of utility code built by the Natalnet/LPR group for 3D reconstruction
 applications using RGB-D (e.g. Microsoft Kinect) cameras.
 
-### Requirements
+Requirements
 ------------
 
 - OpenCV: www.opencv.org  (version 2.4.13.x)
@@ -18,7 +19,7 @@ It is recommended to install both dependencies from source. The following two li
 
 > [Compiling PCL from source on Linux](http://pointclouds.org/documentation/tutorials/compiling_pcl_posix.php)
 
-### Building
+Building
 ------------
 
 First, get the newest version of this repository by using the follwing command on your working directory.
