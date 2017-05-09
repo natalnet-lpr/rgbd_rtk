@@ -28,6 +28,7 @@
 #include <cstdlib>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <time.h>
 
 #include <rgbd_loader.h>
 #include <klt_tracker.h>
@@ -35,21 +36,28 @@
 
 using namespace std;
 using namespace cv;
+
 void draw_window(Mat &img, Point2i pt1,Point2i pt2){
 		Point2i pt3=pt2,pt4=pt1;
-		pt3.x=pt3.x-10;
-		pt3.y=pt3.y-10;
-		pt4.x=pt2.x+10;
-		pt4.y=pt2.y+10;
+		pt3.x=pt3.x-20;
+		pt3.y=pt3.y-20;
+		pt4.x=pt2.x+20;
+		pt4.y=pt2.y+20;
 		//draw_window( img,pt2, 6);
 		rectangle (img,pt3,pt4,150,1,8,0);
 
 }
-void draw_circle( Mat &img, Point2i pt2){
-
-	circle(img,pt2,10,CV_RGB(255,0,0),1);
-
+void draw_circle( Mat &img, Point2i pt2, int i){
+	if(R_circulos_[i]>0){
+		circle(img,pt2,10*(R_circulos_[i]+1),CV_RGB(255,0,0),1);
+		
+	}
+	else {
+			circle(img,pt2,10,CV_RGB(255,0,0),1);
+	}
 }
+
+
 void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts)
 {
 	for(size_t k = 0; k < curr_pts.size(); k++)
@@ -60,10 +68,10 @@ void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Poin
 		pt2.x = curr_pts[k].x;
 		pt2.y = curr_pts[k].y;
 
-		//draw_window(img,pt1,pt2);
-		
-		//draw_circle(img,pt2);
-	
+		draw_window(img,pt1,pt2);
+		/*if(k<R_circulos_.size()){
+			draw_circle(img,pt2,k);
+		}*/
 		circle(img, pt1, 1, CV_RGB(0,0,255), 1);
 		circle(img, pt2, 3, CV_RGB(0,255,0), 1);
 		line(img, pt1, pt2, CV_RGB(0,255,0));
@@ -93,6 +101,7 @@ void draw_tracks(Mat& img, const vector<Tracklet> tracklets)
 
 int main(int argc, char **argv)
 {
+
 	string index_file_name;
 	RGBDLoader loader;
 	KLTTracker tracker;
@@ -109,24 +118,40 @@ int main(int argc, char **argv)
 	loader.processFile(index_file_name);
 
 	//Track points on each image
+	clock_t tI,tF;
+	ofstream arq;
+	arq.open("tempo_frame.txt");
+	
 	for(int i = 0; i < loader.num_images_; i++)
-	{
+	{	
+		
 		loader.getNextImage(frame, depth);
-
+		tI=clock();
 		tracker.track(frame);
+		tF=clock();
+		arq<<(tF-tI)*1000/CLOCKS_PER_SEC<<endl;
 		
 		draw_last_track(frame, tracker.prev_pts_, tracker.curr_pts_);
 		//draw_tracks(frame, tracker.tracklets_);
 
 		imshow("Image view", frame);
-		imshow("Depth view", depth);
+		//imshow("Depth view", depth);
 		char key = waitKey(15);
 		if(key == 27 || key == 'q' || key == 'Q')
 		{
 			printf("Exiting.\n");
 			break;
 		}
+		/*if(i%11==0)
+			system("clear");
+			
+		cout<<i<<" ->"<<loader.num_images_<<endl;
+		cout<<i*100/loader.num_images_<<"%"<<endl;
+		*/
+		
 	}
+
+	arq.close();
 
 	return 0;
 }

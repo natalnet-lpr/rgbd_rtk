@@ -32,7 +32,7 @@
 #include <opencv2/core.hpp>
 
 #include <common_types.h>
-
+std::vector <int> R_circulos_;	;
 /*
  * Short Baseline Feature Tracker default implementation:
  * Kanade-Lucas-Tomasi (KLT) tracker using
@@ -41,6 +41,9 @@
  * Author: Bruno Marques F. da Silva
  * brunomfs@gmail.com
  */
+std::ofstream time_updtbfs;
+std::ofstream time_fluxo;
+std::ofstream time_nuvem;
 class KLTTracker
 {
 
@@ -109,7 +112,7 @@ protected:
 	virtual bool write_heatmap_info();
 
 public:
-
+	
 	//Tracklets: history of each point as a vector of point2f
 	std::vector<Tracklet> tracklets_;
 
@@ -156,6 +159,8 @@ public:
 	void initialize_logger(const std::string timing_file_name,
 		                   const std::string tracking_file_name,
 			               const std::string heatmap_file_name);
+	virtual void check_equals(int i);
+	virtual void radius_size(int i);
 };
 
 #endif /* INCLUDE_KLT_TRACKER_H_ */
