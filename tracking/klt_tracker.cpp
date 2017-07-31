@@ -32,6 +32,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/video/video.hpp>
+#include <time.h>
 
 #include <klt_tracker.h>
 
@@ -57,6 +58,60 @@ void KLTTracker::detect_keypoints()
 	printf("\tdetected pts.: %lu\n", added_pts_.size());
 	#endif
 }
+void KLTTracker::radius_size(int i){
+	int raio_limite=50;
+	
+	for(int i=0;i<tracklets_.size();i++){
+			
+			if(tracklets_[i].radius<=raio_limite){
+				tracklets_[i].radius=tracklets_[i].pts2D_.size(); 
+				R_circulos_.push_back(tracklets_[i].pts2D_.size());
+				
+			}
+	}
+}
+
+bool KLTTracker::is_inside_circle(int i, float  R){
+
+		float r;
+	
+	for(int j=0;j<prev_pts_.size();j++){
+		
+		r= (prev_pts_[j].x-added_pts_[i].x) *(prev_pts_[j].x-added_pts_[i].x); 
+		r+= (prev_pts_[j].y-added_pts_[i].y)* (prev_pts_[j].y-added_pts_[i].y);
+		r=sqrt(r);
+
+		if(r <= R) {
+			return 1;
+		}
+		
+	}
+
+
+	return 0;
+
+}
+   
+ bool KLTTracker::is_inside_window(int i, int size){
+ 	
+	for(int j=0;j<prev_pts_.size();j++){
+
+		if( (prev_pts_[j].x -size ) <= added_pts_[i].x and (prev_pts_[j].x +size) >= added_pts_[i].x)
+		{	 							
+			if( (prev_pts_[j].y -size ) <= added_pts_[i].y and (prev_pts_[j].y +size) >= added_pts_[i].y)
+			{	
+						
+						return 1;
+					
+					
+			}
+		}
+		
+	}	
+	
+	return 0;
+
+}
 
 void KLTTracker::add_keypoints()
 {
@@ -78,11 +133,44 @@ void KLTTracker::add_keypoints()
 	//Erase buffer
 	added_pts_.clear();
 }
+void KLTTracker::add_keypoints2()
+{		 
+	int i=0;
+	if(!prev_pts_.empty()){
+	while(prev_pts_.size()<max_pts_ && i<added_pts_.size()){
+			
+//			radius_size(i);
+		
+			if(is_inside_window(i, 20)==0){
+				
+				prev_pts_.push_back(added_pts_[i]);
+
+				//Create and add tracklet
+				Tracklet tr(frame_idx_);
+				tr.pts2D_.push_back(added_pts_[i]);
+				tracklets_.push_back(tr);
+														
+			}
+						i++;
+		
+		}
+	}
+	else add_keypoints();
+	
+	#ifdef DEBUG
+	printf("adding keypoints...\n");
+	printf("\tadded pts.: %lu\n", added_pts_.size());
+	printf("\tprev. pts: %lu\n", prev_pts_.size());
+	#endif
+
+	//Erase buffer
+	added_pts_.clear();
+}
 
 void KLTTracker::update_buffers()
 {
 	std::swap(curr_pts_, prev_pts_);
-	add_keypoints();
+	add_keypoints2();
 }
 
 float KLTTracker::get_avg_track_length()
@@ -169,8 +257,10 @@ bool KLTTracker::write_heatmap_info()
 		}
 
 		for(int i = 0; i < curr_pts_.size(); i++)
-		{
+		{	
+			check_equals(i);
 			heatmap_info_ << "(" << (int) curr_pts_[i].x << "," << (int) curr_pts_[i].y << ") ";
+			
 		}
 		heatmap_info_ << "\n";
 	}
@@ -202,8 +292,10 @@ KLTTracker::KLTTracker(int min_pts, int max_pts)
 	max_pts_ = max_pts;
 }
 
+
+
 bool KLTTracker::track(Mat curr_frame)
-{
+{	
 	//Make a grayscale copy of the current frame
 	cvtColor(curr_frame, curr_frame_gray_, CV_BGR2GRAY);
 
@@ -211,16 +303,35 @@ bool KLTTracker::track(Mat curr_frame)
 	printf("#### Tracking frame %i ####\n", frame_idx_);
 	#endif
 
-	//Update internal buffers
-	update_buffers();
+	
+		
+	clock_t tI,tF;
 
+	tI=clock();
+	 //Update internal buffers
+	update_buffers();
+	//cout<<prev_pts_.size()<<endl;
+	
+	tF=clock();
+	
+	if(initialized_){
+		
+		time_updtbfs<<(tF-tI)*1000/CLOCKS_PER_SEC<<endl;
+
+	}
+	
 	//Tracker is not initialized
 	if(!initialized_)
 	{
 		//Initialize tracker
 		detect_keypoints();
 		initialized_ = true;
+		initialize_logger("dados_tempo","dados_rastreador.txt","dados_calor");
+		time_updtbfs.open("time_updbfs.txt");
+		time_fluxo.open("time_fluxo.txt");
+		time_nuvem.open("time_nuvem.txt");
 	}
+		
 	//Tracker is initialized: track keypoints
 	else
 	{
@@ -229,10 +340,12 @@ bool KLTTracker::track(Mat curr_frame)
 		vector<float> err;
 		Size win_size(53, 53); //def is 31x31
 		TermCriteria crit(CV_TERMCRIT_ITER|CV_TERMCRIT_EPS, 20, 0.03);
-
+		tI=clock(); 
 		calcOpticalFlowPyrLK(prev_frame_gray_, curr_frame_gray_, prev_pts_, curr_pts_, status, err, win_size,
-							 3, crit, 0, 0.00001);
-
+							 3, crit, 0, 0.00001);	
+		tF=clock();
+		time_fluxo<<(tF-tI)*1000/CLOCKS_PER_SEC<<endl;
+		
 		#ifdef DEBUG
 		printf("tracking...\n");
 		#endif
@@ -240,8 +353,11 @@ bool KLTTracker::track(Mat curr_frame)
 		//Update internal data according to the tracking result
 		//Additional tests have to be applied to discard points outside the image boundaries.
 		int tracked_pts = 0;
+		tI=clock(); 
+		
 		for(int i = 0; i < curr_pts_.size(); i++)
-		{
+		{	
+			
 			if(!status[i] || curr_pts_[i].x < 0 || curr_pts_[i].y < 0 ||
 				curr_pts_[i].x >= prev_frame_gray_.cols || curr_pts_[i].y >= prev_frame_gray_.rows)
 			{
@@ -250,13 +366,17 @@ bool KLTTracker::track(Mat curr_frame)
 
 			//printf("\t\ttracked[%i]: (%f,%f) -> (%f,%f)\n", i, prev_pts_[i].x, prev_pts_[i].y, curr_pts_[i].x, curr_pts_[i].y);
 
-			prev_pts_[tracked_pts] = prev_pts_[i];
-			curr_pts_[tracked_pts] = curr_pts_[i];
-			tracklets_[tracked_pts] = tracklets_[i];
+				
 
-			tracklets_[tracked_pts].pts2D_.push_back(curr_pts_[i]);
+			
+				prev_pts_[tracked_pts] = prev_pts_[i];
+				curr_pts_[tracked_pts] = curr_pts_[i];
+				tracklets_[tracked_pts] = tracklets_[i];
 
-			tracked_pts++;
+				tracklets_[tracked_pts].pts2D_.push_back(curr_pts_[i]);
+
+				tracked_pts++;
+			
 		}
 		prev_pts_.resize(tracked_pts);
 		curr_pts_.resize(tracked_pts);
@@ -266,17 +386,19 @@ bool KLTTracker::track(Mat curr_frame)
 		#endif
 
 		//Insufficient number of points being tracked
-		if(tracked_pts < min_pts_)
-		{
-			//Detect new features, hold them and add them to the tracker in the next frame
-			detect_keypoints();
-		}
+	
 	}
+	tF=clock();
+	time_nuvem<<(tF-tI)*1000/CLOCKS_PER_SEC<<endl;
+	
+	detect_keypoints();
+	
 
+	
 	//print_track_info();
-	//write_tracking_info();
+	write_tracking_info();
 	//write_timing_info();
-	//write_heatmap_info();
+		write_heatmap_info();
 	//float total_time = get_time_per_frame();
 
 	#ifdef DEBUG
@@ -320,4 +442,18 @@ void KLTTracker::initialize_logger(const string timing_file_name, const string t
 	printf("Saving tracking information to %s\n", tracking_file_name.c_str());
 	printf("Saving timing information to %s\n", timing_file_name.c_str());
 	printf("Saving heatmap information to %s\n", heatmap_file_name.c_str());
+}
+void KLTTracker::check_equals(int i){
+
+		for(int j=i+1;j<curr_pts_.size();j++){
+			if(prev_pts_[i].x == prev_pts_[j].x && prev_pts_[i].y == prev_pts_[j].y){
+				cout<<"iguais\n";
+				
+			} 
+		
+		}
+	
+	
+	
+	
 }
