@@ -31,11 +31,22 @@
 #include <opencv2/imgproc/imgproc.hpp>
 
 #include <rgbd_loader.h>
-#include <klt_tracker.h>
+#include <klttcw_tracker.h>
 #include <common_types.h>
 
 using namespace std;
 using namespace cv;
+
+void draw_circle( Mat &img, Point2i pt2, float r){
+	if(r>0){
+		circle(img, pt2, r+5, CV_RGB(0,0,255), 1);
+
+	}
+	else {
+		circle(img, pt2, 5, CV_RGB(0,0,255), 1);
+
+	}
+}
 
 void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts)
 {
@@ -53,52 +64,55 @@ void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Poin
 	}
 }
 
-void draw_tracks(Mat& img, const vector<Tracklet> tracklets)
+void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts, float radius)
 {
-	for(size_t i = 0; i < tracklets.size(); i++)
-	{
-		for(size_t j = 0; j < tracklets[i].pts2D_.size(); j++)
-		{
-			Point2i pt1;
-			pt1.x = tracklets[i].pts2D_[j].x;
-			pt1.y = tracklets[i].pts2D_[j].y;
-			circle(img, pt1, 3, CV_RGB(0,255,0), 1);
-			if(j > 0)
-			{
-				Point2i pt2;
-				pt2.x = tracklets[i].pts2D_[j-1].x;
-				pt2.y = tracklets[i].pts2D_[j-1].y;
-				line(img, pt1, pt2, CV_RGB(0,255,0));
-			}
-		}
+
+	for(size_t k = 0; k < curr_pts.size(); k++)
+	{	
+		
+		Point2i pt1, pt2;
+		pt1.x = prev_pts[k].x;
+		pt1.y = prev_pts[k].y;
+		pt2.x = curr_pts[k].x;
+		pt2.y = curr_pts[k].y;
+
+		
+	
+			circle(img, pt2, radius, CV_RGB(0,0,255), 1);
+		
+		
+		
+		circle(img, pt1, 1, CV_RGB(0,0,255), 1);
+		circle(img, pt2, 3, CV_RGB(0,255,0), 1);
+		line(img, pt1, pt2, CV_RGB(0,255,0));
 	}
 }
-
 int main(int argc, char **argv)
 {
 	string index_file_name;
 	RGBDLoader loader;
-	KLTTracker tracker;
+	KLTTrackerCW tracker;
 
 	Mat frame, depth;
 
-	if(argc != 2)
+	if(argc != 3)
 	{
-		fprintf(stderr, "Usage: %s <index file>\n", argv[0]);
+		fprintf(stderr, "Usage: %s <index file> <size of radius>\n", argv[0]);
 		exit(0);
 	}
 
 	index_file_name = argv[1];
 	loader.processFile(index_file_name);
-
+	tracker.size=atof(argv[2]);
 	//Track points on each image
 	for(int i = 0; i < loader.num_images_; i++)
 	{
 		loader.getNextImage(frame, depth);
 
 		tracker.track(frame);
+		draw_last_track(frame, tracker.prev_pts_, tracker.curr_pts_, tracker.size);	
 		
-		draw_last_track(frame, tracker.prev_pts_, tracker.curr_pts_);
+		
 		//draw_tracks(frame, tracker.tracklets_);
 
 		imshow("Image view", frame);
