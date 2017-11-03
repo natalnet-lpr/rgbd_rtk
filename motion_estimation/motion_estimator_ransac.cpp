@@ -25,6 +25,7 @@
  */
 
 #include <Eigen/Geometry>
+
 #include <pcl/sample_consensus/ransac.h>
 #include <pcl/sample_consensus/sac_model_registration.h>
 
@@ -33,7 +34,16 @@
 
 #include <pcl/common/transforms.h>
 
+#include <pcl/correspondence.h>
+
+//this header have the main ICP methods
+#include <pcl/registration/icp.h>
+
+
+#include <common_types.h>
+
 using namespace std;
+using namespace pcl;
 
 //#define DEBUG
 
@@ -175,4 +185,57 @@ Eigen::Matrix4f MotionEstimatorRANSAC::estimate(const vector<cv::Point2f> tgt_po
 	}
 */
 	return trans;
+}
+
+//this function returns the transformation after align the source cloud using the target cloud.
+/*
+	obs; no arquivo commom_types.h PointT foi definido como um ponto xyzrgbd.
+
+*/
+
+Eigen::Matrix4f MotionEstimatorRANSAC::pairAlign ( const pcl::PointCloud<PointT>::Ptr src_dense_cloud, const pcl::PointCloud<PointT>::Ptr tgt_dense_cloud, pcl::PointCloud<PointT> output)
+{
+	 Eigen::Matrix4f final_transform;
+	
+	
+	pcl::PointCloud<PointT>::Ptr tgt;
+	pcl::PointCloud<PointT>::Ptr src;
+	tgt = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
+	src = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
+
+		
+	 pcl::IterativeClosestPoint<PointT, PointT> icp;
+
+	// Set the input source and target
+
+	icp.setInputCloud(src);
+	
+	icp.setInputTarget(tgt);
+
+	// Set the max correspondence distance to 5cm (e.g., correspondences with higher distances will be ignored)
+	
+	icp.setMaxCorrespondenceDistance (0.05);
+
+
+	// Set the maximum number of iterations (criterion 1)
+
+	 icp.setMaximumIterations (50);
+
+	// Set the transformation epsilon (criterion 2)
+
+	icp.setTransformationEpsilon (1e-8);
+
+
+	 // Set the euclidean distance difference epsilon (criterion 3)
+	icp.setEuclideanFitnessEpsilon (1);
+	
+	// Perform the alignment
+	icp.align (output);
+
+	// Obtain the transformation that aligned cloud_source to cloud_source_registered
+	final_transform = icp.getFinalTransformation ();
+	
+	return final_transform;
+	
+
 }

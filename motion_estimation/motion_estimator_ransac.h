@@ -35,6 +35,9 @@
 
 #include <pcl/correspondence.h>
 
+
+
+
 class MotionEstimatorRANSAC
 {
 
@@ -55,7 +58,7 @@ public:
 	//DEBUG
 	pcl::Correspondences src_to_tgt; 
 
-	//Target point cloud (formely the previous point cloyd)
+	//Target point cloud (formely the previous point cloud)
 	pcl::PointCloud<PointT>::Ptr tgt_cloud_;
 
 	//Source point cloud (formely the current point cloud)
@@ -80,6 +83,11 @@ public:
 	Eigen::Matrix4f estimate(const std::vector<cv::Point2f> tgt_points, const pcl::PointCloud<PointT>::Ptr tgt_dense_cloud,
 		                     const std::vector<cv::Point2f> src_points, const pcl::PointCloud<PointT>::Ptr src_dense_cloud);
 
+	/*
+	*ICP METHOD
+	returns the transformation than align the source cloud using the target cloud, output is the new cloud
+	*/
+	Eigen::Matrix4f pairAlign ( const pcl::PointCloud<PointT>::Ptr src_dense_cloud, const pcl::PointCloud<PointT>::Ptr tgt_dense_cloud, pcl::PointCloud<PointT>  output);
 };
 
 #endif /* INCLUDE_MOTION_ESTIMATOR_RANSAC_H_ */
