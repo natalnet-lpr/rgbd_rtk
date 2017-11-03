@@ -87,7 +87,7 @@ public:
 	*ICP METHOD
 	returns the transformation than align the source cloud using the target cloud, output is the new cloud
 	*/
-	Eigen::Matrix4f pairAlign ( const pcl::PointCloud<PointT>::Ptr src_dense_cloud, const pcl::PointCloud<PointT>::Ptr tgt_dense_cloud, pcl::PointCloud<PointT>  output);
+	Eigen::Matrix4f pairAlign ( const pcl::PointCloud<PointT>::Ptr src_dense_cloud, const pcl::PointCloud<PointT>::Ptr tgt_dense_cloud, pcl::PointCloud<PointT>&  output);
 };
 
 #endif /* INCLUDE_MOTION_ESTIMATOR_RANSAC_H_ */

@@ -89,6 +89,11 @@ void MotionEstimatorRANSAC::setDataFromCorrespondences(const std::vector<cv::Poi
 			valid_points++;
 		}
 	}
+
+
+	//alinhamento
+	pairAlign ( src_cloud_, tgt_cloud_ ,*src_cloud_);
+	
 	//tgt_cloud_->points.resize(valid_points);
 	//src_cloud_->points.resize(valid_points);
 	#ifdef DEBUG
@@ -193,17 +198,25 @@ Eigen::Matrix4f MotionEstimatorRANSAC::estimate(const vector<cv::Point2f> tgt_po
 
 */
 
-Eigen::Matrix4f MotionEstimatorRANSAC::pairAlign ( const pcl::PointCloud<PointT>::Ptr src_dense_cloud, const pcl::PointCloud<PointT>::Ptr tgt_dense_cloud, pcl::PointCloud<PointT> output)
+Eigen::Matrix4f MotionEstimatorRANSAC::pairAlign ( const pcl::PointCloud<PointT>::Ptr src_dense_cloud, const pcl::PointCloud<PointT>::Ptr tgt_dense_cloud, pcl::PointCloud<PointT>& output)
 {
 	 Eigen::Matrix4f final_transform;
-	
+
 	
 	pcl::PointCloud<PointT>::Ptr tgt;
 	pcl::PointCloud<PointT>::Ptr src;
 	tgt = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
 	src = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
-
-		
+	
+	
+	
+	src =  src_dense_cloud;
+	
+	tgt =  tgt_dense_cloud;
+	src->is_dense = true;
+	tgt->is_dense = true;
+	//cout<<src->size()<<endl;
+	//cout<<tgt->size()<<endl;
 	 pcl::IterativeClosestPoint<PointT, PointT> icp;
 
 	// Set the input source and target
@@ -215,7 +228,7 @@ Eigen::Matrix4f MotionEstimatorRANSAC::pairAlign ( const pcl::PointCloud<PointT>
 	// Set the max correspondence distance to 5cm (e.g., correspondences with higher distances will be ignored)
 	
 	icp.setMaxCorrespondenceDistance (0.05);
-
+	
 
 	// Set the maximum number of iterations (criterion 1)
 
@@ -230,10 +243,22 @@ Eigen::Matrix4f MotionEstimatorRANSAC::pairAlign ( const pcl::PointCloud<PointT>
 	icp.setEuclideanFitnessEpsilon (1);
 	
 	// Perform the alignment
+	
+	
 	icp.align (output);
-
 	// Obtain the transformation that aligned cloud_source to cloud_source_registered
+	
 	final_transform = icp.getFinalTransformation ();
+	
+	
+
+		
+	
+	
+	 std::cout << "has converged:" << icp.hasConverged() << " score: " <<
+  icp.getFitnessScore() << std::endl;
+ // std::cout << icp.getFinalTransformation() << std::endl;
+		
 	
 	return final_transform;
 	
