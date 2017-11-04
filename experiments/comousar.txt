@@ -1,0 +1,3 @@
+gerar análise da estimação de movimento:
+	./evaluate_rpe.py --verbose --fixed_delta  "groundtruth.txt" "pos_relativa.txt" 
+	pos_relativa é o resultado e groundtruth.txt pertence ao dataset, tudo sem áspas.
