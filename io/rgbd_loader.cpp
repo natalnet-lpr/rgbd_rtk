@@ -57,7 +57,8 @@ void RGBDLoader::processFile(const string file_name)
 		{
 			string ts1, rgb_file, ts2, depth_file;
 			index_file >> ts1 >> rgb_file >> ts2 >> depth_file;
-
+			//so here we should have the following sequence: TimeStamp1, RGB_file, TimeStamp2, depth_file.
+			tstamps.push_back(ts1);
 			//Compatiblity with index files ended with \n
 			if(rgb_file != "" && depth_file != "")
 			{

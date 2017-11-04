@@ -37,6 +37,9 @@
 #include <motion_estimator_ransac.h>
 #include <reconstruction_visualizer.h>
 
+
+#include <fstream>
+
 using namespace std;
 using namespace cv;
 
@@ -53,7 +56,8 @@ int main(int argc, char **argv)
 	Eigen::Affine3f trans = Eigen::Affine3f::Identity();
 	pcl::PointCloud<PointT>::Ptr prev_cloud(new pcl::PointCloud<PointT>);
 	pcl::PointCloud<PointT>::Ptr curr_cloud(new pcl::PointCloud<PointT>);
-
+	ofstream cam_path;
+	cam_path.open("pos_relativa.txt");
 	if(argc != 2)
 	{
 		fprintf(stderr, "Usage: %s <index file>\n", argv[0]);
@@ -111,6 +115,20 @@ int main(int argc, char **argv)
 
 		//Let the prev. cloud in the next frame be the current cloud
 		*prev_cloud = *curr_cloud;
+	
+			 Eigen::Matrix3f R;
+	      		    R(0,0) = pose(0,0); R(0,1) = pose(0,1); R(0,2) = pose(0,2);
+      			  R(1,0) = pose(1,0); R(1,1) = pose(1,1); R(1,2) = pose(1,2);
+      			  R(2,0) = pose(2,0); R(2,1) = pose(2,1); R(2,2) = pose(2,2);
+      			  Eigen::Quaternionf q(R);
+      			  cam_path<< loader.tstamps[i] << " " << pose(0,3) << " "
+                                      << pose(1,3) << " "
+                                      << pose(2,3) << " "
+                                      << q.x() << " "
+                                      << q.y() << " "
+                                      << q.z() << " "
+                                      << q.w() << "\n";						
+		
 	}
 
 	return 0;

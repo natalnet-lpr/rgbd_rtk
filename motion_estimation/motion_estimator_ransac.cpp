@@ -92,7 +92,7 @@ void MotionEstimatorRANSAC::setDataFromCorrespondences(const std::vector<cv::Poi
 
 
 	//alinhamento
-	pairAlign ( src_cloud_, tgt_cloud_ ,*src_cloud_);
+	//pairAlign ( src_cloud_, tgt_cloud_ ,*src_cloud_);
 	
 	//tgt_cloud_->points.resize(valid_points);
 	//src_cloud_->points.resize(valid_points);
@@ -189,7 +189,9 @@ Eigen::Matrix4f MotionEstimatorRANSAC::estimate(const vector<cv::Point2f> tgt_po
 		printf("Point %lu: inlier(%i), pos(%f, %f), repr(%f, %f), error: %f\n", i, is_inlier_[i], xc, yc, x, y, err);
 	}
 */
-	return trans;
+
+	return pairAlign ( src_cloud_, tgt_cloud_ ,*src_cloud_);
+	//return trans;
 }
 
 //this function returns the transformation after align the source cloud using the target cloud.
@@ -227,7 +229,7 @@ Eigen::Matrix4f MotionEstimatorRANSAC::pairAlign ( const pcl::PointCloud<PointT>
 
 	// Set the max correspondence distance to 5cm (e.g., correspondences with higher distances will be ignored)
 	
-	icp.setMaxCorrespondenceDistance (0.05);
+	icp.setMaxCorrespondenceDistance (0.03);
 	
 
 	// Set the maximum number of iterations (criterion 1)
@@ -236,11 +238,11 @@ Eigen::Matrix4f MotionEstimatorRANSAC::pairAlign ( const pcl::PointCloud<PointT>
 
 	// Set the transformation epsilon (criterion 2)
 
-	icp.setTransformationEpsilon (1e-8);
+	icp.setTransformationEpsilon (1e-9);
 
 
 	 // Set the euclidean distance difference epsilon (criterion 3)
-	icp.setEuclideanFitnessEpsilon (1);
+	icp.setEuclideanFitnessEpsilon (0.0001); 
 	
 	// Perform the alignment
 	
@@ -255,12 +257,12 @@ Eigen::Matrix4f MotionEstimatorRANSAC::pairAlign ( const pcl::PointCloud<PointT>
 		
 	
 	
-	 std::cout << "has converged:" << icp.hasConverged() << " score: " <<
+	/* std::cout << "has converged:" << icp.hasConverged() << " score: " <<
   icp.getFitnessScore() << std::endl;
  // std::cout << icp.getFinalTransformation() << std::endl;
 		
 	
-	return final_transform;
+*/		return final_transform;
 	
 
 }

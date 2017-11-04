@@ -46,6 +46,8 @@ private:
 	std::vector<std::string> depth_img_names_;
 
 public:
+	//time stamp of indexfiles	
+	std::vector<std::string> tstamps;
 	//Number of images of the sequence
 	int num_images_;
 

@@ -185,7 +185,7 @@ bool KLTTracker::write_heatmap_info()
  * #####################################################
  */
 
-KLTTracker::KLTTracker() : min_pts_(600), max_pts_(5000)
+KLTTracker::KLTTracker() : min_pts_(1000), max_pts_(5000)
 {
 	initialized_ = false;
 	frame_idx_ = 0;
