@@ -33,12 +33,14 @@
 
 #include <geometry.h>
 #include <rgbd_loader.h>
+#include <klttacw_tracker.h>
 #include <klt_tracker.h>
 #include <motion_estimator_ransac.h>
 #include <reconstruction_visualizer.h>
 
 
 #include <fstream>
+#include <ctime>
 
 using namespace std;
 using namespace cv;
@@ -47,6 +49,12 @@ int main(int argc, char **argv)
 {
 	string index_file_name;
 	RGBDLoader loader;
+
+	cout<<"this code is running using the KLTTACW\n";
+	/*	KLTTrackerACW tracker;
+	tracker.radius_min = 20;
+	tracker.radius_max = 50;
+	*/
 	KLTTracker tracker;
 	Intrinsics intr(0);
 	MotionEstimatorRANSAC motion_estimator(intr);
@@ -57,6 +65,13 @@ int main(int argc, char **argv)
 	pcl::PointCloud<PointT>::Ptr prev_cloud(new pcl::PointCloud<PointT>);
 	pcl::PointCloud<PointT>::Ptr curr_cloud(new pcl::PointCloud<PointT>);
 	ofstream cam_path;
+	
+
+	ofstream time;
+	clock_t ti,tf;	
+
+	time.open("tempo_frame.txt");
+	
 	cam_path.open("pos_relativa.txt");
 	if(argc != 2)
 	{
@@ -79,10 +94,12 @@ int main(int argc, char **argv)
 
 		//Estimate motion between the current and the previous frame/point clouds
 		if(i > 0)
-		{
+		{	ti=clock();
 			trans = motion_estimator.estimate(tracker.prev_pts_, prev_cloud,
 				                              tracker.curr_pts_, curr_cloud);
 			pose = pose*trans;
+			tf= clock();
+			time<<(tf-ti)*1000/CLOCKS_PER_SEC<<endl;
 		}
 
 		//View tracked points
@@ -97,15 +114,15 @@ int main(int argc, char **argv)
 
 		if(i == 0) visualizer.addReferenceFrame(pose, "origin");
 		//visualizer.addQuantizedPointCloud(curr_cloud, 0.3, pose);
-		visualizer.viewReferenceFrame(pose);
+		//esse visualizer.viewReferenceFrame(pose);
 		//visualizer.viewPointCloud(curr_cloud, pose);
-		visualizer.viewQuantizedPointCloud(curr_cloud, 0.02, pose);
+		//esse visualizer.viewQuantizedPointCloud(curr_cloud, 0.02, pose);
 
-		visualizer.spinOnce();
+		//esse visualizer.spinOnce();
 
 		//Show RGB-D image
 		imshow("Image view", frame);
-		imshow("Depth view", depth);
+		//imshow("Depth view", depth);
 		char key = waitKey(1);
 		if(key == 27 || key == 'q' || key == 'Q')
 		{

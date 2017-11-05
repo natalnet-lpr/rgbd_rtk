@@ -190,8 +190,8 @@ Eigen::Matrix4f MotionEstimatorRANSAC::estimate(const vector<cv::Point2f> tgt_po
 	}
 */
 
-	return pairAlign ( src_cloud_, tgt_cloud_ ,*src_cloud_);
-	//return trans;
+	pairAlign ( src_cloud_, tgt_cloud_ ,*src_cloud_,trans);
+	return trans;
 }
 
 //this function returns the transformation after align the source cloud using the target cloud.
@@ -200,7 +200,7 @@ Eigen::Matrix4f MotionEstimatorRANSAC::estimate(const vector<cv::Point2f> tgt_po
 
 */
 
-Eigen::Matrix4f MotionEstimatorRANSAC::pairAlign ( const pcl::PointCloud<PointT>::Ptr src_dense_cloud, const pcl::PointCloud<PointT>::Ptr tgt_dense_cloud, pcl::PointCloud<PointT>& output)
+Eigen::Matrix4f MotionEstimatorRANSAC::pairAlign ( const pcl::PointCloud<PointT>::Ptr src_dense_cloud, const pcl::PointCloud<PointT>::Ptr tgt_dense_cloud, pcl::PointCloud<PointT>& output,  Eigen::Matrix4f  &guess   )
 {
 	 Eigen::Matrix4f final_transform;
 
@@ -220,7 +220,11 @@ Eigen::Matrix4f MotionEstimatorRANSAC::pairAlign ( const pcl::PointCloud<PointT>
 	//cout<<src->size()<<endl;
 	//cout<<tgt->size()<<endl;
 	 pcl::IterativeClosestPoint<PointT, PointT> icp;
-
+	 
+	
+	
+	
+	
 	// Set the input source and target
 
 	icp.setInputCloud(src);
@@ -229,7 +233,7 @@ Eigen::Matrix4f MotionEstimatorRANSAC::pairAlign ( const pcl::PointCloud<PointT>
 
 	// Set the max correspondence distance to 5cm (e.g., correspondences with higher distances will be ignored)
 	
-	icp.setMaxCorrespondenceDistance (0.03);
+	icp.setMaxCorrespondenceDistance (0.008);
 	
 
 	// Set the maximum number of iterations (criterion 1)
@@ -240,29 +244,26 @@ Eigen::Matrix4f MotionEstimatorRANSAC::pairAlign ( const pcl::PointCloud<PointT>
 
 	icp.setTransformationEpsilon (1e-9);
 
-
 	 // Set the euclidean distance difference epsilon (criterion 3)
-	icp.setEuclideanFitnessEpsilon (0.0001); 
+	icp.setEuclideanFitnessEpsilon (0.001); 
 	
 	// Perform the alignment
-	
-	
-	icp.align (output);
+	icp.align (output,guess);
 	// Obtain the transformation that aligned cloud_source to cloud_source_registered
 	
-	final_transform = icp.getFinalTransformation ();
+	guess = icp.getFinalTransformation ();
 	
 	
 
 		
 	
 	
-	/* std::cout << "has converged:" << icp.hasConverged() << " score: " <<
-  icp.getFitnessScore() << std::endl;
+	// std::cout << "has converged:" << icp.hasConverged() << " score: " <<
+  //icp.getFitnessScore() << std::endl;
  // std::cout << icp.getFinalTransformation() << std::endl;
 		
 	
-*/		return final_transform;
+		return final_transform;
 	
 
 }
