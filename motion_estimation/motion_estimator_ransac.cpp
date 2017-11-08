@@ -233,7 +233,7 @@ Eigen::Matrix4f MotionEstimatorRANSAC::pairAlign ( const pcl::PointCloud<PointT>
 
 	// Set the max correspondence distance to 5cm (e.g., correspondences with higher distances will be ignored)
 	
-	icp.setMaxCorrespondenceDistance (0.008);
+	icp.setMaxCorrespondenceDistance (0.009);
 	
 
 	// Set the maximum number of iterations (criterion 1)
