@@ -43,7 +43,7 @@ class  MotionEstimatorICP
 		Eigen::Matrix4f pairAlign (pcl::PointCloud<PointT>& output);
 		
 
-		void DownSamplimg(float radius);
+		void DownSamplimg(pcl::PointCloud<PointT>::Ptr cloud,float radius);
 		
 		
 		

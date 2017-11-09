@@ -13,7 +13,7 @@ add_executable(klttw_tracker_test klttw_tracker_test.cpp)
 add_executable(klttcw_tracker_test klttcw_tracker_test.cpp)
 add_executable(klttacw_tracker_test klttacw_tracker_test.cpp)
 add_executable(motion_estimator_test motion_estimator_test.cpp)
-
+add_executable(motion_estimator_icp_test motion_estimator_icp_test.cpp)
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 
 find_library(RGBD_RTK_IO NAMES rgbd_rtk_io)
@@ -33,6 +33,9 @@ target_link_libraries(klttacw_tracker_test ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING})
 target_link_libraries(motion_estimator_test  ${PCL_LIBRARIES} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING}
 	                                         ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUALIZATION}
 	                                         ${RGBD_RTK_MOTION_ESTIMATION})
+target_link_libraries(motion_estimator_icp_test  ${PCL_LIBRARIES} ${RGBD_RTK_IO}
+	                                         ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUALIZATION}
+	                                         ${RGBD_RTK_MOTION_ESTIMATION})
 
 install(TARGETS monocular_calibration
 	            monocular_image_grabber
@@ -43,4 +46,5 @@ install(TARGETS monocular_calibration
 		klttcw_tracker_test
 		klttacw_tracker_test
                 motion_estimator_test
+		motion_estimator_icp_test
         RUNTIME DESTINATION bin)

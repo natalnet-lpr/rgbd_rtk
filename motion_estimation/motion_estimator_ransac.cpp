@@ -202,7 +202,7 @@ Eigen::Matrix4f MotionEstimatorRANSAC::estimate(const vector<cv::Point2f> tgt_po
 
 Eigen::Matrix4f MotionEstimatorRANSAC::pairAlign ( const pcl::PointCloud<PointT>::Ptr src_dense_cloud, const pcl::PointCloud<PointT>::Ptr tgt_dense_cloud, pcl::PointCloud<PointT>& output,  Eigen::Matrix4f  &guess   )
 {
-	 Eigen::Matrix4f final_transform;
+ 	Eigen::Matrix4f final_transform;
 
 	
 	pcl::PointCloud<PointT>::Ptr tgt;
@@ -264,6 +264,5 @@ Eigen::Matrix4f MotionEstimatorRANSAC::pairAlign ( const pcl::PointCloud<PointT>
 		
 	
 		return final_transform;
-	
 
 }

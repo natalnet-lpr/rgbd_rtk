@@ -51,11 +51,11 @@ int main(int argc, char **argv)
 	RGBDLoader loader;
 
 	cout<<"this code is running using the KLTTACW\n";
-	/*	KLTTrackerACW tracker;
+		KLTTrackerACW tracker;
 	tracker.radius_min = 20;
 	tracker.radius_max = 50;
-	*/
-	KLTTracker tracker;
+	
+	//KLTTracker tracker;
 	Intrinsics intr(0);
 	MotionEstimatorRANSAC motion_estimator(intr);
 	ReconstructionVisualizer visualizer;
