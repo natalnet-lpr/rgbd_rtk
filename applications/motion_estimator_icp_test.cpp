@@ -33,7 +33,7 @@ int main(int argc, char **argv)
 	ReconstructionVisualizer visualizer;
 
 	ofstream cam_path;
-
+	cam_path.open("pos_relativa2.txt");
 	Intrinsics intr(0);
 	
 	if(argc != 2)
@@ -53,31 +53,41 @@ int main(int argc, char **argv)
 		//Load RGB-D image and point cloud 
 		loader.getNextImage(frame, depth);
 		*curr_cloud = getPointCloud(frame, depth, intr);
-		cout<<curr_cloud->size()<<endl;
-		if(i > 0 && i<60)
+		
+		if(i > 0 && i<200)
+		{	
+			
+			guess = estimator.pairAlign(*curr_cloud,*prev_cloud,*curr_cloud);
+
+			
+		}
+		else if(i>=200)
+		{	
+			
+			estimator.pairAlign(*curr_cloud,*prev_cloud,*curr_cloud,guess);
+			
+
+		}
+		if(i){	
+			trans = guess;			
+			pose = trans*pose;
+		}
+		/*if(i > 0)
 		{	
 
-			guess = estimator.pairAlign(curr_cloud,prev_cloud,*curr_cloud);
-							cout<<"passou3\n";			
-			trans = guess;			
-			pose = trans*pose;
-			
-		}
-		else if(i>=60)
-		{
-			
-			guess =  estimator.pairAlign(curr_cloud,prev_cloud,*curr_cloud,guess);
-			trans = guess;			
-			pose = trans*pose;
+			guess = estimator.pairAlign(*curr_cloud,*prev_cloud,*curr_cloud);
 
-		}
+			trans = guess;			
+			pose = trans*pose;
+			
+		}*/
 		if(i == 0) visualizer.addReferenceFrame(pose, "origin");
 		//visualizer.addQuantizedPointCloud(curr_cloud, 0.3, pose);
-		//esse visualizer.viewReferenceFrame(pose);
+		 visualizer.viewReferenceFrame(pose);
 		//visualizer.viewPointCloud(curr_cloud, pose);
-		//esse visualizer.viewQuantizedPointCloud(curr_cloud, 0.02, pose);
+		 visualizer.viewQuantizedPointCloud(curr_cloud, 0.02, pose);
 
-		//esse visualizer.spinOnce();
+		 visualizer.spinOnce();
 
 
 		//Show RGB-D image
@@ -93,7 +103,7 @@ int main(int argc, char **argv)
 		//Let the prev. cloud in the next frame be the current cloud
 		*prev_cloud = *curr_cloud;
 
-		/*
+		
 			 Eigen::Matrix3f R;
 	      		    R(0,0) = pose(0,0); R(0,1) = pose(0,1); R(0,2) = pose(0,2);
       			  R(1,0) = pose(1,0); R(1,1) = pose(1,1); R(1,2) = pose(1,2);
@@ -107,7 +117,7 @@ int main(int argc, char **argv)
                                       << q.z() << " "
                                       << q.w() << "\n";						
 		
-		*/
+		
 	}
 
 	return 0;
