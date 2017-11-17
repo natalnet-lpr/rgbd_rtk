@@ -54,16 +54,16 @@ int main(int argc, char * argv[])
 		*	roda medidor de tempo
 		*	move arquivo de tempo
 		*/
-		arq<<"mkdir resultados/icp/klt/"<<dataset<<"\n";
+		arq<<"mkdir resultados/icp/klttacw/"<<dataset<<"\n";
 		arq<<"./media tempo_frame.txt > media.txt\n";
-		arq<<"mv media.txt resultados/icp/klt/"<<dataset<<"\n\n";
+		arq<<"mv media.txt resultados/icp/klttacw/"<<dataset<<"\n\n";
 
 
 		/*
 			analisa estimação de movimento com script
 		
 		*/
-		arq<<"./evaluate_rpe.py --verbose --fixed_delta "<<argv[i]<<"/groundtruth.txt"<<" pos_relativa.txt > resultados/icp/klt/"<<dataset<<"/vo_analisys.txt";
+		arq<<"./evaluate_rpe.py --verbose --fixed_delta "<<argv[i]<<"/groundtruth.txt"<<" pos_relativa.txt > resultados/icp/klttacw/"<<dataset<<"/vo_analisys.txt";
 		
 		arq<<"\n\n";		
 		

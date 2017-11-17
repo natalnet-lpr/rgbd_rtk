@@ -33,7 +33,7 @@ int main(int argc, char **argv)
 	ReconstructionVisualizer visualizer;
 
 	ofstream cam_path;
-	cam_path.open("pos_relativa2.txt");
+	cam_path.open("pos_relativa.txt");
 	Intrinsics intr(0);
 	
 	if(argc != 2)
@@ -113,7 +113,7 @@ int main(int argc, char **argv)
                                       << pose(1,3) << " "
                                       << pose(2,3) << " "
                                       << q.x() << " "
-                                      << q.y() << " "
+                                      << q.y() << " 1"
                                       << q.z() << " "
                                       << q.w() << "\n";						
 		
