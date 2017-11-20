@@ -110,8 +110,20 @@ protected:
 	//Write all current keypoints to file
 	virtual bool write_heatmap_info();
 
-public:
+	//number of features in the lastKey Frame
+	int features_in_KF;
 	
+
+	//vector than contein the number of features of a KF
+	std::vector<cv::Point2f> KF_pts_;
+	
+
+public:
+	//last KF index
+	int KF_index;
+	
+	cv::Mat KeyFrame;
+
 
 	float radius_max,radius_min;
 
@@ -167,6 +179,13 @@ public:
 			               const std::string heatmap_file_name);
 	
 	virtual void radius_size(int i);
+
+	//if this frame is a keyframe add it
+	virtual void add_new_KF(std::vector<cv::Point2f> pts, cv::Mat frame);
+
+
+	//determinate if a frame is KeyFrame
+	virtual bool is_KeyFrame(int features_in_currF, float fkf);
 		
 };
 

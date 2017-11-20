@@ -280,6 +280,7 @@ KLTTrackerACW::KLTTrackerACW() : min_pts_(2500), max_pts_(5000)
 	initialized_ = false;
 	frame_idx_ = 0;
 	num_inliers_ = 0;
+	KF_index = 0;
 }
 
 KLTTrackerACW::KLTTrackerACW(int min_pts, int max_pts)
@@ -287,12 +288,26 @@ KLTTrackerACW::KLTTrackerACW(int min_pts, int max_pts)
 	initialized_ = false;
 	frame_idx_ = 0;
 	num_inliers_ = 0;
+	KF_index = 0;
 
 	min_pts_ = min_pts;
 	max_pts_ = max_pts;
 }
 
+bool KLTTrackerACW::is_KeyFrame(int features_in_currF, float fkf){
+	
+	return sqrt((features_in_KF-features_in_currF)*(features_in_KF-features_in_currF))>=fkf*features_in_KF;
 
+	
+}
+void  KLTTrackerACW::add_new_KF(std::vector<cv::Point2f> pts, Mat frame){
+
+	KF_pts_ = pts;
+	features_in_KF = KF_pts_.size();
+	KeyFrame = frame;
+	
+
+}
 
 bool KLTTrackerACW::track(Mat curr_frame)
 {	
@@ -310,6 +325,8 @@ bool KLTTrackerACW::track(Mat curr_frame)
 	 //Update internal buffers
 	update_buffers();
 	
+
+	
 	
 	
 	
@@ -318,9 +335,11 @@ bool KLTTrackerACW::track(Mat curr_frame)
 	//Tracker is not initialized
 	if(!initialized_)
 	{
-		
+
+		add_new_KF(prev_pts_,curr_frame);
 		//Initialize tracker
 		detect_keypoints();
+		
 		initialized_ = true;
 		
 	}
@@ -328,8 +347,13 @@ bool KLTTrackerACW::track(Mat curr_frame)
 	//Tracker is initialized: track keypoints
 	else
 	{	
-	
-
+		if(is_KeyFrame(prev_pts_.size(),0.10) ){
+			cout<<prev_pts_.size()<<" "<<features_in_KF<<endl;
+			KF_index = frame_idx_; 
+			add_new_KF(prev_pts_,curr_frame);
+			
+				
+		}
 		//Track points with Optical Flow
 		vector<uchar> status;
 		vector<float> err;
