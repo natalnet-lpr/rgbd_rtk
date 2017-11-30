@@ -39,5 +39,5 @@ PointT get3Dfrom2D(const cv::Point2f point, const pcl::PointCloud<PointT>::Ptr d
 
 //Computes a RGB-D point cloud from the camera intrinsic parameters and the RGB and depth data.
  pcl::PointCloud<PointT> getPointCloud(const cv::Mat rgb, const cv::Mat depth, const Intrinsics intr);
-PointT get3Dfrom2D(const cv::Point2f point, const pcl::PointCloud<PointT> dense_cloud);
+
 #endif /* INCLUDE_GEOMETRY_H_ */

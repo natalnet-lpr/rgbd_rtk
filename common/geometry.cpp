@@ -28,7 +28,7 @@
 
 using namespace std;
 using namespace cv;
- 
+
 bool is_valid(PointT p)
 {
 	if(isnan(p.x) || isnan(p.y) || isnan(p.z))
@@ -55,27 +55,6 @@ PointT get3Dfrom2D(const Point2f point, const pcl::PointCloud<PointT>::Ptr dense
 	float X = dense_cloud->at(j,i).x;
 	float Y = dense_cloud->at(j,i).y;
 	float Z = dense_cloud->at(j,i).z;
-		
-	PointT pt;
-	pt.x = X;
-	pt.y = Y;
-	pt.z = Z;
-	return pt;
-}
-PointT get3Dfrom2D(const cv::Point2f point, const pcl::PointCloud<PointT> dense_cloud)
-{
-	//Grab 2D coord. of the feature
-	float x = point.x;
-	float y = point.y;
-
-	//Grab the integer (pixel) indices of the point
-	int j = int(std::floor(x));
-	int i = int(std::floor(y));
-
-	//Grab the 3D coordinate associated with the point
-	float X = dense_cloud.at(j,i).x;
-	float Y = dense_cloud.at(j,i).y;
-	float Z = dense_cloud.at(j,i).z;
 		
 	PointT pt;
 	pt.x = X;

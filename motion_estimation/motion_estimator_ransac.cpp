@@ -32,6 +32,7 @@
 #include <geometry.h>
 #include <motion_estimator_ransac.h>
 #include <motion_estimator_icp.h>
+
 #include <pcl/common/transforms.h>
 
 #include <pcl/correspondence.h>
@@ -47,11 +48,8 @@ using namespace pcl;
 
 //#define DEBUG
 
-void MotionEstimatorRANSAC::setDataFromCorrespondences(const std::vector<cv::Point2f> tgt_points, const pcl::PointCloud<PointT>::Ptr tgt_dense_cloud,
-		                                         const std::vector<cv::Point2f> src_points, const pcl::PointCloud<PointT>::Ptr src_dense_cloud)
+void MotionEstimatorRANSAC::setDataFromCorrespondences(const std::vector<cv::Point2f> tgt_points, const pcl::PointCloud<PointT>::Ptr tgt_dense_cloud,    const std::vector<cv::Point2f> src_points, const pcl::PointCloud<PointT>::Ptr src_dense_cloud)
 {
-
-
 	//Reset sparse src cloud buffer
 	src_cloud_->clear();
 	src_cloud_->is_dense = true;
@@ -132,9 +130,12 @@ Eigen::Matrix4f MotionEstimatorRANSAC::estimate(const vector<cv::Point2f> tgt_po
 	//Fill data buffers with the supplied data
 	setDataFromCorrespondences(tgt_points, tgt_dense_cloud, src_points, src_dense_cloud);
 
-	long unsigned N = src_cloud_->points.size();
-
 	MotionEstimatorICP icp;
+
+	
+	
+
+	long unsigned N = src_cloud_->points.size();
 
 	#ifdef DEBUG
 	printf("\tRANSAC motion estimation: %lu <-> %lu\n", tgt_cloud_->size(), src_cloud_->size());
@@ -176,7 +177,6 @@ Eigen::Matrix4f MotionEstimatorRANSAC::estimate(const vector<cv::Point2f> tgt_po
 	trans(1,0) = opt_coeffs[4]; trans(1,1) = opt_coeffs[5]; trans(1,2) = opt_coeffs[6]; trans(1,3) = opt_coeffs[7];
 	trans(2,0) = opt_coeffs[8]; trans(2,1) = opt_coeffs[9]; trans(2,2) = opt_coeffs[10]; trans(2,3) = opt_coeffs[11];
 	trans(3,0) = opt_coeffs[12]; trans(3,1) = opt_coeffs[13]; trans(3,2) = opt_coeffs[14]; trans(3,3) = opt_coeffs[15];
-	
 /*
 	//DEBUG: estimate repr. error
 	pcl::PointCloud<PointT>::Ptr tmp_cloud = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
@@ -238,7 +238,7 @@ Eigen::Matrix4f MotionEstimatorRANSAC::pairAlign ( const pcl::PointCloud<PointT>
 
 	// Set the max correspondence distance to 5cm (e.g., correspondences with higher distances will be ignored)
 	
-	icp.setMaxCorrespondenceDistance (1);
+	icp.setMaxCorrespondenceDistance (0.009);
 	
 
 	// Set the maximum number of iterations (criterion 1)
@@ -253,7 +253,7 @@ Eigen::Matrix4f MotionEstimatorRANSAC::pairAlign ( const pcl::PointCloud<PointT>
 	icp.setEuclideanFitnessEpsilon (0.001); 
 	
 	// Perform the alignment
-	icp.align (output);
+	icp.align (output,guess);
 	// Obtain the transformation that aligned cloud_source to cloud_source_registered
 	
 	guess = icp.getFinalTransformation ();

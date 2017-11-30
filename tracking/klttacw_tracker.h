@@ -30,6 +30,7 @@
 #include <vector>
 #include <fstream>
 #include <opencv2/core.hpp>
+#include <list>
 
 #include <common_types.h>
 #define _USE_MATH_DEFINES
@@ -71,8 +72,8 @@ protected:
 
 	//Time spent processing each operation (detection, tracking, motion estimation, etc.)
 	std::vector<float> op_time_;
-
 	//Output file with tracking information
+
 	std::ofstream tracking_info_;
 
 	//Output file with timing information
@@ -110,20 +111,10 @@ protected:
 	//Write all current keypoints to file
 	virtual bool write_heatmap_info();
 
-	//number of features in the lastKey Frame
-	int features_in_KF;
-	
-
-	//vector than contein the number of features of a KF
-	std::vector<cv::Point2f> KF_pts_;
-	
 
 public:
-	//last KF index
-	int KF_index;
 	
-	cv::Mat KeyFrame;
-
+	
 
 	float radius_max,radius_min;
 
@@ -180,12 +171,8 @@ public:
 	
 	virtual void radius_size(int i);
 
-	//if this frame is a keyframe add it
-	virtual void add_new_KF(std::vector<cv::Point2f> pts, cv::Mat frame);
 
-
-	//determinate if a frame is KeyFrame
-	virtual bool is_KeyFrame(int features_in_currF, float fkf);
+		
 		
 };
 

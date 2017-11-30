@@ -45,7 +45,7 @@ class  MotionEstimatorICP
 		Eigen::Matrix4f pose;
 		
 		MotionEstimatorICP ();
-
+	
 
 
 

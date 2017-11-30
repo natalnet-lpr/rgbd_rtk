@@ -141,7 +141,7 @@ Eigen::Matrix4f MotionEstimatorICP::pairAlign ( const pcl::PointCloud<PointT> sr
 		
 		DownSamplimg(tgt_cloud,0.05);
 	}
-		cout<<src_cloud->size()<<endl;
+
 
 	ICP.setInputSource(src_cloud);
 	
@@ -211,12 +211,12 @@ void MotionEstimatorICP::pairAlign ( const pcl::PointCloud<PointT> src, const pc
 	
 	// Set the maximum number of iterations (criterion 1)
 
+
 	ICP.setMaximumIterations (50);
 
 	// Set the transformation epsilon (criterion 2)
 
 	ICP.setTransformationEpsilon (1e-9);
-
 	 // Set the euclidean distance difference epsilon (criterion 3)
 	ICP.setEuclideanFitnessEpsilon (0.001); 
 	

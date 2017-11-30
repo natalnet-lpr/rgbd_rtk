@@ -36,14 +36,31 @@
 #include <klttacw_tracker.h>
 #include <klt_tracker.h>
 #include <motion_estimator_ransac.h>
-#include <reconstruction_visualizer.h>
 
+#include <reconstruction_visualizer.h>
+#include <graph.h>
 
 #include <fstream>
 #include <ctime>
 
 using namespace std;
 using namespace cv;
+
+bool is_KeyFrame(int features_in_currF,Graph graph, float fkf){
+	
+	std::list<Vertice*>::iterator it = graph.graph.end();
+	
+		
+	--it;
+
+	
+	float features_in_KF = (*it)->features_in_KF ;
+
+
+	return sqrt((features_in_KF-features_in_currF)*(features_in_KF-features_in_currF))>=fkf*features_in_KF;
+
+}
+
 
 int main(int argc, char **argv)
 {
@@ -55,6 +72,9 @@ int main(int argc, char **argv)
 	tracker.radius_min = 20;
 	tracker.radius_max = 50;
 	
+	Graph grafo;
+
+
 	//KLTTracker tracker;
 	Intrinsics intr(0);
 	MotionEstimatorRANSAC motion_estimator(intr);
@@ -65,7 +85,7 @@ int main(int argc, char **argv)
 	pcl::PointCloud<PointT>::Ptr prev_cloud(new pcl::PointCloud<PointT>);
 	pcl::PointCloud<PointT>::Ptr curr_cloud(new pcl::PointCloud<PointT>);
 	ofstream cam_path;
-	
+	int KF_cont = 0;
 
 	ofstream time;
 	clock_t ti,tf;	
@@ -93,7 +113,7 @@ int main(int argc, char **argv)
 		tracker.track(frame);
 
 		//Estimate motion between the current and the previous frame/point clouds
-		if(i > 0)
+		/*if(i > 0)
 		{	ti=clock();
 			trans = motion_estimator.estimate(tracker.prev_pts_, prev_cloud,
 				                              tracker.curr_pts_, curr_cloud);
@@ -101,7 +121,36 @@ int main(int argc, char **argv)
 			tf= clock();
 			time<<(tf-ti)*1000/CLOCKS_PER_SEC<<endl;
 		}
+		*/
 
+
+
+
+	   if(i>0){	
+		if(is_KeyFrame(tracker.curr_pts_.size(),grafo,0.05)){
+			
+			std::list<Vertice*>::iterator ultimo_kf;
+			
+			grafo.graph.push_back(grafo.add_new_KF(tracker.curr_pts_,frame,curr_cloud));
+
+			//grafo.Update_Iterators();
+
+			ultimo_kf = grafo.last;
+
+
+			
+
+
+
+			 (*ultimo_kf)->trans = motion_estimator.estimate(tracker.prev_pts_,prev_cloud,
+				                            (*ultimo_kf)->KF_pts_, (*ultimo_kf)->KF_cloud);
+
+			 pose = pose*(*ultimo_kf)->trans;
+				
+			
+			 imshow("KF view", (*ultimo_kf)->KeyFrame);
+		}
+	 }
 		//View tracked points
 		for(size_t k = 0; k < tracker.curr_pts_.size(); k++)
 		{
@@ -114,15 +163,22 @@ int main(int argc, char **argv)
 
 		if(i == 0) visualizer.addReferenceFrame(pose, "origin");
 		//visualizer.addQuantizedPointCloud(curr_cloud, 0.3, pose);
-		//esse visualizer.viewReferenceFrame(pose);
+		visualizer.viewReferenceFrame(pose);
 		//visualizer.viewPointCloud(curr_cloud, pose);
-		//esse visualizer.viewQuantizedPointCloud(curr_cloud, 0.02, pose);
+		visualizer.viewQuantizedPointCloud(curr_cloud, 0.02, pose);
 
-		//esse visualizer.spinOnce();
+		visualizer.spinOnce();
 
 		//Show RGB-D image
 		imshow("Image view", frame);
 		//imshow("Depth view", depth);
+
+
+
+		 
+
+
+
 		char key = waitKey(1);
 		if(key == 27 || key == 'q' || key == 'Q')
 		{
