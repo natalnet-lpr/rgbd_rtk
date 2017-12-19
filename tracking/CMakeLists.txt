@@ -6,12 +6,7 @@ message(STATUS ">>> tracking subdirectory")
 
 set(RGBD_RTK_TRACKING_SRC klt_tracker.cpp)
 set(RGBD_RTK_TRACKING_INCLUDES klt_tracker.h)
-set(RGBD_RTK_TRACKING_SRC klttw_tracker.cpp)
-set(RGBD_RTK_TRACKING_INCLUDES klttw_tracker.h)
-set(RGBD_RTK_TRACKING_SRC klttcw_tracker.cpp)
-set(RGBD_RTK_TRACKING_INCLUDES klttcw_tracker.h)
-set(RGBD_RTK_TRACKING_SRC klttacw_tracker.cpp)
-set(RGBD_RTK_TRACKING_INCLUDES klttacw_tracker.h)
+
 add_library(rgbd_rtk_tracking SHARED ${RGBD_RTK_TRACKING_SRC})
 target_link_libraries(rgbd_rtk_tracking ${OpenCV_LIBS})
 

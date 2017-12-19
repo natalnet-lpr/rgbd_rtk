@@ -23,7 +23,7 @@
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
- 
+
 #include <cstdio>
 #include <cstdlib>
 #include <opencv2/core/core.hpp>
