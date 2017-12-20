@@ -42,6 +42,7 @@ cd build/
 ```
 
 Inside of the build directory, run the cmake command so that it will create the necessary makefiles.
+
 ```bash
 cmake ..
 ```
@@ -68,3 +69,4 @@ Authors
 Natalnet Laboratory for Perceptual Robotics, Federal University of Rio Grande do Norte, Brazil.
 
 Contact: bruno.silva AT ect.ufrn.br
+
