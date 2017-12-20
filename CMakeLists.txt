@@ -5,22 +5,25 @@ project(RGBD_RTK)
 message(STATUS "Project source directory: " ${PROJECT_SOURCE_DIR})
 message(STATUS "Build directory: " ${PROJECT_BINARY_DIR})
 
-find_package(OpenCV 2.4 REQUIRED)
+find_package(OpenCV REQUIRED)
 if(OpenCV_FOUND)
-	message(STATUS "OpenCV found")
+	message(STATUS "OpenCV version: " ${OpenCV_VERSION})
+	if(OpenCV_VERSION VERSION_LESS "3.0.0")
+  		message(FATAL_ERROR "ERROR: OpenCV version >= 3.0 required")
+	endif()
 else()
 	message(FATAL_ERROR "Error: OpenCV was not found in your system")
 endif()
 
 find_package(PCL 1.8 REQUIRED)
 if(PCL_FOUND)
-	message(STATUS "PCL found")
+	message(STATUS "PCL version: " ${PCL_VERSION})
 else()
 	message(FATAL_ERROR "Error: PCL was not found in your system")
 endif()
 
 # Force OpenCVPCL versions if ROS is installed
-# set(OpenCV_INCLUDE_DIRS "/home/bruno/Lib/opencv-2.4.13/local/include")
+#set(OpenCV_INCLUDE_DIRS "/home/bruno/Lib/opencv-3.3.1/local/include")
 
 include_directories(${OpenCV_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} common io tracking motion_estimation
                     visualization)
