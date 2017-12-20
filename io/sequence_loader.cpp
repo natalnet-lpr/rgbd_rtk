@@ -27,6 +27,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
+#include <limits>
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 
