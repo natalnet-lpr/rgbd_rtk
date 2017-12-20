@@ -46,7 +46,7 @@ Inside of the build directory, run the cmake command so that it will create the 
 cmake ..
 ```
 
-Then, compile the rgbt_rtk by using the make command. The -j4 is optional but it is recommended. With it your code will me compiled in 4 parallel tasks.
+Then, compile the rgbt_rtk by using the make command. The -j4 is optional but it is recommended. With it your code will be compiled in 4 parallel tasks.
 
 ```bash
 make -j4
@@ -56,9 +56,15 @@ make -j4
 sudo make install
 ```
 
-<!--
-### License
+License
+------------
+
+This code is distributed under the terms of the [BSD License](https://github.com/natalnet-lpr/rgbd_rtk/blob/master/LICENSE).
 
 
-### Authors
--->
+Authors
+------------
+
+Natalnet Laboratory for Perceptual Robotics, Federal University of Rio Grande do Norte, Brazil.
+
+Contact: bruno.silva AT ect.ufrn.br
