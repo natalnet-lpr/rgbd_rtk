@@ -40,9 +40,6 @@ class MotionEstimatorRANSAC
 
 protected:
 
-	//Set of intrinsic parameters
-	Intrinsics intr_;
-
 	//Sets the data of the source and target point clouds with the 3D coords. of each 2D point.
 	//The function assumes that tgt_points and src_points have the same size and also that
 	//the 3D points related to tgt_points[i] and src_points[i] are added to the point clouds
@@ -54,6 +51,9 @@ public:
 
 	//DEBUG
 	pcl::Correspondences src_to_tgt; 
+
+	//Set of intrinsic parameters
+	Intrinsics intr_;
 
 	//Target point cloud (formely the previous point cloyd)
 	pcl::PointCloud<PointT>::Ptr tgt_cloud_;
