@@ -27,8 +27,9 @@
 #ifndef INCLUDE_GEOMETRY_H_
 #define INCLUDE_GEOMETRY_H_
 
-#include <opencv2/core.hpp>
+#include <opencv2/core/core.hpp>
 #include <pcl/point_cloud.h>
+ 
 #include <common_types.h>
 
 //Utility function: returns true if the 3D point does not contain NaN values

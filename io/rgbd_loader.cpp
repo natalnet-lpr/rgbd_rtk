@@ -28,8 +28,8 @@
 #include <cstdlib>
 #include <fstream>
 #include <limits>
-#include <opencv2/core.hpp>
-#include <opencv2/highgui.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
 #include "rgbd_loader.h"
 

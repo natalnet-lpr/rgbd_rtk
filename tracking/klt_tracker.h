@@ -29,7 +29,7 @@
 
 #include <vector>
 #include <fstream>
-#include <opencv2/core.hpp>
+#include <opencv2/core/core.hpp>
 
 #include <common_types.h>
 

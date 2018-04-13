@@ -28,7 +28,7 @@
 #define INCLUDE_SEQUENCE_LOADER_H_
 
 #include <vector>
-#include <opencv2/core.hpp>
+#include <opencv2/core/core.hpp>
 
 class SequenceLoader
 {
