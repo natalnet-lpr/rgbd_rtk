@@ -27,11 +27,10 @@
 #include <Eigen/Geometry>
 #include <pcl/sample_consensus/ransac.h>
 #include <pcl/sample_consensus/sac_model_registration.h>
+ #include <pcl/common/transforms.h>
 
 #include <geometry.h>
 #include <motion_estimator_ransac.h>
-
-#include <pcl/common/transforms.h>
 
 using namespace std;
 
