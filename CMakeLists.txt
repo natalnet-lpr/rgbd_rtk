@@ -22,11 +22,21 @@ else()
 	message(FATAL_ERROR "Error: PCL was not found in your system")
 endif()
 
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+find_package(aruco 2.0 REQUIRED)
+if(aruco_FOUND)
+	message(STATUS "Aruco found")
+	message(STATUS "Aruco INCLUDES: " ${aruco_INCLUDE_DIRS})
+	message(STATUS "Aruco LIBS: " ${aruco_LIBS})
+else()
+	message(FATAL_ERROR "Error: Aruco was not found in your system")
+endif()
+
 # Force OpenCVPCL versions if ROS is installed
 #set(OpenCV_INCLUDE_DIRS "/home/bruno/Lib/opencv-3.3.1/local/include")
 
 include_directories(${OpenCV_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} common io tracking motion_estimation
-                    visualization visual_odometry)
+                    visualization visual_odometry slam)
 link_directories(${PCL_LIBRARY_DIRS})
 #add_definitions(${PCL_DEFINITIONS}) #apparently not needed
 
@@ -42,4 +52,6 @@ add_subdirectory(motion_estimation)
 set(RGBD_RTK_MOTION_ESTIMATION rgbd_rtk_motion_estimation)
 add_subdirectory(visual_odometry)
 set(RGBD_RTK_VISUAL_ODOMETRY rgbd_rtk_visual_odometry)
+add_subdirectory(slam)
+set(RGBD_RTK_SLAM rgbd_rtk_slam)
 add_subdirectory(applications)
