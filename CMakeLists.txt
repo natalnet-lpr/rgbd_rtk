@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 2.6)
 
 project(RGBD_RTK)
 
+SET(CMAKE_CXX_FLAGS "-std=c++11")
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+
 message(STATUS "Project source directory: " ${PROJECT_SOURCE_DIR})
 message(STATUS "Build directory: " ${PROJECT_BINARY_DIR})
 
@@ -22,8 +25,8 @@ else()
 	message(FATAL_ERROR "Error: PCL was not found in your system")
 endif()
 
-# Force OpenCVPCL versions if ROS is installed
-#set(OpenCV_INCLUDE_DIRS "/home/bruno/Lib/opencv-3.3.1/local/include")
+# Force OpenCV versions if ROS is installed
+#set(OpenCV_INCLUDE_DIRS "/home/bruno/Lib/opencv-3.4.1/local/include")
 
 include_directories(${OpenCV_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} common io tracking motion_estimation
                     visualization visual_odometry)
@@ -42,4 +45,18 @@ add_subdirectory(motion_estimation)
 set(RGBD_RTK_MOTION_ESTIMATION rgbd_rtk_motion_estimation)
 add_subdirectory(visual_odometry)
 set(RGBD_RTK_VISUAL_ODOMETRY rgbd_rtk_visual_odometry)
+
+# Build SLAM module only if ARUCO was found
+find_package(aruco 2.0 QUIET)
+if(aruco_FOUND)
+	message(STATUS "Aruco found")
+	message(STATUS "Aruco INCLUDES: " ${aruco_INCLUDE_DIRS})
+	message(STATUS "Aruco LIBS: " ${aruco_LIBS})
+	include_directories(slam)
+	add_subdirectory(slam)
+	set(RGBD_RTK_SLAM rgbd_rtk_slam)
+else()
+	message(WARNING "Aruco was not found in your system. SLAM module will not be built.")
+endif()
+
 add_subdirectory(applications)
