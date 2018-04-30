@@ -68,7 +68,7 @@ public:
 	void addQuantizedPointCloud(const pcl::PointCloud<PointT>::Ptr cloud, const float radius, const Eigen::Affine3f pose);
 
 	//Views a ref. frame with the given pose in the 3D reconstruction
-	void viewReferenceFrame(const Eigen::Affine3f pose);
+	void viewReferenceFrame(const Eigen::Affine3f pose, const std::string text="cam");
 
 	//Views a point cloud in the 3D reconstruction
 	void viewPointCloud(const pcl::PointCloud<PointT>::Ptr cloud, const Eigen::Affine3f pose);
