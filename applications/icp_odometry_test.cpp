@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016-2018, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -24,44 +24,65 @@
  *
  */
 
-#ifndef INCLUDE_MOTION_ESTIMATOR_ICP_H_
-#define INCLUDE_MOTION_ESTIMATOR_ICP_H_
-
+#include <cstdio>
+#include <cstdlib>
 #include <Eigen/Geometry>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
-#include <pcl/point_cloud.h>
-#include <pcl/registration/icp.h>
-#include <pcl/filters/uniform_sampling.h>
+#include <geometry.h>
+#include <rgbd_loader.h>
+#include <icp_odometry.h>
+#include <reconstruction_visualizer.h>
 
-#include <common_types.h>
+using namespace std;
+using namespace cv;
 
-class MotionEstimatorICP
+int main(int argc, char **argv)
 {
+	string index_file_name;
+	RGBDLoader loader;
+	Intrinsics intr(0);
+	ICPOdometry icpo(intr);
+	ReconstructionVisualizer visualizer;
+	Mat frame, depth;
 
-private:
+	if(argc != 2)
+	{
+		fprintf(stderr, "Usage: %s <index file>\n", argv[0]);
+		exit(0);
+	}
 
-	//(Uniform) point sampler
-	pcl::UniformSampling<PointT> sampler_;
+	index_file_name = argv[1];
+	loader.processFile(index_file_name);
 
-	//PCL ICP motion estimator
-	pcl::IterativeClosestPoint<PointT, PointT> icp_;
+	//Compute ICP odometry on each image
+	for(int i = 0; i < loader.num_images_; i++)
+	{
+		//Load RGB-D image 
+		loader.getNextImage(frame, depth);
 
-	//Utility function to downsample cloud data
-	void downSampleCloud(const pcl::PointCloud<PointT>::Ptr dense_cloud,
-		                 pcl::PointCloud<PointT>& res_cloud);
+		//Estimate current camera pose
+		icpo.computeCameraPose(frame, depth);
 
-public:
+		if(i == 0) visualizer.addReferenceFrame(icpo.pose_, "origin");
+		//visualizer.addQuantizedPointCloud(icpo.curr_dense_cloud_, 0.3, icpo.pose_);
+		visualizer.viewReferenceFrame(icpo.pose_);
+		//visualizer.viewPointCloud(icpo.curr_dense_cloud_, icpo.pose_);
+		//visualizer.viewQuantizedPointCloud(icpo.curr_dense_cloud_, 0.02, icpo.pose_);
 
-	//Default constructor
-	MotionEstimatorICP();
+		visualizer.spinOnce();
 
-	/* Main member function: estimates the motion between two point clouds as the registration transformation
-	 * between two sparse clouds of visual features. The sparse clouds are given as two vectors of 2D points,
-	 * from which the corresponding 3D points are extracted.
-	 */
-	Eigen::Affine3f estimate(const pcl::PointCloud<PointT>::Ptr tgt_dense_cloud,
-		                     const pcl::PointCloud<PointT>::Ptr src_dense_cloud);
+		//Show RGB-D image
+		imshow("Image view", frame);
+		imshow("Depth view", depth);
+		char key = waitKey(1);
+		if(key == 27 || key == 'q' || key == 'Q')
+		{
+			printf("Exiting.\n");
+			break;
+		}
+	}
 
-};
-
-#endif /* INCLUDE_MOTION_ESTIMATOR_ICP_H_ */
+	return 0;
+}

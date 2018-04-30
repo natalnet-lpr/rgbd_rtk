@@ -24,6 +24,7 @@
  *
  */
 
+#include <cstdio>
 #include <Eigen/Geometry>
 #include <pcl/common/transforms.h>
 
@@ -32,7 +33,7 @@
 using namespace std;
 
 void MotionEstimatorICP::downSampleCloud(const pcl::PointCloud<PointT>::Ptr dense_cloud,
-		                                 pcl::PointCloud<PointT> res_cloud)
+		                                 pcl::PointCloud<PointT>& res_cloud)
 {
 	float radius = 0.05;
 
