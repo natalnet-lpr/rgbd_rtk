@@ -34,7 +34,7 @@
 #include <common_types.h>
 
 /*
- * Abstract Feature Tracker class.
+ * Abstract Base Class for Feature Trackers.
  * Contains members that are common to all implementations
  * and virtual member functions that are algorithm dependent.
  *
@@ -67,6 +67,9 @@ protected:
 	//Number of inliers in the current frame
 	int num_inliers_;
 
+	//Time spent processing each operation (detection, tracking, motion estimation, etc.)
+	std::vector<float> op_time_;
+
 	//Output file with tracking information
 	std::ofstream tracking_info_;
 
@@ -85,13 +88,13 @@ protected:
 	//Sum the time spent in each operation and return the total time computing a single frame
 	float get_time_per_frame();
 
-	//Write tracking information (n. of points, inliers, etc.) to file
+	//Writes tracking information (n. of points, inliers, etc.) to file
 	bool write_tracking_info();
 
-	//Write timing information (ms spent in each operation) to file
+	//Writes timing information (ms spent in each operation) to file
 	bool write_timing_info();
 
-	//Write all current keypoints to file
+	//Writes all current keypoints to file
 	bool write_heatmap_info();
 
 	//Detects keypoints in the current frame
@@ -122,14 +125,18 @@ public:
 	std::vector<int> is_inlier_;
 
 	//Default constructor
-	virtual FeatureTracker() = 0;
+	FeatureTracker();
 
-	virtual ~FeatureTracker() = 0;
-	/*
-	 * Main member function: tracks keypoints between the current frame and the previous.
-	 * Returns true if the current frame is a keyframe.
-	 */
-	virtual bool track(cv::Mat img) = 0;
+	//Constructor with the minimum number of tracked points, maximum number of tracked points and flag to log statistics
+	FeatureTracker(const int min_pts, const int max_pts, const bool log_stats = false);
+
+	//Default destructor
+	virtual ~FeatureTracker()
+	{
+		tracking_info_.close();
+		timing_info_.close();
+		heatmap_info_.close();
+	}
 
 	/* Sets the output files for tracking and timing information.
 	 * If not called, the system will not write any information to file.
@@ -137,6 +144,12 @@ public:
 	void initialize_logger(const std::string timing_file_name,
 		                   const std::string tracking_file_name,
 			               const std::string heatmap_file_name);
+
+	/*
+	 * Main member function: tracks keypoints between the current frame and the previous.
+	 * Returns true if the current frame is a keyframe.
+	 */
+	virtual bool track(cv::Mat img) = 0;
 };
 
 #endif /* INCLUDE_FEATURE_TRACKER_H_ */

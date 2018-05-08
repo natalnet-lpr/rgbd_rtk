@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2018, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -37,8 +37,17 @@
 using namespace std;
 using namespace cv;
 
-void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts)
+void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts, bool is_kf)
 {
+	Scalar color;
+	if(is_kf)
+	{
+		color = CV_RGB(255, 0, 0);
+	}
+	else
+	{
+		color = CV_RGB(0, 255, 0);
+	}
 	for(size_t k = 0; k < curr_pts.size(); k++)
 	{
 		Point2i pt1, pt2;
@@ -47,9 +56,9 @@ void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Poin
 		pt2.x = curr_pts[k].x;
 		pt2.y = curr_pts[k].y;
 
-		circle(img, pt1, 1, CV_RGB(0,0,255), 1);
-		circle(img, pt2, 3, CV_RGB(0,255,0), 1);
-		line(img, pt1, pt2, CV_RGB(0,255,0));
+		circle(img, pt1, 1, color, 2);
+		circle(img, pt2, 3, color, 2);
+		line(img, pt1, pt2, color);
 	}
 }
 
@@ -96,9 +105,12 @@ int main(int argc, char **argv)
 	{
 		loader.getNextImage(frame, depth);
 
-		tracker.track(frame);
+		double el_time = (double) cvGetTickCount();
+		bool is_kf = tracker.track(frame);
+		el_time = ((double) cvGetTickCount() - el_time)/(cvGetTickFrequency()*1000.0);
+		printf("Tracking time: %f ms\n", el_time);
 		
-		draw_last_track(frame, tracker.prev_pts_, tracker.curr_pts_);
+		draw_last_track(frame, tracker.prev_pts_, tracker.curr_pts_, is_kf);
 		//draw_tracks(frame, tracker.tracklets_);
 
 		imshow("Image view", frame);
