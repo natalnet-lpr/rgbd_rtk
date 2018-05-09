@@ -12,6 +12,7 @@ add_executable(event_logger_test event_logger_test.cpp)
 add_executable(klt_tracker_test klt_tracker_test.cpp)
 add_executable(klttw_tracker_test klttw_tracker_test.cpp)
 add_executable(klttcw_tracker_test klttcw_tracker_test.cpp)
+add_executable(kltatcw_tracker_test kltatcw_tracker_test.cpp)
 add_executable(motion_estimator_test motion_estimator_test.cpp)
 add_executable(optical_flow_visual_odometry_test optical_flow_visual_odometry_test.cpp)
 add_executable(icp_odometry_test icp_odometry_test.cpp)
@@ -38,6 +39,7 @@ target_link_libraries(event_logger_test ${RGBD_RTK_COMMON} ${RGBD_RTK_IO})
 target_link_libraries(klt_tracker_test ${RGBD_RTK_COMMON} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING})
 target_link_libraries(klttw_tracker_test ${RGBD_RTK_COMMON} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING})
 target_link_libraries(klttcw_tracker_test ${RGBD_RTK_COMMON} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING})
+target_link_libraries(kltatcw_tracker_test ${RGBD_RTK_COMMON} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING})
 target_link_libraries(motion_estimator_test  ${PCL_LIBRARIES}
                                              ${RGBD_RTK_COMMON} ${RGBD_RTK_IO}
                                              ${RGBD_RTK_TRACKING} ${RGBD_RTK_VISUALIZATION}
@@ -71,6 +73,7 @@ install(TARGETS monocular_calibration
                 klt_tracker_test
                 klttw_tracker_test
                 klttcw_tracker_test
+                kltatcw_tracker_test
                 motion_estimator_test
                 optical_flow_visual_odometry_test
 				icp_odometry_test
