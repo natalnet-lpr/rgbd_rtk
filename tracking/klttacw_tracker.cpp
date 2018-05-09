@@ -71,7 +71,7 @@ void KLTTrackerACW::radius_size(int i){
 
 						
 						
-		radius[i]=tracklets_[i].pts2D_.size();	
+		radius[i]+=0.0005;	
 		if(radius[i]>radius_max)
 		{	
 			radius[i]=radius_max;
