@@ -24,8 +24,8 @@
  *
  */
 
-#ifndef INCLUDE_KLTCW_TRACKER_H_
-#define INCLUDE_KLTCW_TRACKER_H_
+#ifndef INCLUDE_KLTTCW_TRACKER_H_
+#define INCLUDE_KLTTCW_TRACKER_H_
 
 #include <vector>
 #include <fstream>
@@ -36,14 +36,14 @@
 
  /*
  * Short Baseline Feature Tracker extension:
- * Kanade-Lucas-Tomasi (KLT) with Circular Windows.
+ * Kanade-Lucas-Tomasi (KLT) with Tracking Circular Windows.
  *
  * Author: Luiz Felipe Maciel Correia
  * y9luiz@hotmail.com
  * Author: Bruno Marques F. da Silva
  * brunomfs@gmail.com
  */
-class KLTCWTracker : public FeatureTracker
+class KLTTCWTracker : public FeatureTracker
 {
 
 protected:
@@ -73,10 +73,10 @@ public:
 	float window_radius_;
 
 	//Default constructor
-	KLTCWTracker();
+	KLTTCWTracker();
 
 	//Constructor with the minimum number of tracked points, maximum number of tracked points, radius of tracking circles and flag to log statistics
-	KLTCWTracker(const int min_pts, const int max_pts, const float radius, const bool log_stats = false);
+	KLTTCWTracker(const int min_pts, const int max_pts, const float radius, const bool log_stats = false);
 
 	/*
 	 * Main member function: tracks keypoints between the current frame and the previous.
@@ -85,4 +85,4 @@ public:
 	bool track(cv::Mat img);
 };
 
-#endif /* INCLUDE_KLTCW_TRACKER_H_ */
+#endif /* INCLUDE_KLTTCW_TRACKER_H_ */
