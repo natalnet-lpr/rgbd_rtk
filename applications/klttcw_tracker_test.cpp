@@ -31,7 +31,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 
 #include <rgbd_loader.h>
-#include <kltcw_tracker.h>
+#include <klttcw_tracker.h>
 #include <common_types.h>
 
 using namespace std;
@@ -76,7 +76,7 @@ int main(int argc, char **argv)
 {
 	string index_file_name;
 	RGBDLoader loader;
-	KLTCWTracker tracker;
+	KLTTCWTracker tracker;
 
 	Mat frame, depth;
 

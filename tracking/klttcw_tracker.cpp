@@ -35,7 +35,7 @@
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/video/video.hpp>
 
-#include <kltcw_tracker.h>
+#include <klttcw_tracker.h>
 
 using namespace std;
 using namespace cv;
@@ -69,7 +69,7 @@ bool is_inside_any_window(const vector<Point2f> tracked_pts, const Point2f pt, c
  * #####################################################
  */
 
-void KLTCWTracker::detect_keypoints()
+void KLTTCWTracker::detect_keypoints()
 {
 	//Detect Shi-Tomasi keypoints and add them to a temporary buffer.
 	//The buffer is erased at the end of add_keypoints()
@@ -80,7 +80,7 @@ void KLTCWTracker::detect_keypoints()
 	#endif
 }
 
-void KLTCWTracker::add_keypoints()
+void KLTTCWTracker::add_keypoints()
 {
 	rejected_points_.clear();
 
@@ -129,12 +129,12 @@ void KLTCWTracker::add_keypoints()
 	added_pts_.clear();
 }
 
-void KLTCWTracker::update_buffers()
+void KLTTCWTracker::update_buffers()
 {
 	std::swap(curr_pts_, prev_pts_);
 }
 
-bool KLTCWTracker::trigger_keyframe()
+bool KLTTCWTracker::trigger_keyframe()
 {
 	float factor = 0.2;
 	size_t Nk = num_points_last_kf_;
@@ -162,7 +162,7 @@ bool KLTCWTracker::trigger_keyframe()
  * #####################################################
  */
 
-KLTCWTracker::KLTCWTracker() :
+KLTTCWTracker::KLTTCWTracker() :
 	num_points_last_kf_(0)
 {
 	//Calls FeatureTracker default constructor
@@ -171,7 +171,7 @@ KLTCWTracker::KLTCWTracker() :
 	window_radius_ = 20;
 }
 
-KLTCWTracker::KLTCWTracker(const int min_pts, const int max_pts, const float radius, const bool log_stats) :
+KLTTCWTracker::KLTTCWTracker(const int min_pts, const int max_pts, const float radius, const bool log_stats) :
 	FeatureTracker(min_pts, max_pts, log_stats),
 	num_points_last_kf_(0),
 	window_radius_(radius)
@@ -179,7 +179,7 @@ KLTCWTracker::KLTCWTracker(const int min_pts, const int max_pts, const float rad
 	
 }
 
-bool KLTCWTracker::track(Mat curr_frame)
+bool KLTTCWTracker::track(Mat curr_frame)
 {
 	//Make a grayscale copy of the current frame
 	cvtColor(curr_frame, curr_frame_gray_, CV_BGR2GRAY);
