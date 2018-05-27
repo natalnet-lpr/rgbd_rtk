@@ -52,7 +52,7 @@ pcl/registration/transforms.h
 pcl/visualization/pcl_visualizer.h
 -
 
-/home/luiz/Área de Trabalho/rgbd_rtk-master/applications/motion_estimator_icp_test.cpp
+/home/luiz/Downloads/rgbd_rtk-quadtree_branch/applications/motion_estimator_icp_test.cpp
 cstdio
 -
 cstdlib

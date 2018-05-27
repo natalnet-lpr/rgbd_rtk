@@ -3,21 +3,9 @@
 
 applications/CMakeFiles/klttacw_tracker_test.dir/klttacw_tracker_test.cpp.o
  ../common/common_types.h
- ../tracking/graph.h
  ../tracking/klttacw_tracker.h
- /home/luiz/Área de Trabalho/rgbd_rtk-master/applications/klttacw_tracker_test.cpp
- /usr/local/include/eigen3/Eigen/Cholesky
+ /home/luiz/Downloads/rgbd_rtk-quadtree_branch/applications/klttacw_tracker_test.cpp
  /usr/local/include/eigen3/Eigen/Core
- /usr/local/include/eigen3/Eigen/Geometry
- /usr/local/include/eigen3/Eigen/Householder
- /usr/local/include/eigen3/Eigen/Jacobi
- /usr/local/include/eigen3/Eigen/LU
- /usr/local/include/eigen3/Eigen/QR
- /usr/local/include/eigen3/Eigen/SVD
- /usr/local/include/eigen3/Eigen/StdVector
- /usr/local/include/eigen3/Eigen/src/Cholesky/LDLT.h
- /usr/local/include/eigen3/Eigen/src/Cholesky/LLT.h
- /usr/local/include/eigen3/Eigen/src/Cholesky/LLT_LAPACKE.h
  /usr/local/include/eigen3/Eigen/src/Core/Array.h
  /usr/local/include/eigen3/Eigen/src/Core/ArrayBase.h
  /usr/local/include/eigen3/Eigen/src/Core/ArrayWrapper.h
@@ -148,50 +136,8 @@ applications/CMakeFiles/klttacw_tracker_test.dir/klttacw_tracker_test.cpp.o
  /usr/local/include/eigen3/Eigen/src/Core/util/ReenableStupidWarnings.h
  /usr/local/include/eigen3/Eigen/src/Core/util/StaticAssert.h
  /usr/local/include/eigen3/Eigen/src/Core/util/XprHelper.h
- /usr/local/include/eigen3/Eigen/src/Geometry/AlignedBox.h
- /usr/local/include/eigen3/Eigen/src/Geometry/AngleAxis.h
- /usr/local/include/eigen3/Eigen/src/Geometry/EulerAngles.h
- /usr/local/include/eigen3/Eigen/src/Geometry/Homogeneous.h
- /usr/local/include/eigen3/Eigen/src/Geometry/Hyperplane.h
- /usr/local/include/eigen3/Eigen/src/Geometry/OrthoMethods.h
- /usr/local/include/eigen3/Eigen/src/Geometry/ParametrizedLine.h
- /usr/local/include/eigen3/Eigen/src/Geometry/Quaternion.h
- /usr/local/include/eigen3/Eigen/src/Geometry/Rotation2D.h
- /usr/local/include/eigen3/Eigen/src/Geometry/RotationBase.h
- /usr/local/include/eigen3/Eigen/src/Geometry/Scaling.h
- /usr/local/include/eigen3/Eigen/src/Geometry/Transform.h
- /usr/local/include/eigen3/Eigen/src/Geometry/Translation.h
- /usr/local/include/eigen3/Eigen/src/Geometry/Umeyama.h
- /usr/local/include/eigen3/Eigen/src/Geometry/arch/Geometry_SSE.h
- /usr/local/include/eigen3/Eigen/src/Householder/BlockHouseholder.h
- /usr/local/include/eigen3/Eigen/src/Householder/Householder.h
- /usr/local/include/eigen3/Eigen/src/Householder/HouseholderSequence.h
- /usr/local/include/eigen3/Eigen/src/Jacobi/Jacobi.h
- /usr/local/include/eigen3/Eigen/src/LU/Determinant.h
- /usr/local/include/eigen3/Eigen/src/LU/FullPivLU.h
- /usr/local/include/eigen3/Eigen/src/LU/InverseImpl.h
- /usr/local/include/eigen3/Eigen/src/LU/PartialPivLU.h
- /usr/local/include/eigen3/Eigen/src/LU/PartialPivLU_LAPACKE.h
- /usr/local/include/eigen3/Eigen/src/LU/arch/Inverse_SSE.h
- /usr/local/include/eigen3/Eigen/src/QR/ColPivHouseholderQR.h
- /usr/local/include/eigen3/Eigen/src/QR/ColPivHouseholderQR_LAPACKE.h
- /usr/local/include/eigen3/Eigen/src/QR/CompleteOrthogonalDecomposition.h
- /usr/local/include/eigen3/Eigen/src/QR/FullPivHouseholderQR.h
- /usr/local/include/eigen3/Eigen/src/QR/HouseholderQR.h
- /usr/local/include/eigen3/Eigen/src/QR/HouseholderQR_LAPACKE.h
- /usr/local/include/eigen3/Eigen/src/SVD/BDCSVD.h
- /usr/local/include/eigen3/Eigen/src/SVD/JacobiSVD.h
- /usr/local/include/eigen3/Eigen/src/SVD/JacobiSVD_LAPACKE.h
- /usr/local/include/eigen3/Eigen/src/SVD/SVDBase.h
- /usr/local/include/eigen3/Eigen/src/SVD/UpperBidiagonalization.h
- /usr/local/include/eigen3/Eigen/src/StlSupport/StdVector.h
  /usr/local/include/eigen3/Eigen/src/StlSupport/details.h
- /usr/local/include/eigen3/Eigen/src/misc/Image.h
- /usr/local/include/eigen3/Eigen/src/misc/Kernel.h
- /usr/local/include/eigen3/Eigen/src/misc/RealSvd2x2.h
  /usr/local/include/eigen3/Eigen/src/misc/blas.h
- /usr/local/include/eigen3/Eigen/src/misc/lapacke.h
- /usr/local/include/eigen3/Eigen/src/misc/lapacke_mangling.h
  /usr/local/include/eigen3/Eigen/src/plugins/ArrayCwiseBinaryOps.h
  /usr/local/include/eigen3/Eigen/src/plugins/ArrayCwiseUnaryOps.h
  /usr/local/include/eigen3/Eigen/src/plugins/BlockMethods.h
@@ -210,16 +156,11 @@ applications/CMakeFiles/klttacw_tracker_test.dir/klttacw_tracker_test.cpp.o
  /usr/local/include/opencv2/highgui/highgui_c.h
  /usr/local/include/opencv2/imgproc/imgproc.hpp
  /usr/local/include/opencv2/imgproc/types_c.h
- /usr/local/include/pcl-1.8/pcl/PCLHeader.h
  /usr/local/include/pcl-1.8/pcl/PCLPointField.h
  /usr/local/include/pcl-1.8/pcl/common/point_tests.h
- /usr/local/include/pcl-1.8/pcl/correspondence.h
- /usr/local/include/pcl-1.8/pcl/exceptions.h
  /usr/local/include/pcl-1.8/pcl/impl/point_types.hpp
  /usr/local/include/pcl-1.8/pcl/pcl_config.h
- /usr/local/include/pcl-1.8/pcl/pcl_exports.h
  /usr/local/include/pcl-1.8/pcl/pcl_macros.h
- /usr/local/include/pcl-1.8/pcl/point_cloud.h
  /usr/local/include/pcl-1.8/pcl/point_traits.h
  /usr/local/include/pcl-1.8/pcl/point_types.h
  /usr/local/include/pcl-1.8/pcl/register_point_struct.h

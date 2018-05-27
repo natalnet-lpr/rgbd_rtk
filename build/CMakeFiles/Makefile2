@@ -50,10 +50,60 @@ EQUALS = =
 CMAKE_EDIT_COMMAND = /usr/bin/cmake-gui
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = "/home/luiz/Área de Trabalho/rgbd_rtk-master"
+CMAKE_SOURCE_DIR = /home/luiz/Downloads/rgbd_rtk-quadtree_branch
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = "/home/luiz/Área de Trabalho/rgbd_rtk-master/build"
+CMAKE_BINARY_DIR = /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build
+
+#=============================================================================
+# Directory level rules for directory quadtree
+
+# Convenience name for "all" pass in the directory.
+quadtree/all: quadtree/CMakeFiles/rgbd_rtk_quadtree.dir/all
+.PHONY : quadtree/all
+
+# Convenience name for "clean" pass in the directory.
+quadtree/clean: quadtree/CMakeFiles/rgbd_rtk_quadtree.dir/clean
+.PHONY : quadtree/clean
+
+# Convenience name for "preinstall" pass in the directory.
+quadtree/preinstall:
+.PHONY : quadtree/preinstall
+
+#=============================================================================
+# Target rules for target quadtree/CMakeFiles/rgbd_rtk_quadtree.dir
+
+# All Build rule for target.
+quadtree/CMakeFiles/rgbd_rtk_quadtree.dir/all:
+	$(MAKE) -f quadtree/CMakeFiles/rgbd_rtk_quadtree.dir/build.make quadtree/CMakeFiles/rgbd_rtk_quadtree.dir/depend
+	$(MAKE) -f quadtree/CMakeFiles/rgbd_rtk_quadtree.dir/build.make quadtree/CMakeFiles/rgbd_rtk_quadtree.dir/build
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles  15
+	@echo "Built target rgbd_rtk_quadtree"
+.PHONY : quadtree/CMakeFiles/rgbd_rtk_quadtree.dir/all
+
+# Include target in all.
+all: quadtree/CMakeFiles/rgbd_rtk_quadtree.dir/all
+.PHONY : all
+
+# Build rule for subdir invocation for target.
+quadtree/CMakeFiles/rgbd_rtk_quadtree.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles 1
+	$(MAKE) -f CMakeFiles/Makefile2 quadtree/CMakeFiles/rgbd_rtk_quadtree.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles 0
+.PHONY : quadtree/CMakeFiles/rgbd_rtk_quadtree.dir/rule
+
+# Convenience name for target.
+rgbd_rtk_quadtree: quadtree/CMakeFiles/rgbd_rtk_quadtree.dir/rule
+.PHONY : rgbd_rtk_quadtree
+
+# clean rule for target.
+quadtree/CMakeFiles/rgbd_rtk_quadtree.dir/clean:
+	$(MAKE) -f quadtree/CMakeFiles/rgbd_rtk_quadtree.dir/build.make quadtree/CMakeFiles/rgbd_rtk_quadtree.dir/clean
+.PHONY : quadtree/CMakeFiles/rgbd_rtk_quadtree.dir/clean
+
+# clean rule for target.
+clean: quadtree/CMakeFiles/rgbd_rtk_quadtree.dir/clean
+.PHONY : clean
 
 #=============================================================================
 # Directory level rules for directory io
@@ -77,7 +127,7 @@ io/preinstall:
 io/CMakeFiles/rgbd_rtk_io.dir/all:
 	$(MAKE) -f io/CMakeFiles/rgbd_rtk_io.dir/build.make io/CMakeFiles/rgbd_rtk_io.dir/depend
 	$(MAKE) -f io/CMakeFiles/rgbd_rtk_io.dir/build.make io/CMakeFiles/rgbd_rtk_io.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles"  11 12
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles  11 12
 	@echo "Built target rgbd_rtk_io"
 .PHONY : io/CMakeFiles/rgbd_rtk_io.dir/all
 
@@ -87,9 +137,9 @@ all: io/CMakeFiles/rgbd_rtk_io.dir/all
 
 # Build rule for subdir invocation for target.
 io/CMakeFiles/rgbd_rtk_io.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles" 2
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles 2
 	$(MAKE) -f CMakeFiles/Makefile2 io/CMakeFiles/rgbd_rtk_io.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles" 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles 0
 .PHONY : io/CMakeFiles/rgbd_rtk_io.dir/rule
 
 # Convenience name for target.
@@ -127,7 +177,7 @@ tracking/preinstall:
 tracking/CMakeFiles/rgbd_rtk_tracking.dir/all:
 	$(MAKE) -f tracking/CMakeFiles/rgbd_rtk_tracking.dir/build.make tracking/CMakeFiles/rgbd_rtk_tracking.dir/depend
 	$(MAKE) -f tracking/CMakeFiles/rgbd_rtk_tracking.dir/build.make tracking/CMakeFiles/rgbd_rtk_tracking.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles"  15 16 17 18 19
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles  16 17 18 19
 	@echo "Built target rgbd_rtk_tracking"
 .PHONY : tracking/CMakeFiles/rgbd_rtk_tracking.dir/all
 
@@ -137,9 +187,9 @@ all: tracking/CMakeFiles/rgbd_rtk_tracking.dir/all
 
 # Build rule for subdir invocation for target.
 tracking/CMakeFiles/rgbd_rtk_tracking.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles" 5
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles 4
 	$(MAKE) -f CMakeFiles/Makefile2 tracking/CMakeFiles/rgbd_rtk_tracking.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles" 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles 0
 .PHONY : tracking/CMakeFiles/rgbd_rtk_tracking.dir/rule
 
 # Convenience name for target.
@@ -177,7 +227,7 @@ common/preinstall:
 common/CMakeFiles/rgbd_rtk_common.dir/all:
 	$(MAKE) -f common/CMakeFiles/rgbd_rtk_common.dir/build.make common/CMakeFiles/rgbd_rtk_common.dir/depend
 	$(MAKE) -f common/CMakeFiles/rgbd_rtk_common.dir/build.make common/CMakeFiles/rgbd_rtk_common.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles"  10
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles  10
 	@echo "Built target rgbd_rtk_common"
 .PHONY : common/CMakeFiles/rgbd_rtk_common.dir/all
 
@@ -187,9 +237,9 @@ all: common/CMakeFiles/rgbd_rtk_common.dir/all
 
 # Build rule for subdir invocation for target.
 common/CMakeFiles/rgbd_rtk_common.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles" 1
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles 1
 	$(MAKE) -f CMakeFiles/Makefile2 common/CMakeFiles/rgbd_rtk_common.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles" 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles 0
 .PHONY : common/CMakeFiles/rgbd_rtk_common.dir/rule
 
 # Convenience name for target.
@@ -227,7 +277,7 @@ visualization/preinstall:
 visualization/CMakeFiles/rgbd_rtk_visualization.dir/all:
 	$(MAKE) -f visualization/CMakeFiles/rgbd_rtk_visualization.dir/build.make visualization/CMakeFiles/rgbd_rtk_visualization.dir/depend
 	$(MAKE) -f visualization/CMakeFiles/rgbd_rtk_visualization.dir/build.make visualization/CMakeFiles/rgbd_rtk_visualization.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles"  20
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles  20
 	@echo "Built target rgbd_rtk_visualization"
 .PHONY : visualization/CMakeFiles/rgbd_rtk_visualization.dir/all
 
@@ -237,9 +287,9 @@ all: visualization/CMakeFiles/rgbd_rtk_visualization.dir/all
 
 # Build rule for subdir invocation for target.
 visualization/CMakeFiles/rgbd_rtk_visualization.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles" 1
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles 1
 	$(MAKE) -f CMakeFiles/Makefile2 visualization/CMakeFiles/rgbd_rtk_visualization.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles" 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles 0
 .PHONY : visualization/CMakeFiles/rgbd_rtk_visualization.dir/rule
 
 # Convenience name for target.
@@ -277,7 +327,7 @@ motion_estimation/preinstall:
 motion_estimation/CMakeFiles/rgbd_rtk_motion_estimation.dir/all: common/CMakeFiles/rgbd_rtk_common.dir/all
 	$(MAKE) -f motion_estimation/CMakeFiles/rgbd_rtk_motion_estimation.dir/build.make motion_estimation/CMakeFiles/rgbd_rtk_motion_estimation.dir/depend
 	$(MAKE) -f motion_estimation/CMakeFiles/rgbd_rtk_motion_estimation.dir/build.make motion_estimation/CMakeFiles/rgbd_rtk_motion_estimation.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles"  13 14
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles  13 14
 	@echo "Built target rgbd_rtk_motion_estimation"
 .PHONY : motion_estimation/CMakeFiles/rgbd_rtk_motion_estimation.dir/all
 
@@ -287,9 +337,9 @@ all: motion_estimation/CMakeFiles/rgbd_rtk_motion_estimation.dir/all
 
 # Build rule for subdir invocation for target.
 motion_estimation/CMakeFiles/rgbd_rtk_motion_estimation.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles" 3
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles 3
 	$(MAKE) -f CMakeFiles/Makefile2 motion_estimation/CMakeFiles/rgbd_rtk_motion_estimation.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles" 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles 0
 .PHONY : motion_estimation/CMakeFiles/rgbd_rtk_motion_estimation.dir/rule
 
 # Convenience name for target.
@@ -342,11 +392,12 @@ applications/preinstall:
 # Target rules for target applications/CMakeFiles/klt_tracker_test.dir
 
 # All Build rule for target.
-applications/CMakeFiles/klt_tracker_test.dir/all: tracking/CMakeFiles/rgbd_rtk_tracking.dir/all
+applications/CMakeFiles/klt_tracker_test.dir/all: quadtree/CMakeFiles/rgbd_rtk_quadtree.dir/all
 applications/CMakeFiles/klt_tracker_test.dir/all: io/CMakeFiles/rgbd_rtk_io.dir/all
+applications/CMakeFiles/klt_tracker_test.dir/all: tracking/CMakeFiles/rgbd_rtk_tracking.dir/all
 	$(MAKE) -f applications/CMakeFiles/klt_tracker_test.dir/build.make applications/CMakeFiles/klt_tracker_test.dir/depend
 	$(MAKE) -f applications/CMakeFiles/klt_tracker_test.dir/build.make applications/CMakeFiles/klt_tracker_test.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles"  1
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles  1
 	@echo "Built target klt_tracker_test"
 .PHONY : applications/CMakeFiles/klt_tracker_test.dir/all
 
@@ -356,9 +407,9 @@ all: applications/CMakeFiles/klt_tracker_test.dir/all
 
 # Build rule for subdir invocation for target.
 applications/CMakeFiles/klt_tracker_test.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles" 8
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles 8
 	$(MAKE) -f CMakeFiles/Makefile2 applications/CMakeFiles/klt_tracker_test.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles" 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles 0
 .PHONY : applications/CMakeFiles/klt_tracker_test.dir/rule
 
 # Convenience name for target.
@@ -378,11 +429,11 @@ clean: applications/CMakeFiles/klt_tracker_test.dir/clean
 # Target rules for target applications/CMakeFiles/klttacw_tracker_test.dir
 
 # All Build rule for target.
-applications/CMakeFiles/klttacw_tracker_test.dir/all: tracking/CMakeFiles/rgbd_rtk_tracking.dir/all
 applications/CMakeFiles/klttacw_tracker_test.dir/all: io/CMakeFiles/rgbd_rtk_io.dir/all
+applications/CMakeFiles/klttacw_tracker_test.dir/all: tracking/CMakeFiles/rgbd_rtk_tracking.dir/all
 	$(MAKE) -f applications/CMakeFiles/klttacw_tracker_test.dir/build.make applications/CMakeFiles/klttacw_tracker_test.dir/depend
 	$(MAKE) -f applications/CMakeFiles/klttacw_tracker_test.dir/build.make applications/CMakeFiles/klttacw_tracker_test.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles"  2
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles  2
 	@echo "Built target klttacw_tracker_test"
 .PHONY : applications/CMakeFiles/klttacw_tracker_test.dir/all
 
@@ -392,9 +443,9 @@ all: applications/CMakeFiles/klttacw_tracker_test.dir/all
 
 # Build rule for subdir invocation for target.
 applications/CMakeFiles/klttacw_tracker_test.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles" 8
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles 7
 	$(MAKE) -f CMakeFiles/Makefile2 applications/CMakeFiles/klttacw_tracker_test.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles" 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles 0
 .PHONY : applications/CMakeFiles/klttacw_tracker_test.dir/rule
 
 # Convenience name for target.
@@ -414,11 +465,11 @@ clean: applications/CMakeFiles/klttacw_tracker_test.dir/clean
 # Target rules for target applications/CMakeFiles/klttcw_tracker_test.dir
 
 # All Build rule for target.
-applications/CMakeFiles/klttcw_tracker_test.dir/all: tracking/CMakeFiles/rgbd_rtk_tracking.dir/all
 applications/CMakeFiles/klttcw_tracker_test.dir/all: io/CMakeFiles/rgbd_rtk_io.dir/all
+applications/CMakeFiles/klttcw_tracker_test.dir/all: tracking/CMakeFiles/rgbd_rtk_tracking.dir/all
 	$(MAKE) -f applications/CMakeFiles/klttcw_tracker_test.dir/build.make applications/CMakeFiles/klttcw_tracker_test.dir/depend
 	$(MAKE) -f applications/CMakeFiles/klttcw_tracker_test.dir/build.make applications/CMakeFiles/klttcw_tracker_test.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles"  3
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles  3
 	@echo "Built target klttcw_tracker_test"
 .PHONY : applications/CMakeFiles/klttcw_tracker_test.dir/all
 
@@ -428,9 +479,9 @@ all: applications/CMakeFiles/klttcw_tracker_test.dir/all
 
 # Build rule for subdir invocation for target.
 applications/CMakeFiles/klttcw_tracker_test.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles" 8
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles 7
 	$(MAKE) -f CMakeFiles/Makefile2 applications/CMakeFiles/klttcw_tracker_test.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles" 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles 0
 .PHONY : applications/CMakeFiles/klttcw_tracker_test.dir/rule
 
 # Convenience name for target.
@@ -450,11 +501,11 @@ clean: applications/CMakeFiles/klttcw_tracker_test.dir/clean
 # Target rules for target applications/CMakeFiles/klttw_tracker_test.dir
 
 # All Build rule for target.
-applications/CMakeFiles/klttw_tracker_test.dir/all: tracking/CMakeFiles/rgbd_rtk_tracking.dir/all
 applications/CMakeFiles/klttw_tracker_test.dir/all: io/CMakeFiles/rgbd_rtk_io.dir/all
+applications/CMakeFiles/klttw_tracker_test.dir/all: tracking/CMakeFiles/rgbd_rtk_tracking.dir/all
 	$(MAKE) -f applications/CMakeFiles/klttw_tracker_test.dir/build.make applications/CMakeFiles/klttw_tracker_test.dir/depend
 	$(MAKE) -f applications/CMakeFiles/klttw_tracker_test.dir/build.make applications/CMakeFiles/klttw_tracker_test.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles"  4
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles  4
 	@echo "Built target klttw_tracker_test"
 .PHONY : applications/CMakeFiles/klttw_tracker_test.dir/all
 
@@ -464,9 +515,9 @@ all: applications/CMakeFiles/klttw_tracker_test.dir/all
 
 # Build rule for subdir invocation for target.
 applications/CMakeFiles/klttw_tracker_test.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles" 8
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles 7
 	$(MAKE) -f CMakeFiles/Makefile2 applications/CMakeFiles/klttw_tracker_test.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles" 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles 0
 .PHONY : applications/CMakeFiles/klttw_tracker_test.dir/rule
 
 # Convenience name for target.
@@ -489,7 +540,7 @@ clean: applications/CMakeFiles/klttw_tracker_test.dir/clean
 applications/CMakeFiles/monocular_calibration.dir/all:
 	$(MAKE) -f applications/CMakeFiles/monocular_calibration.dir/build.make applications/CMakeFiles/monocular_calibration.dir/depend
 	$(MAKE) -f applications/CMakeFiles/monocular_calibration.dir/build.make applications/CMakeFiles/monocular_calibration.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles"  5
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles  5
 	@echo "Built target monocular_calibration"
 .PHONY : applications/CMakeFiles/monocular_calibration.dir/all
 
@@ -499,9 +550,9 @@ all: applications/CMakeFiles/monocular_calibration.dir/all
 
 # Build rule for subdir invocation for target.
 applications/CMakeFiles/monocular_calibration.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles" 1
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles 1
 	$(MAKE) -f CMakeFiles/Makefile2 applications/CMakeFiles/monocular_calibration.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles" 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles 0
 .PHONY : applications/CMakeFiles/monocular_calibration.dir/rule
 
 # Convenience name for target.
@@ -524,7 +575,7 @@ clean: applications/CMakeFiles/monocular_calibration.dir/clean
 applications/CMakeFiles/monocular_image_grabber.dir/all:
 	$(MAKE) -f applications/CMakeFiles/monocular_image_grabber.dir/build.make applications/CMakeFiles/monocular_image_grabber.dir/depend
 	$(MAKE) -f applications/CMakeFiles/monocular_image_grabber.dir/build.make applications/CMakeFiles/monocular_image_grabber.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles"  6
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles  6
 	@echo "Built target monocular_image_grabber"
 .PHONY : applications/CMakeFiles/monocular_image_grabber.dir/all
 
@@ -534,9 +585,9 @@ all: applications/CMakeFiles/monocular_image_grabber.dir/all
 
 # Build rule for subdir invocation for target.
 applications/CMakeFiles/monocular_image_grabber.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles" 1
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles 1
 	$(MAKE) -f CMakeFiles/Makefile2 applications/CMakeFiles/monocular_image_grabber.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles" 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles 0
 .PHONY : applications/CMakeFiles/monocular_image_grabber.dir/rule
 
 # Convenience name for target.
@@ -556,13 +607,13 @@ clean: applications/CMakeFiles/monocular_image_grabber.dir/clean
 # Target rules for target applications/CMakeFiles/motion_estimator_icp_test.dir
 
 # All Build rule for target.
-applications/CMakeFiles/motion_estimator_icp_test.dir/all: visualization/CMakeFiles/rgbd_rtk_visualization.dir/all
-applications/CMakeFiles/motion_estimator_icp_test.dir/all: motion_estimation/CMakeFiles/rgbd_rtk_motion_estimation.dir/all
 applications/CMakeFiles/motion_estimator_icp_test.dir/all: common/CMakeFiles/rgbd_rtk_common.dir/all
 applications/CMakeFiles/motion_estimator_icp_test.dir/all: io/CMakeFiles/rgbd_rtk_io.dir/all
+applications/CMakeFiles/motion_estimator_icp_test.dir/all: visualization/CMakeFiles/rgbd_rtk_visualization.dir/all
+applications/CMakeFiles/motion_estimator_icp_test.dir/all: motion_estimation/CMakeFiles/rgbd_rtk_motion_estimation.dir/all
 	$(MAKE) -f applications/CMakeFiles/motion_estimator_icp_test.dir/build.make applications/CMakeFiles/motion_estimator_icp_test.dir/depend
 	$(MAKE) -f applications/CMakeFiles/motion_estimator_icp_test.dir/build.make applications/CMakeFiles/motion_estimator_icp_test.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles"  7
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles  7
 	@echo "Built target motion_estimator_icp_test"
 .PHONY : applications/CMakeFiles/motion_estimator_icp_test.dir/all
 
@@ -572,9 +623,9 @@ all: applications/CMakeFiles/motion_estimator_icp_test.dir/all
 
 # Build rule for subdir invocation for target.
 applications/CMakeFiles/motion_estimator_icp_test.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles" 7
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles 7
 	$(MAKE) -f CMakeFiles/Makefile2 applications/CMakeFiles/motion_estimator_icp_test.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles" 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles 0
 .PHONY : applications/CMakeFiles/motion_estimator_icp_test.dir/rule
 
 # Convenience name for target.
@@ -594,14 +645,14 @@ clean: applications/CMakeFiles/motion_estimator_icp_test.dir/clean
 # Target rules for target applications/CMakeFiles/motion_estimator_test.dir
 
 # All Build rule for target.
-applications/CMakeFiles/motion_estimator_test.dir/all: visualization/CMakeFiles/rgbd_rtk_visualization.dir/all
-applications/CMakeFiles/motion_estimator_test.dir/all: motion_estimation/CMakeFiles/rgbd_rtk_motion_estimation.dir/all
-applications/CMakeFiles/motion_estimator_test.dir/all: tracking/CMakeFiles/rgbd_rtk_tracking.dir/all
 applications/CMakeFiles/motion_estimator_test.dir/all: common/CMakeFiles/rgbd_rtk_common.dir/all
 applications/CMakeFiles/motion_estimator_test.dir/all: io/CMakeFiles/rgbd_rtk_io.dir/all
+applications/CMakeFiles/motion_estimator_test.dir/all: tracking/CMakeFiles/rgbd_rtk_tracking.dir/all
+applications/CMakeFiles/motion_estimator_test.dir/all: visualization/CMakeFiles/rgbd_rtk_visualization.dir/all
+applications/CMakeFiles/motion_estimator_test.dir/all: motion_estimation/CMakeFiles/rgbd_rtk_motion_estimation.dir/all
 	$(MAKE) -f applications/CMakeFiles/motion_estimator_test.dir/build.make applications/CMakeFiles/motion_estimator_test.dir/depend
 	$(MAKE) -f applications/CMakeFiles/motion_estimator_test.dir/build.make applications/CMakeFiles/motion_estimator_test.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles"  8
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles  8
 	@echo "Built target motion_estimator_test"
 .PHONY : applications/CMakeFiles/motion_estimator_test.dir/all
 
@@ -611,9 +662,9 @@ all: applications/CMakeFiles/motion_estimator_test.dir/all
 
 # Build rule for subdir invocation for target.
 applications/CMakeFiles/motion_estimator_test.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles" 12
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles 11
 	$(MAKE) -f CMakeFiles/Makefile2 applications/CMakeFiles/motion_estimator_test.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles" 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles 0
 .PHONY : applications/CMakeFiles/motion_estimator_test.dir/rule
 
 # Convenience name for target.
@@ -636,7 +687,7 @@ clean: applications/CMakeFiles/motion_estimator_test.dir/clean
 applications/CMakeFiles/rgbd_loader_test.dir/all: io/CMakeFiles/rgbd_rtk_io.dir/all
 	$(MAKE) -f applications/CMakeFiles/rgbd_loader_test.dir/build.make applications/CMakeFiles/rgbd_loader_test.dir/depend
 	$(MAKE) -f applications/CMakeFiles/rgbd_loader_test.dir/build.make applications/CMakeFiles/rgbd_loader_test.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles"  9
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles  9
 	@echo "Built target rgbd_loader_test"
 .PHONY : applications/CMakeFiles/rgbd_loader_test.dir/all
 
@@ -646,9 +697,9 @@ all: applications/CMakeFiles/rgbd_loader_test.dir/all
 
 # Build rule for subdir invocation for target.
 applications/CMakeFiles/rgbd_loader_test.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles" 3
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles 3
 	$(MAKE) -f CMakeFiles/Makefile2 applications/CMakeFiles/rgbd_loader_test.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles" 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles 0
 .PHONY : applications/CMakeFiles/rgbd_loader_test.dir/rule
 
 # Convenience name for target.
@@ -671,7 +722,7 @@ clean: applications/CMakeFiles/rgbd_loader_test.dir/clean
 applications/CMakeFiles/sequence_loader_test.dir/all: io/CMakeFiles/rgbd_rtk_io.dir/all
 	$(MAKE) -f applications/CMakeFiles/sequence_loader_test.dir/build.make applications/CMakeFiles/sequence_loader_test.dir/depend
 	$(MAKE) -f applications/CMakeFiles/sequence_loader_test.dir/build.make applications/CMakeFiles/sequence_loader_test.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles"  21
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles  21
 	@echo "Built target sequence_loader_test"
 .PHONY : applications/CMakeFiles/sequence_loader_test.dir/all
 
@@ -681,9 +732,9 @@ all: applications/CMakeFiles/sequence_loader_test.dir/all
 
 # Build rule for subdir invocation for target.
 applications/CMakeFiles/sequence_loader_test.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles" 3
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles 3
 	$(MAKE) -f CMakeFiles/Makefile2 applications/CMakeFiles/sequence_loader_test.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles" 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles 0
 .PHONY : applications/CMakeFiles/sequence_loader_test.dir/rule
 
 # Convenience name for target.

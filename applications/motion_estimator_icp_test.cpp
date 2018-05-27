@@ -33,7 +33,7 @@ int main(int argc, char **argv)
 	ReconstructionVisualizer visualizer;
 
 	ofstream cam_path;
-	cam_path.open("pos_relativa2.txt");
+	cam_path.open("pos_relativa.txt");
 	Intrinsics intr(0);
 	
 	if(argc != 2)
@@ -53,7 +53,7 @@ int main(int argc, char **argv)
 		//Load RGB-D image and point cloud 
 		loader.getNextImage(frame, depth);
 		*curr_cloud = getPointCloud(frame, depth, intr);
-		/*
+		
 		if(i > 0 && i<200)
 		{	
 			
@@ -71,8 +71,8 @@ int main(int argc, char **argv)
 		if(i){	
 			trans = guess;			
 			pose = trans*pose;
-		}*/
-		if(i > 0)
+		}
+		/*if(i > 0)
 		{	
 
 			guess = estimator.pairAlign(*curr_cloud,*prev_cloud,*curr_cloud);
@@ -80,7 +80,7 @@ int main(int argc, char **argv)
 			trans = guess;			
 			pose = trans*pose;
 			
-		}
+		}*/
 		if(i == 0) visualizer.addReferenceFrame(pose, "origin");
 		//visualizer.addQuantizedPointCloud(curr_cloud, 0.3, pose);
 		 visualizer.viewReferenceFrame(pose);
@@ -113,7 +113,7 @@ int main(int argc, char **argv)
                                       << pose(1,3) << " "
                                       << pose(2,3) << " "
                                       << q.x() << " "
-                                      << q.y() << " "
+                                      << q.y() << " 1"
                                       << q.z() << " "
                                       << q.w() << "\n";						
 		

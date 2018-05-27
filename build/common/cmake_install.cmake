@@ -1,4 +1,4 @@
-# Install script for directory: /home/luiz/Área de Trabalho/rgbd_rtk-master/common
+# Install script for directory: /home/luiz/Downloads/rgbd_rtk-quadtree_branch/common
 
 # Set the install prefix
 IF(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -45,8 +45,8 @@ IF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspeci
     ENDIF()
   ENDFOREACH()
   FILE(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE SHARED_LIBRARY FILES
-    "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/common/lib/librgbd_rtk_common.so.1.0"
-    "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/common/lib/librgbd_rtk_common.so"
+    "/home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/common/lib/librgbd_rtk_common.so.1.0"
+    "/home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/common/lib/librgbd_rtk_common.so"
     )
   FOREACH(file
       "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/librgbd_rtk_common.so.1.0"
@@ -63,8 +63,8 @@ ENDIF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unsp
 
 IF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
   FILE(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include" TYPE FILE FILES
-    "/home/luiz/Área de Trabalho/rgbd_rtk-master/common/common_types.h"
-    "/home/luiz/Área de Trabalho/rgbd_rtk-master/common/geometry.h"
+    "/home/luiz/Downloads/rgbd_rtk-quadtree_branch/common/common_types.h"
+    "/home/luiz/Downloads/rgbd_rtk-quadtree_branch/common/geometry.h"
     )
 ENDIF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
 

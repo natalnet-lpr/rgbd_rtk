@@ -3,7 +3,7 @@
 
 visualization/CMakeFiles/rgbd_rtk_visualization.dir/reconstruction_visualizer.cpp.o
  ../common/common_types.h
- /home/luiz/Área de Trabalho/rgbd_rtk-master/visualization/reconstruction_visualizer.cpp
+ /home/luiz/Downloads/rgbd_rtk-quadtree_branch/visualization/reconstruction_visualizer.cpp
  /usr/local/include/eigen3/Eigen/Cholesky
  /usr/local/include/eigen3/Eigen/Core
  /usr/local/include/eigen3/Eigen/Dense

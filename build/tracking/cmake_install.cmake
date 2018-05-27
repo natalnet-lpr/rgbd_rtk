@@ -1,4 +1,4 @@
-# Install script for directory: /home/luiz/Área de Trabalho/rgbd_rtk-master/tracking
+# Install script for directory: /home/luiz/Downloads/rgbd_rtk-quadtree_branch/tracking
 
 # Set the install prefix
 IF(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -45,8 +45,8 @@ IF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspeci
     ENDIF()
   ENDFOREACH()
   FILE(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE SHARED_LIBRARY FILES
-    "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/tracking/lib/librgbd_rtk_tracking.so.1.0"
-    "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/tracking/lib/librgbd_rtk_tracking.so"
+    "/home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/tracking/lib/librgbd_rtk_tracking.so.1.0"
+    "/home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/tracking/lib/librgbd_rtk_tracking.so"
     )
   FOREACH(file
       "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/librgbd_rtk_tracking.so.1.0"
@@ -65,11 +65,10 @@ ENDIF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unsp
 
 IF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
   FILE(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include" TYPE FILE FILES
-    "/home/luiz/Área de Trabalho/rgbd_rtk-master/tracking/klt_tracker.h"
-    "/home/luiz/Área de Trabalho/rgbd_rtk-master/tracking/klttw_tracker.h"
-    "/home/luiz/Área de Trabalho/rgbd_rtk-master/tracking/klttcw_tracker.h"
-    "/home/luiz/Área de Trabalho/rgbd_rtk-master/tracking/klttacw_tracker.h"
-    "/home/luiz/Área de Trabalho/rgbd_rtk-master/tracking/graph.h"
+    "/home/luiz/Downloads/rgbd_rtk-quadtree_branch/tracking/klt_tracker.h"
+    "/home/luiz/Downloads/rgbd_rtk-quadtree_branch/tracking/klttw_tracker.h"
+    "/home/luiz/Downloads/rgbd_rtk-quadtree_branch/tracking/klttcw_tracker.h"
+    "/home/luiz/Downloads/rgbd_rtk-quadtree_branch/tracking/klttacw_tracker.h"
     )
 ENDIF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
 

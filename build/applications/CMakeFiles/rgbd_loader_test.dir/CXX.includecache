@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-/home/luiz/Área de Trabalho/rgbd_rtk-master/applications/rgbd_loader_test.cpp
+/home/luiz/Downloads/rgbd_rtk-quadtree_branch/applications/rgbd_loader_test.cpp
 cstdio
 -
 cstdlib

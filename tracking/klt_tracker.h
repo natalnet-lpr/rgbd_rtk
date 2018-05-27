@@ -57,6 +57,8 @@ protected:
 
 	//Current greyscale frame
 	cv::Mat curr_frame_gray_;
+	//mask to use harris corner
+	cv::Mat Mask;
 
 	//Minimum allowed number of tracked points
 	int min_pts_;
@@ -79,6 +81,7 @@ protected:
 	//Output file with keypoint distribution information
 	std::ofstream heatmap_info_;
 
+	virtual void detect_weak_keypoints();
 	//Detects keypoints in the current frame
 	virtual void detect_keypoints();
 
@@ -149,6 +152,7 @@ public:
 	void initialize_logger(const std::string timing_file_name,
 		                   const std::string tracking_file_name,
 			               const std::string heatmap_file_name);
+	void insert_mask(cv::Mat Mask);
 };
 
 #endif /* INCLUDE_KLT_TRACKER_H_ */

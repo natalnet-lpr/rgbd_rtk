@@ -52,6 +52,31 @@ void KLTTracker::detect_keypoints()
 	//Detect Shi-Tomasi keypoints and add them to a temporary buffer.
 	//The buffer is erased at the end of add_keypoints()
 	goodFeaturesToTrack(curr_frame_gray_, added_pts_, max_pts_, 0.01, 10, Mat(), 3, 0, 0.04);
+	cout<<"qtd de pontos: "<<added_pts_.size()<<endl;	
+	#ifdef DEBUG
+	printf("detecting keypoints...\n");
+	printf("\tdetected pts.: %lu\n", added_pts_.size());
+	#endif
+}
+void merge_vectors(vector<Point2f> v1, vector<Point2f> &v2){
+	for(int i=0;i<v1.size();i++)
+		v2.push_back(v1[i]);
+	
+
+}
+
+void KLTTracker::detect_weak_keypoints()
+{
+	//Detect Shi-Tomasi keypoints and add them to a temporary buffer.
+	//The buffer is erased at the end of add_keypoints()
+		vector<Point2f> tmp;
+
+	int a = added_pts_.size();
+	goodFeaturesToTrack(curr_frame_gray_, tmp, max_pts_, 0.01, 10, Mask, 3, true, 0.04);
+
+	merge_vectors(tmp,added_pts_);
+	//cout<<a-tmp.size()<<endl;
+	
 	#ifdef DEBUG
 	printf("detecting keypoints...\n");
 	printf("\tdetected pts.: %lu\n", added_pts_.size());
@@ -220,6 +245,7 @@ bool KLTTracker::track(Mat curr_frame)
 		//Initialize tracker
 		detect_keypoints();
 		initialized_ = true;
+		initialize_logger("trash.txt","trash2.txt","heap.txt");
 	}
 	//Tracker is initialized: track keypoints
 	else
@@ -270,13 +296,17 @@ bool KLTTracker::track(Mat curr_frame)
 		{
 			//Detect new features, hold them and add them to the tracker in the next frame
 			detect_keypoints();
+			/*if(!Mask.empty()){
+				detect_weak_keypoints();
+
+			}*/		
 		}
 	}
 
 	//print_track_info();
 	//write_tracking_info();
 	//write_timing_info();
-	//write_heatmap_info();
+	write_heatmap_info();
 	//float total_time = get_time_per_frame();
 
 	#ifdef DEBUG
@@ -320,4 +350,10 @@ void KLTTracker::initialize_logger(const string timing_file_name, const string t
 	printf("Saving tracking information to %s\n", tracking_file_name.c_str());
 	printf("Saving timing information to %s\n", timing_file_name.c_str());
 	printf("Saving heatmap information to %s\n", heatmap_file_name.c_str());
+
+}
+
+void KLTTracker::insert_mask(cv::Mat Mask){
+
+	this -> Mask = Mask;
 }

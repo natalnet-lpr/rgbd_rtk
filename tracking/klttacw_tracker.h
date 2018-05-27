@@ -30,7 +30,6 @@
 #include <vector>
 #include <fstream>
 #include <opencv2/core.hpp>
-#include <list>
 
 #include <common_types.h>
 #define _USE_MATH_DEFINES
@@ -72,8 +71,8 @@ protected:
 
 	//Time spent processing each operation (detection, tracking, motion estimation, etc.)
 	std::vector<float> op_time_;
-	//Output file with tracking information
 
+	//Output file with tracking information
 	std::ofstream tracking_info_;
 
 	//Output file with timing information
@@ -111,9 +110,7 @@ protected:
 	//Write all current keypoints to file
 	virtual bool write_heatmap_info();
 
-
 public:
-	
 	
 
 	float radius_max,radius_min;
@@ -170,9 +167,6 @@ public:
 			               const std::string heatmap_file_name);
 	
 	virtual void radius_size(int i);
-
-
-		
 		
 };
 

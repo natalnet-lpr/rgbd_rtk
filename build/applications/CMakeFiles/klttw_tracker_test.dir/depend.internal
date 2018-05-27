@@ -4,7 +4,7 @@
 applications/CMakeFiles/klttw_tracker_test.dir/klttw_tracker_test.cpp.o
  ../common/common_types.h
  ../tracking/klttw_tracker.h
- /home/luiz/Área de Trabalho/rgbd_rtk-master/applications/klttw_tracker_test.cpp
+ /home/luiz/Downloads/rgbd_rtk-quadtree_branch/applications/klttw_tracker_test.cpp
  /usr/local/include/eigen3/Eigen/Core
  /usr/local/include/eigen3/Eigen/src/Core/Array.h
  /usr/local/include/eigen3/Eigen/src/Core/ArrayBase.h

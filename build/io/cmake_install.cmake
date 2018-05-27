@@ -1,4 +1,4 @@
-# Install script for directory: /home/luiz/Área de Trabalho/rgbd_rtk-master/io
+# Install script for directory: /home/luiz/Downloads/rgbd_rtk-quadtree_branch/io
 
 # Set the install prefix
 IF(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -45,8 +45,8 @@ IF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspeci
     ENDIF()
   ENDFOREACH()
   FILE(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE SHARED_LIBRARY FILES
-    "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/io/lib/librgbd_rtk_io.so.1.0"
-    "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/io/lib/librgbd_rtk_io.so"
+    "/home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/io/lib/librgbd_rtk_io.so.1.0"
+    "/home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/io/lib/librgbd_rtk_io.so"
     )
   FOREACH(file
       "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/librgbd_rtk_io.so.1.0"
@@ -65,8 +65,8 @@ ENDIF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unsp
 
 IF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
   FILE(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include" TYPE FILE FILES
-    "/home/luiz/Área de Trabalho/rgbd_rtk-master/io/sequence_loader.h"
-    "/home/luiz/Área de Trabalho/rgbd_rtk-master/io/rgbd_loader.h"
+    "/home/luiz/Downloads/rgbd_rtk-quadtree_branch/io/sequence_loader.h"
+    "/home/luiz/Downloads/rgbd_rtk-quadtree_branch/io/rgbd_loader.h"
     )
 ENDIF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
 

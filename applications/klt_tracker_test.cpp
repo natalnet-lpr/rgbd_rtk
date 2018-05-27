@@ -33,6 +33,7 @@
 #include <rgbd_loader.h>
 #include <klt_tracker.h>
 #include <common_types.h>
+#include <QuadTree.h>
 
 using namespace std;
 using namespace cv;
@@ -94,21 +95,31 @@ int main(int argc, char **argv)
 	//Track points on each image
 	for(int i = 0; i < loader.num_images_; i++)
 	{
+		
 		loader.getNextImage(frame, depth);
+		//if(i%2==0){
 
 		tracker.track(frame);
-		
+
 		draw_last_track(frame, tracker.prev_pts_, tracker.curr_pts_);
 		//draw_tracks(frame, tracker.tracklets_);
 
+		/*Quad tree(frame,10);
+		tracker.insert_mask(tree.Mask[0]);		
+		insert_KPs(tree,tracker.curr_pts_);
+*/
+		//tree.rotate_mask();	
+
 		imshow("Image view", frame);
-		imshow("Depth view", depth);
+		//imshow("Depth view", tree.Mask[0]);
+		//}
 		char key = waitKey(15);
 		if(key == 27 || key == 'q' || key == 'Q')
 		{
 			printf("Exiting.\n");
 			break;
 		}
+		
 	}
 
 	return 0;

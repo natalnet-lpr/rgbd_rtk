@@ -23,10 +23,12 @@ endif()
 # set(OpenCV_INCLUDE_DIRS "/home/bruno/Lib/opencv-2.4.13/local/include")
 
 include_directories(${OpenCV_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} common io tracking motion_estimation
-                    visualization)
+                    visualization quadtree)
 link_directories(${PCL_LIBRARY_DIRS})
 #add_definitions(${PCL_DEFINITIONS}) #apparently not needed
 
+add_subdirectory(quadtree)
+set(RGBD_RTK_QUADTREE rgbd_rtk_quadtree)
 add_subdirectory(io)
 set(RGBD_RTK_IO rgbd_rtk_io)
 add_subdirectory(tracking)

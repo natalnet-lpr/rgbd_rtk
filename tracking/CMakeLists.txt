@@ -4,8 +4,8 @@ project(RGBD_RTK)
 
 message(STATUS ">>> tracking subdirectory")
 
-set(RGBD_RTK_TRACKING_SRC klt_tracker.cpp klttw_tracker.cpp klttcw_tracker.cpp klttacw_tracker.cpp graph.cpp)
-set(RGBD_RTK_TRACKING_INCLUDES klt_tracker.h klttw_tracker.h klttcw_tracker.h klttacw_tracker.h graph.h)
+set(RGBD_RTK_TRACKING_SRC klt_tracker.cpp klttw_tracker.cpp klttcw_tracker.cpp klttacw_tracker.cpp)
+set(RGBD_RTK_TRACKING_INCLUDES klt_tracker.h klttw_tracker.h klttcw_tracker.h klttacw_tracker.h)
 
 add_library(rgbd_rtk_tracking SHARED ${RGBD_RTK_TRACKING_SRC})
 

@@ -34,7 +34,6 @@
 #include <opencv2/video/video.hpp>
 #include <time.h>
 
-#include <graph.h>
 #include <klttacw_tracker.h>
 
 using namespace std;
@@ -71,7 +70,7 @@ void KLTTrackerACW::radius_size(int i){
 
 						
 						
-		radius[i]+=0.0005;	
+		radius[i]=tracklets_[i].pts2D_.size();	
 		if(radius[i]>radius_max)
 		{	
 			radius[i]=radius_max;
@@ -278,12 +277,9 @@ bool KLTTrackerACW::write_heatmap_info()
 
 KLTTrackerACW::KLTTrackerACW() : min_pts_(2500), max_pts_(5000)
 {
-
 	initialized_ = false;
-	//graph.push_back(new Vertice);	
 	frame_idx_ = 0;
 	num_inliers_ = 0;
-	//graph.back()->KF_index = 0;
 }
 
 KLTTrackerACW::KLTTrackerACW(int min_pts, int max_pts)
@@ -292,10 +288,6 @@ KLTTrackerACW::KLTTrackerACW(int min_pts, int max_pts)
 	frame_idx_ = 0;
 	num_inliers_ = 0;
 
-	/*graph.push_back(new Vertice);	
-
-	graph.back()->KF_index = 0;
-	*/
 	min_pts_ = min_pts;
 	max_pts_ = max_pts;
 }
@@ -317,8 +309,6 @@ bool KLTTrackerACW::track(Mat curr_frame)
 	
 	 //Update internal buffers
 	update_buffers();
-
-	
 	
 	
 	
@@ -328,16 +318,9 @@ bool KLTTrackerACW::track(Mat curr_frame)
 	//Tracker is not initialized
 	if(!initialized_)
 	{
-		/*Vertice *tmp = new Vertice;
-		graph.push_back(tmp->add_new_KF(prev_pts_,curr_frame));
-	
-		delete tmp;
-		*/
-		//initialize_graph( curr_frame);
-
+		
 		//Initialize tracker
 		detect_keypoints();
-		
 		initialized_ = true;
 		
 	}
@@ -345,13 +328,8 @@ bool KLTTrackerACW::track(Mat curr_frame)
 	//Tracker is initialized: track keypoints
 	else
 	{	
-		/*if(graph.back()->is_KeyFrame(prev_pts_.size(),0.10) ){
-				
-			graph.back()->KF_index = frame_idx_; 
-			graph.push_back(graph.back()->add_new_KF(prev_pts_,curr_frame));
-			
-							
-		}*/
+	
+
 		//Track points with Optical Flow
 		vector<uchar> status;
 		vector<float> err;

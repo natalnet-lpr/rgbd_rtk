@@ -38,10 +38,10 @@ EQUALS = =
 CMAKE_EDIT_COMMAND = /usr/bin/cmake-gui
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = "/home/luiz/Área de Trabalho/rgbd_rtk-master"
+CMAKE_SOURCE_DIR = /home/luiz/Downloads/rgbd_rtk-quadtree_branch
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = "/home/luiz/Área de Trabalho/rgbd_rtk-master/build"
+CMAKE_BINARY_DIR = /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build
 
 # Include any dependencies generated for this target.
 include tracking/CMakeFiles/rgbd_rtk_tracking.dir/depend.make
@@ -54,17 +54,17 @@ include tracking/CMakeFiles/rgbd_rtk_tracking.dir/flags.make
 
 tracking/CMakeFiles/rgbd_rtk_tracking.dir/klt_tracker.cpp.o: tracking/CMakeFiles/rgbd_rtk_tracking.dir/flags.make
 tracking/CMakeFiles/rgbd_rtk_tracking.dir/klt_tracker.cpp.o: ../tracking/klt_tracker.cpp
-	$(CMAKE_COMMAND) -E cmake_progress_report "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles" $(CMAKE_PROGRESS_1)
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles $(CMAKE_PROGRESS_1)
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object tracking/CMakeFiles/rgbd_rtk_tracking.dir/klt_tracker.cpp.o"
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/tracking" && /usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/rgbd_rtk_tracking.dir/klt_tracker.cpp.o -c "/home/luiz/Área de Trabalho/rgbd_rtk-master/tracking/klt_tracker.cpp"
+	cd /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/tracking && /usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/rgbd_rtk_tracking.dir/klt_tracker.cpp.o -c /home/luiz/Downloads/rgbd_rtk-quadtree_branch/tracking/klt_tracker.cpp
 
 tracking/CMakeFiles/rgbd_rtk_tracking.dir/klt_tracker.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/rgbd_rtk_tracking.dir/klt_tracker.cpp.i"
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/tracking" && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E "/home/luiz/Área de Trabalho/rgbd_rtk-master/tracking/klt_tracker.cpp" > CMakeFiles/rgbd_rtk_tracking.dir/klt_tracker.cpp.i
+	cd /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/tracking && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/luiz/Downloads/rgbd_rtk-quadtree_branch/tracking/klt_tracker.cpp > CMakeFiles/rgbd_rtk_tracking.dir/klt_tracker.cpp.i
 
 tracking/CMakeFiles/rgbd_rtk_tracking.dir/klt_tracker.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/rgbd_rtk_tracking.dir/klt_tracker.cpp.s"
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/tracking" && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S "/home/luiz/Área de Trabalho/rgbd_rtk-master/tracking/klt_tracker.cpp" -o CMakeFiles/rgbd_rtk_tracking.dir/klt_tracker.cpp.s
+	cd /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/tracking && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/luiz/Downloads/rgbd_rtk-quadtree_branch/tracking/klt_tracker.cpp -o CMakeFiles/rgbd_rtk_tracking.dir/klt_tracker.cpp.s
 
 tracking/CMakeFiles/rgbd_rtk_tracking.dir/klt_tracker.cpp.o.requires:
 .PHONY : tracking/CMakeFiles/rgbd_rtk_tracking.dir/klt_tracker.cpp.o.requires
@@ -77,17 +77,17 @@ tracking/CMakeFiles/rgbd_rtk_tracking.dir/klt_tracker.cpp.o.provides.build: trac
 
 tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttw_tracker.cpp.o: tracking/CMakeFiles/rgbd_rtk_tracking.dir/flags.make
 tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttw_tracker.cpp.o: ../tracking/klttw_tracker.cpp
-	$(CMAKE_COMMAND) -E cmake_progress_report "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles" $(CMAKE_PROGRESS_2)
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles $(CMAKE_PROGRESS_2)
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttw_tracker.cpp.o"
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/tracking" && /usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/rgbd_rtk_tracking.dir/klttw_tracker.cpp.o -c "/home/luiz/Área de Trabalho/rgbd_rtk-master/tracking/klttw_tracker.cpp"
+	cd /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/tracking && /usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/rgbd_rtk_tracking.dir/klttw_tracker.cpp.o -c /home/luiz/Downloads/rgbd_rtk-quadtree_branch/tracking/klttw_tracker.cpp
 
 tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttw_tracker.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/rgbd_rtk_tracking.dir/klttw_tracker.cpp.i"
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/tracking" && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E "/home/luiz/Área de Trabalho/rgbd_rtk-master/tracking/klttw_tracker.cpp" > CMakeFiles/rgbd_rtk_tracking.dir/klttw_tracker.cpp.i
+	cd /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/tracking && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/luiz/Downloads/rgbd_rtk-quadtree_branch/tracking/klttw_tracker.cpp > CMakeFiles/rgbd_rtk_tracking.dir/klttw_tracker.cpp.i
 
 tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttw_tracker.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/rgbd_rtk_tracking.dir/klttw_tracker.cpp.s"
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/tracking" && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S "/home/luiz/Área de Trabalho/rgbd_rtk-master/tracking/klttw_tracker.cpp" -o CMakeFiles/rgbd_rtk_tracking.dir/klttw_tracker.cpp.s
+	cd /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/tracking && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/luiz/Downloads/rgbd_rtk-quadtree_branch/tracking/klttw_tracker.cpp -o CMakeFiles/rgbd_rtk_tracking.dir/klttw_tracker.cpp.s
 
 tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttw_tracker.cpp.o.requires:
 .PHONY : tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttw_tracker.cpp.o.requires
@@ -100,17 +100,17 @@ tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttw_tracker.cpp.o.provides.build: tr
 
 tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttcw_tracker.cpp.o: tracking/CMakeFiles/rgbd_rtk_tracking.dir/flags.make
 tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttcw_tracker.cpp.o: ../tracking/klttcw_tracker.cpp
-	$(CMAKE_COMMAND) -E cmake_progress_report "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles" $(CMAKE_PROGRESS_3)
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles $(CMAKE_PROGRESS_3)
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttcw_tracker.cpp.o"
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/tracking" && /usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/rgbd_rtk_tracking.dir/klttcw_tracker.cpp.o -c "/home/luiz/Área de Trabalho/rgbd_rtk-master/tracking/klttcw_tracker.cpp"
+	cd /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/tracking && /usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/rgbd_rtk_tracking.dir/klttcw_tracker.cpp.o -c /home/luiz/Downloads/rgbd_rtk-quadtree_branch/tracking/klttcw_tracker.cpp
 
 tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttcw_tracker.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/rgbd_rtk_tracking.dir/klttcw_tracker.cpp.i"
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/tracking" && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E "/home/luiz/Área de Trabalho/rgbd_rtk-master/tracking/klttcw_tracker.cpp" > CMakeFiles/rgbd_rtk_tracking.dir/klttcw_tracker.cpp.i
+	cd /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/tracking && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/luiz/Downloads/rgbd_rtk-quadtree_branch/tracking/klttcw_tracker.cpp > CMakeFiles/rgbd_rtk_tracking.dir/klttcw_tracker.cpp.i
 
 tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttcw_tracker.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/rgbd_rtk_tracking.dir/klttcw_tracker.cpp.s"
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/tracking" && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S "/home/luiz/Área de Trabalho/rgbd_rtk-master/tracking/klttcw_tracker.cpp" -o CMakeFiles/rgbd_rtk_tracking.dir/klttcw_tracker.cpp.s
+	cd /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/tracking && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/luiz/Downloads/rgbd_rtk-quadtree_branch/tracking/klttcw_tracker.cpp -o CMakeFiles/rgbd_rtk_tracking.dir/klttcw_tracker.cpp.s
 
 tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttcw_tracker.cpp.o.requires:
 .PHONY : tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttcw_tracker.cpp.o.requires
@@ -123,17 +123,17 @@ tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttcw_tracker.cpp.o.provides.build: t
 
 tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttacw_tracker.cpp.o: tracking/CMakeFiles/rgbd_rtk_tracking.dir/flags.make
 tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttacw_tracker.cpp.o: ../tracking/klttacw_tracker.cpp
-	$(CMAKE_COMMAND) -E cmake_progress_report "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles" $(CMAKE_PROGRESS_4)
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles $(CMAKE_PROGRESS_4)
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttacw_tracker.cpp.o"
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/tracking" && /usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/rgbd_rtk_tracking.dir/klttacw_tracker.cpp.o -c "/home/luiz/Área de Trabalho/rgbd_rtk-master/tracking/klttacw_tracker.cpp"
+	cd /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/tracking && /usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/rgbd_rtk_tracking.dir/klttacw_tracker.cpp.o -c /home/luiz/Downloads/rgbd_rtk-quadtree_branch/tracking/klttacw_tracker.cpp
 
 tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttacw_tracker.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/rgbd_rtk_tracking.dir/klttacw_tracker.cpp.i"
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/tracking" && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E "/home/luiz/Área de Trabalho/rgbd_rtk-master/tracking/klttacw_tracker.cpp" > CMakeFiles/rgbd_rtk_tracking.dir/klttacw_tracker.cpp.i
+	cd /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/tracking && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/luiz/Downloads/rgbd_rtk-quadtree_branch/tracking/klttacw_tracker.cpp > CMakeFiles/rgbd_rtk_tracking.dir/klttacw_tracker.cpp.i
 
 tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttacw_tracker.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/rgbd_rtk_tracking.dir/klttacw_tracker.cpp.s"
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/tracking" && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S "/home/luiz/Área de Trabalho/rgbd_rtk-master/tracking/klttacw_tracker.cpp" -o CMakeFiles/rgbd_rtk_tracking.dir/klttacw_tracker.cpp.s
+	cd /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/tracking && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/luiz/Downloads/rgbd_rtk-quadtree_branch/tracking/klttacw_tracker.cpp -o CMakeFiles/rgbd_rtk_tracking.dir/klttacw_tracker.cpp.s
 
 tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttacw_tracker.cpp.o.requires:
 .PHONY : tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttacw_tracker.cpp.o.requires
@@ -144,36 +144,12 @@ tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttacw_tracker.cpp.o.provides: tracki
 
 tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttacw_tracker.cpp.o.provides.build: tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttacw_tracker.cpp.o
 
-tracking/CMakeFiles/rgbd_rtk_tracking.dir/graph.cpp.o: tracking/CMakeFiles/rgbd_rtk_tracking.dir/flags.make
-tracking/CMakeFiles/rgbd_rtk_tracking.dir/graph.cpp.o: ../tracking/graph.cpp
-	$(CMAKE_COMMAND) -E cmake_progress_report "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles" $(CMAKE_PROGRESS_5)
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object tracking/CMakeFiles/rgbd_rtk_tracking.dir/graph.cpp.o"
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/tracking" && /usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/rgbd_rtk_tracking.dir/graph.cpp.o -c "/home/luiz/Área de Trabalho/rgbd_rtk-master/tracking/graph.cpp"
-
-tracking/CMakeFiles/rgbd_rtk_tracking.dir/graph.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/rgbd_rtk_tracking.dir/graph.cpp.i"
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/tracking" && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E "/home/luiz/Área de Trabalho/rgbd_rtk-master/tracking/graph.cpp" > CMakeFiles/rgbd_rtk_tracking.dir/graph.cpp.i
-
-tracking/CMakeFiles/rgbd_rtk_tracking.dir/graph.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/rgbd_rtk_tracking.dir/graph.cpp.s"
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/tracking" && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S "/home/luiz/Área de Trabalho/rgbd_rtk-master/tracking/graph.cpp" -o CMakeFiles/rgbd_rtk_tracking.dir/graph.cpp.s
-
-tracking/CMakeFiles/rgbd_rtk_tracking.dir/graph.cpp.o.requires:
-.PHONY : tracking/CMakeFiles/rgbd_rtk_tracking.dir/graph.cpp.o.requires
-
-tracking/CMakeFiles/rgbd_rtk_tracking.dir/graph.cpp.o.provides: tracking/CMakeFiles/rgbd_rtk_tracking.dir/graph.cpp.o.requires
-	$(MAKE) -f tracking/CMakeFiles/rgbd_rtk_tracking.dir/build.make tracking/CMakeFiles/rgbd_rtk_tracking.dir/graph.cpp.o.provides.build
-.PHONY : tracking/CMakeFiles/rgbd_rtk_tracking.dir/graph.cpp.o.provides
-
-tracking/CMakeFiles/rgbd_rtk_tracking.dir/graph.cpp.o.provides.build: tracking/CMakeFiles/rgbd_rtk_tracking.dir/graph.cpp.o
-
 # Object files for target rgbd_rtk_tracking
 rgbd_rtk_tracking_OBJECTS = \
 "CMakeFiles/rgbd_rtk_tracking.dir/klt_tracker.cpp.o" \
 "CMakeFiles/rgbd_rtk_tracking.dir/klttw_tracker.cpp.o" \
 "CMakeFiles/rgbd_rtk_tracking.dir/klttcw_tracker.cpp.o" \
-"CMakeFiles/rgbd_rtk_tracking.dir/klttacw_tracker.cpp.o" \
-"CMakeFiles/rgbd_rtk_tracking.dir/graph.cpp.o"
+"CMakeFiles/rgbd_rtk_tracking.dir/klttacw_tracker.cpp.o"
 
 # External object files for target rgbd_rtk_tracking
 rgbd_rtk_tracking_EXTERNAL_OBJECTS =
@@ -182,7 +158,6 @@ tracking/lib/librgbd_rtk_tracking.so.1.0: tracking/CMakeFiles/rgbd_rtk_tracking.
 tracking/lib/librgbd_rtk_tracking.so.1.0: tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttw_tracker.cpp.o
 tracking/lib/librgbd_rtk_tracking.so.1.0: tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttcw_tracker.cpp.o
 tracking/lib/librgbd_rtk_tracking.so.1.0: tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttacw_tracker.cpp.o
-tracking/lib/librgbd_rtk_tracking.so.1.0: tracking/CMakeFiles/rgbd_rtk_tracking.dir/graph.cpp.o
 tracking/lib/librgbd_rtk_tracking.so.1.0: tracking/CMakeFiles/rgbd_rtk_tracking.dir/build.make
 tracking/lib/librgbd_rtk_tracking.so.1.0: /usr/local/lib/libopencv_videostab.so.2.4.13
 tracking/lib/librgbd_rtk_tracking.so.1.0: /usr/local/lib/libopencv_video.so.2.4.13
@@ -219,8 +194,8 @@ tracking/lib/librgbd_rtk_tracking.so.1.0: /usr/local/lib/libopencv_flann.so.2.4.
 tracking/lib/librgbd_rtk_tracking.so.1.0: /usr/local/lib/libopencv_core.so.2.4.13
 tracking/lib/librgbd_rtk_tracking.so.1.0: tracking/CMakeFiles/rgbd_rtk_tracking.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --red --bold "Linking CXX shared library lib/librgbd_rtk_tracking.so"
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/tracking" && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/rgbd_rtk_tracking.dir/link.txt --verbose=$(VERBOSE)
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/tracking" && $(CMAKE_COMMAND) -E cmake_symlink_library lib/librgbd_rtk_tracking.so.1.0 lib/librgbd_rtk_tracking.so.1.0 lib/librgbd_rtk_tracking.so
+	cd /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/tracking && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/rgbd_rtk_tracking.dir/link.txt --verbose=$(VERBOSE)
+	cd /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/tracking && $(CMAKE_COMMAND) -E cmake_symlink_library lib/librgbd_rtk_tracking.so.1.0 lib/librgbd_rtk_tracking.so.1.0 lib/librgbd_rtk_tracking.so
 
 tracking/lib/librgbd_rtk_tracking.so: tracking/lib/librgbd_rtk_tracking.so.1.0
 
@@ -232,14 +207,13 @@ tracking/CMakeFiles/rgbd_rtk_tracking.dir/requires: tracking/CMakeFiles/rgbd_rtk
 tracking/CMakeFiles/rgbd_rtk_tracking.dir/requires: tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttw_tracker.cpp.o.requires
 tracking/CMakeFiles/rgbd_rtk_tracking.dir/requires: tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttcw_tracker.cpp.o.requires
 tracking/CMakeFiles/rgbd_rtk_tracking.dir/requires: tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttacw_tracker.cpp.o.requires
-tracking/CMakeFiles/rgbd_rtk_tracking.dir/requires: tracking/CMakeFiles/rgbd_rtk_tracking.dir/graph.cpp.o.requires
 .PHONY : tracking/CMakeFiles/rgbd_rtk_tracking.dir/requires
 
 tracking/CMakeFiles/rgbd_rtk_tracking.dir/clean:
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/tracking" && $(CMAKE_COMMAND) -P CMakeFiles/rgbd_rtk_tracking.dir/cmake_clean.cmake
+	cd /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/tracking && $(CMAKE_COMMAND) -P CMakeFiles/rgbd_rtk_tracking.dir/cmake_clean.cmake
 .PHONY : tracking/CMakeFiles/rgbd_rtk_tracking.dir/clean
 
 tracking/CMakeFiles/rgbd_rtk_tracking.dir/depend:
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build" && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" "/home/luiz/Área de Trabalho/rgbd_rtk-master" "/home/luiz/Área de Trabalho/rgbd_rtk-master/tracking" "/home/luiz/Área de Trabalho/rgbd_rtk-master/build" "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/tracking" "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/tracking/CMakeFiles/rgbd_rtk_tracking.dir/DependInfo.cmake" --color=$(COLOR)
+	cd /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/luiz/Downloads/rgbd_rtk-quadtree_branch /home/luiz/Downloads/rgbd_rtk-quadtree_branch/tracking /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/tracking /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/tracking/CMakeFiles/rgbd_rtk_tracking.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : tracking/CMakeFiles/rgbd_rtk_tracking.dir/depend
 

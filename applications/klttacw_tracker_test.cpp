@@ -33,27 +33,9 @@
 #include <rgbd_loader.h>
 #include <klttacw_tracker.h>
 #include <common_types.h>
-#include <graph.h>
 
 using namespace std;
 using namespace cv;
-
-
-bool is_KeyFrame(int features_in_currF,Graph graph, float fkf){
-	
-	std::list<Vertice*>::iterator it = graph.graph.end();
-	
-		
-	--it;
-
-	
-	float features_in_KF = (*it)->features_in_KF ;
-
-
-	return sqrt((features_in_KF-features_in_currF)*(features_in_KF-features_in_currF))>=fkf*features_in_KF;
-
-}
-
 
 void draw_circle( Mat &img, Point2i pt2, float r){
 	if(r>0){
@@ -112,9 +94,6 @@ int main(int argc, char **argv)
 	string index_file_name;
 	RGBDLoader loader;
 	KLTTrackerACW tracker;
-	
-	Graph grafo;
-
 
 	Mat frame, depth;
 
@@ -135,23 +114,12 @@ int main(int argc, char **argv)
 
 		tracker.track(frame);
 		draw_last_track(frame, tracker.prev_pts_, tracker.curr_pts_, tracker.radius);	
-				
-		if(is_KeyFrame(tracker.curr_pts_.size(),grafo,0.1)){
-
-			grafo.graph.push_back(grafo.add_new_KF(tracker.curr_pts_,frame));
-			grafo.Update_Iterators();
-		}
+		
+		
 		//draw_tracks(frame, tracker.tracklets_);
 
 		imshow("Image view", frame);
-		//imshow("Depth view", depth);
-		
-		std::list<Vertice*>::iterator ultimo = grafo.last;
-		std::list<Vertice*>::iterator penultimo = grafo.penult;
-
-		imshow("Frame view", (*ultimo)->KeyFrame);
-
-		
+		imshow("Depth view", depth);
 		char key = waitKey(15);
 		if(key == 27 || key == 'q' || key == 'Q')
 		{

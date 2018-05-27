@@ -42,10 +42,10 @@ EQUALS = =
 CMAKE_EDIT_COMMAND = /usr/bin/cmake-gui
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = "/home/luiz/Área de Trabalho/rgbd_rtk-master"
+CMAKE_SOURCE_DIR = /home/luiz/Downloads/rgbd_rtk-quadtree_branch
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = "/home/luiz/Área de Trabalho/rgbd_rtk-master/build"
+CMAKE_BINARY_DIR = /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -113,14 +113,14 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build" && $(CMAKE_COMMAND) -E cmake_progress_start "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles" "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/tracking/CMakeFiles/progress.marks"
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build" && $(MAKE) -f CMakeFiles/Makefile2 tracking/all
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/CMakeFiles" 0
+	cd /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build && $(CMAKE_COMMAND) -E cmake_progress_start /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/tracking/CMakeFiles/progress.marks
+	cd /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build && $(MAKE) -f CMakeFiles/Makefile2 tracking/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
 clean:
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build" && $(MAKE) -f CMakeFiles/Makefile2 tracking/clean
+	cd /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build && $(MAKE) -f CMakeFiles/Makefile2 tracking/clean
 .PHONY : clean
 
 # The main clean target
@@ -129,22 +129,22 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build" && $(MAKE) -f CMakeFiles/Makefile2 tracking/preinstall
+	cd /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build && $(MAKE) -f CMakeFiles/Makefile2 tracking/preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build" && $(MAKE) -f CMakeFiles/Makefile2 tracking/preinstall
+	cd /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build && $(MAKE) -f CMakeFiles/Makefile2 tracking/preinstall
 .PHONY : preinstall/fast
 
 # clear depends
 depend:
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build" && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
+	cd /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
 # Convenience name for target.
 tracking/CMakeFiles/rgbd_rtk_tracking.dir/rule:
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build" && $(MAKE) -f CMakeFiles/Makefile2 tracking/CMakeFiles/rgbd_rtk_tracking.dir/rule
+	cd /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build && $(MAKE) -f CMakeFiles/Makefile2 tracking/CMakeFiles/rgbd_rtk_tracking.dir/rule
 .PHONY : tracking/CMakeFiles/rgbd_rtk_tracking.dir/rule
 
 # Convenience name for target.
@@ -153,39 +153,15 @@ rgbd_rtk_tracking: tracking/CMakeFiles/rgbd_rtk_tracking.dir/rule
 
 # fast build rule for target.
 rgbd_rtk_tracking/fast:
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build" && $(MAKE) -f tracking/CMakeFiles/rgbd_rtk_tracking.dir/build.make tracking/CMakeFiles/rgbd_rtk_tracking.dir/build
+	cd /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build && $(MAKE) -f tracking/CMakeFiles/rgbd_rtk_tracking.dir/build.make tracking/CMakeFiles/rgbd_rtk_tracking.dir/build
 .PHONY : rgbd_rtk_tracking/fast
-
-graph.o: graph.cpp.o
-.PHONY : graph.o
-
-# target to build an object file
-graph.cpp.o:
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build" && $(MAKE) -f tracking/CMakeFiles/rgbd_rtk_tracking.dir/build.make tracking/CMakeFiles/rgbd_rtk_tracking.dir/graph.cpp.o
-.PHONY : graph.cpp.o
-
-graph.i: graph.cpp.i
-.PHONY : graph.i
-
-# target to preprocess a source file
-graph.cpp.i:
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build" && $(MAKE) -f tracking/CMakeFiles/rgbd_rtk_tracking.dir/build.make tracking/CMakeFiles/rgbd_rtk_tracking.dir/graph.cpp.i
-.PHONY : graph.cpp.i
-
-graph.s: graph.cpp.s
-.PHONY : graph.s
-
-# target to generate assembly for a file
-graph.cpp.s:
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build" && $(MAKE) -f tracking/CMakeFiles/rgbd_rtk_tracking.dir/build.make tracking/CMakeFiles/rgbd_rtk_tracking.dir/graph.cpp.s
-.PHONY : graph.cpp.s
 
 klt_tracker.o: klt_tracker.cpp.o
 .PHONY : klt_tracker.o
 
 # target to build an object file
 klt_tracker.cpp.o:
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build" && $(MAKE) -f tracking/CMakeFiles/rgbd_rtk_tracking.dir/build.make tracking/CMakeFiles/rgbd_rtk_tracking.dir/klt_tracker.cpp.o
+	cd /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build && $(MAKE) -f tracking/CMakeFiles/rgbd_rtk_tracking.dir/build.make tracking/CMakeFiles/rgbd_rtk_tracking.dir/klt_tracker.cpp.o
 .PHONY : klt_tracker.cpp.o
 
 klt_tracker.i: klt_tracker.cpp.i
@@ -193,7 +169,7 @@ klt_tracker.i: klt_tracker.cpp.i
 
 # target to preprocess a source file
 klt_tracker.cpp.i:
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build" && $(MAKE) -f tracking/CMakeFiles/rgbd_rtk_tracking.dir/build.make tracking/CMakeFiles/rgbd_rtk_tracking.dir/klt_tracker.cpp.i
+	cd /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build && $(MAKE) -f tracking/CMakeFiles/rgbd_rtk_tracking.dir/build.make tracking/CMakeFiles/rgbd_rtk_tracking.dir/klt_tracker.cpp.i
 .PHONY : klt_tracker.cpp.i
 
 klt_tracker.s: klt_tracker.cpp.s
@@ -201,7 +177,7 @@ klt_tracker.s: klt_tracker.cpp.s
 
 # target to generate assembly for a file
 klt_tracker.cpp.s:
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build" && $(MAKE) -f tracking/CMakeFiles/rgbd_rtk_tracking.dir/build.make tracking/CMakeFiles/rgbd_rtk_tracking.dir/klt_tracker.cpp.s
+	cd /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build && $(MAKE) -f tracking/CMakeFiles/rgbd_rtk_tracking.dir/build.make tracking/CMakeFiles/rgbd_rtk_tracking.dir/klt_tracker.cpp.s
 .PHONY : klt_tracker.cpp.s
 
 klttacw_tracker.o: klttacw_tracker.cpp.o
@@ -209,7 +185,7 @@ klttacw_tracker.o: klttacw_tracker.cpp.o
 
 # target to build an object file
 klttacw_tracker.cpp.o:
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build" && $(MAKE) -f tracking/CMakeFiles/rgbd_rtk_tracking.dir/build.make tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttacw_tracker.cpp.o
+	cd /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build && $(MAKE) -f tracking/CMakeFiles/rgbd_rtk_tracking.dir/build.make tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttacw_tracker.cpp.o
 .PHONY : klttacw_tracker.cpp.o
 
 klttacw_tracker.i: klttacw_tracker.cpp.i
@@ -217,7 +193,7 @@ klttacw_tracker.i: klttacw_tracker.cpp.i
 
 # target to preprocess a source file
 klttacw_tracker.cpp.i:
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build" && $(MAKE) -f tracking/CMakeFiles/rgbd_rtk_tracking.dir/build.make tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttacw_tracker.cpp.i
+	cd /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build && $(MAKE) -f tracking/CMakeFiles/rgbd_rtk_tracking.dir/build.make tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttacw_tracker.cpp.i
 .PHONY : klttacw_tracker.cpp.i
 
 klttacw_tracker.s: klttacw_tracker.cpp.s
@@ -225,7 +201,7 @@ klttacw_tracker.s: klttacw_tracker.cpp.s
 
 # target to generate assembly for a file
 klttacw_tracker.cpp.s:
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build" && $(MAKE) -f tracking/CMakeFiles/rgbd_rtk_tracking.dir/build.make tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttacw_tracker.cpp.s
+	cd /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build && $(MAKE) -f tracking/CMakeFiles/rgbd_rtk_tracking.dir/build.make tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttacw_tracker.cpp.s
 .PHONY : klttacw_tracker.cpp.s
 
 klttcw_tracker.o: klttcw_tracker.cpp.o
@@ -233,7 +209,7 @@ klttcw_tracker.o: klttcw_tracker.cpp.o
 
 # target to build an object file
 klttcw_tracker.cpp.o:
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build" && $(MAKE) -f tracking/CMakeFiles/rgbd_rtk_tracking.dir/build.make tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttcw_tracker.cpp.o
+	cd /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build && $(MAKE) -f tracking/CMakeFiles/rgbd_rtk_tracking.dir/build.make tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttcw_tracker.cpp.o
 .PHONY : klttcw_tracker.cpp.o
 
 klttcw_tracker.i: klttcw_tracker.cpp.i
@@ -241,7 +217,7 @@ klttcw_tracker.i: klttcw_tracker.cpp.i
 
 # target to preprocess a source file
 klttcw_tracker.cpp.i:
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build" && $(MAKE) -f tracking/CMakeFiles/rgbd_rtk_tracking.dir/build.make tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttcw_tracker.cpp.i
+	cd /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build && $(MAKE) -f tracking/CMakeFiles/rgbd_rtk_tracking.dir/build.make tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttcw_tracker.cpp.i
 .PHONY : klttcw_tracker.cpp.i
 
 klttcw_tracker.s: klttcw_tracker.cpp.s
@@ -249,7 +225,7 @@ klttcw_tracker.s: klttcw_tracker.cpp.s
 
 # target to generate assembly for a file
 klttcw_tracker.cpp.s:
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build" && $(MAKE) -f tracking/CMakeFiles/rgbd_rtk_tracking.dir/build.make tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttcw_tracker.cpp.s
+	cd /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build && $(MAKE) -f tracking/CMakeFiles/rgbd_rtk_tracking.dir/build.make tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttcw_tracker.cpp.s
 .PHONY : klttcw_tracker.cpp.s
 
 klttw_tracker.o: klttw_tracker.cpp.o
@@ -257,7 +233,7 @@ klttw_tracker.o: klttw_tracker.cpp.o
 
 # target to build an object file
 klttw_tracker.cpp.o:
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build" && $(MAKE) -f tracking/CMakeFiles/rgbd_rtk_tracking.dir/build.make tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttw_tracker.cpp.o
+	cd /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build && $(MAKE) -f tracking/CMakeFiles/rgbd_rtk_tracking.dir/build.make tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttw_tracker.cpp.o
 .PHONY : klttw_tracker.cpp.o
 
 klttw_tracker.i: klttw_tracker.cpp.i
@@ -265,7 +241,7 @@ klttw_tracker.i: klttw_tracker.cpp.i
 
 # target to preprocess a source file
 klttw_tracker.cpp.i:
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build" && $(MAKE) -f tracking/CMakeFiles/rgbd_rtk_tracking.dir/build.make tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttw_tracker.cpp.i
+	cd /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build && $(MAKE) -f tracking/CMakeFiles/rgbd_rtk_tracking.dir/build.make tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttw_tracker.cpp.i
 .PHONY : klttw_tracker.cpp.i
 
 klttw_tracker.s: klttw_tracker.cpp.s
@@ -273,7 +249,7 @@ klttw_tracker.s: klttw_tracker.cpp.s
 
 # target to generate assembly for a file
 klttw_tracker.cpp.s:
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build" && $(MAKE) -f tracking/CMakeFiles/rgbd_rtk_tracking.dir/build.make tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttw_tracker.cpp.s
+	cd /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build && $(MAKE) -f tracking/CMakeFiles/rgbd_rtk_tracking.dir/build.make tracking/CMakeFiles/rgbd_rtk_tracking.dir/klttw_tracker.cpp.s
 .PHONY : klttw_tracker.cpp.s
 
 # Help Target
@@ -289,9 +265,6 @@ help:
 	@echo "... list_install_components"
 	@echo "... rebuild_cache"
 	@echo "... rgbd_rtk_tracking"
-	@echo "... graph.o"
-	@echo "... graph.i"
-	@echo "... graph.s"
 	@echo "... klt_tracker.o"
 	@echo "... klt_tracker.i"
 	@echo "... klt_tracker.s"
@@ -315,6 +288,6 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
-	cd "/home/luiz/Área de Trabalho/rgbd_rtk-master/build" && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
+	cd /home/luiz/Downloads/rgbd_rtk-quadtree_branch/build && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
 

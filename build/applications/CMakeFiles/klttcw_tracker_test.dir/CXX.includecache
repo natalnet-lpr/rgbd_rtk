@@ -24,7 +24,7 @@ opencv2/core.hpp
 common_types.h
 -
 
-/home/luiz/Área de Trabalho/rgbd_rtk-master/applications/klttcw_tracker_test.cpp
+/home/luiz/Downloads/rgbd_rtk-quadtree_branch/applications/klttcw_tracker_test.cpp
 cstdio
 -
 cstdlib

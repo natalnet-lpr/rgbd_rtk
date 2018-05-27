@@ -1,4 +1,4 @@
-# Install script for directory: /home/luiz/Área de Trabalho/rgbd_rtk-master/visualization
+# Install script for directory: /home/luiz/Downloads/rgbd_rtk-quadtree_branch/visualization
 
 # Set the install prefix
 IF(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -45,8 +45,8 @@ IF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspeci
     ENDIF()
   ENDFOREACH()
   FILE(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE SHARED_LIBRARY FILES
-    "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/visualization/lib/librgbd_rtk_visualization.so.1.0"
-    "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/visualization/lib/librgbd_rtk_visualization.so"
+    "/home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/visualization/lib/librgbd_rtk_visualization.so.1.0"
+    "/home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/visualization/lib/librgbd_rtk_visualization.so"
     )
   FOREACH(file
       "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/librgbd_rtk_visualization.so.1.0"
@@ -64,6 +64,6 @@ IF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspeci
 ENDIF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
 
 IF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
-  FILE(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include" TYPE FILE FILES "/home/luiz/Área de Trabalho/rgbd_rtk-master/visualization/reconstruction_visualizer.h")
+  FILE(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include" TYPE FILE FILES "/home/luiz/Downloads/rgbd_rtk-quadtree_branch/visualization/reconstruction_visualizer.h")
 ENDIF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
 

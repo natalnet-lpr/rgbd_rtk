@@ -14,24 +14,6 @@ opencv2/core/core.hpp
 pcl/point_types.h
 -
 
-../tracking/graph.h
-vector
--
-opencv2/core.hpp
--
-list
--
-Eigen/Geometry
--
-pcl/point_cloud.h
--
-common_types.h
--
-pcl/correspondence.h
--
-common_types.h
--
-
 ../tracking/klttacw_tracker.h
 vector
 -
@@ -39,12 +21,10 @@ fstream
 -
 opencv2/core.hpp
 -
-list
--
 common_types.h
 -
 
-/home/luiz/Área de Trabalho/rgbd_rtk-master/applications/motion_estimator_test.cpp
+/home/luiz/Downloads/rgbd_rtk-quadtree_branch/applications/motion_estimator_test.cpp
 cstdio
 -
 cstdlib
@@ -68,8 +48,6 @@ klt_tracker.h
 motion_estimator_ransac.h
 -
 reconstruction_visualizer.h
--
-graph.h
 -
 fstream
 -

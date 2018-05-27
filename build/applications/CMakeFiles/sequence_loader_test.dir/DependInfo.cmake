@@ -4,7 +4,7 @@ SET(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 SET(CMAKE_DEPENDS_CHECK_CXX
-  "/home/luiz/Área de Trabalho/rgbd_rtk-master/applications/sequence_loader_test.cpp" "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/applications/CMakeFiles/sequence_loader_test.dir/sequence_loader_test.cpp.o"
+  "/home/luiz/Downloads/rgbd_rtk-quadtree_branch/applications/sequence_loader_test.cpp" "/home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/applications/CMakeFiles/sequence_loader_test.dir/sequence_loader_test.cpp.o"
   )
 SET(CMAKE_CXX_COMPILER_ID "GNU")
 
@@ -28,7 +28,7 @@ SET(CMAKE_TARGET_DEFINITIONS
 
 # Targets to which this target links.
 SET(CMAKE_TARGET_LINKED_INFO_FILES
-  "/home/luiz/Área de Trabalho/rgbd_rtk-master/build/io/CMakeFiles/rgbd_rtk_io.dir/DependInfo.cmake"
+  "/home/luiz/Downloads/rgbd_rtk-quadtree_branch/build/io/CMakeFiles/rgbd_rtk_io.dir/DependInfo.cmake"
   )
 
 # The include file search paths:
@@ -43,6 +43,7 @@ SET(CMAKE_C_TARGET_INCLUDE_PATH
   "../tracking"
   "../motion_estimation"
   "../visualization"
+  "../quadtree"
   )
 SET(CMAKE_CXX_TARGET_INCLUDE_PATH ${CMAKE_C_TARGET_INCLUDE_PATH})
 SET(CMAKE_Fortran_TARGET_INCLUDE_PATH ${CMAKE_C_TARGET_INCLUDE_PATH})

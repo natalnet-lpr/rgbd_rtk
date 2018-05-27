@@ -14,7 +14,13 @@ opencv2/core/core.hpp
 pcl/point_types.h
 -
 
-/home/luiz/Área de Trabalho/rgbd_rtk-master/applications/klt_tracker_test.cpp
+../quadtree/QuadTree.h
+opencv2/core/core.hpp
+-
+vector
+-
+
+/home/luiz/Downloads/rgbd_rtk-quadtree_branch/applications/klt_tracker_test.cpp
 cstdio
 -
 cstdlib
@@ -30,6 +36,8 @@ rgbd_loader.h
 klt_tracker.h
 -
 common_types.h
+-
+QuadTree.h
 -
 
 /usr/local/include/eigen3/Eigen/Core
