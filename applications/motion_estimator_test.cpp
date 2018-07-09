@@ -70,8 +70,14 @@ int main(int argc, char **argv)
 		loader.getNextImage(frame, depth);
 		*curr_cloud = getPointCloud(frame, depth, intr);
 
+		tracker.tree = new QuadTree(Rect(0,0,frame.cols,frame.cols),5);
+
 		//Track feature points in the current frame
 		tracker.track(frame);
+
+
+		tracker.tree->DrawTree(frame);
+
 
 		//Estimate motion between the current and the previous frame/point clouds
 		if(i > 0)
