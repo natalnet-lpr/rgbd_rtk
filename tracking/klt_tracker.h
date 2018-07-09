@@ -23,16 +23,16 @@
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-
+ 
 #ifndef INCLUDE_KLT_TRACKER_H_
 #define INCLUDE_KLT_TRACKER_H_
 
 #include <vector>
 #include <fstream>
-#include <opencv2/core/core.hpp>
-
+#include <opencv2/core.hpp>
+#include <QuadTree.h>
 #include <common_types.h>
-
+std::vector <int> R_circulos_;	;
 /*
  * Short Baseline Feature Tracker default implementation:
  * Kanade-Lucas-Tomasi (KLT) tracker using
@@ -41,13 +41,20 @@
  * Author: Bruno Marques F. da Silva
  * brunomfs@gmail.com
  */
+std::ofstream time_updtbfs;
+std::ofstream time_fluxo;
+std::ofstream time_nuvem;
 class KLTTracker
 {
 
 protected:
+	//Used in goodFeatureToTrack() to adjust  the quality of feature
+	float qualityLevel;
 
 	//Flag used to inform if the tracker was initialized
 	bool initialized_;
+	//Mask used to specify witch region will be used in goodfeaturestotrack()
+	cv::Mat Mask;
 
 	//Current frame number
 	int frame_idx_;
@@ -79,12 +86,13 @@ protected:
 	//Output file with keypoint distribution information
 	std::ofstream heatmap_info_;
 
-	//Detects keypoints in the current frame
-	virtual void detect_keypoints();
+	//Detects keypoints in the current frame based on qualityLevel
+	virtual void detect_keypoints(float  qualityLevel=1);
 
 	//Adds keypoints detected in the previous frame to the tracker
 	virtual void add_keypoints();
-
+	//adds keypoints detected in the previous frame to the tracker if these poins aren't close enough
+	virtual void add_keypoints2();
 	//Updates internal buffers (updates the previous points (in the current frame)
 	//with the current points (from the previous frame))
 	virtual void update_buffers();
@@ -108,6 +116,10 @@ protected:
 	virtual bool write_heatmap_info();
 
 public:
+	//Quadtree data structure
+	QuadTree * tree;
+	//To the goodfeaturetotrack with mask
+	void insert_mask(cv::Mat Mask);
 
 	//Tracklets: history of each point as a vector of point2f
 	std::vector<Tracklet> tracklets_;
@@ -135,8 +147,15 @@ public:
 		tracking_info_.close();
 		timing_info_.close();
 		heatmap_info_.close();
+		delete tree;
 	}
+	/*	
+		these two functions (is_inside_circle and is_inside_window) are both klt variants who checks if a point is close enough
+ 	
+	*/
+	virtual bool is_inside_circle(int i, float  R);	
 
+	virtual bool is_inside_window(int i, int size);
 	/*
 	 * Main member function: tracks keypoints between the current frame and the previous.
 	 * Returns true if the current frame is a keyframe.
@@ -149,6 +168,10 @@ public:
 	void initialize_logger(const std::string timing_file_name,
 		                   const std::string tracking_file_name,
 			               const std::string heatmap_file_name);
+	virtual void check_equals(int i);
+	virtual void radius_size(int i);
+
+	
 };
 
 #endif /* INCLUDE_KLT_TRACKER_H_ */
