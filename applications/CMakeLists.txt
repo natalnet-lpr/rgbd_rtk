@@ -34,6 +34,7 @@ find_library(RGBD_RTK_COMMON NAMES rgbd_rtk_common)
 find_library(RGBD_RTK_VISUALIZATION NAMES rgbd_rtk_visualization)
 find_library(RGBD_RTK_MOTION_ESTIMATION NAMES rgbd_rtk_motion_estimation)
 find_library(RGBD_RTK_VISUAL_ODOMETRY NAMES rgbd_rtk_visual_odometry)
+find_library(RGBD_RTK_QUADTREE names rgbd_rtk_quadtree)
 
 target_link_libraries(monocular_calibration ${OpenCV_LIBRARIES})
 target_link_libraries(monocular_image_grabber ${OpenCV_LIBRARIES})
@@ -42,15 +43,15 @@ target_link_libraries(rgbd_loader_test ${RGBD_RTK_IO})
 target_link_libraries(klt_tracker_test ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING})
 target_link_libraries(motion_estimator_test  ${PCL_LIBRARIES} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING}
 	                                         ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUALIZATION}
-	                                         ${RGBD_RTK_MOTION_ESTIMATION})
+	                                         ${RGBD_RTK_MOTION_ESTIMATION} ${RGBD_RTK_QUADTREE})
 target_link_libraries(optical_flow_visual_odometry_test ${PCL_LIBRARIES} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING}
 	                                                    ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUALIZATION}
 	                                                    ${RGBD_RTK_MOTION_ESTIMATION}
-	                                                    ${RGBD_RTK_VISUAL_ODOMETRY})
+	                                                    ${RGBD_RTK_VISUAL_ODOMETRY}  ${RGBD_RTK_QUADTREE})
 target_link_libraries(icp_odometry_test ${PCL_LIBRARIES} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING}
 	                                    ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUALIZATION}
 	                                    ${RGBD_RTK_MOTION_ESTIMATION}
-	                                    ${RGBD_RTK_VISUAL_ODOMETRY})														
+	                                    ${RGBD_RTK_VISUAL_ODOMETRY}  ${RGBD_RTK_QUADTREE})														
 
 install(TARGETS monocular_calibration
 	            monocular_image_grabber
@@ -70,7 +71,8 @@ if(aruco_FOUND)
 										 ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUALIZATION}
 										 ${RGBD_RTK_MOTION_ESTIMATION}
 										 ${RGBD_RTK_VISUAL_ODOMETRY}
-										 ${RGBD_RTK_SLAM})
+										 ${RGBD_RTK_SLAM}
+										 ${RGBD_RTK_QUADTREE})
 	install(TARGETS marker_finder_test
         RUNTIME DESTINATION bin)
 endif()
