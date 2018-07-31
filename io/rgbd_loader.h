@@ -48,7 +48,8 @@ private:
 public:
 	//Number of images of the sequence
 	int num_images_;
-
+	//time stamp of indexfiles	
+	std::vector<std::string> tstamps;
 	/*
 	 * Default constructor
 	 */
