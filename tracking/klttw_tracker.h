@@ -24,8 +24,8 @@
  *
  */
 
-#ifndef INCLUDE_KLT_TRACKER_H_
-#define INCLUDE_KLT_TRACKER_H_
+#ifndef INCLUDE_KLTTW_TRACKER_H_
+#define INCLUDE_KLTTW_TRACKER_H_
 
 #include <vector>
 #include <fstream>
@@ -34,18 +34,22 @@
 #include <feature_tracker.h>
 #include <common_types.h>
 
-/*
- * Short Baseline Feature Tracker default implementation:
- * Kanade-Lucas-Tomasi (KLT) tracker using
- * OpenCV (Bouguet's) sparse multiscale optical flow.
+ /*
+ * Short Baseline Feature Tracker extension:
+ * Kanade-Lucas-Tomasi (KLT) with Tracking Windows.
  *
  * Author: Bruno Marques F. da Silva
  * brunomfs@gmail.com
+ * Author: Luiz Felipe Maciel Correia
+ * y9luiz@hotmail.com
  */
-class KLTTracker : public FeatureTracker
+class KLTTWTracker : public FeatureTracker
 {
 
 protected:
+
+	//Number of points in the last keyframe
+	size_t num_points_last_kf_;
 
 	//Detects keypoints in the current frame
 	void detect_keypoints();
@@ -57,13 +61,22 @@ protected:
 	//with the current points (from the previous frame))
 	void update_buffers();
 
+	//Returns true if the current frame is a keyframe
+	bool trigger_keyframe();
+
 public:
 
-	//Default constructor
-	KLTTracker();
+	//Debug
+	std::vector<cv::Point2f> rejected_points_;
 
-	//Constructor with the minimum number of tracked points, maximum number of tracked points and flag to log statistics
-	KLTTracker(const int min_pts, const int max_pts, const bool log_stats = false);
+	//Size of the rectangular area of each feature when adding new features.
+	cv::Size window_size_;
+
+	//Default constructor
+	KLTTWTracker();
+
+	//Constructor with the minimum number of tracked points, maximum number of tracked points, size of tracking window and flag to log statistics
+	KLTTWTracker(const int min_pts, const int max_pts, const cv::Size sz, const bool log_stats = false);
 
 	/*
 	 * Main member function: tracks keypoints between the current frame and the previous.
@@ -72,4 +85,4 @@ public:
 	bool track(cv::Mat img);
 };
 
-#endif /* INCLUDE_KLT_TRACKER_H_ */
+#endif /* INCLUDE_KLTTW_TRACKER_H_ */
