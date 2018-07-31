@@ -8,7 +8,6 @@ set(RGBD_RTK_QUADTREE_SRC QuadTree.cpp)
 set(RGBD_RTK_QUADTREE_INCLUDES QuadTree.h)
 
 add_library(rgbd_rtk_quadtree SHARED ${RGBD_RTK_QUADTREE_SRC})
-
 target_link_libraries(rgbd_rtk_quadtree ${OpenCV_LIBS})
 
 set_target_properties(rgbd_rtk_quadtree PROPERTIES OUTPUT_NAME "rgbd_rtk_quadtree")
@@ -20,4 +19,3 @@ install(TARGETS rgbd_rtk_quadtree
         LIBRARY DESTINATION lib)
 
 install(FILES ${RGBD_RTK_QUADTREE_INCLUDES} DESTINATION include)
-
