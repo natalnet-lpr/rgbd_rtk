@@ -81,6 +81,7 @@ int main(int argc, char **argv)
 		visualizer.viewReferenceFrame(vo.pose_);
 		visualizer.viewPointCloud(vo.curr_dense_cloud_, vo.pose_);
 		//visualizer.viewQuantizedPointCloud(vo.curr_dense_cloud_, 0.02, vo.pose_);
+		visualizer.addCameraPath(vo.pose_);
 
 		visualizer.spinOnce();
 

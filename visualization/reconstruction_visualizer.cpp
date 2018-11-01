@@ -40,6 +40,8 @@ ReconstructionVisualizer::ReconstructionVisualizer()
 	num_clouds_ = 0;
 	num_lines_ = 0;
 	num_ref_frames_ = 0;
+	prev_pos_ = pcl::PointXYZ();
+	curr_pos_ = pcl::PointXYZ();
 
 	//Setup PCL visualizer
 	viewer_ = PCLVisualizerPtr(new pcl::visualization::PCLVisualizer("3D Reconstruction"));
@@ -170,4 +172,18 @@ void ReconstructionVisualizer::spin()
 void ReconstructionVisualizer::spinOnce()
 {
 	viewer_->spinOnce();
+}
+
+void ReconstructionVisualizer::addCameraPath(const Eigen::Affine3f pose)
+{
+	curr_pos_.x = pose(0,3);
+	curr_pos_.y = pose(1,3);
+	curr_pos_.z = pose(2,3);
+
+	stringstream line_name;
+	line_name << "line" << num_lines_++;
+	viewer_->addLine(prev_pos_, curr_pos_, 1.0, 0.0, 0.0, line_name.str());
+	viewer_->setShapeRenderingProperties(pcl::visualization::PCL_VISUALIZER_LINE_WIDTH, 5, line_name.str());
+
+	prev_pos_ = curr_pos_;
 }
