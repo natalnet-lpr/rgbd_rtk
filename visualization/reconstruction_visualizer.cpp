@@ -164,6 +164,13 @@ void ReconstructionVisualizer::viewQuantizedPointCloud(const pcl::PointCloud<Poi
 	viewPointCloud(quant_cloud, pose);
 }
 
+void ReconstructionVisualizer::setCameraPosition(const float pos_x, const float pos_y, const float pos_z)
+{
+    viewer_->setCameraPosition(pos_x, pos_y, pos_z, //eye
+                               0.0,  0.0, 50.0, //center
+                               0.0, -1.0, 0.0); //up
+}
+
 void ReconstructionVisualizer::spin()
 {
 	viewer_->spin();

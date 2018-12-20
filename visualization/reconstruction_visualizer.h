@@ -82,6 +82,9 @@ public:
 	//Views a point cloud after quantization (uniform sampling) in the 3D reconstruction
 	void viewQuantizedPointCloud(const pcl::PointCloud<PointT>::Ptr cloud, const float radius, const Eigen::Affine3f pose);
 
+	//Sets the virtual camera position in the virtual world
+	void setCameraPosition(const float pos_x, const float pos_y, const float pos_z);
+
 	//Wrapper to the interactor function of pcl::visualizer
 	void spin();
 
