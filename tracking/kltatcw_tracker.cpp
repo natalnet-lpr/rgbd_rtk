@@ -1,6 +1,6 @@
 /* 
  *  Software License Agreement (BSD License)
- *
+ * 
  *  Copyright (c) 2016-2018, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
