@@ -4,8 +4,8 @@ project(RGBD_RTK)
 
 message(STATUS ">>> tracking subdirectory")
 
-set(RGBD_RTK_TRACKING_SRC klt_tracker.cpp kltqt_tracker.h)
-set(RGBD_RTK_TRACKING_INCLUDES klt_tracker.h kltqt_tracker.cpp)
+set(RGBD_RTK_TRACKING_SRC klt_tracker.cpp kltqt_tracker.cpp feature_tracker.cpp)
+set(RGBD_RTK_TRACKING_INCLUDES klt_tracker.h kltqt_tracker.h feature_tracker.h)
 
 add_library(rgbd_rtk_tracking SHARED ${RGBD_RTK_TRACKING_SRC})
 target_link_libraries(rgbd_rtk_tracking ${OpenCV_LIBS})
