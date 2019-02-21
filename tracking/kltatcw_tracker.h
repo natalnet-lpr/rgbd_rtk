@@ -1,6 +1,6 @@
 /* 
  *  Software License Agreement (BSD License)
- *
+ * 
  *  Copyright (c) 2016-2018, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
@@ -24,8 +24,8 @@
  *
  */
 
-#ifndef INCLUDE_KLT_TRACKER_H_
-#define INCLUDE_KLT_TRACKER_H_
+#ifndef INCLUDE_KLTATCW_TRACKER_H_
+#define INCLUDE_KLTATCW_TRACKER_H_
 
 #include <vector>
 #include <fstream>
@@ -34,18 +34,28 @@
 #include <feature_tracker.h>
 #include <common_types.h>
 
-/*
- * Short Baseline Feature Tracker default implementation:
- * Kanade-Lucas-Tomasi (KLT) tracker using
- * OpenCV (Bouguet's) sparse multiscale optical flow.
+ /*
+ * Short Baseline Feature Tracker extension:
+ * Kanade-Lucas-Tomasi (KLT) with Adaptive Tracking Circular Windows.
  *
+ * Author: Luiz Felipe Maciel Correia
+ * y9luiz@hotmail.com
  * Author: Bruno Marques F. da Silva
  * brunomfs@gmail.com
  */
-class KLTTracker : public FeatureTracker
+class KLTATCWTracker : public FeatureTracker
 {
 
 protected:
+
+	//Minimum radius of a tracking circular window
+	float min_radius_;
+
+	//Maximum radius of a tracking circular window
+	float max_radius_;
+
+	//Number of points in the last keyframe
+	size_t num_points_last_kf_;
 
 	//Detects keypoints in the current frame
 	void detect_keypoints();
@@ -57,13 +67,27 @@ protected:
 	//with the current points (from the previous frame))
 	void update_buffers();
 
+	//Returns true if the current frame is a keyframe
+	bool trigger_keyframe();
+
+	//Updates the radiuses of tracking circles
+	void update_tracking_circles();
+
+	bool is_inside_any_window(const std::vector<cv::Point2f> tracked_pts, const cv::Point2f pt, const std::vector<float> radiuses);
+
 public:
 
-	//Default constructor
-	KLTTracker();
+	//Debug
+	std::vector<cv::Point2f> rejected_points_;
 
-	//Constructor with the minimum number of tracked points, maximum number of tracked points and flag to log statistics
-	KLTTracker(const int min_pts, const int max_pts, const bool log_stats = false);
+	//Radius of each circular window
+	std::vector<float> radiuses_;
+
+	//Default constructor
+	KLTATCWTracker();
+
+	//Constructor with the minimum number of tracked points, maximum number of tracked points, min/max radiuses of a circular tracking window and flag to log statistics
+	KLTATCWTracker(const int min_pts, const int max_pts, const float min_r, const float max_r, const bool log_stats = false);
 
 	/*
 	 * Main member function: tracks keypoints between the current frame and the previous.
@@ -72,4 +96,8 @@ public:
 	bool track(cv::Mat img);
 };
 
-#endif /* INCLUDE_KLT_TRACKER_H_ */
+
+
+
+
+#endif /* INCLUDE_KLTATCW_TRACKER_H_ */
