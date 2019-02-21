@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2018, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -24,62 +24,65 @@
  *
  */
 
-#ifndef INCLUDE_RGBD_LOADER_H_
-#define INCLUDE_RGBD_LOADER_H_
+#ifndef INCLUDE_KLTTCW_TRACKER_H_
+#define INCLUDE_KLTTCW_TRACKER_H_
 
 #include <vector>
+#include <fstream>
 #include <opencv2/core/core.hpp>
 
-class RGBDLoader
+#include <feature_tracker.h>
+#include <common_types.h>
+
+ /*
+ * Short Baseline Feature Tracker extension:
+ * Kanade-Lucas-Tomasi (KLT) with Tracking Circular Windows.
+ *
+ * Author: Luiz Felipe Maciel Correia
+ * y9luiz@hotmail.com
+ * Author: Bruno Marques F. da Silva
+ * brunomfs@gmail.com
+ */
+class KLTTCWTracker : public FeatureTracker
 {
-private:
-	//Vector position of the current RGB-D image
-	int curr_img_;
 
-	//Path of the index file
-	std::string path_;
+protected:
 
-	//RGB file names to be loaded
-	std::vector<std::string> rgb_img_names_;
+	//Number of points in the last keyframe
+	size_t num_points_last_kf_;
 
-	//Depth file names to be loaded
-	std::vector<std::string> depth_img_names_;
+	//Detects keypoints in the current frame
+	void detect_keypoints();
+
+	//Adds keypoints detected in the previous frame to the tracker
+	void add_keypoints();
+
+	//Updates internal buffers (updates the previous points (in the current frame)
+	//with the current points (from the previous frame))
+	void update_buffers();
+
+	//Returns true if the current frame is a keyframe
+	bool trigger_keyframe();
 
 public:
-	//Number of images of the sequence
-	int num_images_;
-	//time stamp of indexfiles	
-	std::vector<std::string> tstamps;
+
+	//Debug
+	std::vector<cv::Point2f> rejected_points_;
+
+	//Radius of the circular window of each feature when adding new features.
+	float window_radius_;
+
+	//Default constructor
+	KLTTCWTracker();
+
+	//Constructor with the minimum number of tracked points, maximum number of tracked points, radius of tracking circles and flag to log statistics
+	KLTTCWTracker(const int min_pts, const int max_pts, const float radius, const bool log_stats = false);
+
 	/*
-	 * Default constructor
+	 * Main member function: tracks keypoints between the current frame and the previous.
+	 * Returns true if the current frame is a keyframe.
 	 */
-	RGBDLoader()
-	{
-		num_images_ = 0;
-		curr_img_ = 0;
-	}
-
-	/* 
-	 * Constructor with the file name of the image sequence.
-	 */ 
-	RGBDLoader(const std::string index_file_name)
-	{
-		num_images_ = 0;
-		curr_img_ = 0;
-		processFile(index_file_name);
-	}
-
-	/*
-	 * Main function: scans the index file and inserts the RGB/depth file names into two vectors,
-	 * assuming the index file has a 4-tuple <timestamp rgb_name timestamp depth_name> per line. 
-     * The function is public and thus can be called directly.
-     */
-	void processFile(const std::string index_file_name);
-
-	/*
-	 * Returns the next RGB-D image of the sequence.
-	 */ 
-	void getNextImage(cv::Mat& rgb_img, cv::Mat& depth_img);
+	bool track(cv::Mat img);
 };
 
-#endif /* INCLUDE_RGBD_LOADER_H_ */
+#endif /* INCLUDE_KLTTCW_TRACKER_H_ */

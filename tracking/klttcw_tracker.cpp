@@ -29,17 +29,38 @@
 #include <iostream>
 #include <cstdio>
 #include <cstdlib>
+#include <cmath>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/video/video.hpp>
 
-#include <klt_tracker.h>
+#include <klttcw_tracker.h>
 
 using namespace std;
 using namespace cv;
 
 //#define DEBUG
+
+/*
+ * Utility function: returns true if pt is inside any circular window of tracked_points.
+ * Circular windows have radius r. 
+ *
+ */
+bool is_inside_any_window(const vector<Point2f> tracked_pts, const Point2f pt, const int max_radius)
+{
+	float r;
+	for(size_t j = 0; j < tracked_pts.size(); j++)
+	{
+		r = sqrt((tracked_pts[j].x - pt.x)*(tracked_pts[j].x - pt.x) + 
+			     (tracked_pts[j].y - pt.y)*(tracked_pts[j].y - pt.y));
+		if(r <= max_radius)
+		{
+			return true;
+		}
+	}	
+	return false;
+}
 
 /* #####################################################
  * #####                                           #####
@@ -48,7 +69,7 @@ using namespace cv;
  * #####################################################
  */
 
-void KLTTracker::detect_keypoints()
+void KLTTCWTracker::detect_keypoints()
 {
 	//Detect Shi-Tomasi keypoints and add them to a temporary buffer.
 	//The buffer is erased at the end of add_keypoints()
@@ -59,17 +80,45 @@ void KLTTracker::detect_keypoints()
 	#endif
 }
 
-void KLTTracker::add_keypoints()
+void KLTTCWTracker::add_keypoints()
 {
-	for(size_t i = 0; i < added_pts_.size(); i++)
-	{
-		prev_pts_.push_back(added_pts_[i]);
+	rejected_points_.clear();
 
-		//Create and add tracklet
-		Tracklet tr(frame_idx_);
-		tr.pts2D_.push_back(added_pts_[i]);
-		tracklets_.push_back(tr);
+	size_t i = 0;
+	//If there are no points in the tracker, detect and add points as normally
+	if(prev_pts_.empty())
+	{
+		for(size_t i = 0; i < added_pts_.size(); i++)
+		{
+			prev_pts_.push_back(added_pts_[i]);
+
+			//Create and add tracklet
+			Tracklet tr(frame_idx_);
+			tr.pts2D_.push_back(added_pts_[i]);
+			tracklets_.push_back(tr);
+		}
 	}
+	else
+	{
+		while(prev_pts_.size() < max_pts_ && i < added_pts_.size())
+		{		
+			if(!is_inside_any_window(prev_pts_, added_pts_[i], window_radius_))
+			{	
+				prev_pts_.push_back(added_pts_[i]);
+
+				//Create and add tracklet
+				Tracklet tr(frame_idx_);
+				tr.pts2D_.push_back(added_pts_[i]);
+				tracklets_.push_back(tr);								
+			}
+			else
+			{
+				rejected_points_.push_back(added_pts_[i]);
+			}
+			i++;
+		}
+	}
+	
 	#ifdef DEBUG
 	printf("adding keypoints...\n");
 	printf("\tadded pts.: %lu\n", added_pts_.size());
@@ -80,9 +129,30 @@ void KLTTracker::add_keypoints()
 	added_pts_.clear();
 }
 
-void KLTTracker::update_buffers()
+void KLTTCWTracker::update_buffers()
 {
 	std::swap(curr_pts_, prev_pts_);
+}
+
+bool KLTTCWTracker::trigger_keyframe()
+{
+	float factor = 0.2;
+	size_t Nk = num_points_last_kf_;
+	size_t Nj = curr_pts_.size();
+	size_t dN = abs(Nk - Nj);
+
+	#ifdef DEBUG
+	printf(">>> is %i keyframe? Nk: %i, Nj: %i, dN: %i, k*Nk: %f\n", frame_idx_, Nk, Nj, dN, factor*Nk);
+	#endif
+
+	if(dN >= factor*Nk)
+	{
+		num_points_last_kf_ = Nj;
+
+		return true;
+	}
+
+	return false;
 }
 
 /* #####################################################
@@ -92,21 +162,25 @@ void KLTTracker::update_buffers()
  * #####################################################
  */
 
-KLTTracker::KLTTracker()
+KLTTCWTracker::KLTTCWTracker() :
+	num_points_last_kf_(0)
 {
 	//Calls FeatureTracker default constructor
+
+	//Sets default circular window size
+	window_radius_ = 20;
 }
 
-KLTTracker::KLTTracker(const int min_pts, const int max_pts, const bool log_stats) :
-	FeatureTracker(min_pts, max_pts, log_stats)
+KLTTCWTracker::KLTTCWTracker(const int min_pts, const int max_pts, const float radius, const bool log_stats) :
+	FeatureTracker(min_pts, max_pts, log_stats),
+	num_points_last_kf_(0),
+	window_radius_(radius)
 {
 	
 }
 
-bool KLTTracker::track(Mat curr_frame)
+bool KLTTCWTracker::track(Mat curr_frame)
 {
-	bool is_keyframe = false;
-
 	//Make a grayscale copy of the current frame
 	cvtColor(curr_frame, curr_frame_gray_, CV_BGR2GRAY);
 
@@ -126,7 +200,6 @@ bool KLTTracker::track(Mat curr_frame)
 		//Initialize tracker
 		detect_keypoints();
 		initialized_ = true;
-		is_keyframe = true;
 	}
 	//Tracker is initialized: track keypoints
 	else
@@ -174,14 +247,8 @@ bool KLTTracker::track(Mat curr_frame)
 		printf("\ttracked points/max_points: %i/%i\n", tracked_pts, max_pts_);
 		#endif
 
-		//Insufficient number of points being tracked
-		if(tracked_pts < min_pts_)
-		{
-			//Detect new features, hold them and add them to the tracker in the next frame
-			detect_keypoints();
-			//Make the current frame a new keyframe
-			is_keyframe = true;
-		}
+		//Detect new features at every frame, hold them and add them to the tracker in the next frame
+		detect_keypoints();
 	}
 
 	//print_track_info();
@@ -197,5 +264,5 @@ bool KLTTracker::track(Mat curr_frame)
 	cv::swap(curr_frame_gray_, prev_frame_gray_);
 	frame_idx_++;
 
-	return is_keyframe;
+	return trigger_keyframe();
 }

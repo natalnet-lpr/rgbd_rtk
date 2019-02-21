@@ -1,4 +1,5 @@
-/* 
+/*
+* 
  *  Software License Agreement (BSD License)
  *
  *  Copyright (c) 2016-2018, Natalnet Laboratory for Perceptual Robotics
@@ -24,31 +25,44 @@
  *
  */
 
-#ifndef INCLUDE_KLT_TRACKER_H_
-#define INCLUDE_KLT_TRACKER_H_
+#ifndef INCLUDE_KLTQT_TRACKER_H_
+#define INCLUDE_KLTQT_TRACKER_H_
 
 #include <vector>
 #include <fstream>
 #include <opencv2/core/core.hpp>
+#include <QuadTree.h>
 
 #include <feature_tracker.h>
+	
 #include <common_types.h>
 
-/*
- * Short Baseline Feature Tracker default implementation:
- * Kanade-Lucas-Tomasi (KLT) tracker using
- * OpenCV (Bouguet's) sparse multiscale optical flow.
+ /*
+ * Short Baseline Feature Tracker extension:
+ * Kanade-Lucas-Tomasi (KLT) with Tracking Circular Windows.
  *
+ * Author: Luiz Felipe Maciel Correia
+ * y9luiz@hotmail.com
  * Author: Bruno Marques F. da Silva
  * brunomfs@gmail.com
  */
-class KLTTracker : public FeatureTracker
+class KLTQTTracker : public FeatureTracker
 {
 
 protected:
 
-	//Detects keypoints in the current frame
+	//Used in goodFeatureToTrack() to adjust  the quality of feature
+	float qualityLevel;	
+
+	//Mask of regions than will be used on goodFeatureToTrack()
+	cv::Mat Mask;
+
+	//Number of points in the last keyframe
+	size_t num_points_last_kf_;
+	//Detects keypoints in the current frame based on a qualityLevel
 	void detect_keypoints();
+
+
 
 	//Adds keypoints detected in the previous frame to the tracker
 	void add_keypoints();
@@ -57,19 +71,34 @@ protected:
 	//with the current points (from the previous frame))
 	void update_buffers();
 
+
+
+
+
+
 public:
+	//Quadtree data structure
+	QuadTree * tree;
+
+	//Debug
+	std::vector<cv::Point2f> rejected_points_;
+
 
 	//Default constructor
-	KLTTracker();
+	KLTQTTracker();
 
-	//Constructor with the minimum number of tracked points, maximum number of tracked points and flag to log statistics
-	KLTTracker(const int min_pts, const int max_pts, const bool log_stats = false);
+	//Constructor with the minimum number of tracked points, maximum number of tracked points, radius of tracking circles and flag to log statistics
+	KLTQTTracker(const int min_pts, const int max_pts,const bool log_stats = false);
 
 	/*
 	 * Main member function: tracks keypoints between the current frame and the previous.
 	 * Returns true if the current frame is a keyframe.
 	 */
 	bool track(cv::Mat img);
+
+
+	//insert a mask into the current object 
+	void insert_mask(cv::Mat Mask);
 };
 
-#endif /* INCLUDE_KLT_TRACKER_H_ */
+#endif /* INCLUDE_KLTQT_TRACKER_H_ */
