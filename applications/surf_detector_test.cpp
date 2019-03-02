@@ -91,6 +91,7 @@ int main(int argc, char **argv)
 	index_file_name = argv[1];
 	loader.processFile(index_file_name);
 	Mat saved_desc;
+	Mat prev_frame;
 	//Track points on each image
 	for(int i = 0; i < loader.num_images_; i++)
 	{
@@ -102,7 +103,8 @@ int main(int argc, char **argv)
 		else if(i==150)
 			detector.searchDescriptor(saved_desc,10);
 	
-        detector.detectAndMatch(frame);
+		if(i>0)        	
+		detector.detectAndMatch(frame,prev_frame);
 		
 
 		imshow("Image view", frame);
@@ -113,6 +115,7 @@ int main(int argc, char **argv)
 			printf("Exiting.\n");
 			break;
 		}
+		prev_frame = frame;
 		
 	}
 
