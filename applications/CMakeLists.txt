@@ -25,6 +25,9 @@ add_executable(klt_tracker_test klt_tracker_test.cpp)
 add_executable(motion_estimator_test motion_estimator_test.cpp)
 add_executable(optical_flow_visual_odometry_test optical_flow_visual_odometry_test.cpp)
 add_executable(icp_odometry_test icp_odometry_test.cpp)
+add_executable(surf_detector_test surf_detector_test.cpp)
+add_executable(surf_tracker_test surf_tracker_test.cpp)
+add_executable(motion_estimator_surf_test motion_estimator_surf_test.cpp)
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 
@@ -34,6 +37,8 @@ find_library(RGBD_RTK_COMMON NAMES rgbd_rtk_common)
 find_library(RGBD_RTK_VISUALIZATION NAMES rgbd_rtk_visualization)
 find_library(RGBD_RTK_MOTION_ESTIMATION NAMES rgbd_rtk_motion_estimation)
 find_library(RGBD_RTK_VISUAL_ODOMETRY NAMES rgbd_rtk_visual_odometry)
+find_library(RGBD_RTK_SURF_DETECTOR NAMES rgbd_rtk_surf_detector)
+find_library(RGBD_RTK_VISUAL_MEMORY NAMES rgbd_rtk_visual_memory)
 
 target_link_libraries(monocular_calibration ${OpenCV_LIBRARIES})
 target_link_libraries(monocular_image_grabber ${OpenCV_LIBRARIES})
@@ -45,12 +50,22 @@ target_link_libraries(motion_estimator_test  ${PCL_LIBRARIES} ${RGBD_RTK_IO} ${R
 	                                         ${RGBD_RTK_MOTION_ESTIMATION})
 target_link_libraries(optical_flow_visual_odometry_test ${PCL_LIBRARIES} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING}
 	                                                    ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUALIZATION}
-	                                                    ${RGBD_RTK_MOTION_ESTIMATION}
-	                                                    ${RGBD_RTK_VISUAL_ODOMETRY})
-target_link_libraries(icp_odometry_test ${PCL_LIBRARIES} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING}
+	                                                    ${RGBD_RTK_MOTION_ESTIMATION} ${RGBD_RTK_VISUAL_ODOMETRY} )
+target_link_libraries(icp_odometry_test ${PCL_LIBRARIES} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING} 
+	                                                    ${RGBD_RTK_VISUAL_ODOMETRY}
 	                                    ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUALIZATION}
 	                                    ${RGBD_RTK_MOTION_ESTIMATION}
-	                                    ${RGBD_RTK_VISUAL_ODOMETRY})														
+	                                    ${RGBD_RTK_VISUAL_ODOMETRY})	
+target_link_libraries(surf_detector_test ${RGBD_RTK_IO} 
+										${RGBD_RTK_COMMON} 
+										${RGBD_RTK_SURF_DETECTOR})
+target_link_libraries(surf_tracker_test ${RGBD_RTK_IO} 
+										${RGBD_RTK_COMMON} 
+										${RGBD_RTK_SURF_DETECTOR} ${RGBD_RTK_VISUAL_MEMORY})																			
+target_link_libraries(motion_estimator_surf_test ${PCL_LIBRARIES} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING}
+	                                         ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUALIZATION}
+	                                         ${RGBD_RTK_MOTION_ESTIMATION} ${RGBD_RTK_SURF_DETECTOR} ${RGBD_RTK_VISUAL_MEMORY})
+								
 
 install(TARGETS monocular_calibration
 	            monocular_image_grabber
@@ -60,6 +75,9 @@ install(TARGETS monocular_calibration
                 motion_estimator_test
                 optical_flow_visual_odometry_test
 				icp_odometry_test
+		motion_estimator_surf_test
+			surf_tracker_test	
+			surf_detector_test
         RUNTIME DESTINATION bin)
 
 # Build SLAM related applications only if ARUCO was found
