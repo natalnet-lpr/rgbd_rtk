@@ -27,7 +27,7 @@
 #include <Eigen/Geometry>
 #include <pcl/sample_consensus/ransac.h>
 #include <pcl/sample_consensus/sac_model_registration.h>
- #include <pcl/common/transforms.h>
+#include <pcl/common/transforms.h>
 
 #include <geometry.h>
 #include <motion_estimator_ransac.h>
@@ -36,8 +36,8 @@ using namespace std;
 
 //#define DEBUG
 
-void MotionEstimatorRANSAC::setDataFromCorrespondences(const std::vector<cv::Point2f> tgt_points, const pcl::PointCloud<PointT>::Ptr tgt_dense_cloud,
-		                                         const std::vector<cv::Point2f> src_points, const pcl::PointCloud<PointT>::Ptr src_dense_cloud)
+void MotionEstimatorRANSAC::setDataFromCorrespondences(const std::vector<cv::Point2f>& tgt_points, const pcl::PointCloud<PointT>::Ptr& tgt_dense_cloud,
+		                                               const std::vector<cv::Point2f>& src_points, const pcl::PointCloud<PointT>::Ptr& src_dense_cloud)
 {
 	//Reset sparse src cloud buffer
 	src_cloud_->clear();
@@ -55,6 +55,8 @@ void MotionEstimatorRANSAC::setDataFromCorrespondences(const std::vector<cv::Poi
 
 	#ifdef DEBUG
 	printf("Setting 3D correspondences:\n");
+	printf("\ttgt cloud: %i x %i\n", tgt_cloud_->width, tgt_cloud_->height);
+	printf("\tsrc cloud: %i x %i\n", src_cloud_->width, src_cloud_->height);
 	#endif
 	//For each correspondence, get both points and their corresponding 3D points in the dense 3D clouds
 	//A correspondence is removed if any of the 3D points is invalid
@@ -66,10 +68,12 @@ void MotionEstimatorRANSAC::setDataFromCorrespondences(const std::vector<cv::Poi
 
 		if(is_valid(tpt) && is_valid(spt))
 		{
-			//printf("\t\t[%lu]: (%f,%f) <-> (%f,%f) [(%f,%f,%f) <-> (%f,%f,%f)]\n", k, src_points[k].x, src_points[k].y,
-			//	                                                                      tgt_points[k].x, tgt_points[k].y,
-			//	                                                                      spt.x, spt.y, spt.z, 
-			//	                                                                      tpt.x, tpt.y, tpt.z);
+			#ifdef DEBUG
+			printf("\t\t[%lu]: (%f,%f) <-> (%f,%f) [(%f,%f,%f) <-> (%f,%f,%f)]\n", k, src_points[k].x, src_points[k].y,
+				                                                                      tgt_points[k].x, tgt_points[k].y,
+				                                                                      spt.x, spt.y, spt.z, 
+				                                                                      tpt.x, tpt.y, tpt.z);
+			#endif
 
 			tgt_cloud_->push_back(tpt);
 			src_cloud_->push_back(spt);
@@ -95,7 +99,7 @@ MotionEstimatorRANSAC::MotionEstimatorRANSAC()
 	intr_ = Intrinsics(0);
 }
 
-MotionEstimatorRANSAC::MotionEstimatorRANSAC(const Intrinsics intr)
+MotionEstimatorRANSAC::MotionEstimatorRANSAC(const Intrinsics& intr)
 {
 	num_inliers_ = 0;
 	tgt_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
@@ -108,8 +112,8 @@ MotionEstimatorRANSAC::MotionEstimatorRANSAC(const Intrinsics intr)
 	printf("%f %f %f %f %f\n", intr.k1_, intr.k2_, intr.p1_, intr.p2_, intr.k3_);
 }
 
-Eigen::Matrix4f MotionEstimatorRANSAC::estimate(const vector<cv::Point2f> tgt_points, const pcl::PointCloud<PointT>::Ptr tgt_dense_cloud,
-	                                      const vector<cv::Point2f> src_points, const pcl::PointCloud<PointT>::Ptr src_dense_cloud)
+Eigen::Matrix4f MotionEstimatorRANSAC::estimate(const vector<cv::Point2f>& tgt_points, const pcl::PointCloud<PointT>::Ptr& tgt_dense_cloud,
+	                                            const vector<cv::Point2f>& src_points, const pcl::PointCloud<PointT>::Ptr& src_dense_cloud)
 {
 	//Fill data buffers with the supplied data
 	setDataFromCorrespondences(tgt_points, tgt_dense_cloud, src_points, src_dense_cloud);

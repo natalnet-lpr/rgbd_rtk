@@ -39,7 +39,7 @@ OpticalFlowVisualOdometry::OpticalFlowVisualOdometry()
 	curr_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
 }
 
-OpticalFlowVisualOdometry::OpticalFlowVisualOdometry(const Intrinsics intr)
+OpticalFlowVisualOdometry::OpticalFlowVisualOdometry(const Intrinsics& intr)
 {
 	frame_idx_ = 0;
 	pose_ = Eigen::Affine3f::Identity();
@@ -49,7 +49,7 @@ OpticalFlowVisualOdometry::OpticalFlowVisualOdometry(const Intrinsics intr)
 	curr_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
 }
 
-void OpticalFlowVisualOdometry::computeCameraPose(cv::Mat rgb, cv::Mat depth)
+void OpticalFlowVisualOdometry::computeCameraPose(const cv::Mat& rgb, const cv::Mat& depth)
 {
 	Eigen::Affine3f trans = Eigen::Affine3f::Identity();
 

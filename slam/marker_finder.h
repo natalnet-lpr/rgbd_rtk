@@ -29,6 +29,7 @@
 
 #include <vector>
 #include <Eigen/Geometry>
+#include <Eigen/StdVector>
 
 #include <opencv2/core/core.hpp>
 
@@ -54,10 +55,12 @@ protected:
 	void setMarkerPosesLocal();
 	
 	//Set the pose of all detected markers w.r.t. the global ref. frame
-	void setMarkerPosesGlobal(Eigen::Affine3f cam_pose);
+	void setMarkerPosesGlobal(const Eigen::Affine3f& cam_pose);
 
 public:
 	
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
 	//(ARUCO) Camera intrinsic parameters
 	aruco::CameraParameters camera_params_;
 	
@@ -65,10 +68,10 @@ public:
 	std::vector<aruco::Marker> markers_;
 	
 	//Vector with the pose of each detected marker (w.r.t. the local/camera ref. frame)
-	std::vector<Eigen::Affine3f> marker_poses_local_;
+	std::vector<Eigen::Affine3f,Eigen::aligned_allocator<Eigen::Affine3f> > marker_poses_local_;
 	
 	//Vector with the pose of each detected marker 
-	std::vector<Eigen::Affine3f> marker_poses_;
+	std::vector<Eigen::Affine3f,Eigen::aligned_allocator<Eigen::Affine3f> > marker_poses_;
 	
 	//Default constructor
 	MarkerFinder();
@@ -77,8 +80,7 @@ public:
 	MarkerFinder(char params[], float size);
 
 	//Detect ARUCO markers. Also sets the poses of all detected markers in the local and global ref. frames
-	void detectMarkers(const cv::Mat img, Eigen::Affine3f cam_pose);
-
+	void detectMarkers(const cv::Mat& img, const Eigen::Affine3f& cam_pose);
 };
 
 #endif /* INCLUDE_MARKER_FINDER_H_ */

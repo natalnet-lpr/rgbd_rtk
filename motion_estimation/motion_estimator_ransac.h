@@ -44,8 +44,8 @@ protected:
 	//The function assumes that tgt_points and src_points have the same size and also that
 	//the 3D points related to tgt_points[i] and src_points[i] are added to the point clouds
 	//only if neither of them are invalid.
-	void setDataFromCorrespondences(const std::vector<cv::Point2f> tgt_points, const pcl::PointCloud<PointT>::Ptr tgt_dense_cloud,
-		                            const std::vector<cv::Point2f> src_points, const pcl::PointCloud<PointT>::Ptr src_dense_cloud);
+	void setDataFromCorrespondences(const std::vector<cv::Point2f>& tgt_points, const pcl::PointCloud<PointT>::Ptr& tgt_dense_cloud,
+		                            const std::vector<cv::Point2f>& src_points, const pcl::PointCloud<PointT>::Ptr& src_dense_cloud);
 
 public:
 
@@ -71,14 +71,14 @@ public:
 	MotionEstimatorRANSAC();
 
 	//Constructor with the matrix of intrinsic parameters
-	MotionEstimatorRANSAC(const Intrinsics intr);
+	MotionEstimatorRANSAC(const Intrinsics& intr);
 
 	/* Main member function: estimates the motion between two point clouds as the registration transformation
 	 * between two sparse clouds of visual features. The sparse clouds are given as two vectors of 2D points,
 	 * from which the corresponding 3D points are extracted.
 	 */
-	Eigen::Matrix4f estimate(const std::vector<cv::Point2f> tgt_points, const pcl::PointCloud<PointT>::Ptr tgt_dense_cloud,
-		                     const std::vector<cv::Point2f> src_points, const pcl::PointCloud<PointT>::Ptr src_dense_cloud);
+	Eigen::Matrix4f estimate(const std::vector<cv::Point2f>& tgt_points, const pcl::PointCloud<PointT>::Ptr& tgt_dense_cloud,
+		                     const std::vector<cv::Point2f>& src_points, const pcl::PointCloud<PointT>::Ptr& src_dense_cloud);
 
 };
 
