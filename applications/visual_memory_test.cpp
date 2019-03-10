@@ -141,12 +141,19 @@ int main(int argc, char **argv)
 	string str = "searched frame ";
 	for(int i=0;i<(int)digits.size();i++)
         str+= digits[i];
-    imshow(str,img);
-	cout<<(int)img_idx_set.size()<<endl;
+	imshow(str,img);
+
 	for(int i=0;i<(int)img_idx_set.size();i++){
 	
-		int idx = key_frame_set[img_idx_set[i]].second;
-        imshow("most corresponding",key_frame_set[ idx].first);
+		int idx = img_idx_set[i];
+        vector<char> global_idx = digit_extrator( key_frame_set[img_idx_set[i]].second); 
+
+        string text = "correspondence ";
+        for(int i=0;i<(int)global_idx.size();i++)
+            text += global_idx[i];
+ 
+
+        imshow(text,key_frame_set[idx].first);
 		waitKey();
 
 	}
@@ -154,3 +161,4 @@ int main(int argc, char **argv)
     return 0;
 
 }
+
