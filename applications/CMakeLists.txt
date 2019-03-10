@@ -28,6 +28,7 @@ add_executable(icp_odometry_test icp_odometry_test.cpp)
 add_executable(surf_detector_test surf_detector_test.cpp)
 add_executable(surf_tracker_test surf_tracker_test.cpp)
 add_executable(motion_estimator_surf_test motion_estimator_surf_test.cpp)
+add_executable(visual_memory_test visual_memory_test.cpp)
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 
@@ -66,6 +67,8 @@ target_link_libraries(motion_estimator_surf_test ${PCL_LIBRARIES} ${RGBD_RTK_IO}
 	                                         ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUALIZATION}
 	                                         ${RGBD_RTK_MOTION_ESTIMATION} ${RGBD_RTK_SURF_DETECTOR} ${RGBD_RTK_VISUAL_MEMORY})
 								
+target_link_libraries(visual_memory_test ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING}
+	                                         ${RGBD_RTK_COMMON} ${RGBD_RTK_SURF_DETECTOR} ${RGBD_RTK_VISUAL_MEMORY})
 
 install(TARGETS monocular_calibration
 	            monocular_image_grabber
@@ -78,6 +81,7 @@ install(TARGETS monocular_calibration
 		motion_estimator_surf_test
 			surf_tracker_test	
 			surf_detector_test
+			visual_memory_test
         RUNTIME DESTINATION bin)
 
 # Build SLAM related applications only if ARUCO was found
