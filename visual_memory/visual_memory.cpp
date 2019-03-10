@@ -1,4 +1,6 @@
 #include <visual_memory.h>
+#include "opencv2/imgproc.hpp"
+
 #include <iostream>
 
 VisualMemory::VisualMemory(){
@@ -54,7 +56,7 @@ std::vector<int> VisualMemory::searchDescriptor(cv::Mat queryDescriptor,int n){
     //the second is the imgidx
     
     std::vector< std::pair<int,int> > cont(matches.size());
-    
+   
     for(int i=0;i<matches.size();i++){// isso é para o knn matches
 
         for(int j=0;j<matches[i].size();j++){
@@ -133,4 +135,18 @@ std::vector<int> VisualMemory::searchDescriptor(cv::Mat queryDescriptor, int n, 
     return output;
 
 
+}
+std::vector<int> VisualMemory::searchImage(cv::Mat img){
+    cv::Ptr<cv::FeatureDetector>  detector = SURF::create(400);;
+    cv::cvtColor(img, img, cv::COLOR_RGB2GRAY);
+
+    std::vector<cv::KeyPoint> KPs;
+    cv::Mat descriptors;
+    detector->detect(img, KPs);
+    detector->compute(img, KPs,descriptors);
+   
+    return searchDescriptor(descriptors,5);
+
+
+    
 }

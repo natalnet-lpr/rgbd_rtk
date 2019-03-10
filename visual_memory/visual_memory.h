@@ -34,6 +34,7 @@ class VisualMemory{
         
        std::vector<int> searchDescriptor(cv::Mat, int n, cv::Ptr<cv::DescriptorMatcher> matcher);
 
+       std::vector<int> searchImage(cv::Mat img);
 
 
 
