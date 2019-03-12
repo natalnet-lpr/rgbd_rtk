@@ -32,7 +32,7 @@
 
 using namespace std;
 
-void MotionEstimatorICP::downSampleCloud(const pcl::PointCloud<PointT>::Ptr dense_cloud,
+void MotionEstimatorICP::downSampleCloud(const pcl::PointCloud<PointT>::Ptr& dense_cloud,
 		                                 pcl::PointCloud<PointT>& res_cloud)
 {
 	float radius = 0.05;
@@ -51,8 +51,8 @@ MotionEstimatorICP::MotionEstimatorICP()
 	icp_.setEuclideanFitnessEpsilon(0.001);
 }
 
-Eigen::Affine3f MotionEstimatorICP::estimate(const pcl::PointCloud<PointT>::Ptr tgt_dense_cloud,
-		                                     const pcl::PointCloud<PointT>::Ptr src_dense_cloud)
+Eigen::Affine3f MotionEstimatorICP::estimate(const pcl::PointCloud<PointT>::Ptr& tgt_dense_cloud,
+		                                     const pcl::PointCloud<PointT>::Ptr& src_dense_cloud)
 {
 	Eigen::Affine3f result = Eigen::Affine3f::Identity();
 	pcl::PointCloud<PointT> tgt_cloud, src_cloud, aligned_cloud;

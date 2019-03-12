@@ -44,6 +44,8 @@ private:
 
 public:
 
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
 	//Previous dense point cloud
 	pcl::PointCloud<PointT>::Ptr prev_dense_cloud_;
 
@@ -63,10 +65,10 @@ public:
 	ICPOdometry();
 
 	//Constructor with the matrix of intrinsic parameters
-	ICPOdometry(const Intrinsics intr);
+	ICPOdometry(const Intrinsics& intr);
 
 	//Main member function: computes the current camera pose
-	void computeCameraPose(cv::Mat rgb, cv::Mat depth);
+	void computeCameraPose(const cv::Mat& rgb, const cv::Mat& depth);
 };
 
 #endif /* INCLUDE_ICP_ODOMETRY_H_ */

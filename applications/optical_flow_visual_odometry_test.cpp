@@ -77,11 +77,12 @@ int main(int argc, char **argv)
 		}
 
 		if(i == 0) visualizer.addReferenceFrame(vo.pose_, "origin");
-		visualizer.addQuantizedPointCloud(vo.curr_dense_cloud_, 0.3, vo.pose_);
+		//visualizer.addQuantizedPointCloud(vo.curr_dense_cloud_, 0.1, vo.pose_);
+		//visualizer.addPointCloud(vo.curr_dense_cloud_, vo.pose_);
 		visualizer.viewReferenceFrame(vo.pose_);
-		visualizer.viewPointCloud(vo.curr_dense_cloud_, vo.pose_);
-		//visualizer.viewQuantizedPointCloud(vo.curr_dense_cloud_, 0.02, vo.pose_);
-		visualizer.addCameraPath(vo.pose_);
+		//visualizer.viewPointCloud(vo.curr_dense_cloud_, vo.pose_);
+		visualizer.viewQuantizedPointCloud(vo.curr_dense_cloud_, 0.05, vo.pose_);
+		//visualizer.addCameraPath(vo.pose_);
 
 		visualizer.spinOnce();
 
