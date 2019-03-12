@@ -205,6 +205,7 @@ KLTTracker::KLTTracker(int min_pts, int max_pts)
 bool KLTTracker::track(Mat curr_frame)
 {
 	//Make a grayscale copy of the current frame
+	//printf("curr frame:%i , curr_frame_gray:%i ",curr_frame.channels(),curr_frame_gray_.channels());
 	cvtColor(curr_frame, curr_frame_gray_, CV_BGR2GRAY);
 
 	#ifdef DEBUG

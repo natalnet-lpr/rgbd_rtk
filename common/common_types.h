@@ -180,6 +180,23 @@ struct Intrinsics
 		}
 
 	}
+	Intrinsics(double fx, double fy, double cx, double cy)
+	{
+		fx_=fx;
+		fy_=fy;
+		cx_=cx;
+		cy_=cy;
+		scale_=1.0;
+		k1_ = 0.0;
+		k2_ = 0.0;
+		p1_ = 0.0;
+		p2_ = 0.0;
+		k3_ = 0.0;
+
+	}
+
+
+
 };
 
 #endif /* COMMON_TYPES_H_ */

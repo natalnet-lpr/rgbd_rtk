@@ -36,7 +36,7 @@ else()
 endif()
 
 # Force OpenCV versions if ROS is installed
-#set(OpenCV_INCLUDE_DIRS "/home/bruno/Lib/opencv-3.4.1/local/include")
+#set(OpenCV_INCLUDE_DIRS "/home/ferreira/Documentos/libs/opencv-3.4.1/include")
 
 include_directories(${OpenCV_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} common io tracking motion_estimation
                     visualization visual_odometry)
@@ -57,16 +57,16 @@ add_subdirectory(visual_odometry)
 set(RGBD_RTK_VISUAL_ODOMETRY rgbd_rtk_visual_odometry)
 
 # Build SLAM module only if ARUCO was found
-find_package(aruco 2.0 QUIET)
-if(aruco_FOUND)
-	message(STATUS "Aruco found")
-	message(STATUS "Aruco INCLUDES: " ${aruco_INCLUDE_DIRS})
-	message(STATUS "Aruco LIBS: " ${aruco_LIBS})
-	include_directories(slam)
-	add_subdirectory(slam)
-	set(RGBD_RTK_SLAM rgbd_rtk_slam)
-else()
-	message(WARNING "Aruco was not found in your system. SLAM module will not be built.")
-endif()
+#find_package(aruco 2.0 QUIET)
+#if(aruco_FOUND)
+	#message(STATUS "Aruco found")
+	#message(STATUS "Aruco INCLUDES: " ${aruco_INCLUDE_DIRS})
+	#message(STATUS "Aruco LIBS: " ${aruco_LIBS})
+	#include_directories(slam)
+	#add_subdirectory(slam)
+	#set(RGBD_RTK_SLAM rgbd_rtk_slam)
+#else()
+	#message(WARNING "Aruco was not found in your system. SLAM module will not be built.")
+#endif()
 
 add_subdirectory(applications)
