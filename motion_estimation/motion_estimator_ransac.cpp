@@ -112,6 +112,7 @@ Eigen::Matrix4f MotionEstimatorRANSAC::estimate(const vector<cv::Point2f> tgt_po
 	                                      const vector<cv::Point2f> src_points, const pcl::PointCloud<PointT>::Ptr src_dense_cloud)
 {
 	//Fill data buffers with the supplied data
+
 	setDataFromCorrespondences(tgt_points, tgt_dense_cloud, src_points, src_dense_cloud);
 
 	long unsigned N = src_cloud_->points.size();
@@ -124,7 +125,8 @@ Eigen::Matrix4f MotionEstimatorRANSAC::estimate(const vector<cv::Point2f> tgt_po
 	pcl::SampleConsensusModelRegistration<PointT>::Ptr sac_model(new pcl::SampleConsensusModelRegistration<PointT>(src_cloud_));
 	sac_model->setInputTarget(tgt_cloud_);
 	pcl::RandomSampleConsensus<PointT> ransac(sac_model);
-	ransac.setDistanceThreshold(0.008); //8mm
+	//ransac.setDistanceThreshold(0.008); //8mm
+	ransac.setDistanceThreshold(0.5);//5cm
 	ransac.computeModel();
 
 	//Get the model estimated by RANSAC

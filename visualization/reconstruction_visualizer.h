@@ -51,12 +51,6 @@ private:
 	//PointCloudsLibrary 3D visualizer (only works with a pointer to the object)
 	PCLVisualizerPtr viewer_;
 
-	//Previous position of the camera
-	pcl::PointXYZ prev_pos_;
-
-	//Current position of the camera
-	pcl::PointXYZ curr_pos_;
-
 public:
 	//Default constructor
 	ReconstructionVisualizer();
@@ -87,9 +81,6 @@ public:
 
 	//Wrapper to the interactor function of pcl::visualizer
 	void spinOnce();
-
-	//Adds a line between the previous and the current camera position
-	void addCameraPath(const Eigen::Affine3f pose);
 };
 
 #endif /* INCLUDE_RECONSTRUCTION_VISUALIZER_H_ */

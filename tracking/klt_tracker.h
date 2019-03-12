@@ -114,7 +114,7 @@ public:
 
 	//Previous positions of the tracked points
 	std::vector<cv::Point2f> prev_pts_;
-
+	
 	//Current positions of the tracked points
 	std::vector<cv::Point2f> curr_pts_;
 
