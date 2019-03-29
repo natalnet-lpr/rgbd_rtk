@@ -35,7 +35,7 @@ else()
 endif()
 
 # Force OpenCV versions if ROS is installed
-#set(OpenCV_INCLUDE_DIRS "/home/bruno/Lib/opencv-3.4.1/local/include")
+#set(OpenCV_INCLUDE_DIRS "/home/ferreira/Documentos/libs/opencv-3.4.1/include")
 
 include_directories(${OpenCV_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} common io tracking motion_estimation
                     visualization visual_odometry)
