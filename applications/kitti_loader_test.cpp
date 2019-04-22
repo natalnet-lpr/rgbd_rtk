@@ -48,12 +48,16 @@ int main(int argc, char **argv)
     if(argc != 4)
     {
         fprintf(stderr, "Usage: %s <kitti datasets root dir.> <sequence_number> <use_color_camera>\n", argv[0]);
-        fprintf(stderr, "Exiting.\n");
+        fprintf(stderr, "Example: /path/to/parent/directory/of/sequences 11 0 - loads the KITTI grayscale sequence number 11.\n\n");
+        fprintf(stderr, "That is, if the 00, 01, 02, ... folders are within /Datasets/KITTI_Datasets_Gray/sequences,\n");
+        fprintf(stderr, "the grayscale sequence 11 is loaded with:\n");
+        fprintf(stderr, "%s /Datasets/KITTI_Datasets_Gray/ 11 0\n", argv[0]);
+        fprintf(stderr, "(the 'sequences' part of the path is added automatically and must be omitted).\n");
         exit(0);
     }
 
     root_path = argv[1];
-    loader.loadStereoSequence(root_path, 10, false);
+    loader.loadStereoSequence(root_path, atoi(argv[2]), atoi(argv[3]));
 
     for(size_t i = 0; i < loader.num_pairs_; i++)
     {
