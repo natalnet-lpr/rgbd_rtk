@@ -12,7 +12,8 @@ add_executable(klt_tracker_test klt_tracker_test.cpp)
 add_executable(motion_estimator_test motion_estimator_test.cpp)
 add_executable(optical_flow_visual_odometry_test optical_flow_visual_odometry_test.cpp)
 add_executable(icp_odometry_test icp_odometry_test.cpp)
-
+add_executable(kitti_loader_test kitti_loader_test.cpp)
+ 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 
 find_library(RGBD_RTK_IO NAMES rgbd_rtk_io)
@@ -37,7 +38,8 @@ target_link_libraries(optical_flow_visual_odometry_test ${PCL_LIBRARIES} ${RGBD_
 target_link_libraries(icp_odometry_test ${PCL_LIBRARIES} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING}
 	                                    ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUALIZATION}
 	                                    ${RGBD_RTK_MOTION_ESTIMATION}
-	                                    ${RGBD_RTK_VISUAL_ODOMETRY})														
+	                                    ${RGBD_RTK_VISUAL_ODOMETRY})	
+target_link_libraries(kitti_loader_test ${RGBD_RTK_IO})
 
 install(TARGETS monocular_calibration
 	            monocular_image_grabber
@@ -46,7 +48,8 @@ install(TARGETS monocular_calibration
                 klt_tracker_test
                 motion_estimator_test
                 optical_flow_visual_odometry_test
-				icp_odometry_test
+		icp_odometry_test
+		kitti_loader_test
         RUNTIME DESTINATION bin)
 
 # Build SLAM related applications only if ARUCO was found
@@ -58,6 +61,5 @@ if(aruco_FOUND)
 										 ${RGBD_RTK_MOTION_ESTIMATION}
 										 ${RGBD_RTK_VISUAL_ODOMETRY}
 										 ${RGBD_RTK_SLAM})
-	install(TARGETS marker_finder_test
-        RUNTIME DESTINATION bin)
+	install(TARGETS marker_finder_test RUNTIME DESTINATION bin)
 endif()
