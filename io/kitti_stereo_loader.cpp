@@ -51,6 +51,7 @@ void KITTIStereoLoader::loadStereoPair(const std::string& left_path, const std::
 
 void KITTIStereoLoader::loadStereoSequence(const std::string& sequence_path, const int& sequence_num, const bool& use_color)
 {
+	int exec_status;
 	char tmp[3];
 	string seq_number_str, cmd, index_path;
 
@@ -63,6 +64,7 @@ void KITTIStereoLoader::loadStereoSequence(const std::string& sequence_path, con
 
 	//set the prefix path
 	prefix_path_ = root_path_ + "sequences/" + seq_number_str;
+	printf("Loading KITTI sequence: %s\n", prefix_path_.c_str());
 
 	if(use_color)
 	{
@@ -78,19 +80,28 @@ void KITTIStereoLoader::loadStereoSequence(const std::string& sequence_path, con
 	}
 
 	//execute system command (to generate *.txt files)
-	system (cmd.c_str());
+	exec_status = system(cmd.c_str());
 
-	//Read file and insert each entry into the vector of strings
-	ifstream myfile(index_path.c_str()); 
-	copy(istream_iterator<string>(myfile),
-         istream_iterator<string>(),
-         back_inserter(left_image_names_));
-	myfile.close();
+	if(exec_status == 0)
+	{
+		//Read file and insert each entry into the vector of strings
+		ifstream myfile(index_path.c_str()); 
+		copy(istream_iterator<string>(myfile),
+	         istream_iterator<string>(),
+	         back_inserter(left_image_names_));
+		myfile.close();
 
-	left_image_names_.erase(left_image_names_.begin() + left_image_names_.size() - 1);
-	right_image_names_ = left_image_names_;
+		left_image_names_.erase(left_image_names_.begin() + left_image_names_.size() - 1);
+		right_image_names_ = left_image_names_;
 
- 	num_pairs_ = left_image_names_.size();
+	 	num_pairs_ = left_image_names_.size();
+	}
+	else
+	{
+		fprintf(stderr, "Could not create index file (error on system command).\n");
+		fprintf(stderr, "Exiting.\n");
+		exit(0);
+	}
 }
 
 Mat KITTIStereoLoader::getLeftImage()
