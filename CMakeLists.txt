@@ -37,8 +37,8 @@ endif()
 # Force OpenCV versions if ROS is installed
 #set(OpenCV_INCLUDE_DIRS "/home/ferreira/Documentos/libs/opencv-3.4.1/include")
 
-include_directories(${OpenCV_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} common io tracking motion_estimation
-                    visualization visual_odometry)
+include_directories(${OpenCV_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} common io tracking
+                    motion_estimation visualization visual_odometry stereo)
 link_directories(${PCL_LIBRARY_DIRS})
 #add_definitions(${PCL_DEFINITIONS}) #apparently not needed
 
@@ -54,6 +54,8 @@ add_subdirectory(motion_estimation)
 set(RGBD_RTK_MOTION_ESTIMATION rgbd_rtk_motion_estimation)
 add_subdirectory(visual_odometry)
 set(RGBD_RTK_VISUAL_ODOMETRY rgbd_rtk_visual_odometry)
+add_subdirectory(stereo)
+set(RGBD_RTK_STEREO rgbd_rtk_stereo)
 
 # Build SLAM module only if ARUCO was found
 find_package(aruco 2.0 QUIET)

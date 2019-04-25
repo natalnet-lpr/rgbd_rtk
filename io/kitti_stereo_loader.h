@@ -43,26 +43,26 @@ class KITTIStereoLoader
 private:
 
     //Left image of the stereo pair
-	cv::Mat left_image_;
+    cv::Mat left_image_;
 
     //Right image of the stereo pair
-	cv::Mat right_image_;
+    cv::Mat right_image_;
 
     //Path of the root directory of the sequence
-	std::string root_path_;
+    std::string root_path_;
 
     //Path of the root dir. + "dataset/sequences/" + seq_number_;
     std::string prefix_path_;
 
     //Image indices
-	size_t next_left_;
- 	size_t next_right_;
+    size_t next_left_;
+    size_t next_right_;
 
     //Strings of all left images of a sequence
-	std::vector<std::string> left_image_names_;
+    std::vector<std::string> left_image_names_;
 
     //Strings of all right images of a sequence
-	std::vector<std::string> right_image_names_; 
+    std::vector<std::string> right_image_names_; 
 
 public:
 
@@ -70,17 +70,17 @@ public:
     KITTIStereoLoader() : next_left_(0), next_right_(0), num_pairs_(0)
     {}
 
-	//Number of stereo pairs of the sequence
+    //Number of stereo pairs of the sequence
     size_t num_pairs_;
 
     //Loads a stereo pair from two given paths
-	void loadStereoPair(const std::string& left_path, const std::string& right_path);
+    void loadStereoPair(const std::string& left_path, const std::string& right_path);
 
     /* Loads a sequence of stereo pairs from a given path.
      * The second parameter informs the sequence number,
      * the third parameter informs if the color cameras should be used.
      */
-	void loadStereoSequence(const std::string& sequence_path, const int& sequence_num, const bool& use_color);
+    void loadStereoSequence(const std::string& sequence_path, const int& sequence_num, const bool& use_color);
 
     //Returns the left image
     cv::Mat getLeftImage();
@@ -98,4 +98,3 @@ public:
 };
 
 #endif // KITTI_STEREOLOADER_H 
-

@@ -31,10 +31,13 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <Eigen/Geometry>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
 #include <kitti_stereo_loader.h>
+#include <stereo_cloud_generator.h>
+#include <reconstruction_visualizer.h>
 
 using namespace std;
 using namespace cv;
@@ -43,28 +46,49 @@ int main(int argc, char **argv)
 {
     string root_path;
     KITTIStereoLoader loader;
-    Mat left, right;
+    StereoCloudGenerator cg(1);
+    Mat left, right, true_disp;
+    Mat Q = (cv::Mat_<float>(4,4) <<1, 0, 0, -607.1928, 
+                                    0, 1, 0, -185.2157,
+                                    0, 0, 0,   718.856,
+                                    0, 0, 1/0.54, 0);
+    ReconstructionVisualizer visualizer;
+    Eigen::Affine3f pose = Eigen::Affine3f::Identity();
 
     if(argc != 4)
     {
         fprintf(stderr, "Usage: %s <kitti datasets root dir.> <sequence_number> <use_color_camera>\n", argv[0]);
-        fprintf(stderr, "Example: /path/to/parent/directory/of/sequences 11 0 - loads the KITTI grayscale sequence number 11.\n\n");
-        fprintf(stderr, "That is, if the 00, 01, 02, ... folders are within /Datasets/KITTI_Datasets_Gray/sequences,\n");
-        fprintf(stderr, "the grayscale sequence 11 is loaded with:\n");
-        fprintf(stderr, "%s /Datasets/KITTI_Datasets_Gray/ 11 0\n", argv[0]);
-        fprintf(stderr, "(the 'sequences' part of the path is added automatically and must be omitted).\n");
+        fprintf(stderr, "Exiting.\n");
         exit(0);
     }
 
     root_path = argv[1];
-    loader.loadStereoSequence(root_path, atoi(argv[2]), atoi(argv[3]));
+    loader.loadStereoSequence(root_path, 10, false);
 
     for(size_t i = 0; i < loader.num_pairs_; i++)
     {
         left = loader.getNextLeftImage(false);
         right = loader.getNextRightImage(false);
+
+        true_disp = cg.generateDisparityMap(left, right);
+        cg.generatePointCloud(left, right, Q);
+
+        //Adjust disparity image for visualization purposes
+        double min, max;
+        minMaxLoc(true_disp, &min, &max);
+        true_disp = true_disp/max;
+
+        //View images
         imshow("Left Image", left);
         imshow("Right Image", right);
+        imshow("Disparity", true_disp);
+
+        //View point cloud
+        if(i == 0) visualizer.addReferenceFrame(pose, "origin");
+        visualizer.viewQuantizedPointCloud(cg.cloud_, 0.5, pose);
+
+        visualizer.spinOnce();
+
         char key = waitKey(16);
         if(key == 'q' || key == 'Q' || key == 27)
         {
@@ -74,3 +98,4 @@ int main(int argc, char **argv)
 
     return 0;
 }
+
