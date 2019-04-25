@@ -54,7 +54,7 @@ install(TARGETS monocular_calibration
                 klt_tracker_test
                 motion_estimator_test
                 optical_flow_visual_odometry_test
-				icp_odometry_test
+				        icp_odometry_test
                 kitti_loader_test
                 stereo_cloud_generator_test
         RUNTIME DESTINATION bin)
@@ -68,6 +68,5 @@ if(aruco_FOUND)
 										 ${RGBD_RTK_MOTION_ESTIMATION}
 										 ${RGBD_RTK_VISUAL_ODOMETRY}
 										 ${RGBD_RTK_SLAM})
-	install(TARGETS marker_finder_test
-        RUNTIME DESTINATION bin)
+	install(TARGETS marker_finder_test RUNTIME DESTINATION bin)
 endif()
