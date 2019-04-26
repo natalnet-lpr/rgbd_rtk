@@ -12,6 +12,7 @@ add_executable(klt_tracker_test klt_tracker_test.cpp)
 add_executable(motion_estimator_test motion_estimator_test.cpp)
 add_executable(optical_flow_visual_odometry_test optical_flow_visual_odometry_test.cpp)
 add_executable(icp_odometry_test icp_odometry_test.cpp)
+add_executable(kitti_velodyne_loader_test kitti_velodyne_loader_test.cpp)
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 
@@ -27,37 +28,41 @@ target_link_libraries(monocular_image_grabber ${OpenCV_LIBRARIES})
 target_link_libraries(sequence_loader_test ${RGBD_RTK_IO})
 target_link_libraries(rgbd_loader_test ${RGBD_RTK_IO})
 target_link_libraries(klt_tracker_test ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING})
-target_link_libraries(motion_estimator_test  ${PCL_LIBRARIES} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING}
-	                                         ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUALIZATION}
-	                                         ${RGBD_RTK_MOTION_ESTIMATION})
-target_link_libraries(optical_flow_visual_odometry_test ${PCL_LIBRARIES} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING}
-	                                                    ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUALIZATION}
-	                                                    ${RGBD_RTK_MOTION_ESTIMATION}
-	                                                    ${RGBD_RTK_VISUAL_ODOMETRY})
+target_link_libraries(motion_estimator_test  ${PCL_LIBRARIES} ${RGBD_RTK_IO}
+                                             ${RGBD_RTK_TRACKING}
+                                             ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUALIZATION}
+                                             ${RGBD_RTK_MOTION_ESTIMATION})
+target_link_libraries(optical_flow_visual_odometry_test ${PCL_LIBRARIES} ${RGBD_RTK_IO}
+                                                        ${RGBD_RTK_TRACKING}
+                                                        ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUALIZATION}
+                                                        ${RGBD_RTK_MOTION_ESTIMATION}
+                                                        ${RGBD_RTK_VISUAL_ODOMETRY})
 target_link_libraries(icp_odometry_test ${PCL_LIBRARIES} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING}
-	                                    ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUALIZATION}
-	                                    ${RGBD_RTK_MOTION_ESTIMATION}
-	                                    ${RGBD_RTK_VISUAL_ODOMETRY})														
+                                        ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUALIZATION}
+                                        ${RGBD_RTK_MOTION_ESTIMATION}
+                                        ${RGBD_RTK_VISUAL_ODOMETRY})
+target_link_libraries(kitti_velodyne_loader_test ${PCL_LIBRARIES} ${RGBD_RTK_IO}
+                                                 ${RGBD_RTK_VISUALIZATION})
 
 install(TARGETS monocular_calibration
-	            monocular_image_grabber
-	            sequence_loader_test
+                monocular_image_grabber
+                sequence_loader_test
                 rgbd_loader_test
                 klt_tracker_test
                 motion_estimator_test
                 optical_flow_visual_odometry_test
-				icp_odometry_test
+                icp_odometry_test
+                kitti_velodyne_loader_test
         RUNTIME DESTINATION bin)
 
 # Build SLAM related applications only if ARUCO was found
 if(aruco_FOUND)
-	add_executable(marker_finder_test marker_finder_test.cpp)
-	find_library(RGBD_RTK_SLAM NAMES rgbd_rtk_slam)
-	target_link_libraries(marker_finder_test ${PCL_LIBRARIES} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING}
-										 ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUALIZATION}
-										 ${RGBD_RTK_MOTION_ESTIMATION}
-										 ${RGBD_RTK_VISUAL_ODOMETRY}
-										 ${RGBD_RTK_SLAM})
-	install(TARGETS marker_finder_test
-        RUNTIME DESTINATION bin)
+    add_executable(marker_finder_test marker_finder_test.cpp)
+    find_library(RGBD_RTK_SLAM NAMES rgbd_rtk_slam)
+    target_link_libraries(marker_finder_test ${PCL_LIBRARIES} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING}
+                                         ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUALIZATION}
+                                         ${RGBD_RTK_MOTION_ESTIMATION}
+                                         ${RGBD_RTK_VISUAL_ODOMETRY}
+                                         ${RGBD_RTK_SLAM})
+    install(TARGETS marker_finder_test RUNTIME DESTINATION bin)
 endif()
