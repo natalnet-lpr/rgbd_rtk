@@ -52,10 +52,10 @@ add_subdirectory(visualization)
 set(RGBD_RTK_VISUALIZATION rgbd_rtk_visualization)
 add_subdirectory(motion_estimation)
 set(RGBD_RTK_MOTION_ESTIMATION rgbd_rtk_motion_estimation)
-add_subdirectory(visual_odometry)
-set(RGBD_RTK_VISUAL_ODOMETRY rgbd_rtk_visual_odometry)
 add_subdirectory(stereo)
 set(RGBD_RTK_STEREO rgbd_rtk_stereo)
+add_subdirectory(visual_odometry)
+set(RGBD_RTK_VISUAL_ODOMETRY rgbd_rtk_visual_odometry)
 
 # Build SLAM module only if ARUCO was found
 find_package(aruco 2.0 QUIET)
