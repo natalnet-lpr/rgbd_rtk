@@ -36,7 +36,7 @@
 #include <rgbd_loader.h>
 #include <motion_estimator_ransac.h>
 #include <reconstruction_visualizer.h>
-#include <surf_detector.h>
+#include <surf_tracker.h>
 #include <visual_memory.h>
 #include <string>
 #include <fstream>
@@ -119,7 +119,7 @@ int main(int argc, char **argv)
 	Eigen::Affine3f trans = Eigen::Affine3f::Identity();
 	pcl::PointCloud<PointT>::Ptr prev_cloud(new pcl::PointCloud<PointT>);
 	pcl::PointCloud<PointT>::Ptr curr_cloud(new pcl::PointCloud<PointT>);
-	SurfDetector detector_surf(400);
+	SurfTracker tracker_surf(400);
 	VisualMemory memory;
 	if(argc != 3)
 	{
@@ -160,12 +160,12 @@ int main(int argc, char **argv)
 
 		if(i > 0)
 		{
-			detector_surf.detectAndMatch(frame,prev_frame);
+			tracker_surf.detectAndMatch(frame,prev_frame);
 
 
-			detector_surf.drawSurfMatches(prev_frame,frame);
-			trans = motion_estimator.estimate(detector_surf.prev_good_Pts_, prev_cloud,
-				                            detector_surf.curr_good_Pts_, curr_cloud);
+			tracker_surf.drawSurfMatches(prev_frame,frame);
+			trans = motion_estimator.estimate(tracker_surf.prev_good_Pts_, prev_cloud,
+				                            tracker_surf.curr_good_Pts_, curr_cloud);
 			pose = pose*trans;
 
 			pose_set.push_back( pose.matrix());
@@ -177,12 +177,12 @@ int main(int argc, char **argv)
 
 			searched_pose = pose.matrix();
 		}
-		 if(is_KF(detector_surf.curr_good_Pts_,last_KF_points)){
+		 if(is_KF(tracker_surf.curr_good_Pts_,last_KF_points)){
 			cout<<"keyframe adicionado, seu índice é: "<< i<<endl;
 
-            last_KF_points = detector_surf.curr_good_Pts_;
+            last_KF_points = tracker_surf.curr_good_Pts_;
 
-			memory.add(detector_surf.getLastTrainDescriptor(),i, pose.matrix());
+			memory.add(tracker_surf.getLastTrainDescriptor(),i, pose.matrix());
 
 
 		}

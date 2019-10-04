@@ -31,7 +31,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 
 #include <rgbd_loader.h>
-#include <surf_detector.h>
+#include <surf_tracker.h>
 #include <visual_memory.h>
 #include <common_types.h>
 
@@ -42,7 +42,7 @@ int main(int argc, char **argv)
 {
 	string index_file_name;
 	RGBDLoader loader;
-	SurfDetector detector(400);
+	SurfTracker tracker(400);
 	VisualMemory memory;
 	Mat frame, depth;
 
@@ -61,9 +61,9 @@ int main(int argc, char **argv)
 	{
 		loader.getNextImage(frame, depth);
 		if(i>0){
-			detector.detectAndMatch(frame,prev_frame);
+			tracker.detectAndMatch(frame,prev_frame);
 			//memory.add(detector.getLastTrainDescriptor());
-			detector.drawSurfMatches(prev_frame,frame);
+			tracker.drawSurfMatches(prev_frame,frame);
 		}
 
 

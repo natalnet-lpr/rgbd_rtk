@@ -38,7 +38,6 @@ find_library(RGBD_RTK_COMMON NAMES rgbd_rtk_common)
 find_library(RGBD_RTK_VISUALIZATION NAMES rgbd_rtk_visualization)
 find_library(RGBD_RTK_MOTION_ESTIMATION NAMES rgbd_rtk_motion_estimation)
 find_library(RGBD_RTK_VISUAL_ODOMETRY NAMES rgbd_rtk_visual_odometry)
-find_library(RGBD_RTK_SURF_DETECTOR NAMES rgbd_rtk_surf_detector)
 find_library(RGBD_RTK_VISUAL_MEMORY NAMES rgbd_rtk_visual_memory)
 
 target_link_libraries(monocular_calibration ${OpenCV_LIBRARIES})
@@ -57,18 +56,16 @@ target_link_libraries(icp_odometry_test ${PCL_LIBRARIES} ${RGBD_RTK_IO} ${RGBD_R
 	                                    ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUALIZATION}
 	                                    ${RGBD_RTK_MOTION_ESTIMATION}
 	                                    ${RGBD_RTK_VISUAL_ODOMETRY})	
-target_link_libraries(surf_detector_test ${RGBD_RTK_IO} 
+target_link_libraries(surf_detector_test ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING} ${RGBD_RTK_COMMON} )
+target_link_libraries(surf_tracker_test ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING}
 										${RGBD_RTK_COMMON} 
-										${RGBD_RTK_SURF_DETECTOR})
-target_link_libraries(surf_tracker_test ${RGBD_RTK_IO} 
-										${RGBD_RTK_COMMON} 
-										${RGBD_RTK_SURF_DETECTOR} ${RGBD_RTK_VISUAL_MEMORY})																			
+									 ${RGBD_RTK_VISUAL_MEMORY})																			
 target_link_libraries(motion_estimator_surf_test ${PCL_LIBRARIES} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING}
 	                                         ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUALIZATION}
-	                                         ${RGBD_RTK_MOTION_ESTIMATION} ${RGBD_RTK_SURF_DETECTOR} ${RGBD_RTK_VISUAL_MEMORY})
+	                                         ${RGBD_RTK_MOTION_ESTIMATION}  ${RGBD_RTK_VISUAL_MEMORY})
 								
 target_link_libraries(visual_memory_test ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING}
-	                                         ${RGBD_RTK_COMMON} ${RGBD_RTK_SURF_DETECTOR} ${RGBD_RTK_VISUAL_MEMORY})
+	                                         ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUAL_MEMORY})
 
 install(TARGETS monocular_calibration
 	            monocular_image_grabber
