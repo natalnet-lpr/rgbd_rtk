@@ -5,7 +5,7 @@ project(RGBD_RTK)
 message(STATUS ">>> feature surf subdirectory")
 
 set(RGBD_RTK_SURF_DETECTOR_SRC surf_detector.cpp)
-set(RGBD_RTK_SURF_DETECTOR_INCLUDES surf_detector.h feature_surf.h)
+set(RGBD_RTK_SURF_DETECTOR_INCLUDES  surf_detector.h )
 
 add_library(rgbd_rtk_surf_detector SHARED ${RGBD_RTK_SURF_DETECTOR_SRC})
 target_link_libraries(rgbd_rtk_surf_detector ${OpenCV_LIBS})

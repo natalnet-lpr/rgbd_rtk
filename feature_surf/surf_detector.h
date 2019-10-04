@@ -1,22 +1,27 @@
+#ifndef INCLUDE_SURF_DETECTOR_H_
+#define INCLUDE_SURF_DETECTOR_H_
 #include "opencv2/features2d.hpp"
 #include "opencv2/core.hpp"
 #include "opencv2/xfeatures2d.hpp"
-#include <feature_surf.h>
 #include <vector>
 
 using namespace cv;
 using namespace cv::xfeatures2d;
+using std::vector;
+using namespace std;
 /*
  * Author: Luiz Felipe Maciel Correia
  * y9luizufrn@gmail.com
  */
+
+
 
 class SurfDetector
 {
     protected:
 
     cv::Ptr<cv::FeatureDetector> detector_;
-    
+
     cv::Ptr<cv::DescriptorMatcher> matcher_;
 
    //current gray frame
@@ -31,43 +36,35 @@ class SurfDetector
     //that is, if we have 2 or more frames to matching process
     bool initialized_;
 
-    vector<KeyPoint> trainKPs_aux_;
-
+    //train informations
     vector<vector<KeyPoint>> trainKPs_;
-
-    Mat trainImage_;  
-    
     vector<Mat> trainImages_;
-     
-
     vector<Mat> trainDescriptors_;
 
-
+    //query information
     vector<KeyPoint> queryKPs_;
-
-
-
     Mat queryImage_;
-  
+    Mat queryDescriptors_;
+
     vector<DMatch> refinedMatches_;
-    
-    void detect(Mat curr_frame, Mat prev_frame);
+
     void MatchDescriptors();
 
   public:
-    vector<Point2f> prev_good_Pts;
-    vector<Point2f> curr_good_Pts;
+    vector<Point2f> prev_good_Pts_;
+    vector<Point2f> curr_good_Pts_;
 
     Mat getLastTrainDescriptor();
-    Mat queryDescriptors_;
 
     SurfDetector();
     SurfDetector(double minHessian);
+    void detect(Mat curr_frame, Mat prev_frame);
 
-    void detectAndMatch(Mat curr_frame, Mat prev_frame);    
+    void detectAndMatch(Mat curr_frame, Mat prev_frame);
     void drawSurfMatches(cv::Mat prev_img,cv::Mat curr_img);
     //search in all train set, to find the 'n' images with the highest number of matches
     vector<int> searchDescriptor(Mat queryDescriptor,int n);
     cv::Ptr<cv::DescriptorMatcher> getMatcher();
 
 };
+#endif

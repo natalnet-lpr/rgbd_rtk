@@ -36,6 +36,7 @@
 #include <klt_tracker.h>
 #include <motion_estimator_ransac.h>
 #include <reconstruction_visualizer.h>
+#include "../experiment/RPE.hpp"
 
 using namespace std;
 using namespace cv;

@@ -110,10 +110,10 @@ int main(int argc, char **argv)
 		{
 			detector_surf.detectAndMatch(frame,prev_frame);
 
-            if(is_KF(detector_surf.curr_good_Pts,last_KF_points)){
+            if(is_KF(detector_surf.curr_good_Pts_,last_KF_points)){
 				cout<<"keyframe adicionado, seu índice é: "<< i<<endl;
 				
-                last_KF_points = detector_surf.curr_good_Pts;
+                last_KF_points = detector_surf.curr_good_Pts_;
 			
 				key_frame_set.push_back( pair<Mat,int>(frame, i));
 				memory.add(detector_surf.getLastTrainDescriptor());
