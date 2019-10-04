@@ -1,4 +1,4 @@
-#include "surf_detector.h"
+#include "surf_tracker.h"
 #include <opencv2/imgproc.hpp>
 #include <iostream>
 #include <opencv2/highgui.hpp>
@@ -6,7 +6,7 @@
 #include <utility>
 #include <algorithm>
 
-SurfDetector::SurfDetector()
+SurfTracker::SurfTracker()
 {
 
     detector_ = SURF::create(400);
@@ -14,7 +14,7 @@ SurfDetector::SurfDetector()
     initialized_ = false;
     matcher_ = new  cv::FlannBasedMatcher();
 }
-SurfDetector::SurfDetector(double minHessian)
+SurfTracker::SurfTracker(double minHessian)
 {
 
     this->minHessian_ = minHessian;
@@ -25,7 +25,7 @@ SurfDetector::SurfDetector(double minHessian)
     matcher_ = new  cv::FlannBasedMatcher();
 }
 
-void SurfDetector::detect(Mat curr_frame, Mat prev_frame)
+void SurfTracker::detect(Mat curr_frame, Mat prev_frame)
 {
     //add a empty image to train images set
     //it is necessary to acess  trainImages_.back()
@@ -56,7 +56,7 @@ void SurfDetector::detect(Mat curr_frame, Mat prev_frame)
     matcher_->add(trainDescriptors_.back());
 
 }
-void SurfDetector::MatchDescriptors()
+void SurfTracker::MatchDescriptors()
 {
     refinedMatches_.clear();
 
@@ -94,7 +94,7 @@ void SurfDetector::MatchDescriptors()
 
 
 }
-void SurfDetector::detectAndMatch(Mat curr_frame, Mat prev_frame){
+void SurfTracker::detectAndMatch(Mat curr_frame, Mat prev_frame){
 
     detect(curr_frame, prev_frame);
     MatchDescriptors();
@@ -102,7 +102,7 @@ void SurfDetector::detectAndMatch(Mat curr_frame, Mat prev_frame){
 
 }
 
-void SurfDetector::drawSurfMatches(Mat prev_img,Mat curr_img){
+void SurfTracker::drawSurfMatches(Mat prev_img,Mat curr_img){
 
 
     Mat output;
@@ -124,7 +124,7 @@ bool myfunction(pair<int,int> a,pair<int,int>  b){
 
 }
 
-vector<int>  SurfDetector::searchDescriptor(Mat queryDescriptor, int n){
+vector<int>  SurfTracker::searchDescriptor(Mat queryDescriptor, int n){
 
     vector< vector<DMatch>> matches; //isso é para o knnmatches
    // vector<DMatch> matches;
@@ -163,13 +163,13 @@ vector<int>  SurfDetector::searchDescriptor(Mat queryDescriptor, int n){
     return output;
 }
 
-Mat SurfDetector::getLastTrainDescriptor(){
+Mat SurfTracker::getLastTrainDescriptor(){
 
     if(!trainDescriptors_.empty())
         return trainDescriptors_.back();
     else return Mat();
 }
-cv::Ptr<cv::DescriptorMatcher> SurfDetector::getMatcher(){
+cv::Ptr<cv::DescriptorMatcher> SurfTracker::getMatcher(){
 
     return matcher_;
 

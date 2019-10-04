@@ -1,5 +1,5 @@
-#ifndef INCLUDE_SURF_DETECTOR_H_
-#define INCLUDE_SURF_DETECTOR_H_
+#ifndef INCLUDE_SURF_TRACKER_H_
+#define INCLUDE_SURF_TRACKER_H_
 #include "opencv2/features2d.hpp"
 #include "opencv2/core.hpp"
 #include "opencv2/xfeatures2d.hpp"
@@ -16,7 +16,7 @@ using namespace std;
 
 
 
-class SurfDetector
+class SurfTracker
 {
     protected:
 
@@ -56,8 +56,8 @@ class SurfDetector
 
     Mat getLastTrainDescriptor();
 
-    SurfDetector();
-    SurfDetector(double minHessian);
+    SurfTracker();
+    SurfTracker(double minHessian);
     void detect(Mat curr_frame, Mat prev_frame);
 
     void detectAndMatch(Mat curr_frame, Mat prev_frame);
