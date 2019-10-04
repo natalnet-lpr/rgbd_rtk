@@ -39,11 +39,9 @@ endif()
 #set(OpenCV_INCLUDE_DIRS "/home/bruno/Lib/opencv-3.4.1/local/include")
 
 include_directories(${OpenCV_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} common io tracking motion_estimation
-                    visualization visual_odometry feature_surf visual_memory)
+                    visualization visual_odometry visual_memory)
 link_directories(${PCL_LIBRARY_DIRS})
 #add_definitions(${PCL_DEFINITIONS}) #apparently not needed
-add_subdirectory(feature_surf)
-set(RGBD_RTK_SURF_DETECTOR rgbd_rtk_surf_detector)
 add_subdirectory(io)
 set(RGBD_RTK_IO rgbd_rtk_io)
 add_subdirectory(tracking)
