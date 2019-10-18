@@ -46,7 +46,7 @@ int main(int argc, char **argv)
 	VisualMemory memory;
 	Mat frame, depth;
 
-	if(argc != 2)
+	if (argc != 2)
 	{
 		fprintf(stderr, "Usage: %s <index file>\n", argv[0]);
 		exit(0);
@@ -57,22 +57,21 @@ int main(int argc, char **argv)
 	Mat savedDescriptor;
 	Mat prev_frame;
 
-	for(int i = 0; i < loader.num_images_; i++)
+	for (int i = 0; i < loader.num_images_; i++)
 	{
 		loader.getNextImage(frame, depth);
-		if(i>0){
-			tracker.detectAndMatch(frame,prev_frame);
+		if (i > 0)
+		{
+			tracker.detectAndMatch(frame, prev_frame);
 			//memory.add(detector.getLastTrainDescriptor());
-			tracker.drawSurfMatches(prev_frame,frame);
+			tracker.drawSurfMatches(prev_frame, frame);
 		}
-
-
 
 		imshow("Image view", frame);
 		imshow("Depth view", depth);
 
 		char key = waitKey(15);
-		if(key == 27 || key == 'q' || key == 'Q')
+		if (key == 27 || key == 'q' || key == 'Q')
 		{
 			printf("Exiting.\n");
 			break;

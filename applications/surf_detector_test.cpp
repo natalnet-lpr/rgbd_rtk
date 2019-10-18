@@ -37,9 +37,9 @@
 using namespace std;
 using namespace cv;
 
-void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts)
+void draw_last_track(Mat &img, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts)
 {
-	for(size_t k = 0; k < curr_pts.size(); k++)
+	for (size_t k = 0; k < curr_pts.size(); k++)
 	{
 		Point2i pt1, pt2;
 		pt1.x = prev_pts[k].x;
@@ -47,28 +47,28 @@ void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Poin
 		pt2.x = curr_pts[k].x;
 		pt2.y = curr_pts[k].y;
 
-		circle(img, pt1, 1, CV_RGB(0,0,255), 1);
-		circle(img, pt2, 3, CV_RGB(0,255,0), 1);
-		line(img, pt1, pt2, CV_RGB(0,255,0));
+		circle(img, pt1, 1, CV_RGB(0, 0, 255), 1);
+		circle(img, pt2, 3, CV_RGB(0, 255, 0), 1);
+		line(img, pt1, pt2, CV_RGB(0, 255, 0));
 	}
 }
 
-void draw_tracks(Mat& img, const vector<Tracklet> tracklets)
+void draw_tracks(Mat &img, const vector<Tracklet> tracklets)
 {
-	for(size_t i = 0; i < tracklets.size(); i++)
+	for (size_t i = 0; i < tracklets.size(); i++)
 	{
-		for(size_t j = 0; j < tracklets[i].pts2D_.size(); j++)
+		for (size_t j = 0; j < tracklets[i].pts2D_.size(); j++)
 		{
 			Point2i pt1;
 			pt1.x = tracklets[i].pts2D_[j].x;
 			pt1.y = tracklets[i].pts2D_[j].y;
-			circle(img, pt1, 3, CV_RGB(0,255,0), 1);
-			if(j > 0)
+			circle(img, pt1, 3, CV_RGB(0, 255, 0), 1);
+			if (j > 0)
 			{
 				Point2i pt2;
-				pt2.x = tracklets[i].pts2D_[j-1].x;
-				pt2.y = tracklets[i].pts2D_[j-1].y;
-				line(img, pt1, pt2, CV_RGB(0,255,0));
+				pt2.x = tracklets[i].pts2D_[j - 1].x;
+				pt2.y = tracklets[i].pts2D_[j - 1].y;
+				line(img, pt1, pt2, CV_RGB(0, 255, 0));
 			}
 		}
 	}
@@ -82,7 +82,7 @@ int main(int argc, char **argv)
 
 	Mat frame, depth;
 
-	if(argc != 2)
+	if (argc != 2)
 	{
 		fprintf(stderr, "Usage: %s <index file>\n", argv[0]);
 		exit(0);
@@ -93,30 +93,29 @@ int main(int argc, char **argv)
 	Mat saved_desc;
 	Mat prev_frame;
 	//Track points on each image
-	for(int i = 0; i < loader.num_images_; i++)
+	for (int i = 0; i < loader.num_images_; i++)
 	{
 		loader.getNextImage(frame, depth);
 
-		if(i==100){
+		if (i == 100)
+		{
 			//saved_desc = tracker.trainDescriptor_;
 		}
-		else if(i==150)
-			tracker.searchDescriptor(saved_desc,10);
-	
-		if(i>0)        	
-			tracker.detectAndMatch(frame,prev_frame);
-		
+		else if (i == 150)
+			tracker.searchDescriptor(saved_desc, 10);
+
+		if (i > 0)
+			tracker.detectAndMatch(frame, prev_frame);
 
 		imshow("Image view", frame);
 		imshow("Depth view", depth);
 		char key = waitKey(15);
-		if(key == 27 || key == 'q' || key == 'Q')
+		if (key == 27 || key == 'q' || key == 'Q')
 		{
 			printf("Exiting.\n");
 			break;
 		}
 		prev_frame = frame;
-		
 	}
 
 	return 0;

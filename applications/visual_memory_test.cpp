@@ -30,7 +30,6 @@
 
 */
 
-
 #include <iostream>
 #include <cstdio>
 #include <cstdlib>
@@ -44,24 +43,23 @@
 #include <visual_memory.h>
 using namespace std;
 
-bool is_KF(vector<Point2f> curr_KPs, vector<Point2f> KPs_from_last_KF){
-	int dif = curr_KPs.size()- KPs_from_last_KF.size();
-	if(dif<0)
-		dif = -dif;
-	return  ( 
-		dif
-		>= (int)KPs_from_last_KF.size()*60/100
-	);
-
+bool is_KF(vector<Point2f> curr_KPs, vector<Point2f> KPs_from_last_KF)
+{
+    int dif = curr_KPs.size() - KPs_from_last_KF.size();
+    if (dif < 0)
+        dif = -dif;
+    return (
+        dif >= (int)KPs_from_last_KF.size() * 60 / 100);
 }
-vector<char> digit_extrator ( int number){
+vector<char> digit_extrator(int number)
+{
     vector<char> digits;
-    while(number>0){
-         digits.push_back( number%10+'0');
-        number = number/10;
-
+    while (number > 0)
+    {
+        digits.push_back(number % 10 + '0');
+        number = number / 10;
     }
-    std::reverse(digits.begin(),digits.end());
+    std::reverse(digits.begin(), digits.end());
 
     return digits;
 }
@@ -71,94 +69,76 @@ int main(int argc, char **argv)
     string index_file_name;
     RGBDLoader loader;
     SurfTracker tracker_surf(400);
-	VisualMemory memory;
-	Mat frame,prev_frame,depth;
-    if(argc != 3)
-	{
-		fprintf(stderr, "Usage: %s <index file> <frame_idx_to_search\n", argv[0]);
-		exit(0);
+    VisualMemory memory;
+    Mat frame, prev_frame, depth;
+    if (argc != 3)
+    {
+        fprintf(stderr, "Usage: %s <index file> <frame_idx_to_search\n", argv[0]);
+        exit(0);
     }
 
-    
-    
     index_file_name = argv[1];
-	
+
     loader.processFile(index_file_name);
-    
+
     int frame_idx;
-    frame_idx  =  atoi(argv[2]);
+    frame_idx = atoi(argv[2]);
     vector<char> digits = digit_extrator(frame_idx);
 
-
     Mat img;
-    
-    vector<pair<Mat,int> > key_frame_set;
 
-	vector<Point2f> last_KF_points;
+    vector<pair<Mat, int>> key_frame_set;
 
-    for(int i = 0; i < loader.num_images_; i++)
-	{
-	
-		//Load RGB-D image 
-		loader.getNextImage(frame, depth);
-        if(i==200)
+    vector<Point2f> last_KF_points;
+
+    for (int i = 0; i < loader.num_images_; i++)
+    {
+
+        //Load RGB-D image
+        loader.getNextImage(frame, depth);
+        if (i == 200)
             break;
-        if(i==frame_idx)
-			img = frame;
-        
-		if(i > 0)
-		{
-			tracker_surf.detectAndMatch(frame,prev_frame);
+        if (i == frame_idx)
+            img = frame;
 
-            if(is_KF(tracker_surf.curr_good_Pts_,last_KF_points)){
-				cout<<"keyframe adicionado, seu índice é: "<< i<<endl;
-				
+        if (i > 0)
+        {
+            tracker_surf.detectAndMatch(frame, prev_frame);
+
+            if (is_KF(tracker_surf.curr_good_Pts_, last_KF_points))
+            {
+                cout << "keyframe adicionado, seu índice é: " << i << endl;
+
                 last_KF_points = tracker_surf.curr_good_Pts_;
-			
-				key_frame_set.push_back( pair<Mat,int>(frame, i));
-				memory.add(tracker_surf.getLastTrainDescriptor());
 
-
-			} 
-            
-		
-       
+                key_frame_set.push_back(pair<Mat, int>(frame, i));
+                memory.add(tracker_surf.getLastTrainDescriptor());
+            }
         }
-         
-		
-	
-		
-		prev_frame = frame;
 
+        prev_frame = frame;
     }
 
-
-
     vector<int> img_idx_set = memory.searchImage(img);
-    
 
+    string str = "searched frame ";
+    for (int i = 0; i < (int)digits.size(); i++)
+        str += digits[i];
+    imshow(str, img);
 
-	string str = "searched frame ";
-	for(int i=0;i<(int)digits.size();i++)
-        str+= digits[i];
-	imshow(str,img);
+    for (int i = 0; i < (int)img_idx_set.size(); i++)
+    {
 
-	for(int i=0;i<(int)img_idx_set.size();i++){
-	
-		int idx = img_idx_set[i];
-        vector<char> global_idx = digit_extrator( key_frame_set[img_idx_set[i]].second); 
+        int idx = img_idx_set[i];
+        vector<char> global_idx = digit_extrator(key_frame_set[img_idx_set[i]].second);
 
         string text = "correspondence ";
-        for(int i=0;i<(int)global_idx.size();i++)
+        for (int i = 0; i < (int)global_idx.size(); i++)
             text += global_idx[i];
- 
 
-        imshow(text,key_frame_set[idx].first);
-		waitKey();
+        imshow(text, key_frame_set[idx].first);
+        waitKey();
+    }
 
-	}
- 
     return 0;
-
 }
-
