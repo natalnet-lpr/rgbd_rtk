@@ -4,11 +4,18 @@ project(RGBD_RTK)
 
 message(STATUS ">>> visual memory subdirectory")
 
-set(RGBD_RTK_VISUAL_MEMORY_SRC visual_memory.cpp)
-set(RGBD_RTK_VISUAL_MEMORY_INCLUDES visual_memory.h)
+
+add_subdirectory(fabMap)
+
+
+set(RGBD_RTK_VISUAL_MEMORY_SRC visual_memory.cpp fabMap/fabmap_memory.cpp)
+
+set(RGBD_RTK_VISUAL_MEMORY_INCLUDES visual_memory.h fabMap/fabmap_memory.h)
 
 add_library(rgbd_rtk_visual_memory SHARED ${RGBD_RTK_VISUAL_MEMORY_SRC})
-target_link_libraries(rgbd_rtk_visual_memory ${OpenCV_LIBS})
+
+target_link_libraries(rgbd_rtk_visual_memory ${openFABMAP} ${OpenCV_LIBS} ${RGBD_RTK_TRACKING} )
+
 
 set_target_properties(rgbd_rtk_visual_memory PROPERTIES OUTPUT_NAME "rgbd_rtk_visual_memory")
 set_target_properties(rgbd_rtk_visual_memory PROPERTIES VERSION 1.0)

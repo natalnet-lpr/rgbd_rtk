@@ -19,6 +19,8 @@ message(STATUS "Project source directory: " ${PROJECT_SOURCE_DIR})
 message(STATUS "Build directory: " ${PROJECT_BINARY_DIR})
 
 find_package(OpenCV REQUIRED)
+
+
 if(OpenCV_FOUND)
 	message(STATUS "OpenCV version: " ${OpenCV_VERSION})
 	if(OpenCV_VERSION VERSION_LESS "3.0.0")
@@ -35,12 +37,18 @@ else()
 	message(FATAL_ERROR "Error: PCL was not found in your system")
 endif()
 
+
+set(openFABMAP_INCLUDE_DIRS "/home/luizfelipe/Documents/Projects/2019.2/visualMemory2.0/openfabmap/include")
+
+
+
 # Force OpenCV versions if ROS is installed
 #set(OpenCV_INCLUDE_DIRS "/home/bruno/Lib/opencv-3.4.1/local/include")
 
-include_directories(${OpenCV_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} common io tracking motion_estimation
+include_directories(${OpenCV_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} ${openFABMAP_INCLUDE_DIRS} common io tracking motion_estimation
                     visualization visual_odometry visual_memory)
 link_directories(${PCL_LIBRARY_DIRS})
+link_directories(${openFABMAP_INCLUDE_DIRS})
 #add_definitions(${PCL_DEFINITIONS}) #apparently not needed
 add_subdirectory(io)
 set(RGBD_RTK_IO rgbd_rtk_io)
