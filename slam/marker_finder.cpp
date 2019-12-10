@@ -33,8 +33,9 @@ using namespace std;
 using namespace cv;
 using namespace aruco;
 
-void MarkerFinder::setMarkerPosesLocal()
+void MarkerFinder::setMarkerPosesLocal(float aruco_minimum_distance)
 {	
+	double x=0,y=0,z=0;
 	marker_poses_local_.clear();
 	for(size_t i = 0; i < markers_.size(); i++)
 	{
@@ -48,12 +49,29 @@ void MarkerFinder::setMarkerPosesLocal()
 		P(2,0) = R.at<float>(2,0); P(2,1) = R.at<float>(2,1); P(2,2) = R.at<float>(2,2);
 		P(0,3) = markers_[i].Tvec.at<float>(0,0); P(1,3) = markers_[i].Tvec.at<float>(1,0); P(2,3) = markers_[i].Tvec.at<float>(2,0);
 		
-		marker_poses_local_.push_back(P);
+		x = pow(P(0,3),2);
+		y = pow(P(1,3),2);
+		z = pow(P(2,3),2);
+
+		//getting the absolute distance between camera and marker
+		///if their distance is closer then aruco_minimum_distance meters save marker pose
+		if(aruco_minimum_distance == -1){//infinite
+			marker_poses_local_.push_back(P);
+			continue ;
+		}
+		if(sqrt(x + y + z) < aruco_minimum_distance){
+			marker_poses_local_.push_back(P);  //aruco is closer than the minimum distance
+			continue;
+		}
+		if(sqrt(x +y +z) >= aruco_minimum_distance){ //aruco is further than the minimum distance
+			continue;
+		}
 	}
 }
 
-void MarkerFinder::setMarkerPosesGlobal(Eigen::Affine3f cam_pose)
+void MarkerFinder::setMarkerPosesGlobal(Eigen::Affine3f cam_pose, float aruco_minimum_distance)
 {
+	double x=0,y=0,z=0;
 	marker_poses_.clear();
 	for(size_t i = 0; i < markers_.size(); i++)
 	{
@@ -67,7 +85,23 @@ void MarkerFinder::setMarkerPosesGlobal(Eigen::Affine3f cam_pose)
 		P(2,0) = R.at<float>(2,0); P(2,1) = R.at<float>(2,1); P(2,2) = R.at<float>(2,2);
 		P(0,3) = markers_[i].Tvec.at<float>(0,0); P(1,3) = markers_[i].Tvec.at<float>(1,0); P(2,3) = markers_[i].Tvec.at<float>(2,0);
 		
-		marker_poses_.push_back(cam_pose*P);
+		x = pow(P(0,3),2);
+		y = pow(P(1,3),2);
+		z = pow(P(2,3),2);
+		
+		//getting the absolute distance between camera and marker
+		///if their distance is closer then aruco_minimum_distance meters save marker pose
+		if(aruco_minimum_distance == -1){//infinite
+			marker_poses_.push_back(cam_pose.inverse() *P );
+			continue ;
+		}
+		if(sqrt(x + y + z) < aruco_minimum_distance){
+			marker_poses_.push_back(cam_pose.inverse() * P);  //aruco is closer than the minimum distance
+			continue;
+		}
+		if(sqrt(x +y +z) >= aruco_minimum_distance){ //aruco is further than the minimum distance
+			continue;
+		}
 	}
 }
 
@@ -83,11 +117,11 @@ MarkerFinder::MarkerFinder(string params, float size)
 	marker_size_ = size;
 }
 
-void MarkerFinder::detectMarkers(const cv::Mat img, Eigen::Affine3f cam_pose)
+void MarkerFinder::detectMarkers(const cv::Mat img, Eigen::Affine3f cam_pose, float aruco_minimum_distance)
 {
 	markers_.clear();
 	marker_detector_.detect(img, markers_, camera_params_, marker_size_);
 	
-	setMarkerPosesLocal();
-	setMarkerPosesGlobal(cam_pose);
+	setMarkerPosesLocal(aruco_minimum_distance);
+	setMarkerPosesGlobal(cam_pose, aruco_minimum_distance);
 }
