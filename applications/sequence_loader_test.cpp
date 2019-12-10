@@ -28,7 +28,7 @@
 #include <cstdlib>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
-
+#include <config_loader.h>
 #include <sequence_loader.h>
 
 using namespace std;
@@ -37,16 +37,16 @@ using namespace cv;
 int main(int argc, char **argv)
 {
 	string index_file_name;
+	ConfigLoader param_loader;
 	Mat frame;
 
 	if(argc != 2)
 	{
-		fprintf(stderr, "Usage: %s <index file>\nExiting.\n", argv[0]);
+		fprintf(stderr, "Usage: %s <path/ConfigFile.yaml>\n", argv[0]);
 		exit(0);
 	}
-
-	index_file_name = argv[1];
-	SequenceLoader loader(index_file_name);
+	param_loader.loadParams(argv[1]);
+	SequenceLoader loader(param_loader.index_file_);
 
 	for(int i = 0; i < loader.num_images_; i++)
 	{

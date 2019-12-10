@@ -76,7 +76,7 @@ MarkerFinder::MarkerFinder()
 	marker_detector_.setDictionary("ARUCO_MIP_36h12", 0);
 }
 
-MarkerFinder::MarkerFinder(char params[], float size)
+MarkerFinder::MarkerFinder(string params, float size)
 {
 	marker_detector_.setDictionary("ARUCO_MIP_36h12", 0);
 	camera_params_.readFromXMLFile(params);

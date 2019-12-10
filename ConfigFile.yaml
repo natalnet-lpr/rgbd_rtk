@@ -1,0 +1,20 @@
+%YAML:1.0
+# Default params
+# camera_calibration_file: "kinect_default.yaml"
+# index_file: "index.txt"
+# aruco_dic: "ARUCO"
+# aruco_marker_size: 0.1778
+# aruco_distance: 4
+camera_calibration_file: "kinect_default.yaml"
+index_file: "index.txt"
+aruco_dic: "ARUCO"
+aruco_distance: 4
+aruco_marker_size: 0.1778
+
+
+
+
+
+
+
+

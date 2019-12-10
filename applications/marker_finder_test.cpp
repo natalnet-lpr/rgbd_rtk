@@ -37,6 +37,7 @@
 #include <optical_flow_visual_odometry.h>
 #include <reconstruction_visualizer.h>
 #include <marker_finder.h>
+#include <config_loader.h>
 
 using namespace std;
 using namespace cv;
@@ -46,23 +47,23 @@ int main(int argc, char **argv)
 {
 	string index_file_name;
 	RGBDLoader loader;
+	ConfigLoader param_loader;
 	Intrinsics intr(0);
 	OpticalFlowVisualOdometry vo(intr);
 	ReconstructionVisualizer visualizer;
 	Mat frame, depth;
 	float marker_size;
 
-	if(argc != 4)
+	if(argc != 2)
 	{
-		fprintf(stderr, "Usage: %s <index file> <camera calibration file> <marker size>\n", argv[0]);
+		fprintf(stderr, "Usage: %s <path/ConfigFile.yaml>\n", argv[0]);
 		exit(0);
 	}
-
-	index_file_name = argv[1];
-	marker_size = stof(argv[3]);
-	MarkerFinder marker_finder(argv[2], marker_size);
+	param_loader.loadParams(argv[1]);
+	marker_size = param_loader.aruco_marker_size_;
+	MarkerFinder marker_finder(param_loader.camera_calibration_file_, marker_size);
 	
-	loader.processFile(index_file_name);
+	loader.processFile(param_loader.index_file_);
 
 	//Compute visual odometry and find markers on each image
 	for(int i = 0; i < loader.num_images_; i++)

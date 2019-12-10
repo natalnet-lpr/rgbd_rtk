@@ -35,12 +35,15 @@
 #include <rgbd_loader.h>
 #include <optical_flow_visual_odometry.h>
 #include <reconstruction_visualizer.h>
+#include <config_loader.h>
+
 
 using namespace std;
 using namespace cv;
 
 int main(int argc, char **argv)
 {
+	ConfigLoader param_loader;
 	string index_file_name;
 	RGBDLoader loader;
 	Intrinsics intr(0);
@@ -50,12 +53,11 @@ int main(int argc, char **argv)
 
 	if(argc != 2)
 	{
-		fprintf(stderr, "Usage: %s <index file>\n", argv[0]);
+		fprintf(stderr, "Usage: %s <path/ConfigFile.yaml>\n", argv[0]);
 		exit(0);
 	}
-
-	index_file_name = argv[1];
-	loader.processFile(index_file_name);
+	param_loader.loadParams(argv[1]);
+	loader.processFile(param_loader.index_file_);
 
 	//Compute visual odometry on each image
 	for(int i = 0; i < loader.num_images_; i++)

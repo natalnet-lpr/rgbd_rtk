@@ -74,7 +74,7 @@ public:
 	MarkerFinder();
 	
 	//Constructor with camera intrinsic parameters and marker size
-	MarkerFinder(char params[], float size);
+	MarkerFinder(string params, float size);
 
 	//Detect ARUCO markers. Also sets the poses of all detected markers in the local and global ref. frames
 	void detectMarkers(const cv::Mat img, Eigen::Affine3f cam_pose);
