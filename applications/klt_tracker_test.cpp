@@ -77,15 +77,14 @@ void draw_tracks(Mat& img, const vector<Tracklet> tracklets)
 
 int main(int argc, char **argv)
 {
-	string index_file_name;
+	ConfigLoader param_loader;
 	RGBDLoader loader;
 	KLTTracker tracker;
-	ConfigLoader param_loader;
 	Mat frame, depth;
 
 	if(argc != 2)
 	{
-		fprintf(stderr, "Usage: %s <path/ConfigFile.yaml>\n", argv[0]);
+		fprintf(stderr, "Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
 	param_loader.loadParams(argv[1]);
