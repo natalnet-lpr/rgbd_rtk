@@ -36,7 +36,7 @@
 using namespace std;
 using namespace cv;
 
-void SequenceLoader::processFile(const string file_name)
+void SequenceLoader::processFile(const string& file_name)
 {
 	ifstream index_file(file_name.c_str());
 	if(!index_file.is_open())

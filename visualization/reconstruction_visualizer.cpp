@@ -28,6 +28,7 @@
 #include <sstream>
 #include <pcl/point_cloud.h>
 #include <pcl/common/transforms.h>
+#include <pcl/common/io.h>
 #include <pcl/filters/filter.h>
 #include <pcl/filters/uniform_sampling.h>
 
@@ -40,6 +41,8 @@ ReconstructionVisualizer::ReconstructionVisualizer()
 	num_clouds_ = 0;
 	num_lines_ = 0;
 	num_ref_frames_ = 0;
+	prev_pos_ = pcl::PointXYZ();
+	curr_pos_ = pcl::PointXYZ();
 
 	//Setup PCL visualizer
 	viewer_ = PCLVisualizerPtr(new pcl::visualization::PCLVisualizer("3D Reconstruction"));
@@ -51,7 +54,7 @@ ReconstructionVisualizer::ReconstructionVisualizer()
 	                           0.0, -1.0, 0.0); //up;
 }
 
-ReconstructionVisualizer::ReconstructionVisualizer(const std::string title)
+ReconstructionVisualizer::ReconstructionVisualizer(const std::string& title)
 {
 	num_clouds_ = 0;
 	num_lines_ = 0;
@@ -67,7 +70,7 @@ ReconstructionVisualizer::ReconstructionVisualizer(const std::string title)
 	                           0.0, -1.0, 0.0); //up;
 }
 
-void ReconstructionVisualizer::addReferenceFrame(const Eigen::Affine3f pose, const std::string text)
+void ReconstructionVisualizer::addReferenceFrame(const Eigen::Affine3f& pose, const std::string& text)
 {
 	stringstream frame_name;
 	frame_name << "ref" << num_ref_frames_;
@@ -81,7 +84,7 @@ void ReconstructionVisualizer::addReferenceFrame(const Eigen::Affine3f pose, con
 	viewer_->addText3D(text, pos, 0.025, 1, 1, 1, frame_name.str());
 }
 
-void ReconstructionVisualizer::addPointCloud(const pcl::PointCloud<PointT>::Ptr cloud, const Eigen::Affine3f pose)
+void ReconstructionVisualizer::addPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud, const Eigen::Affine3f& pose)
 {
 	//Create a new point cloud
 	pcl::PointCloud<PointT>::Ptr transf_cloud(new pcl::PointCloud<PointT>);
@@ -100,7 +103,7 @@ void ReconstructionVisualizer::addPointCloud(const pcl::PointCloud<PointT>::Ptr 
 	//pcl::visualization::PointCloudColorHandlerCustom<PointT> blue(curr_cloud, 0, 0, 255);
 }
 
-void ReconstructionVisualizer::addQuantizedPointCloud(const pcl::PointCloud<PointT>::Ptr cloud, const float radius, const Eigen::Affine3f pose)
+void ReconstructionVisualizer::addQuantizedPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud, const float& radius, const Eigen::Affine3f& pose)
 {
 	//Create a new point cloud
 	pcl::PointCloud<PointT>::Ptr quant_cloud(new pcl::PointCloud<PointT>);
@@ -113,7 +116,7 @@ void ReconstructionVisualizer::addQuantizedPointCloud(const pcl::PointCloud<Poin
 	addPointCloud(quant_cloud, pose);
 }
 
-void ReconstructionVisualizer::viewReferenceFrame(const Eigen::Affine3f pose, const std::string text)
+void ReconstructionVisualizer::viewReferenceFrame(const Eigen::Affine3f& pose, const std::string& text)
 {
 	/*
 	//THIS DOES NOT WORK AS EXPECTED
@@ -134,7 +137,7 @@ void ReconstructionVisualizer::viewReferenceFrame(const Eigen::Affine3f pose, co
 	viewer_->addText3D(text, pos, 0.025, 1, 1, 1, ss.str());
 }
 
-void ReconstructionVisualizer::viewPointCloud(const pcl::PointCloud<PointT>::Ptr cloud, const Eigen::Affine3f pose)
+void ReconstructionVisualizer::viewPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud, const Eigen::Affine3f& pose)
 {
 	//Create a new point cloud
 	pcl::PointCloud<PointT>::Ptr transf_cloud(new pcl::PointCloud<PointT>);
@@ -149,7 +152,7 @@ void ReconstructionVisualizer::viewPointCloud(const pcl::PointCloud<PointT>::Ptr
 	}
 }
 
-void ReconstructionVisualizer::viewQuantizedPointCloud(const pcl::PointCloud<PointT>::Ptr cloud, const float radius, const Eigen::Affine3f pose)
+void ReconstructionVisualizer::viewQuantizedPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud, const float& radius, const Eigen::Affine3f& pose)
 {
 	//Create a new point cloud
 	pcl::PointCloud<PointT>::Ptr quant_cloud(new pcl::PointCloud<PointT>);
@@ -162,6 +165,13 @@ void ReconstructionVisualizer::viewQuantizedPointCloud(const pcl::PointCloud<Poi
 	viewPointCloud(quant_cloud, pose);
 }
 
+void ReconstructionVisualizer::setCameraPosition(const float& pos_x, const float& pos_y, const float& pos_z)
+{
+    viewer_->setCameraPosition(pos_x, pos_y, pos_z, //eye
+                               0.0,  0.0, 50.0, //center
+                               0.0, -1.0, 0.0); //up
+}
+
 void ReconstructionVisualizer::spin()
 {
 	viewer_->spin();
@@ -170,4 +180,18 @@ void ReconstructionVisualizer::spin()
 void ReconstructionVisualizer::spinOnce()
 {
 	viewer_->spinOnce();
+}
+
+void ReconstructionVisualizer::addCameraPath(const Eigen::Affine3f& pose)
+{
+	curr_pos_.x = pose(0,3);
+	curr_pos_.y = pose(1,3);
+	curr_pos_.z = pose(2,3);
+
+	stringstream line_name;
+	line_name << "line" << num_lines_++;
+	viewer_->addLine(prev_pos_, curr_pos_, 1.0, 0.0, 0.0, line_name.str());
+	viewer_->setShapeRenderingProperties(pcl::visualization::PCL_VISUALIZER_LINE_WIDTH, 5, line_name.str());
+
+	prev_pos_ = curr_pos_;
 }

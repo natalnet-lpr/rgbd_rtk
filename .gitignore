@@ -1,5 +1,6 @@
 local
 Build
+Release
 .cproject
 .project
 .settings/

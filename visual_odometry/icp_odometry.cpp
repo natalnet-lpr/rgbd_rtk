@@ -39,7 +39,7 @@ ICPOdometry::ICPOdometry()
 	curr_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
 }
 
-ICPOdometry::ICPOdometry(Intrinsics intr)
+ICPOdometry::ICPOdometry(const Intrinsics& intr)
 {
 	frame_idx_ = 0;
 	pose_ = Eigen::Affine3f::Identity();
@@ -50,7 +50,7 @@ ICPOdometry::ICPOdometry(Intrinsics intr)
 	curr_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
 }
 
-void ICPOdometry::computeCameraPose(cv::Mat rgb, cv::Mat depth)
+void ICPOdometry::computeCameraPose(const cv::Mat& rgb, const cv::Mat& depth)
 {
 	Eigen::Affine3f trans = Eigen::Affine3f::Identity();
 

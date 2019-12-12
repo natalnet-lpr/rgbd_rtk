@@ -52,7 +52,7 @@ void MarkerFinder::setMarkerPosesLocal()
 	}
 }
 
-void MarkerFinder::setMarkerPosesGlobal(Eigen::Affine3f cam_pose)
+void MarkerFinder::setMarkerPosesGlobal(const Eigen::Affine3f& cam_pose)
 {
 	marker_poses_.clear();
 	for(size_t i = 0; i < markers_.size(); i++)
@@ -83,7 +83,7 @@ MarkerFinder::MarkerFinder(string params, float size)
 	marker_size_ = size;
 }
 
-void MarkerFinder::detectMarkers(const cv::Mat img, Eigen::Affine3f cam_pose)
+void MarkerFinder::detectMarkers(const cv::Mat& img, const Eigen::Affine3f& cam_pose)
 {
 	markers_.clear();
 	marker_detector_.detect(img, markers_, camera_params_, marker_size_);

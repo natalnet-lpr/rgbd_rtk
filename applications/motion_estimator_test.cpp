@@ -95,7 +95,7 @@ int main(int argc, char **argv)
 		//visualizer.addQuantizedPointCloud(curr_cloud, 0.3, pose);
 		visualizer.viewReferenceFrame(pose);
 		//visualizer.viewPointCloud(curr_cloud, pose);
-		visualizer.viewQuantizedPointCloud(curr_cloud, 0.02, pose);
+		//visualizer.viewQuantizedPointCloud(curr_cloud, 0.02, pose);
 
 		visualizer.spinOnce();
 

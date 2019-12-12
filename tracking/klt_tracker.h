@@ -141,14 +141,14 @@ public:
 	 * Main member function: tracks keypoints between the current frame and the previous.
 	 * Returns true if the current frame is a keyframe.
 	 */
-	virtual bool track(cv::Mat img);
+	virtual bool track(const cv::Mat& img);
 
 	/* Sets the output files for tracking and timing information.
 	 * If not called, the system will not write any information to file.
 	 */
-	void initialize_logger(const std::string timing_file_name,
-		                   const std::string tracking_file_name,
-			               const std::string heatmap_file_name);
+	void initialize_logger(const std::string& timing_file_name,
+		                   const std::string& tracking_file_name,
+			               const std::string& heatmap_file_name);
 };
 
 #endif /* INCLUDE_KLT_TRACKER_H_ */

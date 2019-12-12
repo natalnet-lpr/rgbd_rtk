@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -22,23 +22,55 @@
  *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
+ *  Authors:
+ *
+ *  Felipe Ferreira Barbosa
+ *  Vanessa Dantas de Souto Costa
+ *  Bruno Silva
  */
 
-#ifndef INCLUDE_GEOMETRY_H_
-#define INCLUDE_GEOMETRY_H_
-
+#include <cstdio>
+#include <cstdlib>
 #include <opencv2/core/core.hpp>
-#include <pcl/point_cloud.h>
- 
-#include <common_types.h>
+#include <opencv2/highgui/highgui.hpp>
 
-//Utility function: returns true if the 3D point does not contain NaN values
-bool is_valid(const PointT& p);
+#include <kitti_stereo_loader.h>
 
-//Utility function: returns the 3D point in the dense cloud corresponding to the 2D feature
-PointT get3Dfrom2D(const cv::Point2f& point, const pcl::PointCloud<PointT>::Ptr& dense_cloud);
+using namespace std;
+using namespace cv;
 
-//Computes a RGB-D point cloud from the camera intrinsic parameters and the RGB and depth data.
- pcl::PointCloud<PointT> getPointCloud(const cv::Mat& rgb, const cv::Mat& depth, const Intrinsics& intr);
+int main(int argc, char **argv)
+{
+    string root_path;
+    KITTIStereoLoader loader;
+    Mat left, right;
 
-#endif /* INCLUDE_GEOMETRY_H_ */
+    if(argc != 4)
+    {
+        fprintf(stderr, "Usage: %s <kitti datasets root dir.> <sequence_number> <use_color_camera>\n", argv[0]);
+        fprintf(stderr, "Example: /path/to/parent/directory/of/sequences 11 0 - loads the KITTI grayscale sequence number 11.\n\n");
+        fprintf(stderr, "That is, if the 00, 01, 02, ... folders are within /Datasets/KITTI_Datasets_Gray/sequences,\n");
+        fprintf(stderr, "the grayscale sequence 11 is loaded with:\n");
+        fprintf(stderr, "%s /Datasets/KITTI_Datasets_Gray/ 11 0\n", argv[0]);
+        fprintf(stderr, "(the 'sequences' part of the path is added automatically and must be omitted).\n");
+        exit(0);
+    }
+
+    root_path = argv[1];
+    loader.loadStereoSequence(root_path, atoi(argv[2]), atoi(argv[3]));
+
+    for(size_t i = 0; i < loader.num_pairs_; i++)
+    {
+        left = loader.getNextLeftImage(false);
+        right = loader.getNextRightImage(false);
+        imshow("Left Image", left);
+        imshow("Right Image", right);
+        char key = waitKey(16);
+        if(key == 'q' || key == 'Q' || key == 27)
+        {
+            break;
+        }
+    }
+
+    return 0;
+}
