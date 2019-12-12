@@ -43,6 +43,10 @@ using namespace std;
 using namespace cv;
 using namespace aruco;
 
+/**
+ * This program finds aruco markers closer then aruco_distance paramater
+ * @param ConfigFile.yaml file(params: index_file, aruco_marker_size, camera_calibration_file, aruco_minimum_distance)
+ */
 int main(int argc, char **argv)
 {
 	string index_file_name;

@@ -41,6 +41,10 @@
 using namespace std;
 using namespace cv;
 
+/**
+ * This program estimates camera pose using optical_flow algorithm(visual odometry)
+ * @param ConfigFile.yaml file(uses only index_file)
+ */
 int main(int argc, char **argv)
 {
 	ConfigLoader param_loader;

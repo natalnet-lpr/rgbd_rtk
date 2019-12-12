@@ -34,6 +34,9 @@
 using namespace std;
 using namespace cv;
 
+/** This program loades a sequence of rgb images
+ * ConfigFile.yaml needed(onyl uses index_file(rgb.txt))
+ */
 int main(int argc, char **argv)
 {
 	string index_file_name;

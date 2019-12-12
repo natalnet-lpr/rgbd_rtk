@@ -37,7 +37,7 @@
 
 using namespace std;
 using namespace cv;
-
+   
 void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts)
 {
 	for(size_t k = 0; k < curr_pts.size(); k++)
@@ -75,6 +75,10 @@ void draw_tracks(Mat& img, const vector<Tracklet> tracklets)
 	}
 }
 
+/**
+ * This program trakes points using klt_tracker algorithm
+ * @param ConfigFile.yaml file (uses only index_file)
+ */
 int main(int argc, char **argv)
 {
 	string index_file_name;

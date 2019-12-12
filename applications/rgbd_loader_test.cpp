@@ -34,6 +34,9 @@
 using namespace std;
 using namespace cv;
 
+/** This program loades a sequence of rgbd images
+ * ConfigFile.yaml needed(onyl uses index_file)
+ */
 int main(int argc, char **argv)
 {
 	ConfigLoader param_loader;

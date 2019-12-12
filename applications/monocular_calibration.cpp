@@ -36,6 +36,10 @@
 using namespace cv;
 using namespace std;
 
+/** 
+ * This program calibrates a monocular camera using aruco boarder
+ * @param numbers of horizontal and vertical squares, input(0 webcam, 1 kinect)
+ */
 int main(int argc, char** argv)
 {
 	if(argc != 4)

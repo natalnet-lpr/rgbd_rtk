@@ -41,6 +41,11 @@
 using namespace std;
 using namespace cv;
 
+/**
+ * This program calculates the motion of camera tracking how keypoints moves from frame to frame
+ * @param ConfigFile.yaml file(only uses index)
+ */
+
 int main(int argc, char **argv)
 {
 	ConfigLoader param_loader;
