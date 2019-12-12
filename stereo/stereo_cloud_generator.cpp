@@ -52,7 +52,7 @@ void StereoCloudGenerator::setParameters(const int& min_disparity, const int& bl
     speckle_range_ = speckle_range;
 }
 
-Mat StereoCloudGenerator::generateDisparityMap(const cv::Mat& left_img, const cv::Mat& right_img)
+void StereoCloudGenerator::generateDisparityMap(const cv::Mat& left_img, const cv::Mat& right_img)
 {
     Mat left_gray, right_gray, disparity, true_disparity;
 
@@ -72,20 +72,18 @@ Mat StereoCloudGenerator::generateDisparityMap(const cv::Mat& left_img, const cv
     }
 
     //Convert disparity to float
-    disparity.convertTo(true_disparity, CV_32F, 1.0/16.0, 0.0);
-
-    return true_disparity;
+    disparity.convertTo(disparity_, CV_32F, 1.0/16.0, 0.0);
 }
 
-void StereoCloudGenerator::generatePointCloud(const cv::Mat& left_img, cv::Mat& right_img, const cv::Mat& Q)
+void StereoCloudGenerator::generatePointCloud(const cv::Mat& left_img, const cv::Mat& right_img)
 {
-    Mat mat_cloud, true_disparity;
+    Mat mat_cloud;
 
     //Generate disparity image
-    true_disparity = generateDisparityMap(left_img, right_img);
+    generateDisparityMap(left_img, right_img);
 
     //Reproject image to 3D using geometric stereo parameters set in matrix Q
-    reprojectImageTo3D(true_disparity, mat_cloud, Q, true);
+    reprojectImageTo3D(disparity_, mat_cloud, Q_, true);
 
     //Set point cloud properties
     cloud_->clear();

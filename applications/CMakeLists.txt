@@ -15,6 +15,7 @@ add_executable(icp_odometry_test icp_odometry_test.cpp)
 add_executable(kitti_loader_test kitti_loader_test.cpp)
 add_executable(stereo_cloud_generator_test stereo_cloud_generator_test.cpp)
 add_executable(kitti_velodyne_loader_test kitti_velodyne_loader_test.cpp)
+add_executable(stereo_optical_flow_visual_odometry_test stereo_optical_flow_visual_odometry_test.cpp)
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 
@@ -49,7 +50,12 @@ target_link_libraries(stereo_cloud_generator_test ${PCL_LIBRARIES} ${RGBD_RTK_IO
                                                   ${RGBD_RTK_VISUALIZATION}
                                                   ${RGBD_RTK_STEREO})
 target_link_libraries(kitti_velodyne_loader_test ${PCL_LIBRARIES} ${RGBD_RTK_IO}
-                                                 ${RGBD_RTK_VISUALIZATION})                                                  
+                                                 ${RGBD_RTK_VISUALIZATION})
+target_link_libraries(stereo_optical_flow_visual_odometry_test ${PCL_LIBRARIES} ${RGBD_RTK_IO}
+                                                 ${RGBD_RTK_VISUALIZATION}
+                                                 ${RGBD_RTK_STEREO}
+                                                 ${RGBD_RTK_MOTION_ESTIMATION}
+                                                 ${RGBD_RTK_VISUAL_ODOMETRY})
 
 install(TARGETS monocular_calibration
                 monocular_image_grabber
@@ -58,10 +64,11 @@ install(TARGETS monocular_calibration
                 klt_tracker_test
                 motion_estimator_test
                 optical_flow_visual_odometry_test
-				        icp_odometry_test
+				icp_odometry_test
                 kitti_loader_test
                 stereo_cloud_generator_test
                 kitti_velodyne_loader_test
+                stereo_optical_flow_visual_odometry_test
         RUNTIME DESTINATION bin)
 
 # Build SLAM related applications only if ARUCO was found

@@ -60,13 +60,20 @@ private:
     int speckle_window_size_;
     int speckle_range_;
 
+    //Perspective transform matrix
+    cv::Mat Q_;
+
 public:
+
+    //Disparity image
+    cv::Mat disparity_;
 
     //Generated point cloud
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_;
 
-    //Constructor with the number of image channels (1 or 3)
-	StereoCloudGenerator(const int& num_channels)
+    //Constructor with the matrix of intrinsic parameters and
+    //number of image channels (1 or 3)
+	StereoCloudGenerator(const Intrinsics& intr, const int& num_channels)
     {
         cloud_ = pcl::PointCloud<pcl::PointXYZRGB>::Ptr(new pcl::PointCloud<pcl::PointXYZRGB>);
         num_channels_ = num_channels;
@@ -90,20 +97,27 @@ public:
             uniqueness_ratio_, speckle_window_size_, 
             speckle_range_, cv::StereoSGBM::MODE_SGBM_3WAY
         );
+
+        Q_ = (cv::Mat_<float>(4,4) << 1, 0, 0, -intr.cx_, 
+                                      0, 1, 0, -intr.cy_,
+                                      0, 0, 0,  intr.fx_,
+                                      0, 0, 1/intr.baseline_, 0);
     }
 
     //Set parameters used in disparity map generation
     void setParameters(const int& min_disparity, const int& block_size,
-                             const int& disp12_max_diff, const int& pre_filter_cap,
-                             const int& uniqueness_ratio, const int& speckle_window_size,
-                             const int& speckle_range);
+                       const int& disp12_max_diff, const int& pre_filter_cap,
+                       const int& uniqueness_ratio, const int& speckle_window_size,
+                       const int& speckle_range);
 
     //Generate disparity map from calibrated image pair
-	cv::Mat generateDisparityMap(const cv::Mat& left_img, const cv::Mat& right_img);
+    //(the result is stored in the disparity_ attribute)
+	void generateDisparityMap(const cv::Mat& left_img, const cv::Mat& right_img);
                                
 
     //Generate 3D point cloud from calibrated image pair
-	void generatePointCloud(const cv::Mat& left_img, cv::Mat& right_img, const cv::Mat& Q); 
+    //(the result is stored in the cloud_ attribute)
+	void generatePointCloud(const cv::Mat& left_img, const cv::Mat& right_img); 
 	
     //Default destructor
     ~StereoCloudGenerator()

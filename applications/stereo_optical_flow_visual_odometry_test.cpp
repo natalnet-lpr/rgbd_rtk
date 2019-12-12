@@ -34,25 +34,27 @@
 #include <Eigen/Geometry>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
+#include <geometry.h>
 #include <kitti_stereo_loader.h>
 #include <stereo_cloud_generator.h>
 #include <reconstruction_visualizer.h>
+#include <stereo_optical_flow_visual_odometry.h>
 
 using namespace std;
 using namespace cv;
 
 int main(int argc, char **argv)
 {
-    string root_path;
-    KITTIStereoLoader loader;
-    Intrinsics intr(718.856, 718.856, 607.1928, 185.2157, 0.54);
-    StereoCloudGenerator cg(intr, 1);
-    Mat left, right, true_disp;
-    ReconstructionVisualizer visualizer;
-    Eigen::Affine3f pose = Eigen::Affine3f::Identity();
+	string root_path;
+	KITTIStereoLoader loader;
+	Intrinsics intr(718.856, 718.856, 607.1928, 185.2157, 0.54);
+	StereoOpticalFlowVisualOdometry vo(intr);
+	ReconstructionVisualizer visualizer;
+	Mat left, right;
 
-    if(argc != 4)
+	if(argc != 4)
     {
         fprintf(stderr, "Usage: %s <kitti datasets root dir.> <sequence_number> <use_color_camera>\n", argv[0]);
         fprintf(stderr, "Example: /path/to/parent/directory/of/sequences 11 0 - loads the KITTI grayscale sequence number 11.\n\n");
@@ -63,40 +65,53 @@ int main(int argc, char **argv)
         exit(0);
     }
 
-    root_path = argv[1];
+	Mat Q = (cv::Mat_<float>(4,4) <<1, 0, 0,       -607.1928, 
+                                    0, 1, 0,       -185.2157,
+                                    0, 0, 0,         718.856,
+                                    0, 0, 1/0.54, 0); //54cm of baseline
+
+	root_path = argv[1];
     loader.loadStereoSequence(root_path, atoi(argv[2]), atoi(argv[3]));
 
     for(size_t i = 0; i < loader.num_pairs_; i++)
     {
+    	//Load stereo pair
         left = loader.getNextLeftImage(false);
         right = loader.getNextRightImage(false);
 
-        cg.generatePointCloud(left, right);
+        //Estimate current camera pose
+        vo.computeCameraPose(left, right);
 
-        //Adjust disparity image for visualization purposes
-        cg.disparity_.copyTo(true_disp);
-        double min, max;
-        minMaxLoc(true_disp, &min, &max);
-        true_disp = true_disp/max;
+        //View tracked points
+		for(size_t k = 0; k < vo.tracker_.curr_pts_.size(); k++)
+		{
+			Point2i pt1 = vo.tracker_.prev_pts_[k];
+			Point2i pt2 = vo.tracker_.curr_pts_[k];
+			circle(left, pt1, 1, CV_RGB(255,0,0), -1);
+			circle(left, pt2, 3, CV_RGB(0,0,255), -1);
+			line(left, pt1, pt2, CV_RGB(0,0,255));
+		}
 
-        //View images
-        imshow("Left Image", left);
-        imshow("Right Image", right);
-        imshow("Disparity", true_disp);
+		if(i == 0) visualizer.addReferenceFrame(vo.pose_, "origin");
+		//visualizer.addQuantizedPointCloud(vo.curr_dense_cloud_, 0.1, vo.pose_);
+		//visualizer.addPointCloud(vo.curr_dense_cloud_, vo.pose_);
+		visualizer.viewReferenceFrame(vo.pose_);
+		//visualizer.viewPointCloud(vo.curr_dense_cloud_, vo.pose_);
+		visualizer.viewQuantizedPointCloud(vo.curr_dense_cloud_, 0.5, vo.pose_);
+		//visualizer.addCameraPath(vo.pose_);
 
-        //View point cloud
-        if(i == 0) visualizer.addReferenceFrame(pose, "origin");
-        visualizer.viewQuantizedPointCloud(cg.cloud_, 0.5, pose);
+		visualizer.spinOnce();
 
-        visualizer.spinOnce();
-
-        char key = waitKey(1);
-        if(key == 'q' || key == 'Q' || key == 27)
-        {
-            break;
-        }
+        //Show images
+		imshow("Left Image", left);
+		
+		char key = waitKey(1);
+		if(key == 27 || key == 'q' || key == 'Q')
+		{
+			printf("Exiting.\n");
+			break;
+		}
     }
 
-    return 0;
+	return 0;
 }
-
