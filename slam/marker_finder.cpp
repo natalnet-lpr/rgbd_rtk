@@ -54,7 +54,7 @@ void MarkerFinder::setMarkerPosesLocal(float aruco_minimum_distance)
 		z = pow(P(2,3),2);
 
 		//getting the absolute distance between camera and marker
-		///if their distance is closer then aruco_minimum_distance meters save marker pose
+		///if their distance is closer then  aruco_max_distance meters save marker pose
 		if(aruco_minimum_distance == -1){//infinite
 			marker_poses_local_.push_back(P);
 			continue ;
@@ -90,7 +90,7 @@ void MarkerFinder::setMarkerPosesGlobal(Eigen::Affine3f cam_pose, float aruco_mi
 		z = pow(P(2,3),2);
 		
 		//getting the absolute distance between camera and marker
-		///if their distance is closer then aruco_minimum_distance meters save marker pose
+		///if their distance is closer then  aruco_max_distance meters save marker pose
 		if(aruco_minimum_distance == -1){//infinite
 			marker_poses_.push_back(cam_pose.inverse() *P );
 			continue ;
