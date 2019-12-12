@@ -74,7 +74,7 @@ int main(int argc, char **argv)
 		vo.computeCameraPose(frame, depth);
 		
 		//Find ARUCO markers and compute their poses
-		marker_finder.detectMarkers(frame, vo.pose_);
+		marker_finder.detectMarkers(frame, vo.pose_, param_loader.aruco_max_distance_);
         for (size_t i = 0; i < marker_finder.markers_.size(); i++)
 		{
             marker_finder.markers_[i].draw(frame, Scalar(0,0,255), 1);
