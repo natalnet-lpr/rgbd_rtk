@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016-2018, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -22,48 +22,59 @@
  *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
+ *  Authors:
+ *
+ *  Felipe Ferreira Barbosa
+ *  Vanessa Dantas de Souto Costa
+ *  Bruno Silva
  */
 
-#ifndef INCLUDE_MOTION_ESTIMATOR_ICP_H_
-#define INCLUDE_MOTION_ESTIMATOR_ICP_H_
+#ifndef INCLUDE_STEREO_OPTICAL_FLOW_VISUAL_ODOMETRY_H_
+#define INCLUDE_STEREO_OPTICAL_FLOW_VISUAL_ODOMETRY_H_
 
 #include <Eigen/Geometry>
-
+#include <opencv2/core/core.hpp>
 #include <pcl/point_cloud.h>
-#include <pcl/registration/icp.h>
-#include <pcl/filters/uniform_sampling.h>
 
 #include <common_types.h>
+#include <klt_tracker.h>
+#include <motion_estimator_ransac.h>
+#include <stereo_cloud_generator.h>
 
-class MotionEstimatorICP
+class StereoOpticalFlowVisualOdometry
 {
-
 private:
-
-	//(Uniform) point sampler
-	pcl::UniformSampling<PointT> sampler_;
-
-	//PCL ICP motion estimator
-	pcl::IterativeClosestPoint<PointT, PointT> icp_;
-
-	//Utility function to downsample cloud data
-	void downSampleCloud(const pcl::PointCloud<PointT>::Ptr& dense_cloud,
-		                 pcl::PointCloud<PointT>& res_cloud);
+	
+	//Current frame index
+	unsigned long int frame_idx_;
 
 public:
 
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	//Default constructor
-	MotionEstimatorICP();
+	//Previous dense point cloud
+	pcl::PointCloud<PointT>::Ptr prev_dense_cloud_;
 
-	/* Main member function: estimates the motion between two point clouds as the registration transformation
-	 * between two sparse clouds of visual features. The sparse clouds are given as two vectors of 2D points,
-	 * from which the corresponding 3D points are extracted.
-	 */
-	Eigen::Affine3f estimate(const pcl::PointCloud<PointT>::Ptr& tgt_dense_cloud,
-		                     const pcl::PointCloud<PointT>::Ptr& src_dense_cloud);
+	//Current dense point cloud
+	pcl::PointCloud<PointT>::Ptr curr_dense_cloud_;
+	
+	//Feature tracker
+	KLTTracker tracker_;
 
+	//Motion estimator
+	MotionEstimatorRANSAC motion_estimator_;
+
+	//Point cloud generator
+	StereoCloudGenerator cloud_generator_;
+
+	//Current camera pose
+	Eigen::Affine3f pose_;
+
+	//Constructor with the matrix of intrinsic parameters
+	StereoOpticalFlowVisualOdometry(const Intrinsics& intr);
+
+	//Main member function: computes the current camera pose
+	void computeCameraPose(const cv::Mat& left, const cv::Mat& right);
 };
 
-#endif /* INCLUDE_MOTION_ESTIMATOR_ICP_H_ */
+#endif /* INCLUDE_STEREO_OPTICAL_FLOW_VISUAL_ODOMETRY_H_ */

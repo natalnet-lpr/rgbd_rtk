@@ -24,67 +24,55 @@
  *
  *  Authors:
  *
- *  Rodrigo Sarmento Xavier
+ *  Felipe Ferreira Barbosa
+ *  Vanessa Dantas de Souto Costa
  *  Bruno Silva
  */
 
-#ifndef INCLUDE_MARKER_FINDER_H_
-#define INCLUDE_MARKER_FINDER_H_
-
-#include <vector>
+#include <iostream>
 #include <Eigen/Geometry>
-#include <Eigen/StdVector>
 
-#include <opencv2/core/core.hpp>
+#include <kitti_velodyne_loader.h>
+#include <reconstruction_visualizer.h>
 
-#include <aruco/aruco.h>
+using namespace std;
+using namespace cv;
 
-/*
- * Artificial marker finder, used to detect loops
- * on controlled (equipped with artificial markers) environments.
- *
- */
-class MarkerFinder
+int main(int argc, char **argv)
 {
+    string root_path;
+    KITTIVelodyneLoader loader;
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud = pcl::PointCloud<pcl::PointXYZRGB>::Ptr(new pcl::PointCloud<pcl::PointXYZRGB>);
+    ReconstructionVisualizer visualizer;
+    Eigen::Affine3f pose = Eigen::Affine3f::Identity();
 
-protected:
-	
-	//(ARUCO) Marker detector
-    aruco::MarkerDetector marker_detector_;
-	
-	//Size of each artificial marker
-	float marker_size_;
-		
-	//Set the pose of all detected markers w.r.t. the local/camera ref. frame
-	void setMarkerPosesLocal(float aruco_max_distance);
-	
-	//Set the pose of all detected markers w.r.t. the global ref. frame
-	void setMarkerPosesGlobal(const Eigen::Affine3f& cam_pose, const float& aruco_max_distance);
+    if(argc != 3)
+    {
+        fprintf(stderr, "Usage: %s <kitti datasets root dir.> <sequence_number>\n", argv[0]);
+        fprintf(stderr, "Example: /path/to/parent/directory/of/sequences 11 - loads the KITTI LIDAR sequence number 11.\n\n");
+        fprintf(stderr, "That is, if the 00, 01, 02, ... folders are within /Datasets/KITTI_Datasets_LIDAR/sequences,\n");
+        fprintf(stderr, "the LIDAR sequence 11 is loaded with:\n");
+        fprintf(stderr, "%s /Datasets/KITTI_Datasets_LIDAR/ 11\n", argv[0]);
+        fprintf(stderr, "(the 'sequences' part of the path is added automatically and must be omitted).\n");
+        exit(0);
+    }
 
-public:
-	
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    root_path = argv[1];
 
-	//(ARUCO) Camera intrinsic parameters
-	aruco::CameraParameters camera_params_;
-	
-	//Vector with each detected marker
-	std::vector<aruco::Marker> markers_;
-	
-	//Vector with the pose of each detected marker (w.r.t. the local/camera ref. frame)
-	std::vector<Eigen::Affine3f,Eigen::aligned_allocator<Eigen::Affine3f> > marker_poses_local_;
-	
-	//Vector with the pose of each detected marker 
-	std::vector<Eigen::Affine3f,Eigen::aligned_allocator<Eigen::Affine3f> > marker_poses_;
-	
-	//Default constructor
-	MarkerFinder();
-	
-	//Constructor with camera intrinsic parameters and marker size
-	MarkerFinder(string params, float size);
+    loader.loadLIDARSequence(root_path, atoi(argv[2]));
 
-	//Detect ARUCO markers. Also sets the poses of all detected markers in the local and global ref. frames
-	void detectMarkers(const cv::Mat img, const Eigen::Affine3f& cam_pose, const float& aruco_max_distance);
-};
+    for(size_t i = 0; i < loader.num_scans_; i++)
+    {
+        //Load XYZRGB monochromatic cloud from .bin file
+        cloud = loader.getPointCloudXYZRGB();
+        printf("Point cloud %lu has %lu points\n", i, cloud->size());
 
-#endif /* INCLUDE_MARKER_FINDER_H_ */
+        //View point cloud
+        if(i == 0) visualizer.addReferenceFrame(pose, "origin");
+        visualizer.viewPointCloud(cloud, pose);
+
+        visualizer.spinOnce();
+    }
+
+    return 0;
+}

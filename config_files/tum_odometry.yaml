@@ -1,0 +1,16 @@
+%YAML:1.0
+camera_calibration_file: "/Users/bruno/Projects/rgbd_rtk/config_files/kinect_default.yaml"
+index_file: "/Users/bruno/Box_Sync/RGBD_TUM/rgbd_dataset_freiburg1_xyz/index"
+
+# parameters below are not used
+aruco_dic: "not used"
+aruco_max_distance: -1
+aruco_marker_size: -1
+
+
+
+
+
+
+
+

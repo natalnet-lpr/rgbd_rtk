@@ -6,17 +6,16 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -Wall  -O3 -march=native ")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall   -O3 -march=native")
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
-set( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}" )
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
+set(CMAKE_CXX_FLAGS_RELEASE "-march=native -mno-avx -O3") # WITH -march=native: seg_fault. on Mac OS
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}" )
 
-SET(CMAKE_CXX_FLAGS "-std=c++11")
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 message(STATUS "Project source directory: " ${PROJECT_SOURCE_DIR})
 message(STATUS "Build directory: " ${PROJECT_BINARY_DIR})
+message(STATUS "Build type: " ${CMAKE_BUILD_TYPE})
 
 find_package(OpenCV REQUIRED)
 if(OpenCV_FOUND)
@@ -36,10 +35,10 @@ else()
 endif()
 
 # Force OpenCV versions if ROS is installed
-#set(OpenCV_INCLUDE_DIRS "/home/bruno/Lib/opencv-3.4.1/local/include")
+#set(OpenCV_INCLUDE_DIRS "/home/ferreira/Documentos/libs/opencv-3.4.1/include")
 
-include_directories(${OpenCV_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} common io tracking motion_estimation
-                    visualization visual_odometry)
+include_directories(${OpenCV_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} common io tracking
+                    motion_estimation visualization visual_odometry stereo)
 link_directories(${PCL_LIBRARY_DIRS})
 #add_definitions(${PCL_DEFINITIONS}) #apparently not needed
 
@@ -53,6 +52,8 @@ add_subdirectory(visualization)
 set(RGBD_RTK_VISUALIZATION rgbd_rtk_visualization)
 add_subdirectory(motion_estimation)
 set(RGBD_RTK_MOTION_ESTIMATION rgbd_rtk_motion_estimation)
+add_subdirectory(stereo)
+set(RGBD_RTK_STEREO rgbd_rtk_stereo)
 add_subdirectory(visual_odometry)
 set(RGBD_RTK_VISUAL_ODOMETRY rgbd_rtk_visual_odometry)
 

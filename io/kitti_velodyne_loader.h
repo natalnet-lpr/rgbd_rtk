@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016-2018, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -22,48 +22,65 @@
  *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
+ *  Authors:
+ *
+ *  Felipe Ferreira Barbosa
+ *  Vanessa Dantas de Souto Costa
+ *  Bruno Silva
  */
 
-#ifndef INCLUDE_MOTION_ESTIMATOR_ICP_H_
-#define INCLUDE_MOTION_ESTIMATOR_ICP_H_
+#ifndef KITTI_VELODYNE_LOADER_H
+#define KITTI_VELODYNE_LOADER_H
 
-#include <Eigen/Geometry>
+#include <iostream>
+#include <vector>
 
+#include <opencv2/core/core.hpp>
+#include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
-#include <pcl/registration/icp.h>
-#include <pcl/filters/uniform_sampling.h>
 
-#include <common_types.h>
-
-class MotionEstimatorICP
+class KITTIVelodyneLoader
 {
 
 private:
 
-	//(Uniform) point sampler
-	pcl::UniformSampling<PointT> sampler_;
+    //Path of the root directory of the sequence
+    std::string root_path_;
 
-	//PCL ICP motion estimator
-	pcl::IterativeClosestPoint<PointT, PointT> icp_;
+    //Path of the root dir. + "/sequences/" + seq_number_;
+    std::string prefix_path_;
 
-	//Utility function to downsample cloud data
-	void downSampleCloud(const pcl::PointCloud<PointT>::Ptr& dense_cloud,
-		                 pcl::PointCloud<PointT>& res_cloud);
+    //Scan index
+    int next_;
+
+    //Point cloud with XYZ and Intensity
+    pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_xyzi_;
+
+    //Point cloud with XYZ and a fixed RGB color
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_xyzrgb_; 
+    
+    //Strings of all left images of a sequence
+    std::vector<std::string> lidar_scan_names_;
 
 public:
 
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    //Total number of laser scans in the sequence
+	int num_scans_;
 
-	//Default constructor
-	MotionEstimatorICP();
+    //Default constructor
+	KITTIVelodyneLoader();
 
-	/* Main member function: estimates the motion between two point clouds as the registration transformation
-	 * between two sparse clouds of visual features. The sparse clouds are given as two vectors of 2D points,
-	 * from which the corresponding 3D points are extracted.
-	 */
-	Eigen::Affine3f estimate(const pcl::PointCloud<PointT>::Ptr& tgt_dense_cloud,
-		                     const pcl::PointCloud<PointT>::Ptr& src_dense_cloud);
+    //Loads a KITTI sequence number with given path
+	void loadLIDARSequence(const std::string& sequence_path, const int& sequence_num);
 
+    //Point cloud having XYZ and Intensity
+	pcl::PointCloud<pcl::PointXYZI>::Ptr getPointCloudXYZI();
+
+    //Point cloud having XYZ and a constant RGB color
+	pcl::PointCloud<pcl::PointXYZRGB>::Ptr getPointCloudXYZRGB();
+
+    ~KITTIVelodyneLoader();
 };
 
-#endif /* INCLUDE_MOTION_ESTIMATOR_ICP_H_ */
+#endif /* KITTI_VELODYNE_LOADER_H */
+

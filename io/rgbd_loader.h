@@ -61,7 +61,7 @@ public:
 	/* 
 	 * Constructor with the file name of the image sequence.
 	 */ 
-	RGBDLoader(const std::string index_file_name)
+	RGBDLoader(const std::string& index_file_name)
 	{
 		num_images_ = 0;
 		curr_img_ = 0;
@@ -73,7 +73,7 @@ public:
 	 * assuming the index file has a 4-tuple <timestamp rgb_name timestamp depth_name> per line. 
      * The function is public and thus can be called directly.
      */
-	void processFile(const std::string index_file_name);
+	void processFile(const std::string& index_file_name);
 
 	/*
 	 * Returns the next RGB-D image of the sequence.

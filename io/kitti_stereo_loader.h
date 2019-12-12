@@ -24,67 +24,77 @@
  *
  *  Authors:
  *
- *  Rodrigo Sarmento Xavier
+ *  Felipe Ferreira Barbosa
+ *  Vanessa Dantas de Souto Costa
  *  Bruno Silva
  */
 
-#ifndef INCLUDE_MARKER_FINDER_H_
-#define INCLUDE_MARKER_FINDER_H_
+#ifndef KITTI_STEREOLOADER_H
+#define KITTI_STEREOLOADER_H
 
+#include <iostream>
 #include <vector>
-#include <Eigen/Geometry>
-#include <Eigen/StdVector>
 
 #include <opencv2/core/core.hpp>
 
-#include <aruco/aruco.h>
-
-/*
- * Artificial marker finder, used to detect loops
- * on controlled (equipped with artificial markers) environments.
- *
- */
-class MarkerFinder
+class KITTIStereoLoader
 {
 
-protected:
-	
-	//(ARUCO) Marker detector
-    aruco::MarkerDetector marker_detector_;
-	
-	//Size of each artificial marker
-	float marker_size_;
-		
-	//Set the pose of all detected markers w.r.t. the local/camera ref. frame
-	void setMarkerPosesLocal(float aruco_max_distance);
-	
-	//Set the pose of all detected markers w.r.t. the global ref. frame
-	void setMarkerPosesGlobal(const Eigen::Affine3f& cam_pose, const float& aruco_max_distance);
+private:
+
+    //Left image of the stereo pair
+    cv::Mat left_image_;
+
+    //Right image of the stereo pair
+    cv::Mat right_image_;
+
+    //Path of the root directory of the sequence
+    std::string root_path_;
+
+    //Path of the root dir. + "dataset/sequences/" + seq_number_;
+    std::string prefix_path_;
+
+    //Image indices
+    size_t next_left_;
+    size_t next_right_;
+
+    //Strings of all left images of a sequence
+    std::vector<std::string> left_image_names_;
+
+    //Strings of all right images of a sequence
+    std::vector<std::string> right_image_names_; 
 
 public:
-	
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	//(ARUCO) Camera intrinsic parameters
-	aruco::CameraParameters camera_params_;
-	
-	//Vector with each detected marker
-	std::vector<aruco::Marker> markers_;
-	
-	//Vector with the pose of each detected marker (w.r.t. the local/camera ref. frame)
-	std::vector<Eigen::Affine3f,Eigen::aligned_allocator<Eigen::Affine3f> > marker_poses_local_;
-	
-	//Vector with the pose of each detected marker 
-	std::vector<Eigen::Affine3f,Eigen::aligned_allocator<Eigen::Affine3f> > marker_poses_;
-	
-	//Default constructor
-	MarkerFinder();
-	
-	//Constructor with camera intrinsic parameters and marker size
-	MarkerFinder(string params, float size);
+    //Default constructor
+    KITTIStereoLoader() : next_left_(0), next_right_(0), num_pairs_(0)
+    {}
 
-	//Detect ARUCO markers. Also sets the poses of all detected markers in the local and global ref. frames
-	void detectMarkers(const cv::Mat img, const Eigen::Affine3f& cam_pose, const float& aruco_max_distance);
+    //Number of stereo pairs of the sequence
+    size_t num_pairs_;
+
+    //Loads a stereo pair from two given paths
+    void loadStereoPair(const std::string& left_path, const std::string& right_path);
+
+    /* Loads a sequence of stereo pairs from a given path.
+     * The second parameter informs the sequence number,
+     * the third parameter informs if the color cameras should be used.
+     */
+    void loadStereoSequence(const std::string& sequence_path, const int& sequence_num, const bool& use_color);
+
+    //Returns the left image
+    cv::Mat getLeftImage();
+
+    //Returns the right image
+    cv::Mat getRightImage();
+
+    //Returns the next left image
+    cv::Mat getNextLeftImage(const bool& use_color);
+
+    //Returns the next right image
+    cv::Mat getNextRightImage(const bool& use_color);
+
+    ~KITTIStereoLoader();
 };
 
-#endif /* INCLUDE_MARKER_FINDER_H_ */
+#endif // KITTI_STEREOLOADER_H 

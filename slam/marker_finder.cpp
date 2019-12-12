@@ -74,7 +74,7 @@ void MarkerFinder::setMarkerPosesLocal(float aruco_max_distance)
 	}
 }
 
-void MarkerFinder::setMarkerPosesGlobal(Eigen::Affine3f cam_pose, float aruco_max_distance)
+void MarkerFinder::setMarkerPosesGlobal(const Eigen::Affine3f& cam_pose, const float& aruco_max_distance)
 {
 	double x=0,y=0,z=0;
 	marker_poses_.clear();
@@ -124,7 +124,7 @@ MarkerFinder::MarkerFinder(string params, float size)
 	marker_size_ = size;
 }
 
-void MarkerFinder::detectMarkers(const cv::Mat img, Eigen::Affine3f cam_pose, float aruco_max_distance)
+void MarkerFinder::detectMarkers(const cv::Mat& img, const Eigen::Affine3f& cam_pose, const float& aruco_max_distance)
 {
 	markers_.clear();
 	marker_detector_.detect(img, markers_, camera_params_, marker_size_);
