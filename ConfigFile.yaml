@@ -6,9 +6,9 @@
 # aruco_marker_size: 0.1778
 # aruco_distance: 4
 camera_calibration_file: "kinect_default.yaml"
-index_file: "index.txt"
+index_file: "/Users/bruno/Box_Sync/RGBD_TUM/rgbd_dataset_freiburg1_xyz/index"
 aruco_dic: "ARUCO"
-aruco_distance: 4
+aruco_max_distance: 4
 aruco_marker_size: 0.1778
 
 
