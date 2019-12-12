@@ -61,26 +61,39 @@ void ConfigLoader::loadParams(const string& filename)
         fs["aruco_marker_size"] >> aruco_marker_size_;
 
         //Check if any of the params was not loaded
-        if(camera_calibration_file_.empty() || index_file_.empty() ||aruco_dic_.empty() ||
-           aruco_max_distance_ == 0 || aruco_marker_size_ == 0) throw 1;
-
-        cout << "Params load successfully\n" << "camera_calibration_file: " << camera_calibration_file_ << endl;
-        cout << "index_file: " << index_file_<<endl << "aruco_dic: " << aruco_dic_<< endl;
-        cout << "aruco_max_distance: " << aruco_max_distance_<<endl << "aruco_marker_size: " << aruco_marker_size_ << endl;
+        if(camera_calibration_file_.empty()) throw 1;
+        if(index_file_.empty()) throw 2;
+        if(aruco_dic_.empty()) throw 3;
+        if(aruco_max_distance_ == 0) throw 4;
+        if(aruco_marker_size_ == 0) throw 5;
+       
     }
     //If a param was not loaded, use the default
     catch(int e)
     {
-        cout << "Coudn't load the params, at least one of the param names is wrong\n\n";
-        cout << "Using default values\ncamera_calibration_file: \"kinect_default.yaml\"\n";
-        cout << "index_file: \"index\"\n";
-        cout << "aruco_dic: \"ARUCO\"\n";
-        cout << "aruco_max_distance: 4\n";
-        cout << "aruco_marker_size: 0.1778\n";
-        camera_calibration_file_ = "../config_files/kinect_default.yaml";
-        index_file_ = "index";
-        aruco_dic_ = "ARUCO";
-        aruco_max_distance_ = 4;
-        aruco_marker_size_ = 0.1778;
+        cout<<"Couldn't load params\n";
+        switch (e)
+        {
+        case 1:
+            cout<<"calibration_file is empty\nTrying to use the default path:../config_files/kinect_default.yaml";
+            camera_calibration_file_ = "../config_files/kinect_default.yaml\n";
+            break;
+        case 2: 
+            cout<<"index_file is empty\nTrying to use the default : index.txt\n";
+            index_file_ = "index.txt";       
+            break;
+        case 3:
+            cout<<"aruco_dic is empyty\nTrying to use the default dictionary: ARUCO\n";
+            aruco_dic_ = "ARUCO";
+            break;
+        case 4:
+            cout<<"aruco_max_distance is 0\n Trying to use the default valul: 4\n";
+            aruco_max_distance_ = 4;
+            break;
+        case 5:
+            cout<<"aruco_marker_size is 0\nTrying to use the default value: 0.1778\n";
+            aruco_marker_size_ = 0.1778;
+            break;
+        }
     }
 }
