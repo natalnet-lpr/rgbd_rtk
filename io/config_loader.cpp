@@ -77,7 +77,7 @@ void ConfigLoader::loadParams(const string& filename)
         cout << "aruco_dic: \"ARUCO\"\n";
         cout << "aruco_max_distance: 4\n";
         cout << "aruco_marker_size: 0.1778\n";
-        camera_calibration_file_ = "../kinect_default.yaml";
+        camera_calibration_file_ = "../config_files/kinect_default.yaml";
         index_file_ = "index";
         aruco_dic_ = "ARUCO";
         aruco_max_distance_ = 4;
