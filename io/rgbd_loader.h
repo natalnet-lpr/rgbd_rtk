@@ -60,6 +60,7 @@ public:
 
 	/* 
 	 * Constructor with the file name of the image sequence.
+	 * @param index_file
 	 */ 
 	RGBDLoader(const std::string index_file_name)
 	{
@@ -68,16 +69,18 @@ public:
 		processFile(index_file_name);
 	}
 
-	/*
-	 * Main function: scans the index file and inserts the RGB/depth file names into two vectors,
-	 * assuming the index file has a 4-tuple <timestamp rgb_name timestamp depth_name> per line. 
-     * The function is public and thus can be called directly.
-     */
+	/**
+ 	  * Main function: scans the index file and inserts the RGB/depth file names into two vectors,
+ 	  * assuming the index file has a 4-tuple <timestamp rgb_name timestamp depth_name> per line. 
+ 	  * The function is public and thus can be called directly.
+ 	  * @param index_file
+ 	  */
 	void processFile(const std::string index_file_name);
 
-	/*
-	 * Returns the next RGB-D image of the sequence.
-	 */ 
+	/**
+	  * Returns the next RGB-D image of the sequence.
+	  * @param rgb and depth image
+	  */ 
 	void getNextImage(cv::Mat& rgb_img, cv::Mat& depth_img);
 };
 

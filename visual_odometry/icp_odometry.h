@@ -62,10 +62,16 @@ public:
 	//Default constructor
 	ICPOdometry();
 
-	//Constructor with the matrix of intrinsic parameters
+	/**
+	 * Constructor with the matrix of intrinsic parameters
+	 * @param Camera intrisics
+	 */
 	ICPOdometry(const Intrinsics intr);
 
-	//Main member function: computes the current camera pose
+	/**
+	 * Main member function: computes the current camera pose
+	 * @param rgb and depth image
+	 */
 	void computeCameraPose(cv::Mat rgb, cv::Mat depth);
 };
 

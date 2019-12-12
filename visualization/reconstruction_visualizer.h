@@ -52,34 +52,61 @@ private:
 	PCLVisualizerPtr viewer_;
 
 public:
-	//Default constructor
+	/**
+	 * Default constructor
+	 */
 	ReconstructionVisualizer();
 
-	//Constructor with the window title as a string
+	/**
+	 * Constructor with the window title as a string
+	 * @param string 
+	 */
 	ReconstructionVisualizer(const std::string title);
 
-	//Adds a ref. frame with the given pose to the 3D reconstruction
+	/**
+	 * Adds a ref. frame with the given pose to the 3D reconstruction
+	 * @param ref pose and string 
+	 */
 	void addReferenceFrame(const Eigen::Affine3f pose, const std::string text);
 
-	//Adds a point cloud with the given pose to the 3D reconstruction
+	/**
+	 * Adds a point cloud with the given pose to the 3D reconstruction
+	 * @param point cloud and pose
+	 */
 	void addPointCloud(const pcl::PointCloud<PointT>::Ptr cloud, const Eigen::Affine3f pose);
 
-	//Adds a point cloud after quantization (uniform sampling) with the given pose to the 3D reconstruction
+	/**
+	 * Adds a point cloud after quantization (uniform sampling) with the given pose to the 3D reconstruction
+	 * @param point cloud, radius and pose
+	 */
 	void addQuantizedPointCloud(const pcl::PointCloud<PointT>::Ptr cloud, const float radius, const Eigen::Affine3f pose);
 
-	//Views a ref. frame with the given pose in the 3D reconstruction
+	/**
+	 * Views a ref. frame with the given pose in the 3D reconstruction
+	 * @param pose and text("cam" as default)
+	 */
 	void viewReferenceFrame(const Eigen::Affine3f pose, const std::string text="cam");
 
-	//Views a point cloud in the 3D reconstruction
+	/**
+	 * Views a point cloud in the 3D reconstruction
+	 * @param point cloud and pose
+	 */
 	void viewPointCloud(const pcl::PointCloud<PointT>::Ptr cloud, const Eigen::Affine3f pose);
 
-	//Views a point cloud after quantization (uniform sampling) in the 3D reconstruction
+	/**
+	 * Views a point cloud after quantization (uniform sampling) in the 3D reconstruction
+	 * @param point cloud, radius and pose
+	 */
 	void viewQuantizedPointCloud(const pcl::PointCloud<PointT>::Ptr cloud, const float radius, const Eigen::Affine3f pose);
 
-	//Wrapper to the interactor function of pcl::visualizer
+	/**
+	 * Wrapper to the interactor function of pcl::visualizer
+	 */
 	void spin();
 
-	//Wrapper to the interactor function of pcl::visualizer
+	/**
+	 * Wrapper to the interactor function of pcl::visualizer
+	 */
 	void spinOnce();
 };
 

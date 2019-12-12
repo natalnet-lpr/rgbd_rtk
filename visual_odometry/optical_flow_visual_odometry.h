@@ -60,10 +60,16 @@ public:
 	//Default constructor
 	OpticalFlowVisualOdometry();
 
-	//Constructor with the matrix of intrinsic parameters
+	/**
+	 * Constructor with the matrix of intrinsic parameters
+	 * @param camera intrinsics 
+	 */
 	OpticalFlowVisualOdometry(const Intrinsics intr);
 
-	//Main member function: computes the current camera pose
+	/**
+	 * Main member function: computes the current camera pose
+	 * @param rgb and depth image
+	 */
 	void computeCameraPose(cv::Mat rgb, cv::Mat depth);
 };
 

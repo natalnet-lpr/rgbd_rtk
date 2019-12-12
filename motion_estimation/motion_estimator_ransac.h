@@ -39,11 +39,14 @@ class MotionEstimatorRANSAC
 {
 
 protected:
+	/**
+	 * Sets the data of the source and target point clouds with the 3D coords. of each 2D point.
+	 * The function assumes that tgt_points and src_points have the same size and also that
+	 * the 3D points related to tgt_points[i] and src_points[i] are added to the point clouds
+	 * only if neither of them are invalid.
+	 * @param two point clouds
+	 */
 
-	//Sets the data of the source and target point clouds with the 3D coords. of each 2D point.
-	//The function assumes that tgt_points and src_points have the same size and also that
-	//the 3D points related to tgt_points[i] and src_points[i] are added to the point clouds
-	//only if neither of them are invalid.
 	void setDataFromCorrespondences(const std::vector<cv::Point2f> tgt_points, const pcl::PointCloud<PointT>::Ptr tgt_dense_cloud,
 		                            const std::vector<cv::Point2f> src_points, const pcl::PointCloud<PointT>::Ptr src_dense_cloud);
 
@@ -70,7 +73,9 @@ public:
 	//Default constructor
 	MotionEstimatorRANSAC();
 
-	//Constructor with the matrix of intrinsic parameters
+	/**
+	 * Constructor with the matrix of intrinsic parameters
+	 * @param camera intrinsics
 	MotionEstimatorRANSAC(const Intrinsics intr);
 
 	/* Main member function: estimates the motion between two point clouds as the registration transformation

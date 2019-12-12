@@ -32,13 +32,24 @@
  
 #include <common_types.h>
 
-//Utility function: returns true if the 3D point does not contain NaN values
+/**
+ * Utility function: returns true if the 3D point does not contain NaN values
+ * @param PointT p
+ * @return boolean
+ */
 bool is_valid(PointT p);
 
-//Utility function: returns the 3D point in the dense cloud corresponding to the 2D feature
-PointT get3Dfrom2D(const cv::Point2f point, const pcl::PointCloud<PointT>::Ptr dense_cloud);
+/**
+ * Utility function: returns the 3D point in the dense cloud corresponding to the 2D feature
+ * We assume that the point cloud is registered with the rgb image
+ * @param 2d point(x,y), point cloud
+ * @return 3d point
+ */PointT get3Dfrom2D(const cv::Point2f point, const pcl::PointCloud<PointT>::Ptr dense_cloud);
 
-//Computes a RGB-D point cloud from the camera intrinsic parameters and the RGB and depth data.
- pcl::PointCloud<PointT> getPointCloud(const cv::Mat rgb, const cv::Mat depth, const Intrinsics intr);
+/**
+ * Computes a RGB-D point cloud from the camera intrinsic parameters and the RGB and depth data.
+ * @param rgb and depth image, camera intrinsics
+ * @return Point cloud as pcl::PointCloud<PointT>
+ */ pcl::PointCloud<PointT> getPointCloud(const cv::Mat rgb, const cv::Mat depth, const Intrinsics intr);
 
 #endif /* INCLUDE_GEOMETRY_H_ */
