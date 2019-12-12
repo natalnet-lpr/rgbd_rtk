@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -22,43 +22,40 @@
  *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
+ *  Authors:
+ *
+ *  Rodrigo Sarmento Xavier
+ *  Bruno Silva
  */
+
+#ifndef INCLUDE_CONFIG_LOADER_H_
+#define INCLUDE_CONFIG_LOADER_H_
 
 #include <cstdio>
 #include <cstdlib>
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-
-#include <config_loader.h>
-#include <sequence_loader.h>
+#include <fstream>
 
 using namespace std;
-using namespace cv;
 
-int main(int argc, char **argv)
+class ConfigLoader
 {
-	string index_file_name;
-	ConfigLoader param_loader;
-	Mat frame;
+    public:
+        //.yml having the camera calibration intrinsics
+        string camera_calibration_file_;
 
-	if(argc != 2)
-	{
-		fprintf(stderr, "Usage: %s <path/to/config_file.yaml>\n", argv[0]);
-		exit(0);
-	}
-	param_loader.loadParams(argv[1]);
-	SequenceLoader loader(param_loader.index_file_);
+        //full path to the index with RGB/depth to be processed
+        string index_file_;
 
-	for(int i = 0; i < loader.num_images_; i++)
-	{
-		frame = loader.getNextImage();
-		imshow("Image View", frame);
-		char key = waitKey(16);
-		if(key == 'q' || key == 'Q' || key == 27)
-		{
-			break;
-		}
-	}
+        //Used in marker detection: ARUCO dictionary of expected markers in the scene
+        string aruco_dic_;
 
-	return 0;
-}
+        //Used in marker detection: maximum distance for a marker to be valid
+        double aruco_max_distance_;
+
+        //Used in marker detection: size of expected markers in the scene
+        float aruco_marker_size_;
+        
+    void loadParams(const string& filename);
+};
+
+#endif

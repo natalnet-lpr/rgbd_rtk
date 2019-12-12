@@ -35,6 +35,7 @@
 #include <rgbd_loader.h>
 #include <klt_tracker.h>
 #include <motion_estimator_ransac.h>
+#include <config_loader.h>
 #include <reconstruction_visualizer.h>
 
 using namespace std;
@@ -42,7 +43,7 @@ using namespace cv;
 
 int main(int argc, char **argv)
 {
-	string index_file_name;
+	ConfigLoader param_loader;
 	RGBDLoader loader;
 	KLTTracker tracker;
 	Intrinsics intr(0);
@@ -56,12 +57,11 @@ int main(int argc, char **argv)
 
 	if(argc != 2)
 	{
-		fprintf(stderr, "Usage: %s <index file>\n", argv[0]);
+		fprintf(stderr, "Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
-
-	index_file_name = argv[1];
-	loader.processFile(index_file_name);
+	param_loader.loadParams(argv[1]);
+	loader.processFile(param_loader.index_file_);
 
 	//Track points on each image
 	for(int i = 0; i < loader.num_images_; i++)

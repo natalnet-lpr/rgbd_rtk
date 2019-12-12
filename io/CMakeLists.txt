@@ -4,10 +4,10 @@ project(RGBD_RTK)
 
 message(STATUS ">>> io subdirectory")
 
-set(RGBD_RTK_IO_SRC sequence_loader.cpp rgbd_loader.cpp kitti_stereo_loader.cpp 
-                    kitti_velodyne_loader.cpp)
-set(RGBD_RTK_IO_INCLUDES sequence_loader.h rgbd_loader.h kitti_stereo_loader.h
-                         kitti_velodyne_loader.h)
+set(RGBD_RTK_IO_SRC sequence_loader.cpp rgbd_loader.cpp config_loader.cpp
+                    kitti_stereo_loader.cpp kitti_velodyne_loader.cpp)
+set(RGBD_RTK_IO_INCLUDES sequence_loader.h rgbd_loader.h config_loader.h
+                         kitti_stereo_loader.h kitti_velodyne_loader.h)
 
 add_library(rgbd_rtk_io SHARED ${RGBD_RTK_IO_SRC})
 target_link_libraries(rgbd_rtk_io ${OpenCV_LIBS} ${PCL_LIBRARIES})
