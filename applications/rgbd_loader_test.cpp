@@ -34,8 +34,8 @@
 using namespace std;
 using namespace cv;
 
-/** This program loades a sequence of rgbd images
- * ConfigFile.yaml needed(onyl uses index_file)
+/** This program shows how to use RGBDLoader class to process a sequence of RGB-D images.
+ * @param .yml config. file (from which index_file is used)
  */
 int main(int argc, char **argv)
 {
@@ -46,7 +46,7 @@ int main(int argc, char **argv)
 
 	if(argc != 2)
 	{
-		fprintf(stderr, "Usage: %s <path/ConfigFile.yaml>\n", argv[0]);
+		fprintf(stderr, "Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
 	param_loader.loadParams(argv[1]);

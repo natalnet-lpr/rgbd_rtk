@@ -42,8 +42,9 @@ using namespace std;
 using namespace cv;
 
 /**
- * This program calculates the motion of camera tracking how keypoints moves from frame to frame
- * @param ConfigFile.yaml file(only uses index)
+ * This program shows the use of camera motion estimation based on
+ * KLT keypoint tracking and RANSAC.
+ * @param .yml config. file (from which index_file is used)
  */
 
 int main(int argc, char **argv)
@@ -63,7 +64,7 @@ int main(int argc, char **argv)
 
 	if(argc != 2)
 	{
-		fprintf(stderr, "Usage: %s <path/ConfigFile.yaml>\n", argv[0]);
+		fprintf(stderr, "Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
 	param_loader.loadParams(argv[1]);

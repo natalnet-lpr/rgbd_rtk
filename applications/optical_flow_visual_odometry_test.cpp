@@ -37,13 +37,12 @@
 #include <reconstruction_visualizer.h>
 #include <config_loader.h>
 
-
 using namespace std;
 using namespace cv;
 
 /**
- * This program estimates camera pose using optical_flow algorithm(visual odometry)
- * @param ConfigFile.yaml file(uses only index_file)
+ * This program shows the use of camera pose estimation using optical flow visual odometry.
+ * @param .yml config. file (from which index_file is used)
  */
 int main(int argc, char **argv)
 {
@@ -57,7 +56,7 @@ int main(int argc, char **argv)
 
 	if(argc != 2)
 	{
-		fprintf(stderr, "Usage: %s <path/ConfigFile.yaml>\n", argv[0]);
+		fprintf(stderr, "Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
 	param_loader.loadParams(argv[1]);

@@ -34,7 +34,7 @@
 using namespace std;
 using namespace cv;
 
-/** This program loades a sequence of rgb images
+/** This program shows how to use SequenceLoader class to process a sequence of RGB images.
  * ConfigFile.yaml needed(onyl uses index_file(rgb.txt))
  */
 int main(int argc, char **argv)
@@ -45,7 +45,7 @@ int main(int argc, char **argv)
 
 	if(argc != 2)
 	{
-		fprintf(stderr, "Usage: %s <path/ConfigFile.yaml>\n", argv[0]);
+		fprintf(stderr, "Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
 	param_loader.loadParams(argv[1]);

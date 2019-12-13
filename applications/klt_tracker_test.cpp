@@ -37,7 +37,7 @@
 
 using namespace std;
 using namespace cv;
-   
+
 void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts)
 {
 	for(size_t k = 0; k < curr_pts.size(); k++)
@@ -76,8 +76,8 @@ void draw_tracks(Mat& img, const vector<Tracklet> tracklets)
 }
 
 /**
- * This program trakes points using klt_tracker algorithm
- * @param ConfigFile.yaml file (uses only index_file)
+ * This program shows the use of keypoint tracking KLT algorithm.
+ * @param .yml config. file (from which index_file is used)
  */
 int main(int argc, char **argv)
 {
@@ -89,7 +89,7 @@ int main(int argc, char **argv)
 
 	if(argc != 2)
 	{
-		fprintf(stderr, "Usage: %s <path/ConfigFile.yaml>\n", argv[0]);
+		fprintf(stderr, "Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
 	param_loader.loadParams(argv[1]);
