@@ -71,29 +71,29 @@ void ConfigLoader::loadParams(const string& filename)
     //If a param was not loaded, use the default
     catch(int e)
     {
-        cout<<"Couldn't load params\n";
+        cout << "Couldn't load params\n";
         switch (e)
         {
-        case 1:
-            cout<<"calibration_file is empty\nTrying to use the default path:../config_files/kinect_default.yaml";
-            camera_calibration_file_ = "../config_files/kinect_default.yaml\n";
-            break;
-        case 2: 
-            cout<<"index_file is empty\nTrying to use the default : index.txt\n";
-            index_file_ = "index.txt";       
-            break;
-        case 3:
-            cout<<"aruco_dic is empyty\nTrying to use the default dictionary: ARUCO\n";
-            aruco_dic_ = "ARUCO";
-            break;
-        case 4:
-            cout<<"aruco_max_distance is 0\n Trying to use the default valul: 4\n";
-            aruco_max_distance_ = 4;
-            break;
-        case 5:
-            cout<<"aruco_marker_size is 0\nTrying to use the default value: 0.1778\n";
-            aruco_marker_size_ = 0.1778;
-            break;
+            case 1:
+                cout << "calibration_file is empty\nTrying to use the default path: ../config_files/kinect_default.yaml\n";
+                camera_calibration_file_ = "../config_files/kinect_default.yaml";
+                break;
+            case 2: 
+                cout << "index_file is empty\nTrying to use the default: index.txt\n";
+                index_file_ = "index.txt";       
+                break;
+            case 3:
+                cout << "aruco_dic is empty\nTrying to use the default dictionary: ARUCO\n";
+                aruco_dic_ = "ARUCO";
+                break;
+            case 4:
+                cout << "aruco_max_distance is 0\nTrying to use the default value: 4\n";
+                aruco_max_distance_ = 4;
+                break;
+            case 5:
+                cout << "aruco_marker_size is 0\nTrying to use the default value: 0.1778\n";
+                aruco_marker_size_ = 0.1778;
+                break;
         }
     }
 }
