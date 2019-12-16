@@ -41,6 +41,12 @@
 using namespace std;
 using namespace cv;
 
+/**
+ * This program shows the use of camera motion estimation based on
+ * KLT keypoint tracking and RANSAC.
+ * @param .yml config. file (from which index_file is used)
+ */
+
 int main(int argc, char **argv)
 {
 	ConfigLoader param_loader;

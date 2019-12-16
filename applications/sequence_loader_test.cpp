@@ -35,6 +35,9 @@
 using namespace std;
 using namespace cv;
 
+/** This program shows how to use SequenceLoader class to process a sequence of RGB images.
+ * ConfigFile.yaml needed(onyl uses index_file(rgb.txt))
+ */
 int main(int argc, char **argv)
 {
 	string index_file_name;

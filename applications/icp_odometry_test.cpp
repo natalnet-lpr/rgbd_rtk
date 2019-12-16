@@ -39,11 +39,14 @@
 using namespace std;
 using namespace cv;
 
-
+/**
+ * This program shows the use of camera pose estimation (visual odometry) using ICP algorithm.
+ * @param .yml config. file (from which index_file is used)
+ */
 int main(int argc, char **argv)
 {
-	ConfigLoader param_loader;
-	RGBDLoader loader;
+	ConfigLoader param_loader; 
+	RGBDLoader loader; 
 	Intrinsics intr(0);
 	ICPOdometry icpo(intr);
 	ReconstructionVisualizer visualizer;

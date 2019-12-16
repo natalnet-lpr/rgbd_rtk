@@ -35,6 +35,10 @@
 using namespace cv;
 using namespace std;
 
+/** 
+ * This program calibrates a monocular camera using a chessboard.
+ * @param numbers of chess corners in horizontal and vertical directions, input (0 for webcam, 1 for kinect)
+ */
 int main(int argc, char** argv)
 {
 	if(argc != 4)

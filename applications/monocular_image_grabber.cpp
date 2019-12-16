@@ -47,7 +47,10 @@ void save_data(const string time_stamp, const cv::Mat rgb)
 	string rgb_img_name = time_stamp + ".png";
 	imwrite(rgb_img_name, rgb);
 }
-
+/**
+ * This program saves RGB images from webcam and in a file.
+ * Timestamp is used as file name.
+ */
 int main(int argc, char** argv)
 {
 	cv::Mat rgb_img;

@@ -79,32 +79,50 @@ protected:
 	//Output file with keypoint distribution information
 	std::ofstream heatmap_info_;
 
-	//Detects keypoints in the current frame
+	/**
+	 * Detects keypoints in the current frame
+	 */
 	virtual void detect_keypoints();
 
-	//Adds keypoints detected in the previous frame to the tracker
+	/**
+	 * Adds keypoints detected in the previous frame to the tracker
+	 */
 	virtual void add_keypoints();
 
-	//Updates internal buffers (updates the previous points (in the current frame)
-	//with the current points (from the previous frame))
+	/**
+	 * Updates internal buffers (updates the previous points (in the current frame)
+	 * with the current points (from the previous frame))
+	 */
 	virtual void update_buffers();
 
-	//Returns the average track length
+	/**
+	 * Returns the average track length
+	 */
 	virtual float get_avg_track_length();
 
-	//Prints all data associated with the tracked keypoints
+	/**
+	 * Prints all data associated with the tracked keypoints
+	 */
 	virtual void print_track_info();
 
-	//Sum the time spent in each operation and return the total time computing a single frame
+	/**
+	 * Sum the time spent in each operation and return the total time computing a single frame
+	 */
 	float get_time_per_frame();
 
-	//Write tracking information (n. of points, inliers, etc.) to file
+	/**
+	 * Write tracking information (n. of points, inliers, etc.) to file
+	 */
 	virtual bool write_tracking_info();
 
-	//Write timing information (ms spent in each operation) to file
+	/**
+	 * Write timing information (ms spent in each operation) to file
+	 */
 	virtual bool write_timing_info();
 
-	//Write all current keypoints to file
+	/**
+	 * Write all current keypoints to file
+	 */
 	virtual bool write_heatmap_info();
 
 public:
@@ -124,10 +142,15 @@ public:
 	//Tells if a point is inlier or not
 	std::vector<int> is_inlier_;
 
-	//Default constructor
+	/** 
+	 * Default constructor
+	 */
 	KLTTracker();
 
-	//Constructor with the minimum and maximum number of tracked points
+	/**
+	 * Constructor with the minimum and maximum number of tracked points
+	 * @param minimum and maximum tracked points
+	 */
 	KLTTracker(int min_pts, int max_pts);
 
 	virtual ~KLTTracker()
@@ -137,14 +160,17 @@ public:
 		heatmap_info_.close();
 	}
 
-	/*
+	/**
 	 * Main member function: tracks keypoints between the current frame and the previous.
-	 * Returns true if the current frame is a keyframe.
+	 * @param rgb image
+	 * @return boolean, true if the current frame is a keyframe.
 	 */
 	virtual bool track(const cv::Mat& img);
 
-	/* Sets the output files for tracking and timing information.
+	/**
+	 * Sets the output files for tracking and timing information.
 	 * If not called, the system will not write any information to file.
+	 * @param three strings of output file names, timing file name, tracking file name, heatmap file name
 	 */
 	void initialize_logger(const std::string& timing_file_name,
 		                   const std::string& tracking_file_name,

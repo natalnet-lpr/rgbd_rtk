@@ -35,6 +35,9 @@
 using namespace std;
 using namespace cv;
 
+/** This program shows how to use RGBDLoader class to process a sequence of RGB-D images.
+ * @param .yml config. file (from which index_file is used)
+ */
 int main(int argc, char **argv)
 {
 	ConfigLoader param_loader;

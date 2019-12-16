@@ -75,6 +75,10 @@ void draw_tracks(Mat& img, const vector<Tracklet> tracklets)
 	}
 }
 
+/**
+ * This program shows the use of keypoint tracking KLT algorithm.
+ * @param .yml config. file (from which index_file is used)
+ */
 int main(int argc, char **argv)
 {
 	ConfigLoader param_loader;

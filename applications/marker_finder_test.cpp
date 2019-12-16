@@ -43,6 +43,10 @@ using namespace std;
 using namespace cv;
 using namespace aruco;
 
+/**
+ * This program shows the use of ARUCO marker detection.
+ * @param .yml config. file (used fields: index_file, aruco_marker_size, camera_calibration_file, aruco_max_distance)
+ */
 int main(int argc, char **argv)
 {
 	ConfigLoader param_loader;
