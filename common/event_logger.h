@@ -61,15 +61,15 @@ public:
 		fclose(log_file_);
 	}
 
-	void print(const char *format, ...);
+	void print(const char* format, ...);
 
-	void printDebug();
+	void printDebug(const char* module_class, const char* msg);
 
-	void printInfo();
+	void printInfo(const char* module_class, const char* msg);
 
-	void printWarning();
+	void printWarning(const char* module_class, const char* msg);
 
-	void printError();
+	void printError(const char* module_class, const char* msg);
 };
 
 #endif /* INCLUDE_EVENT_LOGGER_H_ */

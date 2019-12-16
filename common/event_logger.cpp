@@ -54,22 +54,34 @@ void EventLogger::print(const char *format, ...)
 	va_end(file_args);
 }
 
-void EventLogger::printDebug()
+void EventLogger::printDebug(const char* module_class, const char* msg)
 {
-	printf("debugPass\n");
+	if(!isVerbosityLevelEnabled(L_DEBUG))
+		return;
+
+	print("[%s] DEBUG: %s\n", module_class, msg);
 }
 
-void EventLogger::printInfo()
+void EventLogger::printInfo(const char* module_class, const char* msg)
 {
-	printf("infoPass\n");
+	if(!isVerbosityLevelEnabled(L_INFO))
+		return;
+
+	print("[%s] INFO: %s\n", module_class, msg);
 }
 
-void EventLogger::printWarning()
+void EventLogger::printWarning(const char* module_class, const char* msg)
 {
-	printf("warningPass\n");
+	if(!isVerbosityLevelEnabled(L_WARN))
+		return;
+
+	print("[%s] WARNING: %s\n", module_class, msg);
 }
 
-void EventLogger::printError()
+void EventLogger::printError(const char* module_class, const char* msg)
 {
-	printf("errorPass\n");
+	if(!isVerbosityLevelEnabled(L_ERROR))
+		return;
+
+	print("[%s] ERROR: %s\n", module_class, msg);
 }

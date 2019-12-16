@@ -26,20 +26,25 @@
 
 #include <event_logger.h>
 
+#include <pcl/console/print.h>
+
 using namespace std;
 
 int main(int argc, char **argv)
 {
-	EventLogger logger;
+	EventLogger logger("rgbd_rtk_log.txt");
 
+	//All these messages are shown on screen and logged to file
 	logger.print("[common::EventLogger] Info: 1. function call from main\n");
 	logger.print("[common::EventLogger] Info: 2. function call from main >>> %i, %s, %f\n", 1, "test string", 5.0);
     logger.print("[common::EventLogger] Info: 3. final function call from main: %s\n", "EXITING");
 
-	//logger.printDebug();
-	//logger.printInfo();
-	//logger.printWarning();
-	//logger.printError();
+    //These messages are shown on screen/logged to file according to verbosity level
+    pcl::console::setVerbosityLevel(pcl::console::L_DEBUG);
+	logger.printDebug("common::EventLogger", "Testing DEBUG"); //goes to file if verb. level >= DEBUG
+	logger.printInfo("common::EventLogger", "Testing INFO"); //goes to file if verb. level >= INFO
+	logger.printWarning("common::EventLogger", "Testing WARN"); //goes to file if verb. level >= WARN
+	logger.printError("common::EventLogger", "Testing ERROR"); //goes to file if verb. level >= ERROR
 
 	return 0;
 }
