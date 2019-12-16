@@ -35,22 +35,23 @@ using namespace pcl::console;
 
 /*
  * All functions below are copy/paste from the PCL counterparts
- * because variadic functions don't allow calls to another
+ * because variadic functions don't allow redirecting calls to another
  * variadic function.
  */
 
 void EventLogger::print(const char *format, ...)
 {
 	reset_text_color(stdout);
-	reset_text_color(log_file_);
 
-	va_list vl;
+	va_list stdout_args, file_args;
 
 	//Write message to stdout and file
-	va_start(vl, format);
-	vfprintf(stdout, format, vl);
-	vfprintf(log_file_, format, vl);
-	va_end(vl);
+	va_start(stdout_args, format);
+	va_copy(file_args, stdout_args);
+	vfprintf(stdout, format, stdout_args);
+	vfprintf(log_file_, format, file_args);
+	va_end(stdout_args);
+	va_end(file_args);
 }
 
 void EventLogger::printDebug()

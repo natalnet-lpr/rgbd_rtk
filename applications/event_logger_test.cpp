@@ -32,8 +32,9 @@ int main(int argc, char **argv)
 {
 	EventLogger logger;
 
-	logger.print("[common::EventLogger] Info: function call from main\n");
-	//logger.print("[common::EventLogger] Info: function call from main >>> %i %s %f\n", 1, "test string", 5.0);
+	logger.print("[common::EventLogger] Info: 1. function call from main\n");
+	logger.print("[common::EventLogger] Info: 2. function call from main >>> %i, %s, %f\n", 1, "test string", 5.0);
+    logger.print("[common::EventLogger] Info: 3. final function call from main: %s\n", "EXITING");
 
 	//logger.printDebug();
 	//logger.printInfo();
