@@ -59,13 +59,17 @@ void ConfigLoader::loadParams(const string& filename)
         fs["aruco_dic"] >> aruco_dic_;
         fs["aruco_max_distance"] >> aruco_max_distance_;
         fs["aruco_marker_size"] >> aruco_marker_size_;
-
+        fs["ransac_distance_threshold"] >> ransac_distance_threshold_;
+        fs["ransac_inliers_ratio"] >> ransac_inliers_ratio_;
         //Check if any of the params was not loaded
         if(camera_calibration_file_.empty()) throw 1;
         if(index_file_.empty()) throw 2;
         if(aruco_dic_.empty()) throw 3;
         if(aruco_max_distance_ == 0) throw 4;
         if(aruco_marker_size_ == 0) throw 5;
+        if(ransac_distance_threshold_ == 0) throw 6;
+        if(ransac_inliers_ratio_ == 0) throw 7;
+
        
     }
     //If a param was not loaded, use the default
@@ -93,6 +97,14 @@ void ConfigLoader::loadParams(const string& filename)
             case 5:
                 cout << "aruco_marker_size is 0\nTrying to use the default value: 0.1778\n";
                 aruco_marker_size_ = 0.1778;
+                break;
+            case 6:
+                cout << "ransac_distance_threshold is 0\nTrying to use the default value: 0.008\n";
+                ransac_distance_threshold_ = 0.008;
+                break;
+            case 7:
+                cout << "ransac_inlierts_ratio is 0\nTrying to use the default value: 0.8\n";
+                ransac_inliers_ratio_ = 0.8;
                 break;
         }
     }

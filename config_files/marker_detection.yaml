@@ -5,6 +5,10 @@ aruco_dic: "ARUCO" #default: "ARUCO"
 aruco_max_distance: 4 #default: 4
 aruco_marker_size: 0.1778 #default: 0.1778 (size of marker in ROS Gazebo)
 
+#Parameter below are not used
+#motion estimation ransac parameters
+ransac_distance_threshold_: 0.008 #8mm
+ransac_num_inliers: = 0.8 #Should be between 0 and 1
 
 
 

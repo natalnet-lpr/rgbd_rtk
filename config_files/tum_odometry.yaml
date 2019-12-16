@@ -1,7 +1,10 @@
 %YAML:1.0
-camera_calibration_file: "/Users/bruno/Projects/rgbd_rtk/config_files/kinect_default.yaml"
-index_file: "/Users/bruno/Box_Sync/RGBD_TUM/rgbd_dataset_freiburg1_xyz/index"
+camera_calibration_file: "/home/sarmento/rgbd_rtk/config_files/kinect_default.yaml"
+index_file: "/home/sarmento/Downloads/Dataset/tgz/rgbd_dataset_freiburg2_desk/index.txt"
 
+#motion estimation ransac parameters
+ransac_distance_threshold: 0.008 #8mm
+ransac_inliers_ratio: = 0.8 #Should be between 0 and 1
 # parameters below are not used
 aruco_dic: "not used"
 aruco_max_distance: -1
