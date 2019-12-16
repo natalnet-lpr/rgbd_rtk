@@ -87,10 +87,10 @@ void KLTTracker::update_buffers()
 
 float KLTTracker::get_avg_track_length()
 {
-	const int N = tracklets_.size();
+	const size_t N = tracklets_.size();
 
 	int sum = 0;
-	for(int i = 0; i < N; i++)
+	for(size_t i = 0; i < N; i++)
 	{
 		sum += (int) tracklets_[i].pts2D_.size();
 	}
@@ -102,11 +102,11 @@ void KLTTracker::print_track_info()
 {
 	const size_t N = tracklets_.size();
 
-	for(int i = 0; i < N; i++)
+	for(size_t i = 0; i < N; i++)
 	{
 		const size_t M = tracklets_[i].pts2D_.size();
 
-		printf("track[%i]: (size: %lu)\n\t", i, M);
+		printf("track[%lu]: (size: %lu)\n\t", i, M);
 		for(size_t j = 0; j < M; j++)
 		{
 			printf("[%lu](%f,%f)->", tracklets_[i].start_ + j, tracklets_[i].pts2D_[j].x, tracklets_[i].pts2D_[j].y);
@@ -118,7 +118,7 @@ void KLTTracker::print_track_info()
 float KLTTracker::get_time_per_frame()
 {
 	float total_time = 0.0;
-	for(int i = 0; i < op_time_.size(); i++)
+	for(size_t i = 0; i < op_time_.size(); i++)
 	{
 		total_time += op_time_[i];
 	}
@@ -168,7 +168,7 @@ bool KLTTracker::write_heatmap_info()
 			heatmap_info_ << "#(kp0_x, kp0_y), (kp1_x, kp1_y),..., (kpMi_x, kpMi_y)\n";
 		}
 
-		for(int i = 0; i < curr_pts_.size(); i++)
+		for(size_t i = 0; i < curr_pts_.size(); i++)
 		{
 			heatmap_info_ << "(" << (int) curr_pts_[i].x << "," << (int) curr_pts_[i].y << ") ";
 		}
@@ -247,7 +247,7 @@ bool KLTTracker::track(const Mat& curr_frame)
 		//Update internal data according to the tracking result
 		//Additional tests have to be applied to discard points outside the image boundaries.
 		int tracked_pts = 0;
-		for(int i = 0; i < curr_pts_.size(); i++)
+		for(size_t i = 0; i < curr_pts_.size(); i++)
 		{
 			if(!status[i] || curr_pts_[i].x < 0 || curr_pts_[i].y < 0 ||
 				curr_pts_[i].x >= prev_frame_gray_.cols || curr_pts_[i].y >= prev_frame_gray_.rows)

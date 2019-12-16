@@ -145,9 +145,9 @@ Eigen::Matrix4f MotionEstimatorRANSAC::estimate(const vector<cv::Point2f>& tgt_p
 		is_inlier_[idx] = 1;
 	}
 	num_inliers_ = inl.size();
-	float inl_ratio = float(inl.size())/N;
 		
 	#ifdef DEBUG
+	float inl_ratio = float(inl.size())/N;
 	printf("\tinlier ratio: %f\n", inl_ratio);
 	#endif
 
