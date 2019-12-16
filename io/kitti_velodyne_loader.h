@@ -65,7 +65,7 @@ private:
 public:
 
     //Total number of laser scans in the sequence
-	int num_scans_;
+	size_t num_scans_;
 
     //Default constructor
 	KITTIVelodyneLoader();
