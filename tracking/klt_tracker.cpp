@@ -202,10 +202,17 @@ KLTTracker::KLTTracker(int min_pts, int max_pts)
 	max_pts_ = max_pts;
 }
 
-bool KLTTracker::track(Mat curr_frame)
+bool KLTTracker::track(const Mat& curr_frame)
 {
-	//Make a grayscale copy of the current frame
-	cvtColor(curr_frame, curr_frame_gray_, CV_BGR2GRAY);
+	//Make a grayscale copy of the current frame if it is in color
+	if(curr_frame.channels() > 1)
+	{
+		cvtColor(curr_frame, curr_frame_gray_, CV_BGR2GRAY);
+	}
+	else
+	{
+		curr_frame.copyTo(curr_frame_gray_);
+	}
 
 	#ifdef DEBUG
 	printf("#### Tracking frame %i ####\n", frame_idx_);
@@ -290,8 +297,8 @@ bool KLTTracker::track(Mat curr_frame)
 	return true;
 }
 
-void KLTTracker::initialize_logger(const string timing_file_name, const string tracking_file_name,
-		                            const string heatmap_file_name)
+void KLTTracker::initialize_logger(const string& timing_file_name, const string& tracking_file_name,
+		                           const string& heatmap_file_name)
 {
 	timing_info_.open(timing_file_name.c_str());
 	if(!timing_info_.is_open())

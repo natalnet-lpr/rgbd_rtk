@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016-2018, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -22,25 +22,31 @@
  *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
+ *  Authors:
+ *
+ *  Felipe Ferreira Barbosa
+ *  Vanessa Dantas de Souto Costa
+ *  Bruno Silva
  */
 
-#ifndef INCLUDE_ICP_ODOMETRY_H_
-#define INCLUDE_ICP_ODOMETRY_H_
+#ifndef INCLUDE_STEREO_OPTICAL_FLOW_VISUAL_ODOMETRY_H_
+#define INCLUDE_STEREO_OPTICAL_FLOW_VISUAL_ODOMETRY_H_
 
 #include <Eigen/Geometry>
+#include <opencv2/core/core.hpp>
 #include <pcl/point_cloud.h>
 
 #include <common_types.h>
-#include <motion_estimator_icp.h>
+#include <klt_tracker.h>
+#include <motion_estimator_ransac.h>
+#include <stereo_cloud_generator.h>
 
-class ICPOdometry
+class StereoOpticalFlowVisualOdometry
 {
 private:
+	
 	//Current frame index
 	unsigned long int frame_idx_;
-
-	//Camera intrinsic parameters
-	Intrinsics intr_;
 
 public:
 
@@ -51,28 +57,24 @@ public:
 
 	//Current dense point cloud
 	pcl::PointCloud<PointT>::Ptr curr_dense_cloud_;
+	
+	//Feature tracker
+	KLTTracker tracker_;
 
 	//Motion estimator
-	MotionEstimatorICP motion_estimator_;
+	MotionEstimatorRANSAC motion_estimator_;
+
+	//Point cloud generator
+	StereoCloudGenerator cloud_generator_;
 
 	//Current camera pose
 	Eigen::Affine3f pose_;
 
-	//Camera pose
-	Eigen::Affine3f guess_;
+	//Constructor with the matrix of intrinsic parameters
+	StereoOpticalFlowVisualOdometry(const Intrinsics& intr);
 
-	//Default constructor
-	ICPOdometry();
-
-	/**
-	 * Constructor with the matrix of intrinsic parameters
-	 * @param Camera intrisics
-	 */	ICPOdometry(const Intrinsics& intr);
-
-	/**
-	 * Main member function: computes the current camera pose
-	 * @param rgb and depth image
-	 */	void computeCameraPose(const cv::Mat& rgb, const cv::Mat& depth);
+	//Main member function: computes the current camera pose
+	void computeCameraPose(const cv::Mat& left, const cv::Mat& right);
 };
 
-#endif /* INCLUDE_ICP_ODOMETRY_H_ */
+#endif /* INCLUDE_STEREO_OPTICAL_FLOW_VISUAL_ODOMETRY_H_ */

@@ -28,6 +28,7 @@
 #include <cstdlib>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
+
 #include <config_loader.h>
 #include <rgbd_loader.h>
 
@@ -40,7 +41,6 @@ using namespace cv;
 int main(int argc, char **argv)
 {
 	ConfigLoader param_loader;
-	string index_file_name;
 	RGBDLoader loader;
 	Mat frame, depth;
 

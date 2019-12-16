@@ -38,10 +38,14 @@
 class OpticalFlowVisualOdometry
 {
 private:
+	
 	//Current frame index
 	unsigned long int frame_idx_;
 
 public:
+
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
 	//Previous dense point cloud
 	pcl::PointCloud<PointT>::Ptr prev_dense_cloud_;
 
@@ -63,14 +67,13 @@ public:
 	/**
 	 * Constructor with the matrix of intrinsic parameters
 	 * @param camera intrinsics 
-	 */
-	OpticalFlowVisualOdometry(const Intrinsics intr);
+	 */	OpticalFlowVisualOdometry(const Intrinsics& intr);
+
 
 	/**
 	 * Main member function: computes the current camera pose
 	 * @param rgb and depth image
-	 */
-	void computeCameraPose(cv::Mat rgb, cv::Mat depth);
+	 */	void computeCameraPose(const cv::Mat& rgb, const cv::Mat& depth);
 };
 
 #endif /* INCLUDE_OPTICAL_FLOW_VISUAL_ODOMETRY_H_ */

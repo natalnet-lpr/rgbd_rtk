@@ -28,6 +28,7 @@
 #include <cstdlib>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
+
 #include <config_loader.h>
 #include <sequence_loader.h>
 

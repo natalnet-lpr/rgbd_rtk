@@ -59,21 +59,20 @@ public:
 	  * Constructor with the file name of the image sequence
 	  * @param index_file
 	  */ 
-	SequenceLoader(const std::string index_file_name)
-	{
+	SequenceLoader(const std::string& index_file_name)
+  {
 		num_images_ = 0;
 		curr_img_ = 0;
 		processFile(index_file_name);
 	}
-
+	void processFile(const std::string index_file_name);
 	/**
 	  * Main function: scans the index file and inserts the image file names into a vector,
 	  * assuming the index file has a pair <timestamp image_name> per line. 
-      * The function is public and thus can be called directly.
+    * The function is public and thus can be called directly.
 	  * @param index_file
-      */
-	void processFile(const std::string index_file_name);
-
+    */
+	void processFile(const std::string& index_file_name);
 	/*
 	 * Returns the next image of the sequence
 	 */ 

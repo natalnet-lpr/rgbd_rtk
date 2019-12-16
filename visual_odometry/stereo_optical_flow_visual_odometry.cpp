@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016-2018, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -22,57 +22,52 @@
  *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
+ *  Authors:
+ *
+ *  Felipe Ferreira Barbosa
+ *  Vanessa Dantas de Souto Costa
+ *  Bruno Silva
  */
 
-#ifndef INCLUDE_ICP_ODOMETRY_H_
-#define INCLUDE_ICP_ODOMETRY_H_
+#include <stereo_optical_flow_visual_odometry.h>
+#include <geometry.h>
 
-#include <Eigen/Geometry>
-#include <pcl/point_cloud.h>
+using namespace std;
+using namespace cv;
 
-#include <common_types.h>
-#include <motion_estimator_icp.h>
-
-class ICPOdometry
+StereoOpticalFlowVisualOdometry::StereoOpticalFlowVisualOdometry(const Intrinsics& intr):
+frame_idx_(0), cloud_generator_(intr, 1)
 {
-private:
-	//Current frame index
-	unsigned long int frame_idx_;
+	pose_ = Eigen::Affine3f::Identity(); 
+	motion_estimator_.intr_ = intr;
 
-	//Camera intrinsic parameters
-	Intrinsics intr_;
+	prev_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
+	curr_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
+}
 
-public:
+void StereoOpticalFlowVisualOdometry::computeCameraPose(const cv::Mat& left, const cv::Mat& right)
+{
+	Eigen::Affine3f trans = Eigen::Affine3f::Identity();
 
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+	//Get dense point cloud from the stereo point cloud
+	cloud_generator_.generatePointCloud(left, right);
+	*curr_dense_cloud_ = *cloud_generator_.cloud_;
 
-	//Previous dense point cloud
-	pcl::PointCloud<PointT>::Ptr prev_dense_cloud_;
+	//Track keypoints using KLT optical flow
+	tracker_.track(left);
 
-	//Current dense point cloud
-	pcl::PointCloud<PointT>::Ptr curr_dense_cloud_;
+	//Estimate motion between the current and the previous point clouds
+	if(frame_idx_ > 0)
+	{	
+		trans = motion_estimator_.estimate(tracker_.prev_pts_, prev_dense_cloud_,
+			                               tracker_.curr_pts_, curr_dense_cloud_);
 
-	//Motion estimator
-	MotionEstimatorICP motion_estimator_;
+		pose_ = pose_*trans;
+	}
 
-	//Current camera pose
-	Eigen::Affine3f pose_;
+	//Let the prev. cloud in the next frame be the current cloud
+	*prev_dense_cloud_ = *curr_dense_cloud_;
 
-	//Camera pose
-	Eigen::Affine3f guess_;
-
-	//Default constructor
-	ICPOdometry();
-
-	/**
-	 * Constructor with the matrix of intrinsic parameters
-	 * @param Camera intrisics
-	 */	ICPOdometry(const Intrinsics& intr);
-
-	/**
-	 * Main member function: computes the current camera pose
-	 * @param rgb and depth image
-	 */	void computeCameraPose(const cv::Mat& rgb, const cv::Mat& depth);
-};
-
-#endif /* INCLUDE_ICP_ODOMETRY_H_ */
+	//Increment the frame index
+	frame_idx_++;
+}

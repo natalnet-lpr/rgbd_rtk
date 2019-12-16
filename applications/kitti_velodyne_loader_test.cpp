@@ -24,38 +24,55 @@
  *
  *  Authors:
  *
- *  Rodrigo Sarmento Xavier
+ *  Felipe Ferreira Barbosa
+ *  Vanessa Dantas de Souto Costa
  *  Bruno Silva
  */
 
-#ifndef INCLUDE_CONFIG_LOADER_H_
-#define INCLUDE_CONFIG_LOADER_H_
+#include <iostream>
+#include <Eigen/Geometry>
 
-#include <cstdio>
-#include <cstdlib>
-#include <fstream>
+#include <kitti_velodyne_loader.h>
+#include <reconstruction_visualizer.h>
 
 using namespace std;
+using namespace cv;
 
-class ConfigLoader
+int main(int argc, char **argv)
 {
-    public:
-        //.yml having the camera calibration intrinsics
-        string camera_calibration_file_;
+    string root_path;
+    KITTIVelodyneLoader loader;
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud = pcl::PointCloud<pcl::PointXYZRGB>::Ptr(new pcl::PointCloud<pcl::PointXYZRGB>);
+    ReconstructionVisualizer visualizer;
+    Eigen::Affine3f pose = Eigen::Affine3f::Identity();
 
-        //full path to the index with RGB/depth to be processed
-        string index_file_;
+    if(argc != 3)
+    {
+        fprintf(stderr, "Usage: %s <kitti datasets root dir.> <sequence_number>\n", argv[0]);
+        fprintf(stderr, "Example: /path/to/parent/directory/of/sequences 11 - loads the KITTI LIDAR sequence number 11.\n\n");
+        fprintf(stderr, "That is, if the 00, 01, 02, ... folders are within /Datasets/KITTI_Datasets_LIDAR/sequences,\n");
+        fprintf(stderr, "the LIDAR sequence 11 is loaded with:\n");
+        fprintf(stderr, "%s /Datasets/KITTI_Datasets_LIDAR/ 11\n", argv[0]);
+        fprintf(stderr, "(the 'sequences' part of the path is added automatically and must be omitted).\n");
+        exit(0);
+    }
 
-        //Used in marker detection: ARUCO dictionary of expected markers in the scene
-        string aruco_dic_;
+    root_path = argv[1];
 
-        //Used in marker detection: maximum distance for a marker to be valid
-        double aruco_max_distance_;
+    loader.loadLIDARSequence(root_path, atoi(argv[2]));
 
-        //Used in marker detection: size of expected markers in the scene
-        float aruco_marker_size_;
-        
-    void loadParams(const string& filename);
-};
+    for(size_t i = 0; i < loader.num_scans_; i++)
+    {
+        //Load XYZRGB monochromatic cloud from .bin file
+        cloud = loader.getPointCloudXYZRGB();
+        printf("Point cloud %lu has %lu points\n", i, cloud->size());
 
-#endif
+        //View point cloud
+        if(i == 0) visualizer.addReferenceFrame(pose, "origin");
+        visualizer.viewPointCloud(cloud, pose);
+
+        visualizer.spinOnce();
+    }
+
+    return 0;
+}

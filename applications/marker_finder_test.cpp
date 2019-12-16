@@ -49,9 +49,8 @@ using namespace aruco;
  */
 int main(int argc, char **argv)
 {
-	string index_file_name;
-	RGBDLoader loader;
 	ConfigLoader param_loader;
+	RGBDLoader loader;
 	Intrinsics intr(0);
 	OpticalFlowVisualOdometry vo(intr);
 	ReconstructionVisualizer visualizer;
@@ -79,7 +78,7 @@ int main(int argc, char **argv)
 		vo.computeCameraPose(frame, depth);
 		
 		//Find ARUCO markers and compute their poses
-		marker_finder.detectMarkers(frame, vo.pose_, param_loader.aruco_minimum_distance_);
+		marker_finder.detectMarkers(frame, vo.pose_, param_loader.aruco_max_distance_);
         for (size_t i = 0; i < marker_finder.markers_.size(); i++)
 		{
             marker_finder.markers_[i].draw(frame, Scalar(0,0,255), 1);

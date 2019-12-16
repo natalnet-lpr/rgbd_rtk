@@ -33,7 +33,6 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-
 using namespace std;
 
 double get_time_in_microseconds(){
