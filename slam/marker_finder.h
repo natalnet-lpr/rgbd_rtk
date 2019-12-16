@@ -54,16 +54,18 @@ protected:
 	
 	//Size of each artificial marker
 	float marker_size_;
-
+	
 	/**
 	 * Set the pose of all detected markers w.r.t. the local/camera ref. frame
 	 * @param minimum distance(camera to marker) to aruco be considered valid
-	 */	void setMarkerPosesLocal(float aruco_max_distance);
+	 */	
+	void setMarkerPosesLocal(float aruco_max_distance);
 	
 	/**
 	 * Set the pose of all detected markers w.r.t. the global ref. frame
 	 * @param camera pose as affine3f and minimum distance to aruco be considered valid
-	 */	void setMarkerPosesGlobal(const Eigen::Affine3f& cam_pose, const float& aruco_max_distance);
+	 */	
+	void setMarkerPosesGlobal(const Eigen::Affine3f& cam_pose, const float& aruco_max_distance);
 
 public:
 	
@@ -83,7 +85,6 @@ public:
 	
 	//Default constructor
 	MarkerFinder();
-	
 	/**
 	 * Constructor
 	 * @param camera intrinsic and marker size
@@ -94,7 +95,8 @@ public:
 	/**
 	 * Detect ARUCO markers. Also sets the poses of all detected markers in the local and global ref. frames
 	 * @param rgb image, camera pose, and  aruco max distance
-	 */	void detectMarkers(const cv::Mat img, const Eigen::Affine3f& cam_pose, const float& aruco_max_distance);
+	 */	
+	void detectMarkers(const cv::Mat img, const Eigen::Affine3f& cam_pose, const float& aruco_max_distance);
 };
 
 #endif /* INCLUDE_MARKER_FINDER_H_ */

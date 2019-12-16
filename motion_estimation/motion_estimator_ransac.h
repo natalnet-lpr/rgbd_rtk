@@ -77,8 +77,8 @@ public:
 	/**
 	 * Constructor with the matrix of intrinsic parameters
 	 * @param camera intrinsics
-   */	MotionEstimatorRANSAC(const Intrinsics& intr);
-
+    */	
+   MotionEstimatorRANSAC(const Intrinsics& intr);
 	/* Main member function: estimates the motion between two point clouds as the registration transformation
 	 * between two sparse clouds of visual features. The sparse clouds are given as two vectors of 2D points,
 	 * from which the corresponding 3D points are extracted.

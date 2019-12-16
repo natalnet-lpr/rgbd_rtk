@@ -45,22 +45,18 @@ private:
 
 	//PCL ICP motion estimator
 	pcl::IterativeClosestPoint<PointT, PointT> icp_;
-
-	void downSampleCloud(const pcl::PointCloud<PointT>::Ptr dense_cloud,
 	/**Utility function to downsample cloud data
 	 * @param two dense cloud
-	 */	void downSampleCloud(const pcl::PointCloud<PointT>::Ptr& dense_cloud,
+	 */	
+	void downSampleCloud(const pcl::PointCloud<PointT>::Ptr& dense_cloud,
 		                 pcl::PointCloud<PointT>& res_cloud);
 
 public:
-
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	//Default constructor
 	MotionEstimatorICP();
 
-	Eigen::Affine3f estimate(const pcl::PointCloud<PointT>::Ptr tgt_dense_cloud,
-		                     const pcl::PointCloud<PointT>::Ptr src_dense_cloud);
 	/** Main member function: estimates the motion between two point clouds as the registration transformation
 	  * between two sparse clouds of visual features. The sparse clouds are given as two vectors of 2D points,
 	  * from which the corresponding 3D points are extracted.
