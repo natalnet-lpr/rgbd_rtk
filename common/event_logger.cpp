@@ -29,9 +29,20 @@
 
 #include <event_logger.h>
 
-#include <pcl/console/print.h>
+void EventLogger::setVerbosityLevel(pcl::console::VERBOSITY_LEVEL level)
+{
+	verb_level_ = level;
+}
 
-using namespace pcl::console;
+pcl::console::VERBOSITY_LEVEL EventLogger::getVerbosityLevel()
+{
+	return verb_level_;
+}
+
+bool EventLogger::isVerbosityLevelEnabled(pcl::console::VERBOSITY_LEVEL level)
+{
+	return level <= verb_level_;
+}
 
 /*
  * All functions below are copy/paste from the PCL counterparts
@@ -54,40 +65,39 @@ void EventLogger::print(const char *format, ...)
 
 void EventLogger::printDebug(const char* module_class, const char* msg)
 {
-	if(!isVerbosityLevelEnabled(L_DEBUG))
+	if(!isVerbosityLevelEnabled(pcl::console::L_DEBUG))
 		return;
 
-	change_text_color (stdout, TT_RESET, TT_GREEN);
-
+	pcl::console::change_text_color(stdout, pcl::console::TT_RESET, pcl::console::TT_GREEN);
 	print("[%s] DEBUG: %s\n", module_class, msg);
+	pcl::console::reset_text_color(stdout);
 }
 
 void EventLogger::printInfo(const char* module_class, const char* msg)
 {
-	if(!isVerbosityLevelEnabled(L_INFO))
+	if(!isVerbosityLevelEnabled(pcl::console::L_INFO))
 		return;
 
-	reset_text_color(stdout);
-
+	pcl::console::reset_text_color(stdout);
 	print("[%s] INFO: %s\n", module_class, msg);
 }
 
 void EventLogger::printWarning(const char* module_class, const char* msg)
 {
-	if(!isVerbosityLevelEnabled(L_WARN))
+	if(!isVerbosityLevelEnabled(pcl::console::L_WARN))
 		return;
 
-	change_text_color(stderr, TT_BRIGHT, TT_YELLOW);
-
+	pcl::console::change_text_color(stdout, pcl::console::TT_BRIGHT, pcl::console::TT_YELLOW);
 	print("[%s] WARNING: %s\n", module_class, msg);
+	pcl::console::reset_text_color(stdout);
 }
 
 void EventLogger::printError(const char* module_class, const char* msg)
 {
-	if(!isVerbosityLevelEnabled(L_ERROR))
+	if(!isVerbosityLevelEnabled(pcl::console::L_ERROR))
 		return;
 
-	change_text_color(stderr, TT_BRIGHT, TT_RED);
-
+	pcl::console::change_text_color(stdout, pcl::console::TT_BRIGHT, pcl::console::TT_RED);
 	print("[%s] ERROR: %s\n", module_class, msg);
+	pcl::console::reset_text_color(stdout);
 }

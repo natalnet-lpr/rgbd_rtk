@@ -29,6 +29,8 @@
 
 #include <cstdio>
 
+#include <pcl/console/print.h>
+
 class EventLogger
 {
 
@@ -37,6 +39,9 @@ private:
 	//Output file for the log file
 	FILE* log_file_;
 
+	//Current verbosity level (uses enum defined in PCL)
+	pcl::console::VERBOSITY_LEVEL verb_level_;
+
 public:
 
 	/**
@@ -44,6 +49,7 @@ public:
 	 */
 	EventLogger()
 	{
+		verb_level_ = pcl::console::L_ERROR;
 		log_file_ = fopen("log.txt", "w");
 	}
 
@@ -51,8 +57,9 @@ public:
 	 * Constructor specifying the log file name
 	 * @param file_name: name of the log file
 	 */
-	EventLogger(const char* file_name)
+	EventLogger(const char* file_name, pcl::console::VERBOSITY_LEVEL level)
 	{
+		verb_level_ = level;
 		log_file_ = fopen(file_name, "w");
 	}
 
@@ -60,6 +67,23 @@ public:
 	{
 		fclose(log_file_);
 	}
+
+	/**
+	 * Sets the verbosity level.
+	 * @param level - the following are accepted: L_DEBUG, L_INFO, L_WARN, L_ERROR
+	 */
+    void setVerbosityLevel(pcl::console::VERBOSITY_LEVEL level);
+
+    /**
+     * Returns the verbosity level.
+     */
+    pcl::console::VERBOSITY_LEVEL getVerbosityLevel();
+
+    /**
+     * Returns true if the given verbosity level is enabled.
+     * @param level - the following are accepted: L_DEBUG, L_INFO, L_WARN, L_ERROR
+     */
+    bool isVerbosityLevelEnabled(pcl::console::VERBOSITY_LEVEL level);
 
 	void print(const char* format, ...);
 

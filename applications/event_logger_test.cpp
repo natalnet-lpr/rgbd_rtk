@@ -32,15 +32,14 @@ using namespace std;
 
 int main(int argc, char **argv)
 {
-	EventLogger logger("rgbd_rtk_log.txt");
+	EventLogger logger("rgbd_rtk_log.txt", pcl::console::L_ERROR);
 
 	//All these messages are shown on screen and logged to file
 	logger.print("[common::EventLogger] Info: 1. function call from main\n");
 	logger.print("[common::EventLogger] Info: 2. function call from main >>> %i, %s, %f\n", 1, "test string", 5.0);
     logger.print("[common::EventLogger] Info: 3. final function call from main: %s\n", "EXITING");
 
-    //These messages are shown on screen/logged to file according to verbosity level
-    pcl::console::setVerbosityLevel(pcl::console::L_DEBUG);
+    //These messages are shown on stdout/logged to file according to verbosity level
 	logger.printDebug("common::EventLogger", "Testing DEBUG"); //goes to file if verb. level >= DEBUG
 	logger.printInfo("common::EventLogger", "Testing INFO"); //goes to file if verb. level >= INFO
 	logger.printWarning("common::EventLogger", "Testing WARN"); //goes to file if verb. level >= WARN
