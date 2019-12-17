@@ -41,8 +41,6 @@ using namespace pcl::console;
 
 void EventLogger::print(const char *format, ...)
 {
-	reset_text_color(stdout);
-
 	va_list stdout_args, file_args;
 
 	//Write message to stdout and file
@@ -59,6 +57,8 @@ void EventLogger::printDebug(const char* module_class, const char* msg)
 	if(!isVerbosityLevelEnabled(L_DEBUG))
 		return;
 
+	change_text_color (stdout, TT_RESET, TT_GREEN);
+
 	print("[%s] DEBUG: %s\n", module_class, msg);
 }
 
@@ -66,6 +66,8 @@ void EventLogger::printInfo(const char* module_class, const char* msg)
 {
 	if(!isVerbosityLevelEnabled(L_INFO))
 		return;
+
+	reset_text_color(stdout);
 
 	print("[%s] INFO: %s\n", module_class, msg);
 }
@@ -75,6 +77,8 @@ void EventLogger::printWarning(const char* module_class, const char* msg)
 	if(!isVerbosityLevelEnabled(L_WARN))
 		return;
 
+	change_text_color(stderr, TT_BRIGHT, TT_YELLOW);
+
 	print("[%s] WARNING: %s\n", module_class, msg);
 }
 
@@ -82,6 +86,8 @@ void EventLogger::printError(const char* module_class, const char* msg)
 {
 	if(!isVerbosityLevelEnabled(L_ERROR))
 		return;
+
+	change_text_color(stderr, TT_BRIGHT, TT_RED);
 
 	print("[%s] ERROR: %s\n", module_class, msg);
 }
