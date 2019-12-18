@@ -29,6 +29,15 @@
 
 #include <event_logger.h>
 
+using namespace std;
+
+EventLogger EventLogger::initLogger(const string& file_name, pcl::console::VERBOSITY_LEVEL level)
+{
+	static EventLogger logger(file_name, level);
+	logger.print("[common::EventLogger] INFO: Logger address -> %x\n", &logger);
+	return logger;
+}
+
 void EventLogger::setVerbosityLevel(pcl::console::VERBOSITY_LEVEL level)
 {
 	verb_level_ = level;

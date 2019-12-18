@@ -28,6 +28,7 @@
 #define INCLUDE_EVENT_LOGGER_H_
 
 #include <cstdio>
+#include <iostream>
 
 #include <pcl/console/print.h>
 
@@ -42,8 +43,6 @@ private:
 	//Current verbosity level (uses enum defined in PCL)
 	pcl::console::VERBOSITY_LEVEL verb_level_;
 
-public:
-
 	/**
 	 * Default constructor
 	 */
@@ -57,16 +56,28 @@ public:
 	 * Constructor specifying the log file name
 	 * @param file_name: name of the log file
 	 */
-	EventLogger(const char* file_name, pcl::console::VERBOSITY_LEVEL level)
+	EventLogger(const std::string& file_name, pcl::console::VERBOSITY_LEVEL level)
 	{
 		verb_level_ = level;
-		log_file_ = fopen(file_name, "w");
+		log_file_ = fopen(file_name.c_str(), "w");
 	}
 
+public:
+
+	/** 
+	 * Class destructor.
+	 */
 	~EventLogger()
 	{
 		fclose(log_file_);
 	}
+
+	/**
+	 * Initialize the logger object and
+	 * returns the single instance of the class
+	 * currently in execution.
+	 */
+	static EventLogger initLogger(const std::string& file_name, pcl::console::VERBOSITY_LEVEL level);
 
 	/**
 	 * Sets the verbosity level.

@@ -31,17 +31,22 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-#include "rgbd_loader.h"
+#include <rgbd_loader.h>
+#include <event_logger.h>
 
 using namespace std;
 using namespace cv;
+
+EventLogger logger = EventLogger::initLogger("singleton.txt", pcl::console::L_DEBUG);
 
 void RGBDLoader::processFile(const string& file_name)
 {
 	ifstream index_file(file_name.c_str());
 	if(!index_file.is_open())
 	{
-		fprintf(stderr, "ERROR: file %s was not found.\nExiting.\n", file_name.c_str());
+		//fprintf(stderr, "ERROR: file %s was not found.\nExiting.\n", file_name.c_str());
+		//logger.print("[io::RGBDLoader] ERROR: index file %s was not found.\nExiting.\n", file_name.c_str());
+		logger.printError("io::RGBDLoader", "The supplied index file was not found.");
 		exit(0);
 	}
 	printf("Opening index file: %s\n", file_name.c_str());
@@ -84,19 +89,22 @@ void RGBDLoader::getNextImage(cv::Mat& rgb_img, cv::Mat& depth_img)
 		depth_img = imread(depth_img_name, CV_LOAD_IMAGE_UNCHANGED);
 		if(rgb_img.empty())
 		{
-			fprintf(stderr, "ERROR: image file %s not found.\nExiting.\n", rgb_img_name.c_str());
+			//fprintf(stderr, "ERROR: image file %s not found.\nExiting.\n", rgb_img_name.c_str());
+			logger.printError("io::RGBDLoader", "RGB image not found.");
 			exit(0);
 		}
 		if(depth_img.empty())
 		{
-			fprintf(stderr, "ERROR: image file %s not found.\nExiting.\n", depth_img_name.c_str());
+			//fprintf(stderr, "ERROR: image file %s not found.\nExiting.\n", depth_img_name.c_str());
+			logger.printError("io::RGBDLoader", "Depth image not found.");
 			exit(0);
 		}
 		curr_img_++;
 	}
 	else
 	{
-		fprintf(stderr, "ERROR: all images of the sequence have been loaded.\nExiting.\n");
+		//fprintf(stderr, "ERROR: all images of the sequence have been loaded.\nExiting.\n");
+		logger.printError("io::RGBDLoader", "All images of the sequence were already loaded.");
 		exit(0);
 	}
 }
