@@ -116,14 +116,54 @@ public:
      */
     bool isVerbosityLevelEnabled(pcl::console::VERBOSITY_LEVEL level);
 
+    /**
+     * Prints a formatted message to stdout/file.
+     * It works just like printf.
+     * Example use:
+     *
+     * print(pcl::console::L_DEBUG, "Formatted message: %i, %f\n", var1, var2);
+     * L_DEBUG, L_INFO, L_WARN or L_ERROR can be used as verbosity levels.
+     */
 	void print(pcl::console::VERBOSITY_LEVEL level, const char* format, ...);
 
+	/**
+     * Prints a message to stdout/file to denote debug information.
+     * It redirects the call to the print function for proper formatting
+     * (note that this function receives only two parameters).
+     * Example use:
+     *
+     * printDebug("my_module::MyClass", "Debug message");
+     */
 	void printDebug(const char* module_class, const char* msg);
 
+	/**
+     * Prints a message to stdout/file to denote general program information.
+     * It redirects the call to the print function for proper formatting
+     * (note that this function receives only two parameters).
+     * Example use:
+     *
+     * printInfo("my_module::MyClass", "Information message");
+     */
 	void printInfo(const char* module_class, const char* msg);
 
+	/**
+     * Prints a message to stdout/file to denote a program warning.
+     * It redirects the call to the print function for proper formatting
+     * (note that this function receives only two parameters).
+     * Example use:
+     *
+     * printWarning("my_module::MyClass", "Warning message");
+     */
 	void printWarning(const char* module_class, const char* msg);
 
+	/**
+     * Prints a message to stdout/file to denote an error situation.
+     * It redirects the call to the print function for proper formatting
+     * (note that this function receives only two parameters).
+     * Example use:
+     *
+     * printError("my_module::MyClass", "Error message");
+     */
 	void printError(const char* module_class, const char* msg);
 };
 
