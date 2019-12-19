@@ -41,7 +41,7 @@ void EventLogger::initialize()
 		exit(0);
 	}
 	is_initialized_ = true;
-	print("[common::EventLogger] INFO: opening file %s\n", EventLogger::file_name_.c_str());
+	print(pcl::console::L_INFO, "[common::EventLogger] INFO: opening file %s\n", EventLogger::file_name_.c_str());
 }
 
 EventLogger& EventLogger::getInstance()
@@ -87,23 +87,46 @@ bool EventLogger::isVerbosityLevelEnabled(pcl::console::VERBOSITY_LEVEL level)
  * variadic function.
  */
 
-void EventLogger::print(const char *format, ...)
+void EventLogger::print(pcl::console::VERBOSITY_LEVEL level, const char *format, ...)
 {
+	if(!isVerbosityLevelEnabled(level))
+		return;
+
+	//Change color according to verb. level
+	switch(level)
+	{
+		case pcl::console::L_ERROR:
+			pcl::console::change_text_color(stdout, pcl::console::TT_BRIGHT, pcl::console::TT_RED);
+			break;
+		case pcl::console::L_WARN:
+			pcl::console::change_text_color(stdout, pcl::console::TT_BRIGHT, pcl::console::TT_YELLOW);
+			break;
+		case pcl::console::L_DEBUG:
+			pcl::console::change_text_color(stdout, pcl::console::TT_RESET, pcl::console::TT_GREEN);
+			break;
+		case pcl::console::L_INFO:
+		default:
+			pcl::console::reset_text_color(stdout);
+
+	}
+
 	va_list stdout_args, file_args;
 
-	//Write message to stdout and file
+	//Write message to stdout
 	va_start(stdout_args, format);
 	va_copy(file_args, stdout_args);
 	vfprintf(stdout, format, stdout_args);
 	va_end(stdout_args);
 
-	//Initialize logger if it has not
+	//Initialize logger if it was not initialized yet
 	if(!is_initialized_)
 		initialize();
 
 	//Write message to file
 	vfprintf(log_file_, format, file_args);
 	va_end(file_args);
+
+	pcl::console::reset_text_color(stdout);
 }
 
 void EventLogger::printDebug(const char* module_class, const char* msg)
@@ -114,9 +137,7 @@ void EventLogger::printDebug(const char* module_class, const char* msg)
 	if(!is_initialized_)
 		initialize();
 
-	pcl::console::change_text_color(stdout, pcl::console::TT_RESET, pcl::console::TT_GREEN);
-	print("[%s] DEBUG: %s\n", module_class, msg);
-	pcl::console::reset_text_color(stdout);
+	print(pcl::console::L_DEBUG, "[%s] DEBUG: %s\n", module_class, msg);
 }
 
 void EventLogger::printInfo(const char* module_class, const char* msg)
@@ -127,8 +148,7 @@ void EventLogger::printInfo(const char* module_class, const char* msg)
 	if(!is_initialized_)
 		initialize();
 
-	pcl::console::reset_text_color(stdout);
-	print("[%s] INFO: %s\n", module_class, msg);
+	print(pcl::console::L_INFO, "[%s] INFO: %s\n", module_class, msg);
 }
 
 void EventLogger::printWarning(const char* module_class, const char* msg)
@@ -139,9 +159,7 @@ void EventLogger::printWarning(const char* module_class, const char* msg)
 	if(!is_initialized_)
 		initialize();
 
-	pcl::console::change_text_color(stdout, pcl::console::TT_BRIGHT, pcl::console::TT_YELLOW);
-	print("[%s] WARNING: %s\n", module_class, msg);
-	pcl::console::reset_text_color(stdout);
+	print(pcl::console::L_WARN, "[%s] WARNING: %s\n", module_class, msg);
 }
 
 void EventLogger::printError(const char* module_class, const char* msg)
@@ -152,7 +170,5 @@ void EventLogger::printError(const char* module_class, const char* msg)
 	if(!is_initialized_)
 		initialize();
 
-	pcl::console::change_text_color(stdout, pcl::console::TT_BRIGHT, pcl::console::TT_RED);
-	print("[%s] ERROR: %s\n", module_class, msg);
-	pcl::console::reset_text_color(stdout);
+	print(pcl::console::L_ERROR, "[%s] ERROR: %s\n", module_class, msg);
 }

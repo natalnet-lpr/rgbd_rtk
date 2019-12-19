@@ -116,7 +116,7 @@ public:
      */
     bool isVerbosityLevelEnabled(pcl::console::VERBOSITY_LEVEL level);
 
-	void print(const char* format, ...);
+	void print(pcl::console::VERBOSITY_LEVEL level, const char* format, ...);
 
 	void printDebug(const char* module_class, const char* msg);
 
