@@ -80,7 +80,15 @@ int main(int argc, char **argv)
 	RGBDLoader loader;
 	
 	//default constructor: create a ORB detector and a BruteForce matcher.
-	FlexibleFeatureDetector detector;
+	//FlexibleFeatureDetector detector;
+
+	// Create a AKAZE detector
+	Ptr<AKAZE> akaze_detector = AKAZE::create();
+
+	// Create a BruteForce matcher
+	Ptr<DescriptorMatcher> brute_force_matcher = DescriptorMatcher::create("BruteForce");
+
+	FlexibleFeatureDetector detector(akaze_detector,  brute_force_matcher );
 
 	Mat frame, depth;
 

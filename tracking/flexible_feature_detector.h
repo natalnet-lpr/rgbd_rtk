@@ -1,7 +1,6 @@
 #include "opencv2/features2d.hpp"
 #include "opencv2/core.hpp"
 #include "opencv2/xfeatures2d.hpp"
-#include <feature_surf.h>
 #include <vector>
 
 using namespace cv;
@@ -29,19 +28,19 @@ class FlexibleFeatureDetector
 
   public:
     //Store all the current keypoints founded in the current frame
-    vector<KeyPoint> curr_KPs_;
+    std::vector<KeyPoint> curr_KPs_;
     //Store all the current descriptors founded in the current frame
     Mat curr_descriptors_;
     //Store all the previous keypoints founded in the previous frame
-    vector<KeyPoint> prev_KPs_;
+    std::vector<KeyPoint> prev_KPs_;
     //Store all the previous descriptors founded in the previous frame
     Mat prev_descriptors_;
     //Store all the "good" current keypoints that's points who has more
     //accurracy than others calculed through euclidian distance 
-    vector<Point2f> curr_good_Pts_;
+    std::vector<Point2f> curr_good_Pts_;
     //Store all the "good" previous keypoints that's points who has more
     //accurracy than others calculed through euclidian distance 
-    vector<Point2f> prev_good_Pts_;
+    std::vector<Point2f> prev_good_Pts_;
     //Store all the matches beetween features
     std::vector<DMatch> matches_;
     //Store only the "good" matches, in other words, store only the matchings

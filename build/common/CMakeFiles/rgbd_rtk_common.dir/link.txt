@@ -1,1 +1,0 @@
-/usr/bin/c++  -fPIC -std=c++11  -O3   -shared -Wl,-soname,librgbd_rtk_common.so.1.0 -o lib/librgbd_rtk_common.so.1.0 CMakeFiles/rgbd_rtk_common.dir/geometry.cpp.o  -L/usr/local/lib 

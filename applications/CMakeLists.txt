@@ -33,7 +33,6 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 
 find_library(RGBD_RTK_IO NAMES rgbd_rtk_io)
 find_library(RGBD_RTK_TRACKING NAMES rgbd_rtk_tracking)
-find_library(RGBD_RTK_FLEXIBLE_FEATURE_DETECTOR NAMES rgbd_flexible_feature_detector)
 find_library(RGBD_RTK_COMMON NAMES rgbd_rtk_common)
 find_library(RGBD_RTK_VISUALIZATION NAMES rgbd_rtk_visualization)
 find_library(RGBD_RTK_MOTION_ESTIMATION NAMES rgbd_rtk_motion_estimation)
@@ -57,8 +56,8 @@ target_link_libraries(icp_odometry_test ${PCL_LIBRARIES} ${RGBD_RTK_IO} ${RGBD_R
 	                                    ${RGBD_RTK_VISUAL_ODOMETRY})
 
 														
-target_link_libraries(flexible_feature_detector_test ${RGBD_RTK_IO} ${RGBD_RTK_FLEXIBLE_FEATURE_DETECTOR})
-target_link_libraries(flexible_feature_tracker_test ${RGBD_RTK_IO} ${RGBD_RTK_FLEXIBLE_FEATURE_DETECTOR})
+target_link_libraries(flexible_feature_detector_test ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING})
+target_link_libraries(flexible_feature_tracker_test ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING})
 
 
 install(TARGETS monocular_calibration

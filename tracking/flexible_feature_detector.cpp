@@ -3,7 +3,8 @@
 #include <iostream>
 #include "opencv2/highgui.hpp"
 #include "opencv2/features2d.hpp"
-using std::cout;
+
+
 
 FlexibleFeatureDetector::FlexibleFeatureDetector()
 {
@@ -94,14 +95,14 @@ void FlexibleFeatureDetector::draw(Mat prev_img, Mat curr_img){
 
     drawMatches( prev_img, prev_KPs_, curr_img, curr_KPs_,
     good_matches_, img_matches, Scalar::all(-1), Scalar::all(-1),
-    vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
+    std::vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
     good_matches_.clear();
     imshow("Match Image",img_matches);
 
 }
 
 void FlexibleFeatureDetector::searchInTree(Mat descriptors){
-    vector<DMatch> matches;
+    std::vector<DMatch> matches;
     matcher_->match(descriptors,matches);
-    cout<<matches.size()<<endl;
+    std::cout<<matches.size()<<std::endl;
 }
