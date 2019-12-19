@@ -53,7 +53,6 @@ int main(int argc, char **argv)
 	RGBDLoader loader;
 	KLTTracker tracker;
 	Intrinsics intr(0);
-	MotionEstimatorRANSAC motion_estimator(intr);
 	ReconstructionVisualizer visualizer;
 	Mat frame, depth;
 	Eigen::Affine3f pose = Eigen::Affine3f::Identity();
@@ -68,6 +67,9 @@ int main(int argc, char **argv)
 	}
 	param_loader.loadParams(argv[1]);
 	loader.processFile(param_loader.index_file_);
+
+	MotionEstimatorRANSAC motion_estimator(intr, param_loader.ransac_distance_threshold_,
+											param_loader.ransac_inliers_ratio_);
 
 	//Track points on each image
 	for(int i = 0; i < loader.num_images_; i++)

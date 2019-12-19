@@ -59,6 +59,7 @@ int main(int argc, char **argv)
 	}
 	param_loader.loadParams(argv[1]);
 	loader.processFile(param_loader.index_file_);
+	icpo.setConfig(param_loader);
 
 	//Compute ICP odometry on each image
 	for(int i = 0; i < loader.num_images_; i++)
@@ -73,7 +74,7 @@ int main(int argc, char **argv)
 		//visualizer.addQuantizedPointCloud(icpo.curr_dense_cloud_, 0.3, icpo.pose_);
 		visualizer.viewReferenceFrame(icpo.pose_);
 		//visualizer.viewPointCloud(icpo.curr_dense_cloud_, icpo.pose_);
-		//visualizer.viewQuantizedPointCloud(icpo.curr_dense_cloud_, 0.02, icpo.pose_);
+		visualizer.viewQuantizedPointCloud(icpo.curr_dense_cloud_, 0.02, icpo.pose_);
 
 		visualizer.spinOnce();
 

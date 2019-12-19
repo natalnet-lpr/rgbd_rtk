@@ -59,13 +59,26 @@ void ConfigLoader::loadParams(const string& filename)
         fs["aruco_dic"] >> aruco_dic_;
         fs["aruco_max_distance"] >> aruco_max_distance_;
         fs["aruco_marker_size"] >> aruco_marker_size_;
-
+        fs["ransac_distance_threshold"] >> ransac_distance_threshold_;
+        fs["ransac_inliers_ratio"] >> ransac_inliers_ratio_;
+        fs["icp_radius"] >> icp_radius_;
+        fs["icp_max_correspondence_distance"] >> icp_max_correspondence_distance_;
+        fs["icp_maximum_iteration"] >> icp_maximum_iteration_;
+        fs["icp_transformation_epsilon"] >> icp_transformation_epsilon_;
+        fs["icp_euclidean_fitness_epsilon"] >> icp_euclidean_fitness_epsilon_;
         //Check if any of the params was not loaded
         if(camera_calibration_file_.empty()) throw 1;
         if(index_file_.empty()) throw 2;
         if(aruco_dic_.empty()) throw 3;
         if(aruco_max_distance_ == 0) throw 4;
         if(aruco_marker_size_ == 0) throw 5;
+        if(ransac_distance_threshold_ == 0) throw 6;
+        if(ransac_inliers_ratio_ == 0) throw 7;
+        if(icp_radius_ == 0) throw 8;
+        if(icp_max_correspondence_distance_ == 0) throw 9;
+        if(icp_maximum_iteration_ == 0) throw 10;
+        if(icp_transformation_epsilon_ == 0) throw 11;
+        if(icp_euclidean_fitness_epsilon_ == 0) throw 12;
        
     }
     //If a param was not loaded, use the default
@@ -94,6 +107,35 @@ void ConfigLoader::loadParams(const string& filename)
                 cout << "aruco_marker_size is 0\nTrying to use the default value: 0.1778\n";
                 aruco_marker_size_ = 0.1778;
                 break;
+            case 6:
+                cout << "ransac_distance_threshold is 0\nTrying to use the default value: 0.008\n";
+                ransac_distance_threshold_ = 0.008;
+                break;
+            case 7:
+                cout << "ransac_inlierts_ratio is 0\nTrying to use the default value: 0.8\n";
+                ransac_inliers_ratio_ = 0.8;
+                break;
+            case 8:
+                cout << "icp_radius is 0\nTrying to use the default value: 0.05\n";
+                icp_radius_ = 0.05;
+                break;
+            case 9:
+                cout << "icp_max_correspondence_distance is 0\nTrying to use the default value: 0.1\n";
+                icp_max_correspondence_distance_ = 0.1;
+                break;
+            case 10:
+                cout << "icp_maximum_iteration is 0\nTrying to use the default value: 50\n";
+                icp_maximum_iteration_ = 50;
+                break;
+            case 11:
+                cout << "icp_transformation_epsilon is 0\nTrying to use the default value: 1e-9\n";
+                icp_transformation_epsilon_ = 0.001;
+                break;
+            case 12:
+                cout << "icp_euclidean_fitness_epsilon is 0\nTrying to use the default value: 0.001\n";
+                icp_euclidean_fitness_epsilon_ = 0.001;
+                break;
+
         }
     }
 }

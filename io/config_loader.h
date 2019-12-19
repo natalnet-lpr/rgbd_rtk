@@ -40,12 +40,14 @@ using namespace std;
 class ConfigLoader
 {
     public:
+        
         //.yml having the camera calibration intrinsics
         string camera_calibration_file_;
 
         //full path to the index with RGB/depth to be processed
         string index_file_;
-
+        
+        //Aruco Params
         //Used in marker detection: ARUCO dictionary of expected markers in the scene
         string aruco_dic_;
 
@@ -54,6 +56,23 @@ class ConfigLoader
 
         //Used in marker detection: size of expected markers in the scene
         float aruco_marker_size_;
+
+        //Motion Estimator Params
+        //Set distance threshold
+        float ransac_distance_threshold_;
+
+        //inliers_ration 
+        float ransac_inliers_ratio_;
+
+        float icp_radius_;
+
+        double icp_max_correspondence_distance_;
+
+        int icp_maximum_iteration_;
+
+        double icp_transformation_epsilon_;
+
+        double icp_euclidean_fitness_epsilon_;
         
     void loadParams(const string& filename);
 };

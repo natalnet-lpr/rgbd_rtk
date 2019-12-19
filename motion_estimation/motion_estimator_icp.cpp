@@ -35,20 +35,38 @@ using namespace std;
 void MotionEstimatorICP::downSampleCloud(const pcl::PointCloud<PointT>::Ptr& dense_cloud,
 		                                 pcl::PointCloud<PointT>& res_cloud)
 {
-	float radius = 0.05;
-
 	sampler_.setInputCloud(dense_cloud);
-	sampler_.setRadiusSearch(radius);
+	sampler_.setRadiusSearch(getRadius());
 	sampler_.filter(res_cloud);
 }
 
 MotionEstimatorICP::MotionEstimatorICP()
 {
 	//Set ICP parameters
-	icp_.setMaxCorrespondenceDistance(0.1);
-	icp_.setMaximumIterations (50);
-	icp_.setTransformationEpsilon(1e-9);
-	icp_.setEuclideanFitnessEpsilon(0.001);
+	setMaxCorrespondenceDistance(0.05);
+	setMaximumIterations(50);
+	setTransformationEpsilon(1e-9);
+	setEuclideanFitnessEpsilon(0.001);
+	setRadius(0.05);
+	icp_.setMaxCorrespondenceDistance(getMaxCorrespondenceDistance());
+	icp_.setMaximumIterations(getMaximumIterations());
+	icp_.setTransformationEpsilon(getEuclideanFitnessEpsilon());
+	icp_.setEuclideanFitnessEpsilon(getEuclideanFitnessEpsilon());
+}
+
+MotionEstimatorICP::MotionEstimatorICP(const double& max_correspondence_distance, const int& maximum_iterations, const double& transformation_epsilon,
+									const double& euclidean_fitness_epsilon, const float& radius)
+{
+	//Set ICP parameters
+	setMaxCorrespondenceDistance(max_correspondence_distance);
+	setMaximumIterations(maximum_iterations);
+	setTransformationEpsilon(transformation_epsilon);
+	setEuclideanFitnessEpsilon(euclidean_fitness_epsilon);	
+	setRadius(radius);
+	icp_.setMaxCorrespondenceDistance(getMaxCorrespondenceDistance());
+	icp_.setMaximumIterations(getMaximumIterations());
+	icp_.setTransformationEpsilon(getEuclideanFitnessEpsilon());
+	icp_.setEuclideanFitnessEpsilon(getEuclideanFitnessEpsilon());
 }
 
 Eigen::Affine3f MotionEstimatorICP::estimate(const pcl::PointCloud<PointT>::Ptr& tgt_dense_cloud,
@@ -74,4 +92,86 @@ Eigen::Affine3f MotionEstimatorICP::estimate(const pcl::PointCloud<PointT>::Ptr&
 	result = icp_.getFinalTransformation();
 
 	return result;
+}
+
+float MotionEstimatorICP::getRadius()
+{
+	return this->radius_;
+}
+void MotionEstimatorICP::setRadius(const float& radius)
+{
+	try
+	{
+		if(radius < 0) throw 1;
+		else this->radius_ = radius;
+	}
+	catch(int e)
+	{
+		cout << "radius can't be negative\nTrying to use default vallue: 0.05\n";
+		this->radius_ = 0.05;
+	}
+}
+double MotionEstimatorICP::getMaxCorrespondenceDistance()
+{	
+	return this->max_correspondence_distance_;
+}
+void MotionEstimatorICP::setMaxCorrespondenceDistance(const double& max_correspondence_distance)
+{
+	try{
+		if(max_correspondence_distance < 0) throw 1;
+		else this->max_correspondence_distance_ = max_correspondence_distance;
+	}
+	catch(int e)
+	{
+		cout << "max_correspondence_distance can't be negative\nTrying to use default value: 0.1\n";
+		this->max_correspondence_distance_ = 0.1;
+	}
+}
+int MotionEstimatorICP::getMaximumIterations()
+{
+	return this->maximum_iterations_;
+}
+void MotionEstimatorICP::setMaximumIterations(const int& maximum_iterations)
+{
+	try{
+		if(maximum_iterations < 0) throw 1;
+		else this->maximum_iterations_ = maximum_iterations;
+	}
+	catch(int e)
+	{
+		cout << "maximum_iterations_ can't be negative\nTrying to use default value: 50\n";
+		this->maximum_iterations_ = 0.1;
+	}
+}
+double MotionEstimatorICP::getTransformationEpsilon()
+{
+	return this->transformation_epsilon_;
+}
+void MotionEstimatorICP::setTransformationEpsilon(const double& transformation_epsilon)
+{
+	try{
+		if(transformation_epsilon < 0) throw 1;
+		else this->transformation_epsilon_ = transformation_epsilon;
+	}
+	catch(int e)
+	{
+		cout << "transformation_epsilon can't be negative\nTrying to use default value: 1e-9\n";
+		this->transformation_epsilon_ = 1e-9;
+	}
+}
+double MotionEstimatorICP::getEuclideanFitnessEpsilon()
+{
+	return this->euclidean_fitness_epsilon_;
+}
+void MotionEstimatorICP::setEuclideanFitnessEpsilon(const double& euclidean_fitness_epsilon)
+{
+	try{
+		if(euclidean_fitness_epsilon < 0) throw 1;
+		else this->euclidean_fitness_epsilon_ = euclidean_fitness_epsilon;
+	}
+	catch(int e)
+	{
+		cout << "euclidean_fitness_epsilon can't be negative\nTrying to use default value:0.001\n";
+		this->euclidean_fitness_epsilon_ = 0.01;
+	}
 }

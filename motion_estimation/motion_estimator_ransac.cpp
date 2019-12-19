@@ -88,9 +88,10 @@ void MotionEstimatorRANSAC::setDataFromCorrespondences(const std::vector<cv::Poi
 	printf("\tvalid points (with depth)/total points: %lu/%lu\n", valid_points, src_points.size());
 	#endif	
 }
-
 MotionEstimatorRANSAC::MotionEstimatorRANSAC()
 {
+	distance_threshold_ = 0.008;
+	inliers_ratio_ = 0.8;
 	num_inliers_ = 0;
 	tgt_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
 	src_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
@@ -99,8 +100,10 @@ MotionEstimatorRANSAC::MotionEstimatorRANSAC()
 	intr_ = Intrinsics(0);
 }
 
-MotionEstimatorRANSAC::MotionEstimatorRANSAC(const Intrinsics& intr)
+MotionEstimatorRANSAC::MotionEstimatorRANSAC(const Intrinsics& intr, const float& distance_threshold, const float& inliers_ratio)
 {
+	distance_threshold_ = distance_threshold;
+	inliers_ratio_ = inliers_ratio;
 	num_inliers_ = 0;
 	tgt_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
 	src_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
@@ -128,7 +131,7 @@ Eigen::Matrix4f MotionEstimatorRANSAC::estimate(const vector<cv::Point2f>& tgt_p
 	pcl::SampleConsensusModelRegistration<PointT>::Ptr sac_model(new pcl::SampleConsensusModelRegistration<PointT>(src_cloud_));
 	sac_model->setInputTarget(tgt_cloud_);
 	pcl::RandomSampleConsensus<PointT> ransac(sac_model);
-	ransac.setDistanceThreshold(0.008); //8mm
+	ransac.setDistanceThreshold(distance_threshold_); //8mm
 	ransac.computeModel();
 
 	//Get the model estimated by RANSAC

@@ -39,6 +39,16 @@ class MotionEstimatorICP
 {
 
 private:
+	//icp_radius default 0.05
+	float radius_;
+	//max_correspondence_distance : default 0.1
+	double max_correspondence_distance_;
+	//maximum_iterations : default 50
+	int maximum_iterations_;
+	//transformation_epsilon : default 1e-9
+	double transformation_epsilon_;
+	//euclidean_fitness_epsilon : default 0.001
+	double euclidean_fitness_epsilon_;
 
 	//(Uniform) point sampler
 	pcl::UniformSampling<PointT> sampler_;
@@ -46,16 +56,33 @@ private:
 	//PCL ICP motion estimator
 	pcl::IterativeClosestPoint<PointT, PointT> icp_;
 	/**Utility function to downsample cloud data
-	 * @param two dense cloud
+	 * @param two dense cloud and icp_radius
 	 */	
 	void downSampleCloud(const pcl::PointCloud<PointT>::Ptr& dense_cloud,
 		                 pcl::PointCloud<PointT>& res_cloud);
 
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+	float getRadius();
+	void setRadius(const float& radius);
+	double getMaxCorrespondenceDistance();
+	void setMaxCorrespondenceDistance(const double& max_correspondence_distance);
+	int getMaximumIterations();
+	void setMaximumIterations(const int& maximum_iterations);
+	double getTransformationEpsilon();
+	void setTransformationEpsilon(const double& transformation_epsilon);
+	double getEuclideanFitnessEpsilon();
+	void setEuclideanFitnessEpsilon(const double& euclidean_fitness_epsilon);
 
 	//Default constructor
 	MotionEstimatorICP();
+	/**
+	 * Constructor with the five icp params
+	 * @params  double max_correspondence_distance,int maximum_iterations, double transformation_epsilon,
+	 * double euclidean_fitness_epsilon, float radius
+	 */
+	MotionEstimatorICP(const double& max_correspondence_distance, const int& maximum_iterations, const double& transformation_epsilon,
+										const double& euclidean_fitness_epsilon, const float& radius);
 
 	/** Main member function: estimates the motion between two point clouds as the registration transformation
 	  * between two sparse clouds of visual features. The sparse clouds are given as two vectors of 2D points,
