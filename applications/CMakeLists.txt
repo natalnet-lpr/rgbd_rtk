@@ -25,11 +25,15 @@ add_executable(klt_tracker_test klt_tracker_test.cpp)
 add_executable(motion_estimator_test motion_estimator_test.cpp)
 add_executable(optical_flow_visual_odometry_test optical_flow_visual_odometry_test.cpp)
 add_executable(icp_odometry_test icp_odometry_test.cpp)
+add_executable(flexible_feature_detector_test flexible_feature_detector_test.cpp)
+add_executable(flexible_feature_tracker_test flexible_feature_tracker_test.cpp)
+
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 
 find_library(RGBD_RTK_IO NAMES rgbd_rtk_io)
 find_library(RGBD_RTK_TRACKING NAMES rgbd_rtk_tracking)
+find_library(RGBD_RTK_FLEXIBLE_FEATURE_DETECTOR NAMES rgbd_flexible_feature_detector)
 find_library(RGBD_RTK_COMMON NAMES rgbd_rtk_common)
 find_library(RGBD_RTK_VISUALIZATION NAMES rgbd_rtk_visualization)
 find_library(RGBD_RTK_MOTION_ESTIMATION NAMES rgbd_rtk_motion_estimation)
@@ -50,7 +54,12 @@ target_link_libraries(optical_flow_visual_odometry_test ${PCL_LIBRARIES} ${RGBD_
 target_link_libraries(icp_odometry_test ${PCL_LIBRARIES} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING}
 	                                    ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUALIZATION}
 	                                    ${RGBD_RTK_MOTION_ESTIMATION}
-	                                    ${RGBD_RTK_VISUAL_ODOMETRY})														
+	                                    ${RGBD_RTK_VISUAL_ODOMETRY})
+
+														
+target_link_libraries(flexible_feature_detector_test ${RGBD_RTK_IO} ${RGBD_RTK_FLEXIBLE_FEATURE_DETECTOR})
+target_link_libraries(flexible_feature_tracker_test ${RGBD_RTK_IO} ${RGBD_RTK_FLEXIBLE_FEATURE_DETECTOR})
+
 
 install(TARGETS monocular_calibration
 	            monocular_image_grabber
@@ -60,6 +69,8 @@ install(TARGETS monocular_calibration
                 motion_estimator_test
                 optical_flow_visual_odometry_test
 				icp_odometry_test
+		flexible_feature_detector_test
+		flexible_feature_tracker_test
         RUNTIME DESTINATION bin)
 
 # Build SLAM related applications only if ARUCO was found
