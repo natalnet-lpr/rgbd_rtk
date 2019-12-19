@@ -68,8 +68,8 @@ private:
 		verb_level_ = pcl::console::L_ERROR;
 	}
 
-	//EventLogger(EventLogger const&); //don't implement copy constructor
-	//void operator=(EventLogger const&); //don't implement assignment operator
+	EventLogger(EventLogger const&); //don't implement copy constructor
+	void operator=(EventLogger const&); //don't implement assignment operator
 
 public:
 
