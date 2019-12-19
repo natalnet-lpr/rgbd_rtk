@@ -131,7 +131,7 @@ Eigen::Matrix4f MotionEstimatorRANSAC::estimate(const vector<cv::Point2f>& tgt_p
 	pcl::SampleConsensusModelRegistration<PointT>::Ptr sac_model(new pcl::SampleConsensusModelRegistration<PointT>(src_cloud_));
 	sac_model->setInputTarget(tgt_cloud_);
 	pcl::RandomSampleConsensus<PointT> ransac(sac_model);
-	ransac.setDistanceThreshold(0.008); //8mm
+	ransac.setDistanceThreshold(distance_threshold_); //8mm
 	ransac.computeModel();
 
 	//Get the model estimated by RANSAC

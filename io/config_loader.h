@@ -63,6 +63,16 @@ class ConfigLoader
 
         //inliers_ration 
         float ransac_inliers_ratio_;
+
+        float icp_radius_;
+
+        double icp_max_correspondence_distance_;
+
+        int icp_maximum_iteration_;
+
+        double icp_transformation_epsilon_;
+
+        double icp_euclidean_fitness_epsilon_;
         
     void loadParams(const string& filename);
 };

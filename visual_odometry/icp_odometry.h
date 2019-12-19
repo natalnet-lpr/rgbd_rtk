@@ -31,6 +31,7 @@
 #include <pcl/point_cloud.h>
 
 #include <common_types.h>
+#include <config_loader.h>
 #include <motion_estimator_icp.h>
 
 class ICPOdometry
@@ -67,12 +68,19 @@ public:
 	/**
 	 * Constructor with the matrix of intrinsic parameters
 	 * @param Camera intrisics
-	 */	ICPOdometry(const Intrinsics& intr);
+	 */	
+	ICPOdometry(const Intrinsics& intr);
 
 	/**
 	 * Main member function: computes the current camera pose
 	 * @param rgb and depth image
-	 */	void computeCameraPose(const cv::Mat& rgb, const cv::Mat& depth);
+	 */	
+	void computeCameraPose(const cv::Mat& rgb, const cv::Mat& depth);
+	/**
+	 * load motion_estimator_icp params
+	 */
+	void setConfig(const ConfigLoader& param_loader);
+
 };
 
 #endif /* INCLUDE_ICP_ODOMETRY_H_ */

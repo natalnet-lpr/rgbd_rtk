@@ -69,7 +69,7 @@ int main(int argc, char **argv)
 	loader.processFile(param_loader.index_file_);
 
 	MotionEstimatorRANSAC motion_estimator(intr, param_loader.ransac_distance_threshold_,
-		param_loader.ransac_inliers_ratio_);
+											param_loader.ransac_inliers_ratio_);
 
 	//Track points on each image
 	for(int i = 0; i < loader.num_images_; i++)
