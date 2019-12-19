@@ -37,30 +37,39 @@ class EventLogger
 
 private:
 
+	//Informs if the logger has been initialized
+	//(whether it has correctly openned a file)
+	bool is_initialized_;
+
+	//Name of the log file
+	std::string file_name_;
+
 	//Output file for the log file
 	FILE* log_file_;
 
 	//Current verbosity level (uses enum defined in PCL)
 	pcl::console::VERBOSITY_LEVEL verb_level_;
 
+	//Associates the logger with a FILE*
+	void initialize();
+
 	/**
-	 * Default constructor
+	 * Default (private) constructor:
+	 * the default log file name is log.txt
+	 * (which will be created in the binary dir.)
+	 * and the verbosity level is L_ERROR.
+	 * Note that the file is only actually openned
+	 * when one of the print member functions are called.
 	 */
 	EventLogger()
 	{
+		file_name_ = "log.txt";
+		is_initialized_ = false;
 		verb_level_ = pcl::console::L_ERROR;
-		log_file_ = fopen("log.txt", "w");
 	}
 
-	/**
-	 * Constructor specifying the log file name
-	 * @param file_name: name of the log file
-	 */
-	EventLogger(const std::string& file_name, pcl::console::VERBOSITY_LEVEL level)
-	{
-		verb_level_ = level;
-		log_file_ = fopen(file_name.c_str(), "w");
-	}
+	//EventLogger(EventLogger const&); //don't implement copy constructor
+	//void operator=(EventLogger const&); //don't implement assignment operator
 
 public:
 
@@ -69,15 +78,15 @@ public:
 	 */
 	~EventLogger()
 	{
-		fclose(log_file_);
+		if(is_initialized_)
+			fclose(log_file_);
 	}
 
 	/**
-	 * Initialize the logger object and
-	 * returns the single instance of the class
+	 * Returns the single instance of the class
 	 * currently in execution.
 	 */
-	static EventLogger initLogger(const std::string& file_name, pcl::console::VERBOSITY_LEVEL level);
+	static EventLogger& getInstance();
 
 	/**
 	 * Sets the verbosity level.
@@ -86,9 +95,20 @@ public:
     void setVerbosityLevel(pcl::console::VERBOSITY_LEVEL level);
 
     /**
+     * Sets the log file name.
+     * @param file_name: log file name (supports relative/absolute path)
+     */
+    void setLogFileName(const std::string& file_name);
+
+    /**
      * Returns the verbosity level.
      */
     pcl::console::VERBOSITY_LEVEL getVerbosityLevel();
+
+    /**
+     * Returns the log file name.
+     */
+    std::string getLogFileName();
 
     /**
      * Returns true if the given verbosity level is enabled.

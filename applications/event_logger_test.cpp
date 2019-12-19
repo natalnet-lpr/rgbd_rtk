@@ -33,23 +33,24 @@ using namespace std;
 
 int main(int argc, char **argv)
 {
-	//EventLogger logger("rgbd_rtk_log.txt", pcl::console::L_ERROR);
-	EventLogger logger = EventLogger::initLogger("test.txt", pcl::console::L_DEBUG);
+	EventLogger& logger = EventLogger::getInstance();
+	logger.setVerbosityLevel(pcl::console::L_DEBUG);
+	//logger.setLogFileName("log_event_logger_test.txt");
 
 	//All these messages are shown on screen and logged to file
-	logger.print("[common::EventLogger] INFO: 1. function call from main\n");
-	logger.print("[common::EventLogger] INFO: 2. function call from main >>> %i, %s, %f\n", 1, "test string", 5.0);
-    logger.print("[common::EventLogger] INFO: 3. final function call from main: %s\n", "EXITING");
+	logger.print("[event_logger_test.cpp] INFO: 1. function call from main\n");
+	logger.print("[event_logger_test.cpp] INFO: 2. function call from main >>> %i, %s, %f\n", 1, "test string", 5.0);
+    logger.print("[event_logger_test.cpp] INFO: 3. final function call from main: %s\n", "EXITING");
 
     //These messages are shown on stdout/logged to file according to verbosity level
-	logger.printDebug("common::EventLogger", "Testing DEBUG"); //goes to file if verb. level >= DEBUG
-	logger.printInfo("common::EventLogger", "Testing INFO"); //goes to file if verb. level >= INFO
-	logger.printWarning("common::EventLogger", "Testing WARN"); //goes to file if verb. level >= WARN
-	logger.printError("common::EventLogger", "Testing ERROR"); //goes to file if verb. level >= ERROR
-	
+	logger.printDebug("event_logger_test.cpp", "Testing DEBUG"); //goes to file if verb. level >= DEBUG
+	logger.printInfo("event_logger_test.cpp", "Testing INFO"); //goes to file if verb. level >= INFO
+	logger.printWarning("event_logger_test.cpp", "Testing WARN"); //goes to file if verb. level >= WARN
+	logger.printError("event_logger_test.cpp", "Testing ERROR"); //goes to file if verb. level >= ERROR
+
 	//Instantiate a loader to test logging
 	RGBDLoader loader;
-	loader.processFile("DOESNOT EXIST");
+	loader.processFile("DOESNOT EXIST"); //this will cause an error
 
 	return 0;
 }

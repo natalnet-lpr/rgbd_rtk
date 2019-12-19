@@ -26,15 +26,27 @@
 
 #include <iostream>
 #include <cstdarg>
+#include <cstdio>
 
 #include <event_logger.h>
 
 using namespace std;
 
-EventLogger EventLogger::initLogger(const string& file_name, pcl::console::VERBOSITY_LEVEL level)
+void EventLogger::initialize()
 {
-	static EventLogger logger(file_name, level);
-	logger.print("[common::EventLogger] INFO: Logger address -> %x\n", &logger);
+	log_file_ = fopen(EventLogger::file_name_.c_str(), "w");
+	if(log_file_ == NULL)
+	{
+		printError("common::EventLogger", "Could not open the specified log file.");
+		exit(0);
+	}
+	is_initialized_ = true;
+	print("[common::EventLogger] INFO: opening file %s\n", EventLogger::file_name_.c_str());
+}
+
+EventLogger& EventLogger::getInstance()
+{
+	static EventLogger logger;
 	return logger;
 }
 
@@ -43,9 +55,25 @@ void EventLogger::setVerbosityLevel(pcl::console::VERBOSITY_LEVEL level)
 	verb_level_ = level;
 }
 
+void EventLogger::setLogFileName(const string& file_name)
+{
+	//Close the previously openned file if already initialized
+	if(is_initialized_)
+		fclose(log_file_);
+
+	//Set the file to be openned with the given param
+	//(note that the file is actually openned when some print method is called)
+	EventLogger::file_name_ = file_name;
+}
+
 pcl::console::VERBOSITY_LEVEL EventLogger::getVerbosityLevel()
 {
 	return verb_level_;
+}
+
+string EventLogger::getLogFileName()
+{
+	return EventLogger::file_name_;
 }
 
 bool EventLogger::isVerbosityLevelEnabled(pcl::console::VERBOSITY_LEVEL level)
@@ -67,8 +95,14 @@ void EventLogger::print(const char *format, ...)
 	va_start(stdout_args, format);
 	va_copy(file_args, stdout_args);
 	vfprintf(stdout, format, stdout_args);
-	vfprintf(log_file_, format, file_args);
 	va_end(stdout_args);
+
+	//Initialize logger if it has not
+	if(!is_initialized_)
+		initialize();
+
+	//Write message to file
+	vfprintf(log_file_, format, file_args);
 	va_end(file_args);
 }
 
@@ -76,6 +110,9 @@ void EventLogger::printDebug(const char* module_class, const char* msg)
 {
 	if(!isVerbosityLevelEnabled(pcl::console::L_DEBUG))
 		return;
+
+	if(!is_initialized_)
+		initialize();
 
 	pcl::console::change_text_color(stdout, pcl::console::TT_RESET, pcl::console::TT_GREEN);
 	print("[%s] DEBUG: %s\n", module_class, msg);
@@ -87,6 +124,9 @@ void EventLogger::printInfo(const char* module_class, const char* msg)
 	if(!isVerbosityLevelEnabled(pcl::console::L_INFO))
 		return;
 
+	if(!is_initialized_)
+		initialize();
+
 	pcl::console::reset_text_color(stdout);
 	print("[%s] INFO: %s\n", module_class, msg);
 }
@@ -95,6 +135,9 @@ void EventLogger::printWarning(const char* module_class, const char* msg)
 {
 	if(!isVerbosityLevelEnabled(pcl::console::L_WARN))
 		return;
+
+	if(!is_initialized_)
+		initialize();
 
 	pcl::console::change_text_color(stdout, pcl::console::TT_BRIGHT, pcl::console::TT_YELLOW);
 	print("[%s] WARNING: %s\n", module_class, msg);
@@ -105,6 +148,9 @@ void EventLogger::printError(const char* module_class, const char* msg)
 {
 	if(!isVerbosityLevelEnabled(pcl::console::L_ERROR))
 		return;
+
+	if(!is_initialized_)
+		initialize();
 
 	pcl::console::change_text_color(stdout, pcl::console::TT_BRIGHT, pcl::console::TT_RED);
 	print("[%s] ERROR: %s\n", module_class, msg);

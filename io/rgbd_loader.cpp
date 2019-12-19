@@ -37,7 +37,7 @@
 using namespace std;
 using namespace cv;
 
-EventLogger logger = EventLogger::initLogger("singleton.txt", pcl::console::L_DEBUG);
+EventLogger& logger = EventLogger::getInstance();
 
 void RGBDLoader::processFile(const string& file_name)
 {
