@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -22,6 +22,9 @@
  *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
+ *  Author:
+ *
+ *  Bruno Silva
  */
 
 #include <cstdio>
@@ -31,6 +34,7 @@
 
 #include <config_loader.h>
 #include <rgbd_loader.h>
+#include <event_logger.h>
 
 using namespace std;
 using namespace cv;
@@ -40,13 +44,16 @@ using namespace cv;
  */
 int main(int argc, char **argv)
 {
+	EventLogger& logger = EventLogger::getInstance();
+	logger.setVerbosityLevel(pcl::console::L_INFO);
+
 	ConfigLoader param_loader;
 	RGBDLoader loader;
 	Mat frame, depth;
 
 	if(argc != 2)
 	{
-		fprintf(stderr, "Usage: %s <path/to/config_file.yaml>\n", argv[0]);
+		logger.print(pcl::console::L_INFO, "[rgbd_loader_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
 	param_loader.loadParams(argv[1]);
@@ -60,6 +67,7 @@ int main(int argc, char **argv)
 		char key = waitKey(16);
 		if(key == 'q' || key == 'Q' || key == 27)
 		{
+			logger.print(pcl::console::L_INFO, "[rgbd_loader_test.cpp] Exiting\n", argv[0]);
 			break;
 		}
 	}

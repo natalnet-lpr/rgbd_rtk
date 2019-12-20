@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -22,6 +22,9 @@
  *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
+ *  Author:
+ *
+ *  Bruno Silva
  */
 
 #include <Eigen/Geometry>
@@ -30,11 +33,12 @@
 #include <pcl/common/transforms.h>
 
 #include <geometry.h>
+#include <event_logger.h>
 #include <motion_estimator_ransac.h>
 
 using namespace std;
 
-//#define DEBUG
+EventLogger& logger = EventLogger::getInstance();
 
 void MotionEstimatorRANSAC::setDataFromCorrespondences(const std::vector<cv::Point2f>& tgt_points, const pcl::PointCloud<PointT>::Ptr& tgt_dense_cloud,
 		                                               const std::vector<cv::Point2f>& src_points, const pcl::PointCloud<PointT>::Ptr& src_dense_cloud)
@@ -53,11 +57,8 @@ void MotionEstimatorRANSAC::setDataFromCorrespondences(const std::vector<cv::Poi
 	//tgt_cloud_->height = 1;
 	//tgt_cloud_->points.resize(tgt_cloud_->width*tgt_cloud_->height);
 
-	#ifdef DEBUG
-	printf("Setting 3D correspondences:\n");
-	printf("\ttgt cloud: %i x %i\n", tgt_cloud_->width, tgt_cloud_->height);
-	printf("\tsrc cloud: %i x %i\n", src_cloud_->width, src_cloud_->height);
-	#endif
+	logger.print(pcl::console::L_DEBUG, "[MotionEstimatorRANSAC] DEBUG: setting 3D correspondences:\n");
+
 	//For each correspondence, get both points and their corresponding 3D points in the dense 3D clouds
 	//A correspondence is removed if any of the 3D points is invalid
 	size_t valid_points = 0;
@@ -68,12 +69,13 @@ void MotionEstimatorRANSAC::setDataFromCorrespondences(const std::vector<cv::Poi
 
 		if(is_valid(tpt) && is_valid(spt))
 		{
-			#ifdef DEBUG
-			printf("\t\t[%lu]: (%f,%f) <-> (%f,%f) [(%f,%f,%f) <-> (%f,%f,%f)]\n", k, src_points[k].x, src_points[k].y,
-				                                                                      tgt_points[k].x, tgt_points[k].y,
-				                                                                      spt.x, spt.y, spt.z, 
-				                                                                      tpt.x, tpt.y, tpt.z);
-			#endif
+			/*
+			logger.print(pcl::console::L_DEBUG, "[MotionEstimatorRANSAC] DEBUG: [%lu]: (%f,%f) <-> (%f,%f) [(%f,%f,%f) <-> (%f,%f,%f)]:\n",
+				                                  k, src_points[k].x, src_points[k].y,
+				                                  tgt_points[k].x, tgt_points[k].y,
+				                                  spt.x, spt.y, spt.z, 
+				                                  tpt.x, tpt.y, tpt.z);
+			*/
 
 			tgt_cloud_->push_back(tpt);
 			src_cloud_->push_back(spt);
@@ -84,9 +86,7 @@ void MotionEstimatorRANSAC::setDataFromCorrespondences(const std::vector<cv::Poi
 	}
 	//tgt_cloud_->points.resize(valid_points);
 	//src_cloud_->points.resize(valid_points);
-	#ifdef DEBUG
-	printf("\tvalid points (with depth)/total points: %lu/%lu\n", valid_points, src_points.size());
-	#endif	
+	logger.print(pcl::console::L_DEBUG, "[MotionEstimatorRANSAC] DEBUG: valid points (with depth)/total points: %lu/%lu\n", valid_points, src_points.size());
 }
 MotionEstimatorRANSAC::MotionEstimatorRANSAC()
 {
@@ -110,9 +110,8 @@ MotionEstimatorRANSAC::MotionEstimatorRANSAC(const Intrinsics& intr, const float
 
 	//Initialize intrinsics with the given values
 	intr_ = intr;
-	printf("Loading intrinsics:\n");
-	printf("%f %f %f %f %f\n", intr.fx_, intr.fy_, intr.cx_, intr.cy_, intr.scale_);
-	printf("%f %f %f %f %f\n", intr.k1_, intr.k2_, intr.p1_, intr.p2_, intr.k3_);
+	logger.print(pcl::console::L_INFO, "[MotionEstimatorRANSAC] INFO: loading intrinsics...\n");
+	logger.print(pcl::console::L_INFO, "[MotionEstimatorRANSAC] INFO: %f %f %f %f %f\n", intr.fx_, intr.fy_, intr.cx_, intr.cy_, intr.scale_);
 }
 
 Eigen::Matrix4f MotionEstimatorRANSAC::estimate(const vector<cv::Point2f>& tgt_points, const pcl::PointCloud<PointT>::Ptr& tgt_dense_cloud,
@@ -123,15 +122,13 @@ Eigen::Matrix4f MotionEstimatorRANSAC::estimate(const vector<cv::Point2f>& tgt_p
 
 	long unsigned N = src_cloud_->points.size();
 
-	#ifdef DEBUG
-	printf("\tRANSAC motion estimation: %lu <-> %lu\n", tgt_cloud_->size(), src_cloud_->size());
-	#endif
+	logger.print(pcl::console::L_DEBUG, "[MotionEstimatorRANSAC] DEBUG: RANSAC motion estimation: %lu <-> %lu\n", tgt_cloud_->size(), src_cloud_->size());
 
 	//Build a RANSAC registration model to estimate the rigid transformation
 	pcl::SampleConsensusModelRegistration<PointT>::Ptr sac_model(new pcl::SampleConsensusModelRegistration<PointT>(src_cloud_));
 	sac_model->setInputTarget(tgt_cloud_);
 	pcl::RandomSampleConsensus<PointT> ransac(sac_model);
-	ransac.setDistanceThreshold(distance_threshold_); //8mm
+	ransac.setDistanceThreshold(distance_threshold_);
 	ransac.computeModel();
 
 	//Get the model estimated by RANSAC
@@ -149,10 +146,8 @@ Eigen::Matrix4f MotionEstimatorRANSAC::estimate(const vector<cv::Point2f>& tgt_p
 	}
 	num_inliers_ = inl.size();
 		
-	#ifdef DEBUG
 	float inl_ratio = float(inl.size())/N;
-	printf("\tinlier ratio: %f\n", inl_ratio);
-	#endif
+	logger.print(pcl::console::L_INFO, "[MotionEstimatorRANSAC] INFO: inlier ratio: %f\n", inl_ratio);
 
 	//Optimize registration transformation using all inlier correspondences
 	sac_model->optimizeModelCoefficients(inl, coeffs, opt_coeffs);
