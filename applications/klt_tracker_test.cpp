@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -22,6 +22,9 @@
  *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
+ *  Author:
+ *
+ *  Bruno Silva
  */
 
 #include <cstdio>
@@ -32,6 +35,7 @@
 
 #include <rgbd_loader.h>
 #include <config_loader.h>
+#include <event_logger.h>
 #include <klt_tracker.h>
 #include <common_types.h>
 
@@ -81,6 +85,9 @@ void draw_tracks(Mat& img, const vector<Tracklet> tracklets)
  */
 int main(int argc, char **argv)
 {
+	EventLogger& logger = EventLogger::getInstance();
+	logger.setVerbosityLevel(pcl::console::L_DEBUG);
+
 	ConfigLoader param_loader;
 	RGBDLoader loader;
 	KLTTracker tracker;
@@ -88,7 +95,7 @@ int main(int argc, char **argv)
 
 	if(argc != 2)
 	{
-		fprintf(stderr, "Usage: %s <path/to/config_file.yaml>\n", argv[0]);
+		logger.print(pcl::console::L_INFO, "[klt_tracker_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
 	param_loader.loadParams(argv[1]);
@@ -109,7 +116,7 @@ int main(int argc, char **argv)
 		char key = waitKey(15);
 		if(key == 27 || key == 'q' || key == 'Q')
 		{
-			printf("Exiting.\n");
+			logger.print(pcl::console::L_INFO, "[klt_tracker_test.cpp] Exiting\n", argv[0]);
 			break;
 		}
 	}

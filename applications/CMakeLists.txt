@@ -33,7 +33,7 @@ target_link_libraries(monocular_image_grabber ${OpenCV_LIBRARIES})
 target_link_libraries(sequence_loader_test ${RGBD_RTK_IO})
 target_link_libraries(rgbd_loader_test ${RGBD_RTK_IO})
 target_link_libraries(event_logger_test ${RGBD_RTK_COMMON} ${RGBD_RTK_IO})
-target_link_libraries(klt_tracker_test ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING})
+target_link_libraries(klt_tracker_test ${RGBD_RTK_COMMON} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING})
 target_link_libraries(motion_estimator_test  ${PCL_LIBRARIES} ${RGBD_RTK_IO}
                                              ${RGBD_RTK_TRACKING}
 	                                           ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUALIZATION}

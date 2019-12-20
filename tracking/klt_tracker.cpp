@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -22,6 +22,9 @@
  *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
+ *  Author:
+ *
+ *  Bruno Silva
  */
 
 #include <vector>
@@ -29,16 +32,18 @@
 #include <iostream>
 #include <cstdio>
 #include <cstdlib>
+
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/video/video.hpp>
 
 #include <klt_tracker.h>
+#include <event_logger.h>
 
 using namespace std;
 using namespace cv;
 
-//#define DEBUG
+EventLogger& logger = EventLogger::getInstance();
 
 /* #####################################################
  * #####                                           #####
@@ -52,10 +57,8 @@ void KLTTracker::detect_keypoints()
 	//Detect Shi-Tomasi keypoints and add them to a temporary buffer.
 	//The buffer is erased at the end of add_keypoints()
 	goodFeaturesToTrack(curr_frame_gray_, added_pts_, max_pts_, 0.01, 10.0, Mat(), 3, false, 0.04);
-	#ifdef DEBUG
-	printf("detecting keypoints...\n");
-	printf("\tdetected pts.: %lu\n", added_pts_.size());
-	#endif
+	logger.print(pcl::console::L_DEBUG, "[KLTTracker::detect_keypoints] DEBUG: detecting keypoints...\n");
+	logger.print(pcl::console::L_DEBUG, "[KLTTracker::detect_keypoints] DEBUG: detected pts.: %lu\n", added_pts_.size());
 }
 
 void KLTTracker::add_keypoints()
@@ -69,11 +72,9 @@ void KLTTracker::add_keypoints()
 		tr.pts2D_.push_back(added_pts_[i]);
 		tracklets_.push_back(tr);
 	}
-	#ifdef DEBUG
-	printf("adding keypoints...\n");
-	printf("\tadded pts.: %lu\n", added_pts_.size());
-	printf("\tprev. pts: %lu\n", prev_pts_.size());
-	#endif
+	logger.print(pcl::console::L_DEBUG, "[KLTTracker::add_keypoints] DEBUG: adding keypoints...\n");
+	logger.print(pcl::console::L_DEBUG, "[KLTTracker::add_keypoints] DEBUG: added pts.: %lu\n", added_pts_.size());
+	logger.print(pcl::console::L_DEBUG, "[KLTTracker::add_keypoints] DEBUG: prev pts.: %lu\n", prev_pts_.size());
 
 	//Erase buffer
 	added_pts_.clear();
@@ -214,9 +215,7 @@ bool KLTTracker::track(const Mat& curr_frame)
 		curr_frame.copyTo(curr_frame_gray_);
 	}
 
-	#ifdef DEBUG
-	printf("#### Tracking frame %i ####\n", frame_idx_);
-	#endif
+	logger.print(pcl::console::L_DEBUG, "[KLTTracker::track] DEBUG: tracking frame %i\n", frame_idx_);
 
 	//Update internal buffers
 	update_buffers();
@@ -240,9 +239,7 @@ bool KLTTracker::track(const Mat& curr_frame)
 		calcOpticalFlowPyrLK(prev_frame_gray_, curr_frame_gray_, prev_pts_, curr_pts_, status, err, win_size,
 							 3, crit, 0, 0.00001);
 
-		#ifdef DEBUG
-		printf("tracking...\n");
-		#endif
+		logger.print(pcl::console::L_DEBUG, "[KLTTracker::track] DEBUG: tracking...\n");
 
 		//Update internal data according to the tracking result
 		//Additional tests have to be applied to discard points outside the image boundaries.
@@ -268,9 +265,7 @@ bool KLTTracker::track(const Mat& curr_frame)
 		prev_pts_.resize(tracked_pts);
 		curr_pts_.resize(tracked_pts);
 		tracklets_.resize(tracked_pts);
-		#ifdef DEBUG
-		printf("\ttracked points/max_points: %i/%i\n", tracked_pts, max_pts_);
-		#endif
+		logger.print(pcl::console::L_DEBUG, "[KLTTracker::track] DEBUG: tracked points/max_points:  %i/%i\n", tracked_pts, max_pts_);
 
 		//Insufficient number of points being tracked
 		if(tracked_pts < min_pts_)
@@ -286,10 +281,7 @@ bool KLTTracker::track(const Mat& curr_frame)
 	//write_heatmap_info();
 	//float total_time = get_time_per_frame();
 
-	#ifdef DEBUG
-	printf("\tcurr. pts: %lu\n", curr_pts_.size());
-	//printf("time per frame: %f ms\n", total_time);
-	#endif
+	logger.print(pcl::console::L_DEBUG, "[KLTTracker::track] DEBUG: curr_points:  %lu\n", curr_pts_.size());
 
 	cv::swap(curr_frame_gray_, prev_frame_gray_);
 	frame_idx_++;
@@ -303,28 +295,25 @@ void KLTTracker::initialize_logger(const string& timing_file_name, const string&
 	timing_info_.open(timing_file_name.c_str());
 	if(!timing_info_.is_open())
 	{
-		fprintf(stderr, "There is a problem with the supplied file for the timing information.\n");
-		fprintf(stderr, "Exiting.\n");
+		logger.print(pcl::console::L_ERROR, "[KLTTracker::initialize_logger] ERROR: There is a problem with the supplied file for the timing information.\n");
 		exit(-1);
 	}
 
 	tracking_info_.open(tracking_file_name.c_str());
 	if(!tracking_info_.is_open())
 	{
-		fprintf(stderr, "There is a problem with the supplied file for the tracking information.\n");
-		fprintf(stderr, "Exiting.\n");
+		logger.print(pcl::console::L_ERROR, "[KLTTracker::initialize_logger] ERROR: There is a problem with the supplied file for the tracking information.\n");
 		exit(-1);
 	}
 
 	heatmap_info_.open(heatmap_file_name.c_str());
 	if(!heatmap_info_.is_open())
 	{
-		fprintf(stderr, "There is a problem with the supplied file for the heatmap information.\n");
-		fprintf(stderr, "Exiting.\n");
+		logger.print(pcl::console::L_ERROR, "[KLTTracker::initialize_logger] ERROR: There is a problem with the supplied file for the heatmap information.\n");
 		exit(-1);
 	}
 
-	printf("Saving tracking information to %s\n", tracking_file_name.c_str());
-	printf("Saving timing information to %s\n", timing_file_name.c_str());
-	printf("Saving heatmap information to %s\n", heatmap_file_name.c_str());
+	logger.print(pcl::console::L_INFO, "[KLTTracker::initialize_logger] ERROR: Saving tracking information to %s\n", tracking_file_name.c_str());
+	logger.print(pcl::console::L_INFO, "[KLTTracker::initialize_logger] ERROR: Saving timing information to %s\n", timing_file_name.c_str());
+	logger.print(pcl::console::L_INFO, "[KLTTracker::initialize_logger] ERROR: Saving heatmap information to %s\n", heatmap_file_name.c_str());
 }
