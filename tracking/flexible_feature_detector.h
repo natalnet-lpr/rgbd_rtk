@@ -1,10 +1,9 @@
 #include "opencv2/features2d.hpp"
 #include "opencv2/core.hpp"
-#include "opencv2/xfeatures2d.hpp"
 #include <vector>
 
 using namespace cv;
-using namespace cv::xfeatures2d;
+
 /*
  * Authors: 
  * Luiz Felipe Maciel Correia (y9luizufrn@gmail.com)
@@ -14,8 +13,10 @@ using namespace cv::xfeatures2d;
 class FlexibleFeatureDetector
 {
     protected:
-    //Detector object 
-    Ptr<Feature2D> detector_;
+    //Feature Detector object 
+    Ptr<cv::FeatureDetector> feature_detector_;
+    //Descriptor Extractor object
+    Ptr<cv::DescriptorExtractor> descriptor_extractor_;
     //current gray frame
     Mat curr_frame_gray_;
     //previous gray frame
@@ -50,8 +51,8 @@ class FlexibleFeatureDetector
     Ptr<cv::DescriptorMatcher> matcher_;
     //default constructor: create a ORB detector and a BruteForce matcher.
     FlexibleFeatureDetector();
-    //Constructor with a generic detector and a generic matcher
-    FlexibleFeatureDetector(Ptr<Feature2D> detector, Ptr<cv::DescriptorMatcher> matcher);
+    //Constructor with flexible feature detector, descriptor extractor and matcher
+    FlexibleFeatureDetector(Ptr<cv::FeatureDetector> feature_detector, Ptr<cv::DescriptorExtractor> descriptor_extractor,Ptr<cv::DescriptorMatcher> matcher);
     //Detect KeyPoints and descriptors using this function
     void detect(Mat curr_frame);
     //Get the "good" Matches of your features

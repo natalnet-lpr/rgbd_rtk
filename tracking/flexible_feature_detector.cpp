@@ -8,15 +8,17 @@
 
 FlexibleFeatureDetector::FlexibleFeatureDetector()
 {
-    detector_ = ORB::create();
+    feature_detector_ = ORB::create();
+    descriptor_extractor_ = ORB::create();
     initialized_ = false;
     matcher_ = DescriptorMatcher::create("BruteForce");
 }
 
 
-FlexibleFeatureDetector::FlexibleFeatureDetector(Ptr<Feature2D> detector, Ptr<DescriptorMatcher> matcher)
+FlexibleFeatureDetector::FlexibleFeatureDetector(Ptr<cv::FeatureDetector> feature_detector, Ptr<cv::DescriptorExtractor> descriptor_extractor ,Ptr<DescriptorMatcher> matcher)
 {
-    detector_ = detector;
+    feature_detector_ = feature_detector;
+    descriptor_extractor_ = descriptor_extractor;
     matcher_ = matcher;
     initialized_ = false;
 }
@@ -25,8 +27,8 @@ void FlexibleFeatureDetector::detect(Mat curr_frame)
 {
     curr_KPs_.clear();
     cvtColor(curr_frame, this->curr_frame_gray_, cv::COLOR_RGB2GRAY);
-    detector_->detect(curr_frame_gray_, curr_KPs_);
-    detector_->compute(curr_frame_gray_, curr_KPs_, curr_descriptors_);
+    feature_detector_->detect(curr_frame_gray_, curr_KPs_);
+    descriptor_extractor_->compute(curr_frame_gray_, curr_KPs_, curr_descriptors_);
 
     curr_KPs_.swap(prev_KPs_);
     cv::swap(curr_frame_gray_, prev_frame_gray_);

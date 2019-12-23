@@ -79,13 +79,16 @@ int main(int argc, char **argv)
 	string index_file_name;
 	RGBDLoader loader;
 
-	// Create a SIFT detector
-	Ptr<SIFT> sift_detector = SIFT::create();
+	// Create a ORB feature detector
+	Ptr<ORB> orb_detector = ORB::create();
+
+	// Create a BRISK descriptor extractor
+	Ptr<BRISK> brisk_extractor = BRISK::create();
 
 	// Create a BruteForce matcher
 	Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create("BruteForce");
 
-	FlexibleFeatureDetector detector(sift_detector, matcher);
+	FlexibleFeatureDetector detector(orb_detector, brisk_extractor, matcher);
 	
 	Mat frame, depth;
 

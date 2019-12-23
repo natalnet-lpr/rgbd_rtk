@@ -79,16 +79,19 @@ int main(int argc, char **argv)
 	string index_file_name;
 	RGBDLoader loader;
 	
-	//default constructor: create a ORB detector and a BruteForce matcher.
+	//default constructor: create a ORB detector and extractor and a BruteForce matcher.
 	//FlexibleFeatureDetector detector;
 
-	// Create a AKAZE detector
+	// Create a AKAZE feature detector
 	Ptr<AKAZE> akaze_detector = AKAZE::create();
+
+	// Create a ORB descriptor extractor
+	Ptr<ORB> orb_extractor = ORB::create();
 
 	// Create a BruteForce matcher
 	Ptr<DescriptorMatcher> brute_force_matcher = DescriptorMatcher::create("BruteForce");
 
-	FlexibleFeatureDetector detector(akaze_detector,  brute_force_matcher );
+	FlexibleFeatureDetector detector(akaze_detector,orb_extractor,brute_force_matcher);
 
 	Mat frame, depth;
 
