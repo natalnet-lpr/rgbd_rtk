@@ -27,33 +27,50 @@
  *  Bruno Silva
  */
 
-/*
- * Kinect RGB/Depth/Point cloud grabber.
- * Uses OpenCV to provide a synchronized grabber for all Kinect streams (depth, RGB and point cloud).
- */
-
 #include <vector>
 #include <iostream>
+
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-#include <pcl/point_types.h>
 #include <pcl/common/time.h>
 #include <pcl/io/pcd_io.h>
-#include <pcl/visualization/pcl_visualizer.h>
+
+#include <boost/filesystem.hpp>
 
 #include <common_types.h>
 #include <geometry.h>
+#include <event_logger.h>
 #include <reconstruction_visualizer.h>
 
 using namespace std;
 
-void saveRgbDepthImages(const string& time_stamp, const cv::Mat& rgb, const cv::Mat& depth)
+/* 
+ * Utility function: returns true
+ * if a directory with given name
+ * exists.
+ * (from https://stackoverflow.com/questions/18100097/portable-way-to-check-if-directory-exists-windows-linux-c
+ */
+bool dirExists(const char *path)
+{
+    struct stat info;
+
+    if(stat( path, &info ) != 0)
+        return false;
+    else if(info.st_mode & S_IFDIR)
+        return true;
+    else
+        return false;
+}
+
+void saveRgbDepthImages(const string& prefix, const string& time_stamp, const cv::Mat& rgb, const cv::Mat& depth)
 {
 	//Save RGB image as PNG
-	string rgb_img_name = time_stamp + ".png";
+	string rgb_img_name = prefix + "/rgb/" + time_stamp + ".png";
 	imwrite(rgb_img_name, rgb);
 
 	//Save depth as a PNG image (depth is an array of SHORT/16 bits)
@@ -61,7 +78,7 @@ void saveRgbDepthImages(const string& time_stamp, const cv::Mat& rgb, const cv::
 	//http://vision.in.tum.de/data/datasets/rgbd-dataset/file_formats
 	int scale_factor = 5;
 	cv::Mat depth_scaled = depth*scale_factor;
-	string depth_buffer_name = time_stamp + "_depth.png";
+	string depth_buffer_name = prefix + "/depth/" + time_stamp + "_depth.png";
 	imwrite(depth_buffer_name, depth_scaled);
 }
 	//Save depth as a PCD data (NOT USED)
@@ -69,35 +86,90 @@ void saveRgbDepthImages(const string& time_stamp, const cv::Mat& rgb, const cv::
 	//string pcd_name = timeStamp.str() + ".pcd";
 	//pcd_writer.writeBinaryCompressed(pcd_name, pcl_cloud);
 
+void help(const char* prog_name)
+{
+	printf("Captures RGB-D data saving them to \"rgb\" and \"depth\" directories\n");
+	printf("in the same format as the one used in TUM RGB-D datasets.\n\n");
+	printf("Usage: %s <dataset_prefix>\n", prog_name);
+	printf("For example, ./kinect_grabber my_data will save RGB/depth images to \"my_data\" directory.\n");
+	printf("If run without arguments, RGB-D data is saved to \"kinect_dataset\" directory.\n\n");
+	printf("To start recording, press 's' with the window showing the RGB image as active.\n");
+	printf("Press 's' again to stop recording.\n");
+}
+
+/*
+ * Kinect RGB/Depth/Point cloud grabber.
+ * Uses OpenCV to provide a synchronized grabber for all Kinect streams (depth, RGB and point cloud).
+ */
 int main(int argc, char** argv)
 {
+	EventLogger& logger = EventLogger::getInstance();
+	logger.setVerbosityLevel(pcl::console::L_INFO);
+
 	//Program variables
 	bool record = false;
 	cv::Mat rgb_img, depth_buffer, cv_cloud;
 	Intrinsics intr(0);
 	ReconstructionVisualizer visualizer;
 	pcl::PointCloud<PointT>::Ptr cloud_ptr(new pcl::PointCloud<PointT>);
+	string prefix, rgb_dir, rgb_index_name, depth_dir, depth_index_name;
 
+	help(argv[0]);
+
+	//Assign directory name
+	if(argc == 1)
+	{
+		prefix = "kinect_dataset";
+	}
+	if(argc == 2)
+	{
+		prefix = argv[1];
+	}
+
+	rgb_dir = prefix + "/rgb";
+	depth_dir = prefix + "/depth";
+	rgb_index_name = prefix + "/rgb.txt";
+	depth_index_name = prefix + "/depth.txt";
+
+	//Check if directory exists and create it if it does not
+	if(!dirExists(prefix.c_str()))
+	{
+		logger.print(pcl::console::L_INFO, "[kinect_grabber.cpp] INFO: creating directory %s.\n", prefix.c_str());
+		boost::filesystem::create_directory(prefix.c_str());
+		//Create rgb dir.
+		if(!dirExists(rgb_dir.c_str()))
+		{
+			boost::filesystem::create_directory(rgb_dir.c_str());
+		}
+
+		//Create depth dir.
+		if(!dirExists(depth_dir.c_str()))
+		{
+			boost::filesystem::create_directory(depth_dir.c_str());
+		}
+	}
+	
+	logger.print(pcl::console::L_INFO, "[kinect_grabber.cpp] INFO: saving data to %s directory.\n", prefix.c_str());
+
+	//Open Kinect capture device
 	cv::VideoCapture cam(CV_CAP_OPENNI);
 	if(!cam.isOpened())
 	{
-		fprintf(stderr, "There's a problem opening the capture device.\n");
-		fprintf(stderr, "Exiting.\n");
+		logger.print(pcl::console::L_ERROR, "[kinect_grabber.cpp] ERROR: there's a problem opening the capture device.\n");
 		exit(-1);
 	}
 
-	ofstream rgb_index("rgb.txt");
+	//Open file streams for RGB-D image names
+	ofstream rgb_index(rgb_index_name.c_str());
 	if(!rgb_index.is_open())
 	{
-		fprintf(stderr, "There is a problem with the supplied file for the image index.\n");
-		fprintf(stderr, "Exiting.\n");
+		logger.print(pcl::console::L_ERROR, "[kinect_grabber.cpp] ERROR: there's a problem opening the RGB index file.\n");
 		exit(-1);
 	}
-	ofstream depth_index("depth.txt");
+	ofstream depth_index(depth_index_name.c_str());
 	if(!depth_index.is_open())
 	{
-		fprintf(stderr, "There is a problem with the supplied file for the depth buffer index.\n");
-		fprintf(stderr, "Exiting.\n");
+		logger.print(pcl::console::L_ERROR, "[kinect_grabber.cpp] ERROR: there's a problem opening the depth index file.\n");
 		exit(-1);
 	}
 
@@ -120,7 +192,7 @@ int main(int argc, char** argv)
 		cam.retrieve(cv_cloud, CV_CAP_OPENNI_POINT_CLOUD_MAP);
 		if(rgb_img.empty() || depth_buffer.empty() || cv_cloud.empty())
 		{
-			fprintf(stderr, "There is a problem capturing the video frame\n");
+			logger.print(pcl::console::L_ERROR, "[kinect_grabber.cpp] ERROR: there's a problem capturing the RGB-D data.\n");
 			exit(-1);
 		}
 		cv::Mat frame_c;
@@ -128,7 +200,6 @@ int main(int argc, char** argv)
 
 		//Assemble PCL point cloud from OpenCV
 		pcl::PointCloud<PointT> pcl_cloud = getPointCloud(rgb_img, depth_buffer, intr);
-		printf("Cloud has %lu points\n", pcl_cloud.points.size());
 		*cloud_ptr = pcl_cloud;
 
 		//Show point cloud data
@@ -144,9 +215,9 @@ int main(int argc, char** argv)
 			cv::putText(frame_c,"Capturing data...", cv::Point2i(50, 460), cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(0,0,255), 2);
 
 			/*** Save data (index files and depth/RGB buffers) ***/
-			saveRgbDepthImages(time_stamp.str(), rgb_img, depth_buffer);
-			rgb_index << time_stamp.str() << " rgb/" << time_stamp.str() << ".png\n";
-			depth_index << time_stamp.str() << " depth/" << time_stamp.str() << "_depth.png\n";
+			saveRgbDepthImages(prefix, time_stamp.str(), rgb_img, depth_buffer);
+			rgb_index << time_stamp.str() << " rgb/" << time_stamp.str() << ".png\n" << std::flush;
+			depth_index << time_stamp.str() << " depth/" << time_stamp.str() << "_depth.png\n" << std::flush;
 		}
 		
 		//Show rgb, depth and point cloud
@@ -170,9 +241,11 @@ int main(int argc, char** argv)
 		if(key == 's' || key == 'S')
 		{
 			record = !record;
-		}
-		
+		}	
 	}
+
+	rgb_index.close();
+	depth_index.close();
 
 	return 0;
 }
