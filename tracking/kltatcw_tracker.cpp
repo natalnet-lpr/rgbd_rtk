@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016-2018, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -22,6 +22,10 @@
  *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
+ *  Authors:
+ *
+ *  Luiz Felipe Maciel Correia (y9luiz@hotmail.com)
+ *  Bruno Silva (brunomfs@gmail.com)
  */
 
 #include <vector>
@@ -47,7 +51,7 @@ using namespace cv;
  * Each circular window j has radius radiuses[j]. 
  *
  */
-bool is_inside_any_window(const vector<Point2f> tracked_pts, const Point2f pt, const vector<float> radiuses)
+bool is_inside_any_window(const vector<Point2f>& tracked_pts, const Point2f& pt, const vector<float>& radiuses)
 {
 	float r;
 	for(size_t j = 0; j < tracked_pts.size(); j++)
@@ -198,7 +202,7 @@ KLTATCWTracker::KLTATCWTracker() :
 	max_radius_ = 30;
 }
 
-KLTATCWTracker::KLTATCWTracker(const int min_pts, const int max_pts, const float min_r, const float max_r, const bool log_stats) :
+KLTATCWTracker::KLTATCWTracker(const int& min_pts, const int& max_pts, const float& min_r, const float& max_r, const bool& log_stats):
 	FeatureTracker(min_pts, max_pts, log_stats),
 	num_points_last_kf_(0),
 	min_radius_(min_r),
@@ -207,7 +211,7 @@ KLTATCWTracker::KLTATCWTracker(const int min_pts, const int max_pts, const float
 	
 }
 
-bool KLTATCWTracker::track(Mat curr_frame)
+bool KLTATCWTracker::track(const Mat& curr_frame)
 {
 	//Make a grayscale copy of the current frame
 	cvtColor(curr_frame, curr_frame_gray_, CV_BGR2GRAY);

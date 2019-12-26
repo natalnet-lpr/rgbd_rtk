@@ -63,9 +63,9 @@ public:
 	KLTTracker();
 
 	//Constructor with the minimum number of tracked points, maximum number of tracked points and flag to log statistics
-	KLTTracker(const int min_pts, const int max_pts, const bool log_stats = false);
+	KLTTracker(const int& min_pts, const int& max_pts, const bool& log_stats = false);
 
-	bool track(cv::Mat img);
+	bool track(const cv::Mat& img);
 };
 
 #endif /* INCLUDE_KLT_TRACKER_H_ */

@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016-2018, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -22,6 +22,9 @@
  *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
+ *  Author:
+ *
+ *  Bruno Silva
  */
 
 #ifndef INCLUDE_FEATURE_TRACKER_H_
@@ -128,7 +131,7 @@ public:
 	FeatureTracker();
 
 	//Constructor with the minimum number of tracked points, maximum number of tracked points and flag to log statistics
-	FeatureTracker(const int min_pts, const int max_pts, const bool log_stats = false);
+	FeatureTracker(const int& min_pts, const int& max_pts, const bool& log_stats = false);
 
 	//Default destructor
 	virtual ~FeatureTracker()
@@ -141,15 +144,15 @@ public:
 	/* Sets the output files for tracking and timing information.
 	 * If not called, the system will not write any information to file.
 	 */
-	void initialize_logger(const std::string timing_file_name,
-		                   const std::string tracking_file_name,
-			               const std::string heatmap_file_name);
+	void initialize_logger(const std::string& timing_file_name,
+		                   const std::string& tracking_file_name,
+			               const std::string& heatmap_file_name);
 
 	/*
 	 * Main member function: tracks keypoints between the current frame and the previous.
 	 * Returns true if the current frame is a keyframe.
 	 */
-	virtual bool track(cv::Mat img) = 0;
+	virtual bool track(const cv::Mat& img) = 0;
 };
 
 #endif /* INCLUDE_FEATURE_TRACKER_H_ */

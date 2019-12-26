@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016-2018, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -22,6 +22,10 @@
  *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
+ *  Authors:
+ *
+ *  Luiz Felipe Maciel Correia (y9luiz@hotmail.com)
+ *  Bruno Silva (brunomfs@gmail.com)
  */
 
 #ifndef INCLUDE_KLTTCW_TRACKER_H_
@@ -37,11 +41,6 @@
  /*
  * Short Baseline Feature Tracker extension:
  * Kanade-Lucas-Tomasi (KLT) with Tracking Circular Windows.
- *
- * Author: Luiz Felipe Maciel Correia
- * y9luiz@hotmail.com
- * Author: Bruno Marques F. da Silva
- * brunomfs@gmail.com
  */
 class KLTTCWTracker : public FeatureTracker
 {
@@ -76,13 +75,13 @@ public:
 	KLTTCWTracker();
 
 	//Constructor with the minimum number of tracked points, maximum number of tracked points, radius of tracking circles and flag to log statistics
-	KLTTCWTracker(const int min_pts, const int max_pts, const float radius, const bool log_stats = false);
+	KLTTCWTracker(const int& min_pts, const int& max_pts, const float& radius, const bool& log_stats = false);
 
 	/*
 	 * Main member function: tracks keypoints between the current frame and the previous.
 	 * Returns true if the current frame is a keyframe.
 	 */
-	bool track(cv::Mat img);
+	bool track(const cv::Mat& img);
 };
 
 #endif /* INCLUDE_KLTTCW_TRACKER_H_ */

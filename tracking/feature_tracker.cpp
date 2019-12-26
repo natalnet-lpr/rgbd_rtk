@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016-2018, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -22,6 +22,9 @@
  *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
+ *  Author:
+ *
+ *  Bruno Silva
  */
 
 #include <cstdio>
@@ -151,7 +154,7 @@ FeatureTracker::FeatureTracker() :
 
 }
 
-FeatureTracker::FeatureTracker(const int min_pts, const int max_pts, const bool log_stats) :
+FeatureTracker::FeatureTracker(const int& min_pts, const int& max_pts, const bool& log_stats) :
 	initialized_(false),
 	frame_idx_(0),
 	num_inliers_(0),
@@ -164,8 +167,8 @@ FeatureTracker::FeatureTracker(const int min_pts, const int max_pts, const bool 
 	}
 }
 
-void FeatureTracker::initialize_logger(const string timing_file_name, const string tracking_file_name,
-		                               const string heatmap_file_name)
+void FeatureTracker::initialize_logger(const string& timing_file_name, const string& tracking_file_name,
+		                               const string& heatmap_file_name)
 {
 	timing_info_.open(timing_file_name.c_str());
 	if(!timing_info_.is_open())

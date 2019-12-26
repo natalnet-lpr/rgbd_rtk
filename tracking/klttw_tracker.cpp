@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016-2018, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -22,6 +22,10 @@
  *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
+ *  Authors:
+ *
+ *  Luiz Felipe Maciel Correia (y9luiz@hotmail.com)
+ *  Bruno Silva (brunomfs@gmail.com)
  */
 
 #include <vector>
@@ -46,7 +50,7 @@ using namespace cv;
  * Tracking windows have size w x h. 
  *
  */
-bool is_inside_any_window(const vector<Point2f> tracked_pts, const Point2f pt, const int w, const int h)
+bool is_inside_any_window(const vector<Point2f>& tracked_pts, const Point2f& pt, const int& w, const int& h)
 { 	
 	for(size_t j = 0; j < tracked_pts.size(); j++)
 	{
@@ -141,7 +145,7 @@ bool KLTTWTracker::trigger_keyframe()
 	float factor = 0.2;
 	size_t Nk = num_points_last_kf_;
 	size_t Nj = curr_pts_.size();
-	size_t dN = abs(Nk - Nj);
+	size_t dN = abs(double(Nk - Nj));
 
 	#ifdef DEBUG
 	printf(">>> is %i keyframe? Nk: %i, Nj: %i, dN: %i, k*Nk: %f\n", frame_idx_, Nk, Nj, dN, factor*Nk);
@@ -173,7 +177,7 @@ KLTTWTracker::KLTTWTracker() :
 	window_size_ = Size(20, 20);
 }
 
-KLTTWTracker::KLTTWTracker(const int min_pts, const int max_pts, const cv::Size sz, const bool log_stats) :
+KLTTWTracker::KLTTWTracker(const int& min_pts, const int& max_pts, const cv::Size& sz, const bool& log_stats) :
 	FeatureTracker(min_pts, max_pts, log_stats),
 	num_points_last_kf_(0),
 	window_size_(sz)
@@ -181,7 +185,7 @@ KLTTWTracker::KLTTWTracker(const int min_pts, const int max_pts, const cv::Size 
 	
 }
 
-bool KLTTWTracker::track(Mat curr_frame)
+bool KLTTWTracker::track(const Mat& curr_frame)
 {
 	//Make a grayscale copy of the current frame
 	cvtColor(curr_frame, curr_frame_gray_, CV_BGR2GRAY);
