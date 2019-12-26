@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -22,15 +22,14 @@
  *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
+ *  Author:
+ *
+ *  Bruno Silva
  */
 
 /*
  * Kinect RGB/Depth/Point cloud grabber.
  * Uses OpenCV to provide a synchronized grabber for all Kinect streams (depth, RGB and point cloud).
- *
- *
- * Author: Bruno Marques F. da Silva
- * brunomfs@gmail.com
  */
 
 #include <vector>
@@ -51,7 +50,7 @@
 
 using namespace std;
 
-void save_data(const string time_stamp, const cv::Mat rgb, const cv::Mat depth)
+void saveRgbDepthImages(const string& time_stamp, const cv::Mat& rgb, const cv::Mat& depth)
 {
 	//Save RGB image as PNG
 	string rgb_img_name = time_stamp + ".png";
@@ -65,6 +64,10 @@ void save_data(const string time_stamp, const cv::Mat rgb, const cv::Mat depth)
 	string depth_buffer_name = time_stamp + "_depth.png";
 	imwrite(depth_buffer_name, depth_scaled);
 }
+	//Save depth as a PCD data (NOT USED)
+	//pcl::PCDWriter pcd_writer;
+	//string pcd_name = timeStamp.str() + ".pcd";
+	//pcd_writer.writeBinaryCompressed(pcd_name, pcl_cloud);
 
 int main(int argc, char** argv)
 {
@@ -73,7 +76,7 @@ int main(int argc, char** argv)
 	cv::Mat rgb_img, depth_buffer, cv_cloud;
 	Intrinsics intr(0);
 	ReconstructionVisualizer visualizer;
-	pcl::PointCloud<PointT>::Ptr cloud_ptr;
+	pcl::PointCloud<PointT>::Ptr cloud_ptr(new pcl::PointCloud<PointT>);
 
 	cv::VideoCapture cam(CV_CAP_OPENNI);
 	if(!cam.isOpened())
@@ -125,13 +128,13 @@ int main(int argc, char** argv)
 
 		//Assemble PCL point cloud from OpenCV
 		pcl::PointCloud<PointT> pcl_cloud = getPointCloud(rgb_img, depth_buffer, intr);
+		printf("Cloud has %lu points\n", pcl_cloud.points.size());
 		*cloud_ptr = pcl_cloud;
 
 		//Show point cloud data
 		Eigen::Affine3f identity = Eigen::Affine3f::Identity();
 		visualizer.viewPointCloud(cloud_ptr, identity);
 
-		/*** Save data (depth/RGB buffers) ***/
 		if(!record)
 		{
 			cv::putText(frame_c,"Press 's' to start capturing data.", cv::Point2i(50, 460), cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(0,255,0), 2);
@@ -139,28 +142,12 @@ int main(int argc, char** argv)
 		else
 		{
 			cv::putText(frame_c,"Capturing data...", cv::Point2i(50, 460), cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(0,0,255), 2);
-			save_data(time_stamp.str(), rgb_img, depth_buffer);
 
+			/*** Save data (index files and depth/RGB buffers) ***/
+			saveRgbDepthImages(time_stamp.str(), rgb_img, depth_buffer);
 			rgb_index << time_stamp.str() << " rgb/" << time_stamp.str() << ".png\n";
 			depth_index << time_stamp.str() << " depth/" << time_stamp.str() << "_depth.png\n";
 		}
-
-		//Save depth as a .yml file (NOT USED)
-		//string depth_buffer_name = time_stamp.str() + ".yml";
-		//cv::FileStorage fs(depth_buffer_name, cv::FileStorage::WRITE);
-		//if(!fs.isOpened())
-		//{
-		//	fprintf(stderr, "There's a problem with the OpenCV file storage.\n");
-		//	fprintf(stderr, "Exiting.\n");
-		//	exit(-1);
-		//}
-		//fs << "depth_buffer" << depth_buffer;
-		//fs.release();
-
-		//Save depth as a PCD data (NOT USED)
-		//pcl::PCDWriter pcd_writer;
-		//string pcd_name = timeStamp.str() + ".pcd";
-		//pcd_writer.writeBinaryCompressed(pcd_name, pcl_cloud);
 		
 		//Show rgb, depth and point cloud
 		cv::imshow("Kinect RGB Data", frame_c);
