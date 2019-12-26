@@ -175,7 +175,7 @@ KLTTCWTracker::KLTTCWTracker() :
 	window_radius_ = 20;
 }
 
-KLTTCWTracker::KLTTCWTracker(const int& min_pts, const int& max_pts, const float& radius, const bool& log_stats) :
+KLTTCWTracker::KLTTCWTracker(const int& min_pts, const int& max_pts, const float& radius, const bool& log_stats):
 	FeatureTracker(min_pts, max_pts, log_stats),
 	num_points_last_kf_(0),
 	window_radius_(radius)

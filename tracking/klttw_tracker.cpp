@@ -177,7 +177,7 @@ KLTTWTracker::KLTTWTracker() :
 	window_size_ = Size(20, 20);
 }
 
-KLTTWTracker::KLTTWTracker(const int& min_pts, const int& max_pts, const cv::Size& sz, const bool& log_stats) :
+KLTTWTracker::KLTTWTracker(const int& min_pts, const int& max_pts, const cv::Size& sz, const bool& log_stats):
 	FeatureTracker(min_pts, max_pts, log_stats),
 	num_points_last_kf_(0),
 	window_size_(sz)

@@ -154,7 +154,7 @@ FeatureTracker::FeatureTracker() :
 
 }
 
-FeatureTracker::FeatureTracker(const int& min_pts, const int& max_pts, const bool& log_stats) :
+FeatureTracker::FeatureTracker(const int& min_pts, const int& max_pts, const bool& log_stats):
 	initialized_(false),
 	frame_idx_(0),
 	num_inliers_(0),

@@ -97,7 +97,7 @@ KLTTracker::KLTTracker()
 	//Calls FeatureTracker default constructor
 }
 
-KLTTracker::KLTTracker(const int& min_pts, const int& max_pts, const bool& log_stats) :
+KLTTracker::KLTTracker(const int& min_pts, const int& max_pts, const bool& log_stats):
 	FeatureTracker(min_pts, max_pts, log_stats)
 {
 	
