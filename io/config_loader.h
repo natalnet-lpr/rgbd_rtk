@@ -35,46 +35,29 @@
 #include <cstdlib>
 #include <fstream>
 
+#include <opencv2/opencv.hpp>
+
 using namespace std;
 
 class ConfigLoader
 {
-    public:
-        
-        //.yml having the camera calibration intrinsics
-        string camera_calibration_file_;
+public:
+    cv::FileStorage fs;
 
-        //full path to the index with RGB/depth to be processed
-        string index_file_;
-        
-        //Aruco Params
-        //Used in marker detection: ARUCO dictionary of expected markers in the scene
-        string aruco_dic_;
+    ConfigLoader(){
+        loadFile("../applications/config_files/tum_odometry.yaml");
+    }
 
-        //Used in marker detection: maximum distance for a marker to be valid
-        double aruco_max_distance_;
+    ConfigLoader(string filename){
+        loadFile(filename);
+    }
+    void loadFile(const string& filename);
 
-        //Used in marker detection: size of expected markers in the scene
-        float aruco_marker_size_;
+    bool checkAndGetInt(const string& parameter, int& parameter_int);
 
-        //Motion Estimator Params
-        //Set distance threshold
-        float ransac_distance_threshold_;
+    bool checkAndGetFloat(const string& parameter, float& parameter_float);
 
-        //inliers_ration 
-        float ransac_inliers_ratio_;
-
-        float icp_radius_;
-
-        double icp_max_correspondence_distance_;
-
-        int icp_maximum_iteration_;
-
-        double icp_transformation_epsilon_;
-
-        double icp_euclidean_fitness_epsilon_;
-        
-    void loadParams(const string& filename);
+    bool checkAndGetString(const string& parameter, string& parameter_string);
 };
 
 #endif

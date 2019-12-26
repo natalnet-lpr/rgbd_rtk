@@ -18,6 +18,7 @@ add_executable(stereo_cloud_generator_test stereo_cloud_generator_test.cpp)
 add_executable(kitti_velodyne_loader_test kitti_velodyne_loader_test.cpp)
 add_executable(stereo_optical_flow_visual_odometry_test stereo_optical_flow_visual_odometry_test.cpp)
 
+
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 
 find_library(RGBD_RTK_IO NAMES rgbd_rtk_io)
@@ -58,7 +59,6 @@ target_link_libraries(stereo_optical_flow_visual_odometry_test ${PCL_LIBRARIES} 
                                                  ${RGBD_RTK_STEREO}
                                                  ${RGBD_RTK_MOTION_ESTIMATION}
                                                  ${RGBD_RTK_VISUAL_ODOMETRY})
-
 install(TARGETS monocular_calibration
                 monocular_image_grabber
                 sequence_loader_test

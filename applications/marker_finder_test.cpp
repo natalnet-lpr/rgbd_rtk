@@ -49,22 +49,23 @@ using namespace aruco;
  */
 int main(int argc, char **argv)
 {
-	ConfigLoader param_loader;
 	RGBDLoader loader;
 	Intrinsics intr(0);
 	OpticalFlowVisualOdometry vo(intr);
 	ReconstructionVisualizer visualizer;
 	Mat frame, depth;
 	float marker_size;
+	string camera_calibration_file;
 
 	if(argc != 2)
 	{
 		fprintf(stderr, "Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
-	param_loader.loadParams(argv[1]);
-	marker_size = param_loader.aruco_marker_size_;
-	MarkerFinder marker_finder(param_loader.camera_calibration_file_, marker_size);
+	ConfigLoader param_loader(argv[1]);
+	param_loader.checkAndGetFloat("aruco_marker_size", marker_size);
+	param_loader.checkAndGetString("camera_calibration_file", camera_calibration_file)
+	MarkerFinder marker_finder(camera_calibration_file, marker_size);
 	
 	loader.processFile(param_loader.index_file_);
 

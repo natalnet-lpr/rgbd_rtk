@@ -47,17 +47,18 @@ int main(int argc, char **argv)
 	EventLogger& logger = EventLogger::getInstance();
 	logger.setVerbosityLevel(pcl::console::L_INFO);
 
-	ConfigLoader param_loader;
 	RGBDLoader loader;
 	Mat frame, depth;
+	string index_file;
 
 	if(argc != 2)
 	{
 		logger.print(pcl::console::L_INFO, "[rgbd_loader_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
-	param_loader.loadParams(argv[1]);
-	loader.processFile(param_loader.index_file_);
+	ConfigLoader param_loader(argv[1]);
+	param_loader.checkAndGetString("index_file", index_file);
+	loader.processFile(index_file);
 
 	for(int i = 0; i < loader.num_images_; i++)
 	{

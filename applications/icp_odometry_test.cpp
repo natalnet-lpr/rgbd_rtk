@@ -45,21 +45,29 @@ using namespace cv;
  */
 int main(int argc, char **argv)
 {
-	ConfigLoader param_loader; 
 	RGBDLoader loader; 
 	Intrinsics intr(0);
 	ICPOdometry icpo(intr);
 	ReconstructionVisualizer visualizer;
 	Mat frame, depth;
-
+	string index_file;
+	int icp_maximum_iteration;
+	float icp_radius, icp_max_correspondence_distance,icp_transformation_epsilon,icp_euclidean_fitness_epsilon;
 	if(argc != 2)
 	{
 		fprintf(stderr, "Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
-	param_loader.loadParams(argv[1]);
-	loader.processFile(param_loader.index_file_);
-	icpo.setConfig(param_loader);
+	ConfigLoader param_loader(argv[1]);
+	param_loader.checkAndGetString("index_file",index_file);
+	param_loader.checkAndGetFloat("icp_radius",icp_radius);
+	param_loader.checkAndGetFloat("icp_max_correspondence_distance",icp_max_correspondence_distance);
+	param_loader.checkAndGetInt("icp_maximum_iteration",icp_maximum_iteration);
+	param_loader.checkAndGetFloat("icp_transformation_epsilon",icp_transformation_epsilon);
+	param_loader.checkAndGetFloat("icp_euclidean_fitness_epsilon",icp_euclidean_fitness_epsilon);
+
+	loader.processFile(index_file);
+
 
 	//Compute ICP odometry on each image
 	for(int i = 0; i < loader.num_images_; i++)

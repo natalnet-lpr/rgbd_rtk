@@ -55,12 +55,13 @@ int main(int argc, char **argv)
 	EventLogger& logger = EventLogger::getInstance();
 	logger.setVerbosityLevel(pcl::console::L_DEBUG);
 
-	ConfigLoader param_loader;
 	RGBDLoader loader;
 	KLTTracker tracker;
 	Intrinsics intr(0);
 	ReconstructionVisualizer visualizer;
 	Mat frame, depth;
+	string index_file;
+	float ransac_distance_threshold, ransac_inliers_ratio;
 	Eigen::Affine3f pose = Eigen::Affine3f::Identity();
 	Eigen::Affine3f trans = Eigen::Affine3f::Identity();
 	pcl::PointCloud<PointT>::Ptr prev_cloud(new pcl::PointCloud<PointT>);
@@ -71,11 +72,14 @@ int main(int argc, char **argv)
 		logger.print(pcl::console::L_INFO, "[motion_estimation_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
-	param_loader.loadParams(argv[1]);
-	loader.processFile(param_loader.index_file_);
+	ConfigLoader param_loader(argv[1]);
+	param_loader.checkAndGetString("index_file", index_file);
+	param_loader.checkAndGetFloat("ransac_distance_threshold", ransac_distance_threshold);
+	param_loader.checkAndGetFloat("ransac_inliers_ratio", ransac_inliers_ratio);
+	loader.processFile(index_file);
 
-	MotionEstimatorRANSAC motion_estimator(intr, param_loader.ransac_distance_threshold_,
-											param_loader.ransac_inliers_ratio_);
+	MotionEstimatorRANSAC motion_estimator(intr, ransac_distance_threshold,
+											ransac_inliers_ratio);
 
 	//Track points on each image
 	for(int i = 0; i < loader.num_images_; i++)
