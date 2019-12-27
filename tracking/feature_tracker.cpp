@@ -1,7 +1,11 @@
 /* 
  *  Software License Agreement (BSD License)
  *
+<<<<<<< HEAD
  *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
+=======
+ *  Copyright (c) 2016-2018, Natalnet Laboratory for Perceptual Robotics
+>>>>>>> feature-quadtree-tracker
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -146,7 +150,7 @@ bool FeatureTracker::write_heatmap_info()
  * #####################################################
  */
 
-FeatureTracker::FeatureTracker() :
+FeatureTracker::FeatureTracker():
 	initialized_(false),
 	frame_idx_(0),
 	num_inliers_(0),
@@ -175,28 +179,25 @@ void FeatureTracker::initialize_logger(const string& timing_file_name, const str
 	timing_info_.open(timing_file_name.c_str());
 	if(!timing_info_.is_open())
 	{
-		fprintf(stderr, "There is a problem with the supplied file for the timing information.\n");
-		fprintf(stderr, "Exiting.\n");
+		logger.print(pcl::console::L_ERROR, "[FeatureTracker::initialize_logger] ERROR: there is a problem with the supplied file for the timing information\n");
 		exit(-1);
 	}
 
 	tracking_info_.open(tracking_file_name.c_str());
 	if(!tracking_info_.is_open())
 	{
-		fprintf(stderr, "There is a problem with the supplied file for the tracking information.\n");
-		fprintf(stderr, "Exiting.\n");
+		logger.print(pcl::console::L_ERROR, "[FeatureTracker::initialize_logger] ERROR: there is a problem with the supplied file for the tracking information\n");
 		exit(-1);
 	}
 
 	heatmap_info_.open(heatmap_file_name.c_str());
 	if(!heatmap_info_.is_open())
 	{
-		fprintf(stderr, "There is a problem with the supplied file for the heatmap information.\n");
-		fprintf(stderr, "Exiting.\n");
+		logger.print(pcl::console::L_ERROR, "[FeatureTracker::initialize_logger] ERROR: there is a problem with the supplied file for the heatmap information\n");
 		exit(-1);
 	}
 
-	printf("Saving tracking information to %s\n", tracking_file_name.c_str());
-	printf("Saving timing information to %s\n", timing_file_name.c_str());
-	printf("Saving heatmap information to %s\n", heatmap_file_name.c_str());
+	logger.print(pcl::console::L_INFO, "[FeatureTracker::initialize_logger] INFO: saving tracking information to %s\n", tracking_file_name.c_str());
+	logger.print(pcl::console::L_INFO, "[FeatureTracker::initialize_logger] INFO: saving timing information to %s\n", timing_file_name.c_str());
+	logger.print(pcl::console::L_INFO, "[FeatureTracker::initialize_logger] INFO: saving heatmap information to %s\n", heatmap_file_name.c_str());
 }
