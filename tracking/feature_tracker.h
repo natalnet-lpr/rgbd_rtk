@@ -35,14 +35,14 @@
 #include <opencv2/core/core.hpp>
 
 #include <common_types.h>
+#include <event_logger.h>
+
+extern EventLogger& logger;
 
 /*
  * Abstract Base Class for Feature Trackers.
  * Contains members that are common to all implementations
  * and virtual member functions that are algorithm dependent.
- *
- * Author: Bruno Marques F. da Silva
- * brunomfs@gmail.com
  */
 class FeatureTracker
 {

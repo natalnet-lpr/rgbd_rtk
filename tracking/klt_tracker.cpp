@@ -38,12 +38,9 @@
 #include <opencv2/video/video.hpp>
 
 #include <klt_tracker.h>
-#include <event_logger.h>
 
 using namespace std;
 using namespace cv;
-
-EventLogger& logger = EventLogger::getInstance();
 
 /* #####################################################
  * #####                                           #####
@@ -158,7 +155,7 @@ bool KLTTracker::track(const Mat& curr_frame)
 				continue;
 			}
 
-			logger.print(pcl::console::L_DEBUG, "[KLTTracker::track] DEBUG: tracked[%i]: (%f,%f) -> (%f,%f)\n", i, prev_pts_[i].x, prev_pts_[i].y, curr_pts_[i].x, curr_pts_[i].y);
+			//logger.print(pcl::console::L_DEBUG, "[KLTTracker::track] DEBUG: tracked[%i]: (%f,%f) -> (%f,%f)\n", i, prev_pts_[i].x, prev_pts_[i].y, curr_pts_[i].x, curr_pts_[i].y);
 
 			prev_pts_[tracked_pts] = prev_pts_[i];
 			curr_pts_[tracked_pts] = curr_pts_[i];

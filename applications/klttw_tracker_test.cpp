@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016-2018, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -22,6 +22,10 @@
  *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
+ *  Authors:
+ *
+ *  Luiz Felipe Maciel Correia (y9luiz@hotmail.com)
+ *  Bruno Silva (brunomfs@gmail.com)
  */
 
 #include <cstdio>
@@ -31,6 +35,8 @@
 #include <opencv2/imgproc/imgproc.hpp>
 
 #include <rgbd_loader.h>
+#include <config_loader.h>
+#include <event_logger.h>
 #include <klttw_tracker.h>
 #include <common_types.h>
 
@@ -76,22 +82,28 @@ void draw_rejected_points(Mat& img, const vector<Point2f> pts)
 	}
 }
 
+/**
+ * This program shows the use of tracking keypoints using
+ * the KLT with Tracking Windows algorithm.
+ * @param .yml config. file (from which index_file is used)
+ */
 int main(int argc, char **argv)
 {
-	string index_file_name;
+	EventLogger& logger = EventLogger::getInstance();
+	logger.setVerbosityLevel(pcl::console::L_DEBUG);
+
+	ConfigLoader param_loader;
 	RGBDLoader loader;
 	KLTTWTracker tracker;
-
 	Mat frame, depth;
 
 	if(argc != 2)
 	{
-		fprintf(stderr, "Usage: %s <index file>\n", argv[0]);
+		logger.print(pcl::console::L_INFO, "[klttw_tracker_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
-
-	index_file_name = argv[1];
-	loader.processFile(index_file_name);
+	param_loader.loadParams(argv[1]);
+	loader.processFile(param_loader.index_file_);
 
 	//Track points on each image
 	for(int i = 0; i < loader.num_images_; i++)

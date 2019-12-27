@@ -34,6 +34,8 @@
 
 using namespace std;
 
+EventLogger& logger = EventLogger::getInstance();
+
 /* #####################################################
  * #####                                           #####
  * #####               Private Impl.               #####
