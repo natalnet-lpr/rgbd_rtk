@@ -40,8 +40,7 @@ using namespace cv;
  */
 int main(int argc, char **argv)
 {
-	string index_file_name;
-	ConfigLoader param_loader;
+	string index_file;
 	Mat frame;
 
 	if(argc != 2)
@@ -49,8 +48,9 @@ int main(int argc, char **argv)
 		fprintf(stderr, "Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
-	param_loader.loadParams(argv[1]);
-	SequenceLoader loader(param_loader.index_file_);
+	ConfigLoader param_loader(argv[1]);
+	param_loader.checkAndGetString("index_file",index_file);
+	SequenceLoader loader(index_file);
 
 	for(int i = 0; i < loader.num_images_; i++)
 	{

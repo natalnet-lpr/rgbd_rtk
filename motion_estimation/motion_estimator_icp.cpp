@@ -29,6 +29,8 @@
 #include <pcl/common/transforms.h>
 
 #include <motion_estimator_icp.h>
+#include <event_logger.h>
+#include <motion_estimator_ransac.h>
 
 using namespace std;
 
@@ -107,7 +109,7 @@ void MotionEstimatorICP::setRadius(const float& radius)
 	}
 	catch(int e)
 	{
-		cout << "radius can't be negative\nTrying to use default vallue: 0.05\n";
+		logger.print(pcl::console::L_WARN, "[motion_estimator_icp.cpp] WARN: Radius can't be negative\nTrying to use default vallue: 0.05\n");
 		this->radius_ = 0.05;
 	}
 }
@@ -123,7 +125,7 @@ void MotionEstimatorICP::setMaxCorrespondenceDistance(const double& max_correspo
 	}
 	catch(int e)
 	{
-		cout << "max_correspondence_distance can't be negative\nTrying to use default value: 0.1\n";
+		logger.print(pcl::console::L_WARN, "[motion_estimator_icp.cpp] WARN: Max_correspondence_distance can't be negative\nTrying to use default value: 0.1\n");
 		this->max_correspondence_distance_ = 0.1;
 	}
 }
@@ -139,8 +141,8 @@ void MotionEstimatorICP::setMaximumIterations(const int& maximum_iterations)
 	}
 	catch(int e)
 	{
-		cout << "maximum_iterations_ can't be negative\nTrying to use default value: 50\n";
-		this->maximum_iterations_ = 0.1;
+		logger.print(pcl::console::L_WARN, "[motion_estimator_icp.cpp] WARN: Maximum_iterations_ can't be negative\nTrying to use default value: 50\n");
+		this->maximum_iterations_ = 50;
 	}
 }
 double MotionEstimatorICP::getTransformationEpsilon()
@@ -155,7 +157,7 @@ void MotionEstimatorICP::setTransformationEpsilon(const double& transformation_e
 	}
 	catch(int e)
 	{
-		cout << "transformation_epsilon can't be negative\nTrying to use default value: 1e-9\n";
+		logger.print(pcl::console::L_WARN, "[motion_estimator_icp.cpp] WARN: Transformation_epsilon can't be negative\nTrying to use default value: 1e-9\n");
 		this->transformation_epsilon_ = 1e-9;
 	}
 }
@@ -171,7 +173,7 @@ void MotionEstimatorICP::setEuclideanFitnessEpsilon(const double& euclidean_fitn
 	}
 	catch(int e)
 	{
-		cout << "euclidean_fitness_epsilon can't be negative\nTrying to use default value:0.001\n";
-		this->euclidean_fitness_epsilon_ = 0.01;
+		logger.print(pcl::console::L_WARN, "[motion_estimator_icp.cpp] WARN: Euclidean_fitness_epsilon can't be negative\nTrying to use default value:0.001\n");
+		this->euclidean_fitness_epsilon_ = 0.001;
 	}
 }

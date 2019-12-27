@@ -53,11 +53,11 @@ int main(int argc, char **argv)
 	EventLogger& logger = EventLogger::getInstance();
 	logger.setVerbosityLevel(pcl::console::L_DEBUG);
 	
-	ConfigLoader param_loader;
 	RGBDLoader loader;
 	Intrinsics intr(0);
 	OpticalFlowVisualOdometry vo(intr);
 	ReconstructionVisualizer visualizer;
+	string index_file;
 	Mat frame, depth;
 
 	if(argc != 2)
@@ -65,8 +65,9 @@ int main(int argc, char **argv)
 		logger.print(pcl::console::L_INFO, "[optical_flow_visual_odometry_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
-	param_loader.loadParams(argv[1]);
-	loader.processFile(param_loader.index_file_);
+	ConfigLoader param_loader(argv[1]);
+	param_loader.checkAndGetString("index_file",index_file);
+	loader.processFile(index_file);
 
 	//Compute visual odometry on each image
 	for(int i = 0; i < loader.num_images_; i++)
