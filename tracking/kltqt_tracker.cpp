@@ -67,7 +67,7 @@ bool is_filled_with_black(const cv::Mat& mask, float threshold)
 	}
 
 	//if the amount of black points is bigger than a threshold, the mask is filled with black
-	if(cont/float(mask.cols*mask.rows) >= threshold)
+	if(cont/float(mask.cols * mask.rows) >= threshold)
 		return true;
 	else 
 		return false;
@@ -75,15 +75,15 @@ bool is_filled_with_black(const cv::Mat& mask, float threshold)
 
 void KLTQTTracker::detect_keypoints()
 {
-	if(qualityLevel>=1 || qualityLevel <= 0)
+	if(qualityLevel >=1 || qualityLevel <= 0)
 		qualityLevel = 0.01;
 	
+	//Detect Shi-Tomasi keypoints and add them to a temporary buffer.
+	//The buffer is erased at the end of add_keypoints()
 	goodFeaturesToTrack(curr_frame_gray_, added_pts_, max_pts_, qualityLevel, 10.0, Mask, 3, false, 0.04);
 
-	#ifdef DEBUG
-	printf("detecting keypoints...\n");
-	printf("\tdetected pts.: %lu\n", added_pts_.size());
-	#endif
+	logger.print(pcl::console::L_DEBUG, "[KLTQTTracker::detect_keypoints] DEBUG: detecting keypoints...\n");
+	logger.print(pcl::console::L_DEBUG, "[KLTQTTracker::detect_keypoints] DEBUG: detected pts.: %lu\n", added_pts_.size());
 }
 
 void KLTQTTracker::add_keypoints()
@@ -98,11 +98,9 @@ void KLTQTTracker::add_keypoints()
 			tracklets_.push_back(tr);
 	}
 
-	#ifdef DEBUG
-	printf("adding keypoints...\n");
-	printf("\tadded pts.: %lu\n", added_pts_.size());
-	printf("\tprev. pts: %lu\n", prev_pts_.size());
-	#endif
+	logger.print(pcl::console::L_DEBUG, "[KLTQTTracker::add_keypoints] DEBUG: adding keypoints...\n");
+	logger.print(pcl::console::L_DEBUG, "[KLTQTTracker::add_keypoints] DEBUG: added pts.: %lu\n", added_pts_.size());
+	logger.print(pcl::console::L_DEBUG, "[KLTQTTracker::add_keypoints] DEBUG: prev pts.: %lu\n", prev_pts_.size());
 
 	//Erase buffer
 	added_pts_.clear();
@@ -111,7 +109,6 @@ void KLTQTTracker::add_keypoints()
 void KLTQTTracker::update_buffers()
 {
 	std::swap(curr_pts_, prev_pts_);
-	add_keypoints();
 }
 
 KLTQTTracker::KLTQTTracker()
@@ -128,12 +125,17 @@ KLTQTTracker::KLTQTTracker(const int& min_pts, const int& max_pts, const bool& l
 
 bool KLTQTTracker::track(const Mat& curr_frame)
 {
-	//Make a grayscale copy of the current frame
-	cvtColor(curr_frame, curr_frame_gray_, CV_BGR2GRAY);
+	//Make a grayscale copy of the current frame if it is in color
+	if(curr_frame.channels() > 1)
+	{
+		cvtColor(curr_frame, curr_frame_gray_, CV_BGR2GRAY);
+	}
+	else
+	{
+		curr_frame.copyTo(curr_frame_gray_);
+	}
 
-	#ifdef DEBUG
-	printf("#### Tracking frame %i ####\n", frame_idx_);
-	#endif
+	logger.print(pcl::console::L_DEBUG, "[KLTQTTracker::track] DEBUG: tracking frame %i\n", frame_idx_);
 
 	//Swap buffers: prev_pts_ = curr_pts_
 	update_buffers();
@@ -164,9 +166,7 @@ bool KLTQTTracker::track(const Mat& curr_frame)
 		calcOpticalFlowPyrLK(prev_frame_gray_, curr_frame_gray_, prev_pts_, curr_pts_, status, err, win_size,
 							 3, crit, 0, 0.00001);
 
-		#ifdef DEBUG
-		printf("tracking...\n");
-		#endif
+		logger.print(pcl::console::L_DEBUG, "[KLTQTTracker::track] DEBUG: tracking...\n");
 
 		//Update internal data according to the tracking result
 		//Additional tests have to be applied to discard points outside the image boundaries.
@@ -179,9 +179,7 @@ bool KLTQTTracker::track(const Mat& curr_frame)
 				continue;
 			}
 
-			#ifdef DEBUG
-			//printf("\t\ttracked[%i]: (%f,%f) -> (%f,%f)\n", i, prev_pts_[i].x, prev_pts_[i].y, curr_pts_[i].x, curr_pts_[i].y);
-			#endif
+			//logger.print(pcl::console::L_DEBUG, "[KLTQTTracker::track] DEBUG: tracked[%i]: (%f,%f) -> (%f,%f)\n", i, prev_pts_[i].x, prev_pts_[i].y, curr_pts_[i].x, curr_pts_[i].y);
 
 			prev_pts_[tracked_pts] = prev_pts_[i];
 			curr_pts_[tracked_pts] = curr_pts_[i];
@@ -195,32 +193,30 @@ bool KLTQTTracker::track(const Mat& curr_frame)
 		curr_pts_.resize(tracked_pts);
 		tracklets_.resize(tracked_pts);
 
-		#ifdef DEBUG
-		printf("\ttracked points/max_points: %i/%i\n", tracked_pts, max_pts_);
-		#endif
+		logger.print(pcl::console::L_DEBUG, "[KLTQTTracker::track] DEBUG: tracked points/max_points:  %i/%i\n", tracked_pts, max_pts_);
 
 		//Detect new features at every frame, hold them and add them to the tracker in the next frame
-		if(tracked_pts<=FeatureTracker::min_pts_ || !is_filled_with_black(Mask, 0.4))
+		if(tracked_pts <= FeatureTracker::min_pts_ || !is_filled_with_black(Mask, 0.4))
 			detect_keypoints();
 		
 		//check if the image has too many points 
-		//if it is the case, we need decrease the quantity of points improving the qualityLevel of feature
-		if(is_filled_with_black( Mask, 0.4))
+		//if it is the case, we need to decrease the quantity of points improving the qualityLevel of features
+		if(is_filled_with_black(Mask, 0.4))
 		{
-			if(qualityLevel<=0.01)
-				qualityLevel +=qualityLevel/10.0;
+			if(qualityLevel <= 0.01)
+				qualityLevel +=  qualityLevel/10.0;
 			else
 				qualityLevel = 0.01;
 		}
 		else
 		{
-			if(qualityLevel>=0.0001)
-				qualityLevel -=qualityLevel/10.0;
+			if(qualityLevel >= 0.0001)
+				qualityLevel -= qualityLevel/10.0;
 			else
-				qualityLevel =0.001;
+				qualityLevel = 0.001;
 		}
 		
-		for(int i=0;i<prev_pts_.size();i++)
+		for(int i=0; i < prev_pts_.size(); i++)
 			tree->Insert(prev_pts_[i]);
 		
 		tree->MarkMask(Mask, prev_pts_, false);	
@@ -232,9 +228,7 @@ bool KLTQTTracker::track(const Mat& curr_frame)
 	//write_heatmap_info();
 	//float total_time = get_time_per_frame();
 
-	#ifdef DEBUG
-	//printf("time per frame: %f ms\n", total_time);
-	#endif
+	logger.print(pcl::console::L_DEBUG, "[KLTQTTracker::track] DEBUG: curr_points:  %lu\n", curr_pts_.size());
 
 	cv::swap(curr_frame_gray_, prev_frame_gray_);
 	frame_idx_++;

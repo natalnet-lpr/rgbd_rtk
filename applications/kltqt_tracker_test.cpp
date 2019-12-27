@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016-2018, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -22,6 +22,10 @@
  *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
+ *  Authors:
+ *
+ *  Luiz Felipe Maciel Correia (y9luiz@hotmail.com)
+ *  Bruno Silva (brunomfs@gmail.com)
  */
 
 #include <cstdio>
@@ -31,6 +35,8 @@
 #include <opencv2/imgproc/imgproc.hpp>
 
 #include <rgbd_loader.h>
+#include <config_loader.h>
+#include <event_logger.h>
 #include <kltqt_tracker.h>
 #include <common_types.h>
 
@@ -59,8 +65,6 @@ void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Poin
 		circle(img, pt1, 1, color, 1);
 		circle(img, pt2, 3, color, 1);
 		line(img, pt1, pt2, color);
-
-
 	}
 }
 
@@ -72,25 +76,33 @@ void draw_rejected_points(Mat& img, const vector<Point2f> pts)
 	}
 }
 
+/**
+ * This program shows the use of tracking keypoints using
+ * the KLT with Quad Tree division.
+ * @param .yml config. file (from which index_file is used)
+ */
 int main(int argc, char **argv)
 {
-	string index_file_name;
+	EventLogger& logger = EventLogger::getInstance();
+	logger.setVerbosityLevel(pcl::console::L_DEBUG);
+
+	ConfigLoader param_loader;
 	RGBDLoader loader;
 
 	Mat frame, depth;
 
 	if(argc != 2)
 	{
-		fprintf(stderr, "Usage: %s <index file> \n", argv[0]);
+		logger.print(pcl::console::L_INFO, "[kltqt_tracker_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
+	param_loader.loadParams(argv[1]);
+	loader.processFile(param_loader.index_file_);
 
-	index_file_name = argv[1];
-	loader.processFile(index_file_name);
 	int max_pts = 1000;
 	float max_density;
 
-	KLTQTTracker tracker(600, max_pts,false);
+	KLTQTTracker tracker(600, max_pts, false);
 
 	//Track points on each image
 	for(int i = 0; i < loader.num_images_; i++)
@@ -100,7 +112,7 @@ int main(int argc, char **argv)
 		if(i==0)
 			max_density = max_pts/float(frame.cols*frame.rows);
 
-		tracker.tree = new QuadTree(Rect(0,0,frame.cols,frame.cols),5,max_density);
+		tracker.tree = new QuadTree(Rect(0, 0, frame.cols, frame.cols), 5, max_density);
 
 
 		double el_time = (double) cvGetTickCount();
