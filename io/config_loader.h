@@ -43,20 +43,38 @@ class ConfigLoader
 {
 public:
     cv::FileStorage fs;
-
+    /**
+     * Load configuration file.
+     * Uses the default path "../config_files/tum_odometry.yaml"
+     */
     ConfigLoader(){
-        loadFile("../applications/config_files/tum_odometry.yaml");
+        loadFile("../config_files/tum_odometry.yaml");
     }
-
+    /**
+     * Load configuration file.
+     * @Params filename: path where the config. file is located
+     */
     ConfigLoader(string filename){
         loadFile(filename);
     }
     void loadFile(const string& filename);
-
+    /**
+    * get a int parameter in ConfigFile
+    * @Params string with the name of the parameter in configfile, and a variable int where the value will be returned
+    * @Return boolean, false if the parameter is not in configfile and true if it is
+    */
     bool checkAndGetInt(const string& parameter, int& parameter_int);
-
+    /**
+     * get a int parameter in ConfigFile
+     * @Params string with the name of the parameter in configfile, and a variable float where the value will be returned
+     * @Return boolean, false if the parameter is not in configfile and true if it is
+     */
     bool checkAndGetFloat(const string& parameter, float& parameter_float);
-
+    /**
+     * get a int parameter in ConfigFile
+     * @Params string with the name of the parameter in configfile, and a variable string where the value will be returned
+     * @Return boolean, false if the parameter is not in configfile and true if it is
+     */
     bool checkAndGetString(const string& parameter, string& parameter_string);
 };
 

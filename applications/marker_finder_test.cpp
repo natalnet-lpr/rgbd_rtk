@@ -38,6 +38,7 @@
 #include <reconstruction_visualizer.h>
 #include <marker_finder.h>
 #include <config_loader.h>
+#include <event_logger.h>
 
 using namespace std;
 using namespace cv;
@@ -49,6 +50,7 @@ using namespace aruco;
  */
 int main(int argc, char **argv)
 {
+	EventLogger& logger = EventLogger::getInstance();
 	RGBDLoader loader;
 	Intrinsics intr(0);
 	OpticalFlowVisualOdometry vo(intr);
@@ -59,7 +61,7 @@ int main(int argc, char **argv)
 
 	if(argc != 2)
 	{
-		fprintf(stderr, "Usage: %s <path/to/config_file.yaml>\n", argv[0]);
+		logger.print(pcl::console::L_ERROR, "[icp_odometry_test.cpp] ERROR: Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
 	ConfigLoader param_loader(argv[1]);

@@ -35,6 +35,7 @@
 #include <icp_odometry.h>
 #include <reconstruction_visualizer.h>
 #include <config_loader.h>
+#include <event_logger.h>
 
 using namespace std;
 using namespace cv;
@@ -46,6 +47,7 @@ using namespace cv;
 int main(int argc, char **argv)
 {
 	RGBDLoader loader; 
+	EventLogger& logger = EventLogger::getInstance();
 	Intrinsics intr(0);
 	ICPOdometry icpo(intr);
 	ReconstructionVisualizer visualizer;
@@ -55,7 +57,7 @@ int main(int argc, char **argv)
 	float icp_radius, icp_max_correspondence_distance,icp_transformation_epsilon,icp_euclidean_fitness_epsilon;
 	if(argc != 2)
 	{
-		fprintf(stderr, "Usage: %s <path/to/config_file.yaml>\n", argv[0]);
+		logger.print(pcl::console::L_ERROR, "[icp_odometry_test.cpp] ERROR: Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
 	ConfigLoader param_loader(argv[1]);

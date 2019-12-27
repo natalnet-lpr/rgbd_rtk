@@ -34,23 +34,23 @@
 
 #include <opencv2/opencv.hpp>
 #include <config_loader.h>
+#include <event_logger.h>
 
 using namespace std;
 using namespace cv;
 
-/**
- * Load configuration file parameters.
- * @Params filename: path where the config. file is located
- */
 void ConfigLoader::loadFile(const string& filename)
 {
+    EventLogger& logger = EventLogger::getInstance();
+
     fs.open(filename, FileStorage::READ);  //Reading config file
     if(fs.isOpened() == false)
     {
-        cout << "ConfigFile couldn't be opened, check if your path is right\n";
+        logger.print(pcl::console::L_ERROR, "[config_loader.cpp] ERROR: ConfigFile couldn't be opened, check if your path is right\n");
         exit(0);
     }
 }
+
 bool ConfigLoader::checkAndGetInt(const string& parameter, int& parameter_int){
     if(fs[parameter].empty()) return false;
     else{
@@ -58,6 +58,7 @@ bool ConfigLoader::checkAndGetInt(const string& parameter, int& parameter_int){
         return true;
     }
 }
+
 bool ConfigLoader::checkAndGetFloat(const string& parameter, float& parameter_float){
     if(fs[parameter].empty()) return false;
     else{
@@ -65,6 +66,7 @@ bool ConfigLoader::checkAndGetFloat(const string& parameter, float& parameter_fl
         return true;
     }
 }
+
 bool ConfigLoader::checkAndGetString(const string& parameter, string& parameter_string){
     if(fs[parameter].empty()) return false;
     else{
