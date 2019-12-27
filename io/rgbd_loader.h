@@ -29,6 +29,9 @@
 
 #include <vector>
 #include <opencv2/core/core.hpp>
+#include <event_logger.h>
+
+extern EventLogger& logger;
 
 class RGBDLoader
 {

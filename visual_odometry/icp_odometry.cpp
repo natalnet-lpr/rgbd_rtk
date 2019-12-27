@@ -70,11 +70,3 @@ void ICPOdometry::computeCameraPose(const cv::Mat& rgb, const cv::Mat& depth)
 	//Increment the frame index
 	frame_idx_++;
 }
-
-void ICPOdometry::setConfig(const ConfigLoader& param_loader){
-	motion_estimator_.setRadius(param_loader.icp_radius_);
-	motion_estimator_.setMaxCorrespondenceDistance(param_loader.icp_max_correspondence_distance_);
-	motion_estimator_.setMaximumIterations(param_loader.icp_maximum_iteration_);
-	motion_estimator_.setTransformationEpsilon(param_loader.icp_transformation_epsilon_);
-	motion_estimator_.setEuclideanFitnessEpsilon(param_loader.icp_euclidean_fitness_epsilon_);
-}

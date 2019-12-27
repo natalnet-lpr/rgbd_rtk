@@ -1,6 +1,7 @@
 local
 Build
 Release
+.vscode
 .cproject
 .project
 .settings/

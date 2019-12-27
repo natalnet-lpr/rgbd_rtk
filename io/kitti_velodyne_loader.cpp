@@ -37,10 +37,13 @@
 #include <algorithm>
 #include <opencv2/core/core.hpp>
 
+#include <event_logger.h>
+#include <rgbd_loader.h>
 #include "kitti_velodyne_loader.h"
 
 using namespace std;
 using namespace cv;
+
 
 KITTIVelodyneLoader::KITTIVelodyneLoader()
 {
@@ -87,8 +90,7 @@ void KITTIVelodyneLoader::loadLIDARSequence(const string& sequence_path, const i
     }
     else
     {
-        fprintf(stderr, "Could not create index file (error on system command).\n");
-        fprintf(stderr, "Exiting.\n");
+        logger.print(pcl::console::L_ERROR, "[kitti_velodyne_loader.cpp] ERROR: Could not create index file (error on system command).\nExiting\n");
         exit(0);
     }
 }

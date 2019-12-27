@@ -79,8 +79,6 @@ public:
 	/**
 	 * load motion_estimator_icp params
 	 */
-	void setConfig(const ConfigLoader& param_loader);
-
 };
 
 #endif /* INCLUDE_ICP_ODOMETRY_H_ */
