@@ -58,4 +58,18 @@ add_subdirectory(stereo)
 set(RGBD_RTK_STEREO rgbd_rtk_stereo)
 add_subdirectory(visual_odometry)
 set(RGBD_RTK_VISUAL_ODOMETRY rgbd_rtk_visual_odometry)
+
+# Build SLAM module only if ARUCO was found
+find_package(aruco 2.0 QUIET)
+if(aruco_FOUND)
+    message(STATUS "Aruco found")
+    message(STATUS "Aruco INCLUDES: " ${aruco_INCLUDE_DIRS})
+    message(STATUS "Aruco LIBS: " ${aruco_LIBS})
+    include_directories(slam)
+    add_subdirectory(slam)
+    set(RGBD_RTK_SLAM rgbd_rtk_slam)
+else()
+    message(WARNING "Aruco was not found in your system. SLAM module will not be built.")
+endif()
+
 add_subdirectory(applications)
