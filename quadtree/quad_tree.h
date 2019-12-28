@@ -29,65 +29,65 @@
  *  Bruno Silva (brunomfs@gmail.com)
  */
 
-#ifndef INCLUDE_KLTQT_TRACKER_H_
-#define INCLUDE_KLTQT_TRACKER_H_
-
 #include <vector>
-#include <fstream>
 #include <opencv2/core/core.hpp>
 
-#include <feature_tracker.h>
-#include <quad_tree.h>	
-#include <common_types.h>
-
- /*
- * Short Baseline Feature Tracker extension:
- * Kanade-Lucas-Tomasi (KLT) using a quadtree
- * for feature selection.
+/*
+ * Quad tree data structure to store image keypoints,
  */
-class KLTQTTracker : public FeatureTracker
+class QuadTree
 {
 
-protected:
-
-	//Used in goodFeatureToTrack() to adjust  the quality of feature
-	float quality_level_;
-
-	//Mask of regions than will be used on goodFeatureToTrack()
-	cv::Mat mask_;
-
-	//Number of points in the last keyframe
-	size_t num_points_last_kf_;
-
-	//Detects keypoints in the current frame based on a qualityLevel
-	void detect_keypoints();
-
-	//Adds keypoints detected in the previous frame to the tracker
-	void add_keypoints();
-
-	//Updates internal buffers (updates the previous points (in the current frame)
-	//with the current points (from the previous frame))
-	void update_buffers();
-
 public:
+
+    //Region than will be marked and segmented	
+    cv::Rect boundary_;
+
+    //Maximum number of keypoints in a node of quadtree
+    int capacity_;
+
+    //flag used to check if the current node is subdived
+    bool divided_ = false;
+
+    //flag used to check if the current node is empty or not
+    bool allocated_ = false;
+
+    //set of points of the node 
+    std::vector<cv::Point2f> pts_;
+  
+    //these pointers represents four regions present in a 2-D plan
+    QuadTree * topLeft_;
+    QuadTree * topRight_;
+    QuadTree * botLeft_;
+    QuadTree * botRight_;
+
+    //this variable helps in the task of marking the mask.
+    //if some region have at least max_density points,
+    //it is automatically marked as a black region, i.e. no point need to be detected here
+    float max_density_;
 	
-	//Quadtree data structure
-	QuadTree *tree;
+    QuadTree(): capacity_(4), divided_(false), allocated_(false)
+    {}
+  
+    QuadTree(const cv::Rect& boundary, const int& capacity, const float& max_density=0)
+    {
+        boundary_ = boundary;
+        capacity_ = capacity;
+        max_density_ = max_density;
+        topLeft_ = new QuadTree();
+        topRight_ = new QuadTree();
+        botLeft_ = new QuadTree();
+        botRight_ = new QuadTree();
+    }
 
-	//Debug
-	std::vector<cv::Point2f> rejected_points_;
+    //Subdivides the region if the region is not divided and the region is not out of capacity
+    void subdivide();
 
-	//Default constructor
-	KLTQTTracker();
+    //Mark the mask, black regions are regions that will be dispensed in point detection
+    void markMask(cv::Mat &mask, const std::vector<cv::Point2f>& pts, const bool& initialized);
 
-	//Constructor with the minimum number of tracked points, maximum number of tracked points, radius of tracking circles and flag to log statistics
-	KLTQTTracker(const int& min_pts, const int& max_pts, const bool& log_stats = false);
+    void drawTree(cv::Mat &img);
 
-	/*
-	 * Main member function: tracks keypoints between the current frame and the previous.
-	 * Returns true if the current frame is a keyframe.
-	 */
-	bool track(const cv::Mat& img);
+    //Inserts a point in region
+    void insert(const cv::Point2f& new_point);
 };
-
-#endif /* INCLUDE_KLTQT_TRACKER_H_ */

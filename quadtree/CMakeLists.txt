@@ -4,8 +4,8 @@ project(RGBD_RTK)
 
 message(STATUS ">>> quadtree subdirectory")
 
-set(RGBD_RTK_QUADTREE_SRC QuadTree.cpp)
-set(RGBD_RTK_QUADTREE_INCLUDES QuadTree.h)
+set(RGBD_RTK_QUADTREE_SRC quad_tree.cpp)
+set(RGBD_RTK_QUADTREE_INCLUDES quad_tree.h)
 
 add_library(rgbd_rtk_quadtree SHARED ${RGBD_RTK_QUADTREE_SRC})
 target_link_libraries(rgbd_rtk_quadtree ${OpenCV_LIBS})

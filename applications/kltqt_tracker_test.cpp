@@ -119,7 +119,7 @@ int main(int argc, char **argv)
 		bool is_kf = tracker.track(frame);
 		el_time = ((double) cvGetTickCount() - el_time)/(cvGetTickFrequency()*1000.0);
 
-		tracker.tree->DrawTree(frame);		
+		tracker.tree->drawTree(frame);		
 
 		printf("Tracking time: %f ms\n", el_time);
 		
