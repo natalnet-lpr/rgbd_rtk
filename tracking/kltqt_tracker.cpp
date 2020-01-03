@@ -75,12 +75,12 @@ bool is_filled_with_black(const cv::Mat& mask, float threshold)
 
 void KLTQTTracker::detect_keypoints()
 {
-	if(qualityLevel >=1 || qualityLevel <= 0)
-		qualityLevel = 0.01;
+	if(quality_level_ >=1 || quality_level_ <= 0)
+	   quality_level_ = 0.01;
 	
 	//Detect Shi-Tomasi keypoints and add them to a temporary buffer.
 	//The buffer is erased at the end of add_keypoints()
-	goodFeaturesToTrack(curr_frame_gray_, added_pts_, max_pts_, qualityLevel, 10.0, Mask, 3, false, 0.04);
+	goodFeaturesToTrack(curr_frame_gray_, added_pts_, max_pts_, quality_level_, 10.0, mask_, 3, false, 0.04);
 
 	logger.print(pcl::console::L_DEBUG, "[KLTQTTracker::detect_keypoints] DEBUG: detecting keypoints...\n");
 	logger.print(pcl::console::L_DEBUG, "[KLTQTTracker::detect_keypoints] DEBUG: detected pts.: %lu\n", added_pts_.size());
@@ -152,7 +152,7 @@ bool KLTQTTracker::track(const Mat& curr_frame)
 
 		Mat aux(curr_frame.rows, curr_frame.cols, CV_8UC1);
 		aux.setTo(255);
-		aux.copyTo(Mask);
+		aux.copyTo(mask_);
 	}
 	//Tracker is initialized: track keypoints
 	else
@@ -196,30 +196,30 @@ bool KLTQTTracker::track(const Mat& curr_frame)
 		logger.print(pcl::console::L_DEBUG, "[KLTQTTracker::track] DEBUG: tracked points/max_points:  %i/%i\n", tracked_pts, max_pts_);
 
 		//Detect new features at every frame, hold them and add them to the tracker in the next frame
-		if(tracked_pts <= FeatureTracker::min_pts_ || !is_filled_with_black(Mask, 0.4))
+		if(tracked_pts <= FeatureTracker::min_pts_ || !is_filled_with_black(mask_, 0.4))
 			detect_keypoints();
 		
 		//check if the image has too many points 
-		//if it is the case, we need to decrease the quantity of points improving the qualityLevel of features
-		if(is_filled_with_black(Mask, 0.4))
+		//if it is the case, we need to decrease the quantity of points improving the quality level of features
+		if(is_filled_with_black(mask_, 0.4))
 		{
-			if(qualityLevel <= 0.01)
-				qualityLevel +=  qualityLevel/10.0;
+			if(quality_level_ <= 0.01)
+				quality_level_ +=  quality_level_/10.0;
 			else
-				qualityLevel = 0.01;
+				quality_level_ = 0.01;
 		}
 		else
 		{
-			if(qualityLevel >= 0.0001)
-				qualityLevel -= qualityLevel/10.0;
+			if(quality_level_ >= 0.0001)
+				quality_level_ -= quality_level_/10.0;
 			else
-				qualityLevel = 0.001;
+				quality_level_ = 0.001;
 		}
 		
 		for(int i=0; i < prev_pts_.size(); i++)
-			tree->Insert(prev_pts_[i]);
+			tree->insert(prev_pts_[i]);
 		
-		tree->MarkMask(Mask, prev_pts_, false);	
+		tree->markMask(mask_, prev_pts_, false);	
 	}
 
 	//print_track_info();

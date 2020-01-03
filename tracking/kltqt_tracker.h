@@ -1,5 +1,5 @@
 /*
-* 
+ * 
  *  Software License Agreement (BSD License)
  *
  *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
@@ -35,10 +35,9 @@
 #include <vector>
 #include <fstream>
 #include <opencv2/core/core.hpp>
-#include <QuadTree.h>
 
 #include <feature_tracker.h>
-	
+#include <quad_tree.h>	
 #include <common_types.h>
 
  /*
@@ -52,10 +51,10 @@ class KLTQTTracker : public FeatureTracker
 protected:
 
 	//Used in goodFeatureToTrack() to adjust  the quality of feature
-	float qualityLevel;	
+	float quality_level_;
 
 	//Mask of regions than will be used on goodFeatureToTrack()
-	cv::Mat Mask;
+	cv::Mat mask_;
 
 	//Number of points in the last keyframe
 	size_t num_points_last_kf_;
@@ -89,9 +88,6 @@ public:
 	 * Returns true if the current frame is a keyframe.
 	 */
 	bool track(const cv::Mat& img);
-
-	//insert a mask into the current object 
-	void insert_mask(const cv::Mat& Mask);
 };
 
 #endif /* INCLUDE_KLTQT_TRACKER_H_ */
