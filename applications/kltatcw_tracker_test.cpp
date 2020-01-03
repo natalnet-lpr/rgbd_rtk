@@ -22,9 +22,6 @@
  *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  Author:
- *
- *  Bruno Silva
  */
 
 #include <cstdio>
@@ -36,17 +33,18 @@
 #include <rgbd_loader.h>
 #include <config_loader.h>
 #include <event_logger.h>
-#include <klt_tracker.h>
+#include <kltatcw_tracker.h>
 #include <common_types.h>
 
 using namespace std;
 using namespace cv;
 
-void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts, bool is_kf);
-void draw_tracks(Mat& img, const vector<Tracklet> tracklets);
+void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts, const vector<float> radiuses, bool is_kf);
+void draw_rejected_points(Mat& img, const vector<Point2f> pts);
 
 /**
- * This program shows the use of keypoint tracking KLT algorithm.
+ * This program shows the use of tracking keypoints using
+ * the KLT with Adaptive Tracking Circular Windows algorithm.
  * @param .yml config. file (from which index_file is used)
  */
 int main(int argc, char **argv)
@@ -55,22 +53,25 @@ int main(int argc, char **argv)
 	logger.setVerbosityLevel(pcl::console::L_INFO);
 
 	RGBDLoader loader;
-	int min_pts, max_pts, log_stats;
 	Mat frame, depth;
+	int min_pts, max_pts;
+	float min_r, max_r;
 	string index_file;
 
 	if(argc != 2)
 	{
-		logger.print(pcl::console::L_INFO, "[klt_tracker_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
+		logger.print(pcl::console::L_INFO, "[kltatcw_tracker_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
 	ConfigLoader param_loader(argv[1]);
 	param_loader.checkAndGetInt("min_pts",min_pts);
-	param_loader.checkAndGetInt("max_pts",max_pts);	
-	param_loader.checkAndGetInt("log_stats", log_stats);
+	param_loader.checkAndGetInt("max_pts",max_pts);
+	param_loader.checkAndGetFloat("min_r",min_r);
+	param_loader.checkAndGetFloat("max_r",max_r);
 	param_loader.checkAndGetString("index_file", index_file);
-	KLTTracker tracker(min_pts,max_pts,log_stats);
 	loader.processFile(index_file);
+
+	KLTATCWTracker tracker(min_pts, max_pts, min_r, max_r);
 
 	//Track points on each image
 	for(int i = 0; i < loader.num_images_; i++)
@@ -80,17 +81,17 @@ int main(int argc, char **argv)
 		double el_time = (double) cvGetTickCount();
 		bool is_kf = tracker.track(frame);
 		el_time = ((double) cvGetTickCount() - el_time)/(cvGetTickFrequency()*1000.0);
-		logger.print(pcl::console::L_INFO,"[klt_tracker_test.cpp] INFO: Tracking time: %f ms\n", el_time);
+		logger.print(pcl::console::L_INFO,"[kltatcw_tracker.cpp] INFO: Tracking time: %f ms\n", el_time);
 		
-		draw_last_track(frame, tracker.prev_pts_, tracker.curr_pts_, is_kf);
-		//draw_tracks(frame, tracker.tracklets_);
+		draw_last_track(frame, tracker.prev_pts_, tracker.curr_pts_, tracker.radiuses_, is_kf);
+		draw_rejected_points(frame, tracker.rejected_points_);
 
 		imshow("Image view", frame);
 		imshow("Depth view", depth);
 		char key = waitKey(15);
 		if(key == 27 || key == 'q' || key == 'Q')
 		{
-			logger.print(pcl::console::L_INFO, "[klt_tracker_test.cpp] Exiting\n", argv[0]);
+			printf("Exiting.\n");
 			break;
 		}
 	}
@@ -98,7 +99,7 @@ int main(int argc, char **argv)
 	return 0;
 }
 
-void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts, bool is_kf)
+void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts, const vector<float> radiuses, bool is_kf)
 {
 	Scalar color;
 	if(is_kf)
@@ -111,34 +112,24 @@ void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Poin
 	}
 	for(size_t k = 0; k < curr_pts.size(); k++)
 	{
-		Point2i pt1, pt2;
+		Point2i pt1, pt2, pr1, pr2;
 		pt1.x = prev_pts[k].x;
 		pt1.y = prev_pts[k].y;
 		pt2.x = curr_pts[k].x;
 		pt2.y = curr_pts[k].y;
 
-		circle(img, pt1, 1, color, 2);
-		circle(img, pt2, 3, color, 2);
+		circle(img, pt1, 1, color, 1);
+		circle(img, pt2, 3, color, 1);
 		line(img, pt1, pt2, color);
+
+		circle(img, curr_pts[k], radiuses[k], color, 1);
 	}
 }
-void draw_tracks(Mat& img, const vector<Tracklet> tracklets)
+
+void draw_rejected_points(Mat& img, const vector<Point2f> pts)
 {
-	for(size_t i = 0; i < tracklets.size(); i++)
+	for(size_t i = 0; i < pts.size(); i++)
 	{
-		for(size_t j = 0; j < tracklets[i].pts2D_.size(); j++)
-		{
-			Point2i pt1;
-			pt1.x = tracklets[i].pts2D_[j].x;
-			pt1.y = tracklets[i].pts2D_[j].y;
-			circle(img, pt1, 3, CV_RGB(0,255,0), 1);
-			if(j > 0)
-			{
-				Point2i pt2;
-				pt2.x = tracklets[i].pts2D_[j-1].x;
-				pt2.y = tracklets[i].pts2D_[j-1].y;
-				line(img, pt1, pt2, CV_RGB(0,255,0));
-			}
-		}
+		circle(img, pts[i], 1, CV_RGB(255, 255, 0), 2);
 	}
 }

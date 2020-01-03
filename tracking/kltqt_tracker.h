@@ -1,4 +1,5 @@
-/* 
+/*
+ * 
  *  Software License Agreement (BSD License)
  *
  *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
@@ -24,59 +25,69 @@
  *
  *  Authors:
  *
- *  Rodrigo Sarmento Xavier
- *  Bruno Silva
+ *  Luiz Felipe Maciel Correia (y9luiz@hotmail.com)
+ *  Bruno Silva (brunomfs@gmail.com)
  */
 
-#ifndef INCLUDE_CONFIG_LOADER_H_
-#define INCLUDE_CONFIG_LOADER_H_
+#ifndef INCLUDE_KLTQT_TRACKER_H_
+#define INCLUDE_KLTQT_TRACKER_H_
 
-#include <cstdio>
-#include <cstdlib>
+#include <vector>
 #include <fstream>
-#include <event_logger.h>
+#include <opencv2/core/core.hpp>
 
-#include <opencv2/opencv.hpp>
+#include <feature_tracker.h>
+#include <quad_tree.h>	
+#include <common_types.h>
 
-using namespace std;
-
-class ConfigLoader
+ /*
+ * Short Baseline Feature Tracker extension:
+ * Kanade-Lucas-Tomasi (KLT) using a quadtree
+ * for feature selection.
+ */
+class KLTQTTracker : public FeatureTracker
 {
+
+protected:
+
+	//Used in goodFeatureToTrack() to adjust  the quality of feature
+	float quality_level_;
+
+	//Mask of regions than will be used on goodFeatureToTrack()
+	cv::Mat mask_;
+
+	//Number of points in the last keyframe
+	size_t num_points_last_kf_;
+
+	//Detects keypoints in the current frame based on a qualityLevel
+	void detect_keypoints();
+
+	//Adds keypoints detected in the previous frame to the tracker
+	void add_keypoints();
+
+	//Updates internal buffers (updates the previous points (in the current frame)
+	//with the current points (from the previous frame))
+	void update_buffers();
+
 public:
-    cv::FileStorage fs;
-    /**
-     * Load configuration file.
-     * Uses the default path "../config_files/tum_odometry.yaml"
-     */
-    ConfigLoader(){
-        loadFile("../config_files/tum_odometry.yaml");
-    }
-    /**
-     * Load configuration file.
-     * @Params filename: path where the config. file is located
-     */
-    ConfigLoader(string filename){
-        loadFile(filename);
-    }
-    void loadFile(const string& filename);
-    /**
-    * get a int parameter in ConfigFile
-    * @Params string with the name of the parameter in configfile, and a variable int where the value will be returned
-    * @Return boolean, false if the parameter is not in configfile and true if it is
-    */
-    bool checkAndGetInt(const string& parameter, int& parameter_int);
-    /**
-     * get a int parameter in ConfigFile
-     * @Params string with the name of the parameter in configfile, and a variable float where the value will be returned
-     * @Return boolean, false if the parameter is not in configfile and true if it is
-     */
-    bool checkAndGetFloat(const string& parameter, float& parameter_float);
-    /**
-     * get a int parameter in ConfigFile
-     * @Params string with the name of the parameter in configfile, and a variable string where the value will be returned
-     * @Return boolean, false if the parameter is not in configfile and true if it is
-     */
-    bool checkAndGetString(const string& parameter, string& parameter_string);
+	
+	//Quadtree data structure
+	QuadTree *tree;
+
+	//Debug
+	std::vector<cv::Point2f> rejected_points_;
+
+	//Default constructor
+	KLTQTTracker();
+
+	//Constructor with the minimum number of tracked points, maximum number of tracked points, radius of tracking circles and flag to log statistics
+	KLTQTTracker(const int& min_pts, const int& max_pts, const bool& log_stats = false);
+
+	/*
+	 * Main member function: tracks keypoints between the current frame and the previous.
+	 * Returns true if the current frame is a keyframe.
+	 */
+	bool track(const cv::Mat& img);
 };
 
-#endif
+#endif /* INCLUDE_KLTQT_TRACKER_H_ */

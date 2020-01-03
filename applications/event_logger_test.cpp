@@ -31,7 +31,7 @@
 
 using namespace std;
 
-int main(int argc, char **argv)
+int main()
 {
 	EventLogger& logger = EventLogger::getInstance();
 	logger.setVerbosityLevel(pcl::console::L_DEBUG);
