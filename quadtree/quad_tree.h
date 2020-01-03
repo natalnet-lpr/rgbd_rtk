@@ -1,5 +1,4 @@
-/*
- * 
+/* 
  *  Software License Agreement (BSD License)
  *
  *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
@@ -33,37 +32,38 @@
 #include <opencv2/core/core.hpp>
 
 /*
- * Quad tree data structure to store image keypoints,
+ * Quad tree data structure to store image keypoints
  */
 class QuadTree
 {
 
 public:
 
-    //Region than will be marked and segmented	
+    //Rectangular region kept in a node of the quadtree
     cv::Rect boundary_;
 
-    //Maximum number of keypoints in a node of quadtree
+    //Maximum number of keypoints in a node of the quadtree
     int capacity_;
 
-    //flag used to check if the current node is subdived
-    bool divided_ = false;
+    //Flag used to check if the current node is subdived
+    bool divided_;
 
-    //flag used to check if the current node is empty or not
-    bool allocated_ = false;
+    //Flag used to check if the current node is empty or not
+    bool allocated_;
 
-    //set of points of the node 
+    //Points present in a node of the quadtree
     std::vector<cv::Point2f> pts_;
   
-    //these pointers represents four regions present in a 2-D plan
+    //Quadtree subdivisions
     QuadTree * topLeft_;
     QuadTree * topRight_;
     QuadTree * botLeft_;
     QuadTree * botRight_;
 
-    //this variable helps in the task of marking the mask.
-    //if some region have at least max_density points,
-    //it is automatically marked as a black region, i.e. no point need to be detected here
+    //This variable helps in the task of marking the mask.
+    //If some region have at least max_density points,
+    //it is automatically marked as a black region,
+    //i.e. no point need to be detected here
     float max_density_;
 	
     QuadTree(): capacity_(4), divided_(false), allocated_(false)
@@ -80,14 +80,15 @@ public:
         botRight_ = new QuadTree();
     }
 
-    //Subdivides the region if the region is not divided and the region is not out of capacity
+    //Inserts a point in region
+    void insert(const cv::Point2f& new_point);
+
+    //Subdivides the region if the region is not divided yet
+    //(create subtrees by equally dividing the rect. region into 4 equal regions)
     void subdivide();
 
-    //Mark the mask, black regions are regions that will be dispensed in point detection
+    //Mark the mask, black regions are regions that will not be used in point detection
     void markMask(cv::Mat &mask, const std::vector<cv::Point2f>& pts, const bool& initialized);
 
     void drawTree(cv::Mat &img);
-
-    //Inserts a point in region
-    void insert(const cv::Point2f& new_point);
 };

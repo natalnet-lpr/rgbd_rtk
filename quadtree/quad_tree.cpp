@@ -1,5 +1,4 @@
 /*
- * 
  *  Software License Agreement (BSD License)
  *
  *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
@@ -38,6 +37,36 @@
 
 using namespace std;
 using namespace cv;
+
+void QuadTree::insert(const Point2f& new_point)
+{
+    allocated_ = true;
+
+    //The supplied point is out of the quadtree node
+    if(!boundary_.contains(new_point))
+        return;
+
+    //The supplied point is within the quadtree node and
+    //there is room to store it
+    if(pts_.size() < capacity_)
+    {
+        pts_.push_back(new_point);
+    }
+    //There is no room to store the point: subdivide the tree
+    //and insert it in one of the subtrees of the tree
+    else
+    {
+        if(!divided_)
+        {
+            subdivide();
+        }
+
+        topRight_->insert(new_point);
+        topLeft_->insert(new_point);
+        botRight_->insert(new_point);
+        botLeft_->insert(new_point);
+    }
+}
 
 void QuadTree::subdivide()
  {
@@ -119,31 +148,6 @@ void QuadTree::drawTree(Mat& img){
         topLeft_->drawTree(img);
         botLeft_->drawTree(img);
         botRight_->drawTree(img);
-    }
-}
-
-void QuadTree::insert(const Point2f& new_point)
-{
-    allocated_ = true;
-        
-    if(!boundary_.contains(new_point))
-        return;
-
-    if(pts_.size() < capacity_)
-    {
-        pts_.push_back(new_point);
-    }
-    else
-    {
-        if(!divided_)
-        {
-            subdivide();
-        }
-
-        topRight_->insert(new_point);
-        topLeft_->insert(new_point);
-        botRight_->insert(new_point);
-        botLeft_->insert(new_point);
     }
 }
 
