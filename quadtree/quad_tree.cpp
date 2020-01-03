@@ -33,31 +33,48 @@
 
 #include <opencv2/imgproc/imgproc.hpp>
 
+#include <event_logger.h>
 #include <quad_tree.h>
 
 using namespace std;
 using namespace cv;
 
+EventLogger& logger = EventLogger::getInstance();
+
 void QuadTree::insert(const Point2f& new_point)
 {
+    int x = boundary_.x;
+    int y = boundary_.y;
+    int h = boundary_.height;
+    int w = boundary_.width;
+
+    logger.print(pcl::console::L_DEBUG, "[QuadTree::insert] DEBUG: point: (%f,%f)\n", new_point.x, new_point.y);
+    logger.print(pcl::console::L_DEBUG, "[QuadTree::insert] DEBUG: node region: (%i,%i) <-> (%i,%i)\n", x, y, x+h, y+w);
+
     allocated_ = true;
 
     //The supplied point is out of the quadtree node
     if(!boundary_.contains(new_point))
+    {
+        logger.print(pcl::console::L_DEBUG, "[QuadTree::insert] DEBUG: point is out of region\n");
         return;
+    }
 
     //The supplied point is within the quadtree node and
     //there is room to store it
     if(pts_.size() < capacity_)
     {
         pts_.push_back(new_point);
+        logger.print(pcl::console::L_DEBUG, "[QuadTree::insert] DEBUG: point succesfully inserted (%i/%i)\n", pts_.size(), capacity_);
     }
     //There is no room to store the point: subdivide the tree
     //and insert it in one of the subtrees of the tree
     else
     {
+        logger.print(pcl::console::L_DEBUG, "[QuadTree::insert] DEBUG: node capacity reached -> inserting in subtree\n");
         if(!divided_)
         {
+            logger.print(pcl::console::L_DEBUG, "[QuadTree::insert] DEBUG: subdividing trees...\n");
             subdivide();
         }
 
@@ -76,15 +93,19 @@ void QuadTree::subdivide()
     int w = boundary_.width;
 
     Rect TL_boundary(x, y, h/2, w/2);
+    logger.print(pcl::console::L_DEBUG, "[QuadTree::insert] DEBUG: creating top left tree (%i,%i) <-> (%i,%i)\n", x, y, x+h/2, y+w/2);
     topLeft_ = new QuadTree(TL_boundary, capacity_, max_density_);
     
     Rect TR_boundary(x+w/2, y, h/2, w/2);
+    logger.print(pcl::console::L_DEBUG, "[QuadTree::insert] DEBUG: creating top right tree (%i,%i) <-> (%i,%i)\n", x+w/2, y, x+w/2+h/2, y+w/2);
     topRight_ = new QuadTree(TR_boundary, capacity_, max_density_);
 
     Rect BR_boundary(x+w/2, y+h/2, h/2, w/2);
+    logger.print(pcl::console::L_DEBUG, "[QuadTree::insert] DEBUG: creating bottom right tree (%i,%i) <-> (%i,%i)\n", x+w/2, y+h/2, x+w/2+h/2, y+h/2+w/2);
     botRight_ = new QuadTree(BR_boundary, capacity_, max_density_);
 
     Rect BL_boundary(x, y+h/2, h/2, w/2);
+    logger.print(pcl::console::L_DEBUG, "[QuadTree::insert] DEBUG: creating bottom left tree (%i,%i) <-> (%i,%i)\n", x, y+h/2, x+h/2, y+h/2+w/2);
     botLeft_ = new QuadTree(BL_boundary, capacity_, max_density_);
 
     divided_ = true;

@@ -31,6 +31,8 @@
 #include <vector>
 #include <opencv2/core/core.hpp>
 
+#include <iostream>
+
 /*
  * Quad tree data structure to store image keypoints
  */
@@ -66,10 +68,12 @@ public:
     //i.e. no point need to be detected here
     float max_density_;
 	
-    QuadTree(): capacity_(4), divided_(false), allocated_(false)
+    QuadTree():
+    capacity_(4), divided_(false), allocated_(false), max_density_(0.0)
     {}
   
-    QuadTree(const cv::Rect& boundary, const int& capacity, const float& max_density=0)
+    QuadTree(const cv::Rect& boundary, const int& capacity, const float& max_density=0):
+    divided_(false), allocated_(false)
     {
         boundary_ = boundary;
         capacity_ = capacity;
@@ -78,6 +82,13 @@ public:
         topRight_ = new QuadTree();
         botLeft_ = new QuadTree();
         botRight_ = new QuadTree();
+
+        int x = boundary_.x;
+        int y = boundary_.y;
+        int h = boundary_.height;
+        int w = boundary_.width;
+
+        printf("[QuadTree::insert] DEBUG: building node (%i,%i) <-> (%i,%i)\n", x, y, h, w);
     }
 
     //Inserts a point in region
