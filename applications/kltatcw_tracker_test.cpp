@@ -39,6 +39,66 @@
 using namespace std;
 using namespace cv;
 
+void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts, const vector<float> radiuses, bool is_kf);
+void draw_rejected_points(Mat& img, const vector<Point2f> pts);
+
+/**
+ * This program shows the use of tracking keypoints using
+ * the KLT with Adaptive Tracking Circular Windows algorithm.
+ * @param .yml config. file (from which index_file is used)
+ */
+int main(int argc, char **argv)
+{
+	EventLogger& logger = EventLogger::getInstance();
+	logger.setVerbosityLevel(pcl::console::L_INFO);
+
+	RGBDLoader loader;
+	Mat frame, depth;
+	int min_pts, max_pts;
+	float min_r, max_r;
+	string index_file;
+
+	if(argc != 2)
+	{
+		logger.print(pcl::console::L_INFO, "[kltatcw_tracker_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
+		exit(0);
+	}
+	ConfigLoader param_loader(argv[1]);
+	param_loader.checkAndGetInt("min_pts",min_pts);
+	param_loader.checkAndGetInt("max_pts",max_pts);
+	param_loader.checkAndGetFloat("min_r",min_r);
+	param_loader.checkAndGetFloat("max_r",max_r);
+	param_loader.checkAndGetString("index_file", index_file);
+	loader.processFile(index_file);
+
+	KLTATCWTracker tracker(min_pts, max_pts, min_r, max_r);
+
+	//Track points on each image
+	for(int i = 0; i < loader.num_images_; i++)
+	{
+		loader.getNextImage(frame, depth);
+
+		double el_time = (double) cvGetTickCount();
+		bool is_kf = tracker.track(frame);
+		el_time = ((double) cvGetTickCount() - el_time)/(cvGetTickFrequency()*1000.0);
+		logger.print(pcl::console::L_INFO,"[kltatcw_tracker.cpp] INFO: Tracking time: %f ms\n", el_time);
+		
+		draw_last_track(frame, tracker.prev_pts_, tracker.curr_pts_, tracker.radiuses_, is_kf);
+		draw_rejected_points(frame, tracker.rejected_points_);
+
+		imshow("Image view", frame);
+		imshow("Depth view", depth);
+		char key = waitKey(15);
+		if(key == 27 || key == 'q' || key == 'Q')
+		{
+			printf("Exiting.\n");
+			break;
+		}
+	}
+
+	return 0;
+}
+
 void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts, const vector<float> radiuses, bool is_kf)
 {
 	Scalar color;
@@ -72,54 +132,4 @@ void draw_rejected_points(Mat& img, const vector<Point2f> pts)
 	{
 		circle(img, pts[i], 1, CV_RGB(255, 255, 0), 2);
 	}
-}
-
-/**
- * This program shows the use of tracking keypoints using
- * the KLT with Adaptive Tracking Circular Windows algorithm.
- * @param .yml config. file (from which index_file is used)
- */
-int main(int argc, char **argv)
-{
-	EventLogger& logger = EventLogger::getInstance();
-	logger.setVerbosityLevel(pcl::console::L_DEBUG);
-
-	ConfigLoader param_loader;
-	RGBDLoader loader;
-	Mat frame, depth;
-
-	if(argc != 2)
-	{
-		logger.print(pcl::console::L_INFO, "[kltatcw_tracker_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
-		exit(0);
-	}
-	param_loader.loadParams(argv[1]);
-	loader.processFile(param_loader.index_file_);
-
-	KLTATCWTracker tracker(600, 5000, 10, 50);
-
-	//Track points on each image
-	for(int i = 0; i < loader.num_images_; i++)
-	{
-		loader.getNextImage(frame, depth);
-
-		double el_time = (double) cvGetTickCount();
-		bool is_kf = tracker.track(frame);
-		el_time = ((double) cvGetTickCount() - el_time)/(cvGetTickFrequency()*1000.0);
-		printf("Tracking time: %f ms\n", el_time);
-		
-		draw_last_track(frame, tracker.prev_pts_, tracker.curr_pts_, tracker.radiuses_, is_kf);
-		draw_rejected_points(frame, tracker.rejected_points_);
-
-		imshow("Image view", frame);
-		imshow("Depth view", depth);
-		char key = waitKey(15);
-		if(key == 27 || key == 'q' || key == 'Q')
-		{
-			printf("Exiting.\n");
-			break;
-		}
-	}
-
-	return 0;
 }

@@ -34,6 +34,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
+#include <event_logger.h>
 
 #include <opencv2/opencv.hpp>
 
