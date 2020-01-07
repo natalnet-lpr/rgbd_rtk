@@ -37,9 +37,9 @@
 using namespace std;
 using namespace cv;
 
-void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts)
+void draw_last_track(Mat &img, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts)
 {
-	for(size_t k = 0; k < curr_pts.size(); k++)
+	for (size_t k = 0; k < curr_pts.size(); k++)
 	{
 		Point2i pt1, pt2;
 		pt1.x = prev_pts[k].x;
@@ -47,28 +47,28 @@ void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Poin
 		pt2.x = curr_pts[k].x;
 		pt2.y = curr_pts[k].y;
 
-		circle(img, pt1, 1, CV_RGB(0,0,255), 1);
-		circle(img, pt2, 3, CV_RGB(0,255,0), 1);
-		line(img, pt1, pt2, CV_RGB(0,255,0));
+		circle(img, pt1, 1, CV_RGB(0, 0, 255), 1);
+		circle(img, pt2, 3, CV_RGB(0, 255, 0), 1);
+		line(img, pt1, pt2, CV_RGB(0, 255, 0));
 	}
 }
 
-void draw_tracks(Mat& img, const vector<Tracklet> tracklets)
+void draw_tracks(Mat &img, const vector<Tracklet> tracklets)
 {
-	for(size_t i = 0; i < tracklets.size(); i++)
+	for (size_t i = 0; i < tracklets.size(); i++)
 	{
-		for(size_t j = 0; j < tracklets[i].pts2D_.size(); j++)
+		for (size_t j = 0; j < tracklets[i].pts2D_.size(); j++)
 		{
 			Point2i pt1;
 			pt1.x = tracklets[i].pts2D_[j].x;
 			pt1.y = tracklets[i].pts2D_[j].y;
-			circle(img, pt1, 3, CV_RGB(0,255,0), 1);
-			if(j > 0)
+			circle(img, pt1, 3, CV_RGB(0, 255, 0), 1);
+			if (j > 0)
 			{
 				Point2i pt2;
-				pt2.x = tracklets[i].pts2D_[j-1].x;
-				pt2.y = tracklets[i].pts2D_[j-1].y;
-				line(img, pt1, pt2, CV_RGB(0,255,0));
+				pt2.x = tracklets[i].pts2D_[j - 1].x;
+				pt2.y = tracklets[i].pts2D_[j - 1].y;
+				line(img, pt1, pt2, CV_RGB(0, 255, 0));
 			}
 		}
 	}
@@ -78,7 +78,7 @@ int main(int argc, char **argv)
 {
 	string index_file_name;
 	RGBDLoader loader;
-	
+
 	//default constructor: create a ORB detector and extractor and a BruteForce matcher.
 	//FlexibleFeatureDetector detector;
 
@@ -91,11 +91,11 @@ int main(int argc, char **argv)
 	// Create a BruteForce matcher
 	Ptr<DescriptorMatcher> brute_force_matcher = DescriptorMatcher::create("BruteForce");
 
-	FlexibleFeatureDetector detector(akaze_detector,orb_extractor,brute_force_matcher);
+	FlexibleFeatureDetector detector(akaze_detector, orb_extractor, brute_force_matcher);
 
 	Mat frame, depth;
 
-	if(argc != 2)
+	if (argc != 2)
 	{
 		fprintf(stderr, "Usage: %s <index file>\n", argv[0]);
 		exit(0);
@@ -103,35 +103,41 @@ int main(int argc, char **argv)
 
 	index_file_name = argv[1];
 	loader.processFile(index_file_name);
-	Mat savedframe;
-	Mat prev_frame;
+	Mat current_frame;
+	Mat previous_frame;
+
 	//Track points on each image
-		
-	for(int i = 0; i < loader.num_images_; i++)
+	for (int i = 0; i < loader.num_images_; i++)
 	{
 		loader.getNextImage(frame, depth);
-		if(i==0)
-			savedframe = frame;
-		detector.detectAndGetGoodMatches(frame);
-		if(i==200){
-			cout<<"buscando na arvore\n";
-			detector.searchInTree(detector.prev_descriptors_);
-		}
 
-		//draw_last_track(frame, tracker.prev_pts_, tracker.curr_pts_);
-		//draw_tracks(frame, tracker.tracklets_);
-		if(i>0)
-			detector.draw(prev_frame,frame);
+		detector.track(frame);
+		frame.copyTo(current_frame);
+
+		draw_last_track(frame, detector.prev_good_Pts_, detector.curr_good_Pts_);
+
+		if (i > 0)
+		{
+			Mat img_matches;
+			drawMatches(current_frame, detector.curr_KPs_, previous_frame, detector.prev_KPs_, detector.good_matches_, img_matches, Scalar::all(-1),
+						Scalar::all(-1), std::vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
+
+			//-- Show detected matches
+			imshow("Good Matches", img_matches);
+		}
 
 		imshow("Image view", frame);
 		imshow("Depth view", depth);
+
 		char key = waitKey(15);
-		if(key == 27 || key == 'q' || key == 'Q')
+
+		if (key == 27 || key == 'q' || key == 'Q')
 		{
 			printf("Exiting.\n");
 			break;
 		}
-		prev_frame = frame;
+
+		current_frame.copyTo(previous_frame);
 	}
 
 	return 0;
