@@ -9,6 +9,7 @@ add_executable(monocular_image_grabber monocular_image_grabber.cpp)
 add_executable(sequence_loader_test sequence_loader_test.cpp)
 add_executable(rgbd_loader_test rgbd_loader_test.cpp)
 add_executable(event_logger_test event_logger_test.cpp)
+add_executable(quadtree_test quadtree_test.cpp)
 add_executable(klt_tracker_test klt_tracker_test.cpp)
 add_executable(klttw_tracker_test klttw_tracker_test.cpp)
 add_executable(klttcw_tracker_test klttcw_tracker_test.cpp)
@@ -38,6 +39,7 @@ target_link_libraries(monocular_image_grabber ${OpenCV_LIBRARIES})
 target_link_libraries(sequence_loader_test ${RGBD_RTK_IO})
 target_link_libraries(rgbd_loader_test ${RGBD_RTK_COMMON} ${RGBD_RTK_IO})
 target_link_libraries(event_logger_test ${RGBD_RTK_COMMON} ${RGBD_RTK_IO})
+target_link_libraries(quadtree_test ${RGBD_RTK_COMMON} ${RGBD_RTK_QUADTREE})
 target_link_libraries(klt_tracker_test ${RGBD_RTK_COMMON} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING})
 target_link_libraries(klttw_tracker_test ${RGBD_RTK_COMMON} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING})
 target_link_libraries(klttcw_tracker_test ${RGBD_RTK_COMMON} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING})
@@ -73,6 +75,7 @@ install(TARGETS monocular_calibration
                 sequence_loader_test
                 rgbd_loader_test
                 event_logger_test
+                quadtree_test
                 klt_tracker_test
                 klttw_tracker_test
                 klttcw_tracker_test

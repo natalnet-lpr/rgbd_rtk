@@ -70,7 +70,13 @@ public:
 	
     QuadTree():
     capacity_(4), divided_(false), allocated_(false), max_density_(0.0)
-    {}
+    {
+        topLeft_ = NULL;
+        topRight_ = NULL;
+        botLeft_ = NULL;
+        botRight_ = NULL;
+        printf("[QuadTree::QuadTree] DEBUG: building node with undefined boundary and no subtrees\n");
+    }
   
     QuadTree(const cv::Rect& boundary, const int& capacity, const float& max_density=0):
     divided_(false), allocated_(false)
@@ -78,6 +84,8 @@ public:
         boundary_ = boundary;
         capacity_ = capacity;
         max_density_ = max_density;
+
+        //Initialize 4 child nodes (they are actually used to traverse the tree)
         topLeft_ = new QuadTree();
         topRight_ = new QuadTree();
         botLeft_ = new QuadTree();
@@ -88,7 +96,32 @@ public:
         int h = boundary_.height;
         int w = boundary_.width;
 
-        printf("[QuadTree::insert] DEBUG: building node (%i,%i) <-> (%i,%i)\n", x, y, h, w);
+        printf("[QuadTree::QuadTree] DEBUG: building node (%i,%i) <-> (%i,%i)\n", x, y, x+h, y+w);
+    }
+
+    //Default destructor
+    ~QuadTree()
+    {
+        if(topLeft_)
+        {
+            printf("[QuadTree::QuadTree] DEBUG: deleting topLeft_ tree\n");
+            delete topLeft_;
+        }
+        if(topRight_)
+        {
+            printf("[QuadTree::QuadTree] DEBUG: deleting topRight_ tree\n");
+            delete topRight_;
+        }
+        if(botLeft_)
+        {
+            printf("[QuadTree::QuadTree] DEBUG: deleting botLeft_ tree\n");
+            delete botLeft_;
+        }
+        if(botRight_)
+        {
+            printf("[QuadTree::QuadTree] DEBUG: deleting botRight_ tree\n");
+            delete botRight_;
+        }
     }
 
     //Inserts a point in region
@@ -102,4 +135,7 @@ public:
     void markMask(cv::Mat &mask, const std::vector<cv::Point2f>& pts, const bool& initialized);
 
     void drawTree(cv::Mat &img);
+
+    //Sets the node boundary (rectangular region)
+    void setBoundary(const cv::Rect& boundary);
 };

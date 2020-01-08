@@ -92,20 +92,25 @@ void QuadTree::subdivide()
     int h = boundary_.height;
     int w = boundary_.width;
 
+    //Exchange the child nodes for nodes that will store points 
     Rect TL_boundary(x, y, h/2, w/2);
     logger.print(pcl::console::L_DEBUG, "[QuadTree::insert] DEBUG: creating top left tree (%i,%i) <-> (%i,%i)\n", x, y, x+h/2, y+w/2);
+    delete topLeft_;
     topLeft_ = new QuadTree(TL_boundary, capacity_, max_density_);
     
     Rect TR_boundary(x+w/2, y, h/2, w/2);
     logger.print(pcl::console::L_DEBUG, "[QuadTree::insert] DEBUG: creating top right tree (%i,%i) <-> (%i,%i)\n", x+w/2, y, x+w/2+h/2, y+w/2);
+    delete topRight_;
     topRight_ = new QuadTree(TR_boundary, capacity_, max_density_);
 
     Rect BR_boundary(x+w/2, y+h/2, h/2, w/2);
     logger.print(pcl::console::L_DEBUG, "[QuadTree::insert] DEBUG: creating bottom right tree (%i,%i) <-> (%i,%i)\n", x+w/2, y+h/2, x+w/2+h/2, y+h/2+w/2);
+    delete botRight_;
     botRight_ = new QuadTree(BR_boundary, capacity_, max_density_);
 
     Rect BL_boundary(x, y+h/2, h/2, w/2);
     logger.print(pcl::console::L_DEBUG, "[QuadTree::insert] DEBUG: creating bottom left tree (%i,%i) <-> (%i,%i)\n", x, y+h/2, x+h/2, y+h/2+w/2);
+    delete botLeft_;
     botLeft_ = new QuadTree(BL_boundary, capacity_, max_density_);
 
     divided_ = true;
@@ -125,17 +130,21 @@ void QuadTree::markMask(Mat &mask, const vector<Point2f>& pts, const bool& initi
 
 	if(allocated_)
     {
+        //Count the number of points that are inside the current node region
 		int n_points = 0;
-		for(int i=0; i<pts.size(); i++)
+		for(int i=0; i < pts.size(); i++)
         {
 			if(boundary_.contains(pts[i]))
             {
 				n_points++;
 			}
 		}
-		float sub_density = n_points/float(h*w);
+		float node_density = n_points/float(h*w);
 
-		if(2*sub_density >= density_total || 2*sub_density >= max_density_)
+        //If the node density is larger than half the total density or 
+        //larger than half the max density, mark the region with black
+        //(no points should be detected in the region)
+		if(2*node_density >= density_total || 2*node_density >= max_density_)
         {
 			if(initialized)
 				rectangle(mask, TR_boundary, Scalar(0), -1);
@@ -172,4 +181,8 @@ void QuadTree::drawTree(Mat& img){
     }
 }
 
+void QuadTree::setBoundary(const cv::Rect& boundary)
+{
+    boundary_ = boundary;
+}
 
