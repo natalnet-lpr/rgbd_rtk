@@ -42,6 +42,62 @@
 using namespace std;
 using namespace cv;
 
+void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts, bool is_kf);
+void draw_tracks(Mat& img, const vector<Tracklet> tracklets);
+
+/**
+ * This program shows the use of keypoint tracking KLT algorithm.
+ * @param .yml config. file (from which index_file is used)
+ */
+int main(int argc, char **argv)
+{
+	EventLogger& logger = EventLogger::getInstance();
+	logger.setVerbosityLevel(pcl::console::L_INFO);
+
+	RGBDLoader loader;
+	int min_pts, max_pts, log_stats;
+	Mat frame, depth;
+	string index_file;
+
+	if(argc != 2)
+	{
+		logger.print(pcl::console::L_INFO, "[klt_tracker_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
+		exit(0);
+	}
+	ConfigLoader param_loader(argv[1]);
+	param_loader.checkAndGetInt("min_pts",min_pts);
+	param_loader.checkAndGetInt("max_pts",max_pts);	
+	param_loader.checkAndGetInt("log_stats", log_stats);
+	param_loader.checkAndGetString("index_file", index_file);
+	KLTTracker tracker(min_pts,max_pts,log_stats);
+	loader.processFile(index_file);
+
+	//Track points on each image
+	for(int i = 0; i < loader.num_images_; i++)
+	{
+		loader.getNextImage(frame, depth);
+
+		double el_time = (double) cvGetTickCount();
+		bool is_kf = tracker.track(frame);
+		el_time = ((double) cvGetTickCount() - el_time)/(cvGetTickFrequency()*1000.0);
+		logger.print(pcl::console::L_INFO,"[klt_tracker_test.cpp] INFO: Tracking time: %f ms\n", el_time);
+		
+		draw_last_track(frame, tracker.prev_pts_, tracker.curr_pts_, is_kf);
+		//draw_tracks(frame, tracker.tracklets_);
+
+		imshow("Image view", frame);
+		imshow("Depth view", depth);
+		char key = waitKey(15);
+		if(key == 27 || key == 'q' || key == 'Q')
+		{
+			logger.print(pcl::console::L_INFO, "[klt_tracker_test.cpp] Exiting\n", argv[0]);
+			break;
+		}
+	}
+
+	return 0;
+}
+
 void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts, bool is_kf)
 {
 	Scalar color;
@@ -66,7 +122,6 @@ void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Poin
 		line(img, pt1, pt2, color);
 	}
 }
-
 void draw_tracks(Mat& img, const vector<Tracklet> tracklets)
 {
 	for(size_t i = 0; i < tracklets.size(); i++)
@@ -86,52 +141,4 @@ void draw_tracks(Mat& img, const vector<Tracklet> tracklets)
 			}
 		}
 	}
-}
-
-/**
- * This program shows the use of keypoint tracking KLT algorithm.
- * @param .yml config. file (from which index_file is used)
- */
-int main(int argc, char **argv)
-{
-	EventLogger& logger = EventLogger::getInstance();
-	logger.setVerbosityLevel(pcl::console::L_DEBUG);
-
-	ConfigLoader param_loader;
-	RGBDLoader loader;
-	KLTTracker tracker;
-	Mat frame, depth;
-
-	if(argc != 2)
-	{
-		logger.print(pcl::console::L_INFO, "[klt_tracker_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
-		exit(0);
-	}
-	param_loader.loadParams(argv[1]);
-	loader.processFile(param_loader.index_file_);
-
-	//Track points on each image
-	for(int i = 0; i < loader.num_images_; i++)
-	{
-		loader.getNextImage(frame, depth);
-
-		double el_time = (double) cvGetTickCount();
-		bool is_kf = tracker.track(frame);
-		el_time = ((double) cvGetTickCount() - el_time)/(cvGetTickFrequency()*1000.0);
-		printf("Tracking time: %f ms\n", el_time);
-		
-		draw_last_track(frame, tracker.prev_pts_, tracker.curr_pts_, is_kf);
-		//draw_tracks(frame, tracker.tracklets_);
-
-		imshow("Image view", frame);
-		imshow("Depth view", depth);
-		char key = waitKey(15);
-		if(key == 27 || key == 'q' || key == 'Q')
-		{
-			logger.print(pcl::console::L_INFO, "[klt_tracker_test.cpp] Exiting\n", argv[0]);
-			break;
-		}
-	}
-
-	return 0;
 }

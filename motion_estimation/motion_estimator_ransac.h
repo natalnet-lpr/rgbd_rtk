@@ -34,6 +34,9 @@
 #include <common_types.h>
 
 #include <pcl/correspondence.h>
+#include <event_logger.h>
+
+extern EventLogger& logger;
 
 class MotionEstimatorRANSAC
 {
