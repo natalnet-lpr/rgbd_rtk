@@ -39,13 +39,19 @@
 class QuadTree
 {
 
+private:
+
+    //Recursive function that actually generates the mask:
+    //uses the points from all previous upper levels nodes
+    void _generateMask(cv::Mat &mask, const std::vector<cv::Point2f>& upper_levels_points);
+
 public:
 
     //Rectangular region kept in a node of the quadtree
     cv::Rect boundary_;
 
     //Maximum number of keypoints in a node of the quadtree
-    int capacity_;
+    size_t capacity_;
 
     //Flag used to check if the current node is subdived
     bool divided_;
@@ -131,8 +137,9 @@ public:
     //(create subtrees by equally dividing the rect. region into 4 equal regions)
     void subdivide();
 
-    //Mark the mask, black regions are regions that will not be used in point detection
-    void markMask(cv::Mat &mask, const std::vector<cv::Point2f>& pts, const bool& initialized);
+    //Generate a mask: b/w image in which white pixels denote regions in which keypoints
+    //should be extracted
+    void generateMask(cv::Mat &mask);
 
     void drawTree(cv::Mat &img);
 

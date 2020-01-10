@@ -30,6 +30,7 @@
 
 #include <iostream>
 #include <cmath>
+#include <algorithm>
 
 #include <opencv2/imgproc/imgproc.hpp>
 
@@ -40,6 +41,65 @@ using namespace std;
 using namespace cv;
 
 EventLogger& logger = EventLogger::getInstance();
+
+void QuadTree::_generateMask(cv::Mat &mask, const std::vector<cv::Point2f>& upper_levels_points)
+{
+    if(allocated_)
+    {
+        //Compute the point density (points/pixel) of the quadtree node
+        int x = boundary_.x;
+        int y = boundary_.y;
+        int h = boundary_.height;
+        int w = boundary_.width;
+        float node_area = h*w;
+        float node_density = 0.0;
+
+        logger.print(pcl::console::L_DEBUG, "[QuadTree::generateMask] DEBUG: node (%i,%i) <-> (%i,%i)\n", x, y, x+h, y+w);
+
+        //To compute the node density, check which points in all parent nodes
+        //are within the node boundary and add it to a vector
+        logger.print(pcl::console::L_DEBUG, "[QuadTree::generateMask] DEBUG: checking nodes from upper levels...\n");
+        vector<Point2f> points_within_node;
+        for(size_t i = 0; i < upper_levels_points.size(); i++)
+        {
+            logger.print(pcl::console::L_DEBUG, "[QuadTree::generateMask] DEBUG: point (%f,%f)\n", upper_levels_points[i].x, upper_levels_points[i].y);
+            if(boundary_.contains(upper_levels_points[i]))
+            {
+                logger.print(pcl::console::L_DEBUG, "[QuadTree::generateMask] DEBUG: inside\n");
+                points_within_node.push_back(upper_levels_points[i]);
+            }
+        }
+        //The node points are obviously within the node boundary
+        points_within_node.reserve(points_within_node.size() + pts_.size());
+        points_within_node.insert(points_within_node.end(),
+                                 pts_.begin(),
+                                 pts_.end());
+        node_density = float(points_within_node.size())/node_area;
+        logger.print(pcl::console::L_DEBUG, "[QuadTree::generateMask] DEBUG: points within node: %lu\n", points_within_node.size());
+        logger.print(pcl::console::L_DEBUG, "[QuadTree::generateMask] DEBUG: node area: %f\n", node_area);
+        logger.print(pcl::console::L_DEBUG, "[QuadTree::generateMask] DEBUG: node_density: %f\n", node_density);
+
+        //If the node density is larger than the max density,
+        //mark the region with black
+        //(no points should be detected in the region)
+        if(node_density >= max_density_)
+        {
+            logger.print(pcl::console::L_DEBUG, "[QuadTree::generateMask] DEBUG: node region marked as black\n");
+            rectangle(mask, boundary_, Scalar(0), -1);
+        }
+        else
+        {
+            logger.print(pcl::console::L_DEBUG, "[QuadTree::generateMask] DEBUG: node region marked as white\n");
+            rectangle(mask, boundary_, Scalar(255), -1);
+        }
+
+        //Recursively pass all points within the node to the child nodes
+        topLeft_->_generateMask(mask, points_within_node);
+        topRight_->_generateMask(mask, points_within_node);
+        botLeft_->_generateMask(mask, points_within_node);
+        botRight_->_generateMask(mask, points_within_node);
+    }
+}
 
 void QuadTree::insert(const Point2f& new_point)
 {
@@ -78,10 +138,10 @@ void QuadTree::insert(const Point2f& new_point)
             subdivide();
         }
 
-        topRight_->insert(new_point);
         topLeft_->insert(new_point);
-        botRight_->insert(new_point);
+        topRight_->insert(new_point);
         botLeft_->insert(new_point);
+        botRight_->insert(new_point);
     }
 }
 
@@ -103,79 +163,34 @@ void QuadTree::subdivide()
     delete topRight_;
     topRight_ = new QuadTree(TR_boundary, capacity_, max_density_);
 
-    Rect BR_boundary(x+w/2, y+h/2, h/2, w/2);
-    logger.print(pcl::console::L_DEBUG, "[QuadTree::insert] DEBUG: creating bottom right tree (%i,%i) <-> (%i,%i)\n", x+w/2, y+h/2, x+w/2+h/2, y+h/2+w/2);
-    delete botRight_;
-    botRight_ = new QuadTree(BR_boundary, capacity_, max_density_);
-
     Rect BL_boundary(x, y+h/2, h/2, w/2);
     logger.print(pcl::console::L_DEBUG, "[QuadTree::insert] DEBUG: creating bottom left tree (%i,%i) <-> (%i,%i)\n", x, y+h/2, x+h/2, y+h/2+w/2);
     delete botLeft_;
     botLeft_ = new QuadTree(BL_boundary, capacity_, max_density_);
 
+    Rect BR_boundary(x+w/2, y+h/2, h/2, w/2);
+    logger.print(pcl::console::L_DEBUG, "[QuadTree::insert] DEBUG: creating bottom right tree (%i,%i) <-> (%i,%i)\n", x+w/2, y+h/2, x+w/2+h/2, y+h/2+w/2);
+    delete botRight_;
+    botRight_ = new QuadTree(BR_boundary, capacity_, max_density_);
+
     divided_ = true;
 }
 
-void QuadTree::markMask(Mat &mask, const vector<Point2f>& pts, const bool& initialized)
+void QuadTree::generateMask(cv::Mat &mask)
 {
+	vector<Point2f> vector_without_pts;
 
-	int x = boundary_.x;
-    int y = boundary_.y;
-    int h = boundary_.height;
-    int w = boundary_.width;	
-	float area = mask.cols*mask.rows;
-	float density_total = pts.size()/area;
-
-	Rect TR_boundary(x, y, w, h);
-
-	if(allocated_)
-    {
-        //Count the number of points that are inside the current node region
-		int n_points = 0;
-		for(int i=0; i < pts.size(); i++)
-        {
-			if(boundary_.contains(pts[i]))
-            {
-				n_points++;
-			}
-		}
-		float node_density = n_points/float(h*w);
-
-        //If the node density is larger than half the total density or 
-        //larger than half the max density, mark the region with black
-        //(no points should be detected in the region)
-		if(2*node_density >= density_total || 2*node_density >= max_density_)
-        {
-			if(initialized)
-				rectangle(mask, TR_boundary, Scalar(0), -1);
-		}
-		else
-        {
-			rectangle(mask, TR_boundary, Scalar(255), -1);
-		}
-		
-		topRight_->markMask(mask, pts, true);
-		topLeft_->markMask(mask, pts, true);
-		botLeft_->markMask(mask, pts, true);
-		botRight_->markMask(mask, pts, true);
-	}
+    _generateMask(mask, vector_without_pts);
 }
 
-void QuadTree::drawTree(Mat& img){
-    
-    int x = boundary_.x;
-    int y = boundary_.y;
-    int h = boundary_.height;
-    int w = boundary_.width;    
-    
-    Rect TR_boundary(x, y, w, h);
-
+void QuadTree::drawTree(Mat& img)
+{    
     if(allocated_)
     {
-        rectangle(img, TR_boundary, Scalar(255,255,0), 1);
+        rectangle(img, boundary_, Scalar(255,255,0), 1);
 
-        topRight_->drawTree(img);
         topLeft_->drawTree(img);
+        topRight_->drawTree(img);
         botLeft_->drawTree(img);
         botRight_->drawTree(img);
     }

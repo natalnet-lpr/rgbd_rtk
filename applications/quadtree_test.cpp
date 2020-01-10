@@ -53,9 +53,9 @@ int main(int argc, char **argv)
 	Mat mask = Mat::zeros(400, 400, CV_8U);
 	mask.setTo(255);
 
-	//Build quadtree with given boundary and capacity
+	//Build quadtree with given boundary, capacity and max_density
 	Rect tree_boundary(0, 0, 400, 400);
-	QuadTree *tree = new QuadTree(tree_boundary, 5, 1.0);
+	QuadTree *tree = new QuadTree(tree_boundary, 5, 3e-5);
 
 	//Insert a few points into the quadtree:
 	vector<Point2f> points;
@@ -69,6 +69,11 @@ int main(int argc, char **argv)
 	points.push_back(cv::Point2f(250, 10));
 	points.push_back(cv::Point2f(2, 250));
 	points.push_back(cv::Point2f(250, 250));
+	points.push_back(cv::Point2f(1, 1));
+	points.push_back(cv::Point2f(1, 2));
+	points.push_back(cv::Point2f(1, 3));
+	points.push_back(cv::Point2f(1, 4));
+	points.push_back(cv::Point2f(101, 101));
 
 	//First node
 	tree->insert(points[0]); //1st point inserted
@@ -90,7 +95,16 @@ int main(int argc, char **argv)
 	//Bottom right node
 	tree->insert(points[9]);
 
-	tree->markMask(mask, points, false);
+	//Other points of top left node
+	tree->insert(points[10]);
+	tree->insert(points[11]);
+	tree->insert(points[12]);
+	tree->insert(points[13]);
+
+	//Top left, bottom right, after subdivision of top left
+	tree->insert(points[14]);
+
+	tree->generateMask(mask);
 
 	imshow("Quadtree Mask", mask);
 	waitKey(0);
