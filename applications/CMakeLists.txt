@@ -42,12 +42,12 @@ target_link_libraries(kinect_grabber ${OpenCV_LIBRARIES} ${PCL_LIBRARIES} ${RGBD
 target_link_libraries(sequence_loader_test ${RGBD_RTK_IO})
 target_link_libraries(rgbd_loader_test ${RGBD_RTK_COMMON} ${RGBD_RTK_IO})
 target_link_libraries(event_logger_test ${RGBD_RTK_COMMON} ${RGBD_RTK_IO})
-target_link_libraries(quadtree_test ${RGBD_RTK_COMMON} ${RGBD_RTK_QUADTREE})
+target_link_libraries(quadtree_test ${RGBD_RTK_COMMON})
 target_link_libraries(klt_tracker_test ${RGBD_RTK_COMMON} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING})
 target_link_libraries(klttw_tracker_test ${RGBD_RTK_COMMON} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING})
 target_link_libraries(klttcw_tracker_test ${RGBD_RTK_COMMON} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING})
 target_link_libraries(kltatcw_tracker_test ${RGBD_RTK_COMMON} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING})
-target_link_libraries(kltqt_tracker_test ${RGBD_RTK_COMMON} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING} ${RGBD_RTK_QUADTREE})
+target_link_libraries(kltqt_tracker_test ${RGBD_RTK_COMMON} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING})
 target_link_libraries(motion_estimator_test  ${PCL_LIBRARIES}
                                              ${RGBD_RTK_COMMON} ${RGBD_RTK_IO}
                                              ${RGBD_RTK_TRACKING} ${RGBD_RTK_VISUALIZATION}
