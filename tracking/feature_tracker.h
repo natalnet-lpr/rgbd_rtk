@@ -1,11 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
-<<<<<<< HEAD
- *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
-=======
- *  Copyright (c) 2016-2018, Natalnet Laboratory for Perceptual Robotics
->>>>>>> feature-quadtree-tracker
+ *  Copyright (c) 2016-2020, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -40,8 +36,6 @@
 
 #include <common_types.h>
 #include <event_logger.h>
-
-extern EventLogger& logger;
 
 /*
  * Abstract Base Class for Feature Trackers.

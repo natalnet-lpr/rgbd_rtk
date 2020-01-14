@@ -167,4 +167,6 @@ public:
 	void printError(const char* module_class, const char* msg);
 };
 
+extern EventLogger& logger;
+
 #endif /* INCLUDE_EVENT_LOGGER_H_ */

@@ -31,9 +31,8 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-#include "sequence_loader.h"
+#include <sequence_loader.h>
 #include <event_logger.h>
-#include <rgbd_loader.h>
 
 using namespace std;
 using namespace cv;

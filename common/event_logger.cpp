@@ -32,6 +32,8 @@
 
 using namespace std;
 
+EventLogger& logger = EventLogger::getInstance();
+
 void EventLogger::initialize()
 {
 	log_file_ = fopen(EventLogger::file_name_.c_str(), "w");

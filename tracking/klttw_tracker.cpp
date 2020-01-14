@@ -38,6 +38,7 @@
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/video/video.hpp>
 
+#include <event_logger.h>
 #include <klttw_tracker.h>
 
 using namespace std;
