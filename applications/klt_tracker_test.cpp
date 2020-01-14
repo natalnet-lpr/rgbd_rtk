@@ -33,6 +33,7 @@
 #include <rgbd_loader.h>
 #include <klt_tracker.h>
 #include <common_types.h>
+#include <fabmap.hpp>
 
 using namespace std;
 using namespace cv;
