@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2020, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -33,12 +33,10 @@
 #include <pcl/common/transforms.h>
 
 #include <geometry.h>
-#include <event_logger.h>
 #include <motion_estimator_ransac.h>
+#include <event_logger.h>
 
 using namespace std;
-
-EventLogger& logger = EventLogger::getInstance();
 
 void MotionEstimatorRANSAC::setDataFromCorrespondences(const std::vector<cv::Point2f>& tgt_points, const pcl::PointCloud<PointT>::Ptr& tgt_dense_cloud,
 		                                               const std::vector<cv::Point2f>& src_points, const pcl::PointCloud<PointT>::Ptr& src_dense_cloud)

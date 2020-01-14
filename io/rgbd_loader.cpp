@@ -37,8 +37,6 @@
 using namespace std;
 using namespace cv;
 
-EventLogger& logger = EventLogger::getInstance();
-
 void RGBDLoader::processFile(const string& file_name)
 {
 	ifstream index_file(file_name.c_str());

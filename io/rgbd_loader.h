@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2020, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -30,8 +30,6 @@
 #include <vector>
 #include <opencv2/core/core.hpp>
 #include <event_logger.h>
-
-extern EventLogger& logger;
 
 class RGBDLoader
 {
