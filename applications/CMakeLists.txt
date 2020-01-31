@@ -44,48 +44,36 @@ find_library(RGBD_RTK_VISUAL_MEMORY NAMES rgbd_rtk_visual_memory)
 
 
 
-target_link_libraries(monocular_calibration ${OpenCV_LIBRARIES})
-target_link_libraries(monocular_image_grabber ${OpenCV_LIBRARIES})
+target_link_libraries(monocular_calibration ${OpenCV_LIBS})
+target_link_libraries(monocular_image_grabber ${OpenCV_LIBS})
 target_link_libraries(sequence_loader_test ${RGBD_RTK_IO})
-<<<<<<< Updated upstream
 target_link_libraries(rgbd_loader_test ${RGBD_RTK_IO})
-target_link_libraries(klt_tracker_test ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING})
+target_link_libraries(klt_tracker_test ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING} ${OPEN_FAB_MAP_LIBRARIES})
 target_link_libraries(motion_estimator_test  ${PCL_LIBRARIES} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING}
 	                                         ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUALIZATION}
-=======
-target_link_libraries(rgbd_loader_test ${RGBD_RTK_COMMON} ${RGBD_RTK_IO})
-target_link_libraries(event_logger_test ${RGBD_RTK_COMMON} ${RGBD_RTK_IO})
-target_link_libraries(klt_tracker_test ${RGBD_RTK_COMMON} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING} ${OPEN_FAB_MAP_LIBRARIES})
-target_link_libraries(klttw_tracker_test ${RGBD_RTK_COMMON} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING})
-target_link_libraries(klttcw_tracker_test ${RGBD_RTK_COMMON} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING})
-target_link_libraries(kltatcw_tracker_test ${RGBD_RTK_COMMON} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING})
-target_link_libraries(kltqt_tracker_test ${RGBD_RTK_COMMON} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING} ${RGBD_RTK_QUADTREE})
-target_link_libraries(motion_estimator_test  ${PCL_LIBRARIES}
-                                             ${RGBD_RTK_COMMON} ${RGBD_RTK_IO}
-                                             ${RGBD_RTK_TRACKING} ${RGBD_RTK_VISUALIZATION}
->>>>>>> Stashed changes
-	                                         ${RGBD_RTK_MOTION_ESTIMATION})
+	                                         ${RGBD_RTK_MOTION_ESTIMATION} ${OpenCV_LIBS})
 target_link_libraries(optical_flow_visual_odometry_test ${PCL_LIBRARIES} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING}
 	                                                    ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUALIZATION}
-	                                                    ${RGBD_RTK_MOTION_ESTIMATION} ${RGBD_RTK_VISUAL_ODOMETRY} )
+	                                                    ${RGBD_RTK_MOTION_ESTIMATION} ${RGBD_RTK_VISUAL_ODOMETRY}  )
 target_link_libraries(icp_odometry_test ${PCL_LIBRARIES} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING} 
 	                                                    ${RGBD_RTK_VISUAL_ODOMETRY}
 	                                    ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUALIZATION}
 	                                    ${RGBD_RTK_MOTION_ESTIMATION}
-	                                    ${RGBD_RTK_VISUAL_ODOMETRY})	
+	                                    ${RGBD_RTK_VISUAL_ODOMETRY} ${OpenCV_LIBS})	
 target_link_libraries(surf_detector_test ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING} ${RGBD_RTK_COMMON} )
 target_link_libraries(surf_tracker_test ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING}
 										${RGBD_RTK_COMMON} 
-									 ${RGBD_RTK_VISUAL_MEMORY})																			
+									 ${RGBD_RTK_VISUAL_MEMORY} ${OpenCV_LIBS})																		
 target_link_libraries(motion_estimator_surf_test ${PCL_LIBRARIES} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING}
 	                                         ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUALIZATION}
 	                                         ${RGBD_RTK_MOTION_ESTIMATION}  ${RGBD_RTK_VISUAL_MEMORY})
-								
-target_link_libraries(visual_memory_test ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING}
-	                                         ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUAL_MEMORY})
-  
-target_link_libraries(openfab_map_memory_test ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING} 
-	                                         ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUAL_MEMORY} )
+
+target_link_libraries(visual_memory_test  ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING} 
+	                                         ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUAL_MEMORY} ${OPEN_FAB_MAP_LIBRARIES} )
+
+include_directories(openfab_map_memory_test ${OPEN_FAB_MAP_INCLUDE_DIRS})
+target_link_libraries(openfab_map_memory_test ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING}
+	                                         ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUAL_MEMORY} ${OPEN_FAB_MAP_LIBRARIES})
 
 install(TARGETS monocular_calibration
 	            monocular_image_grabber

@@ -6,25 +6,18 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
-<<<<<<< Updated upstream
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -Wall  -O3 -march=native ")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall   -O3 -march=native")
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
-set( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}" )
-=======
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 #set the root path of openfabmap
 #../rootfs/include/*.hpp and ../rootfs/include/*.h
 #../rootfs/lib/openFABMAP.a
 
-
-list(APPEND CMAKE_FIND_ROOT_PATH "../../rootfs")
+list(APPEND CMAKE_FIND_ROOT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../rootfs")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra")
 set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
 set(CMAKE_CXX_FLAGS_RELEASE "-march=native -mno-avx -O3") # WITH -march=native: seg_fault. on Mac OS
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}" )
->>>>>>> Stashed changes
 
 SET(CMAKE_CXX_FLAGS "-std=c++11")
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
@@ -33,6 +26,14 @@ message(STATUS "Project source directory: " ${PROJECT_SOURCE_DIR})
 message(STATUS "Build directory: " ${PROJECT_BINARY_DIR})
 
 find_package(OpenCV REQUIRED)
+find_package(openFABMAP REQUIRED)
+
+find_package(OpenMP)
+if(OPENMP_FOUND)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    message("Found OpenMP")
+endif(OPENMP_FOUND)
 
 
 if(OpenCV_FOUND)
@@ -52,25 +53,16 @@ else()
 endif()
 
 
-set(openFABMAP_INCLUDE_DIRS "/home/luizfelipe/Documents/Projects/2019.2/visualMemory2.0/openfabmap/include")
 
 
 
-# Force OpenCV versions if ROS is installed
-<<<<<<< Updated upstream
 #set(OpenCV_INCLUDE_DIRS "/home/bruno/Lib/opencv-3.4.1/local/include")
-
-include_directories(${OpenCV_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} ${openFABMAP_INCLUDE_DIRS} common io tracking motion_estimation
+# Force OpenCV versions if ROS is installed
+message("test " ${OPEN_FAB_MAP_INCLUDE_DIRS})
+include_directories(${OpenCV_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} ${OPEN_FAB_MAP_INCLUDE_DIRS} common io tracking motion_estimation
                     visualization visual_odometry visual_memory)
-=======
-#set(OpenCV_INCLUDE_DIRS "/home/ferreira/Documentos/libs/opencv-3.4.1/include")
-find_package(openFABMAP REQUIRED)
-
-include_directories(${OpenCV_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} ${OPEN_FAB_MAP_INCLUDE_DIRS} common io tracking
-                    motion_estimation visualization visual_odometry quadtree stereo )
->>>>>>> Stashed changes
 link_directories(${PCL_LIBRARY_DIRS})
-link_directories(${openFABMAP_INCLUDE_DIRS})
+link_directories(${OPEN_FAB_MAP_LIBRARIES})
 #add_definitions(${PCL_DEFINITIONS}) #apparently not needed
 add_subdirectory(io)
 set(RGBD_RTK_IO rgbd_rtk_io)
