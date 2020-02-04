@@ -59,19 +59,19 @@ target_link_libraries(icp_odometry_test ${PCL_LIBRARIES} ${RGBD_RTK_IO} ${RGBD_R
 	                                                    ${RGBD_RTK_VISUAL_ODOMETRY}
 	                                    ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUALIZATION}
 	                                    ${RGBD_RTK_MOTION_ESTIMATION}
-	                                    ${RGBD_RTK_VISUAL_ODOMETRY} ${OpenCV_LIBS})	
+	                                    ${RGBD_RTK_VISUAL_ODOMETRY} )	
 target_link_libraries(surf_detector_test ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING} ${RGBD_RTK_COMMON} )
 target_link_libraries(surf_tracker_test ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING}
-										${RGBD_RTK_COMMON} 
-									 ${RGBD_RTK_VISUAL_MEMORY} ${OpenCV_LIBS})																		
+										${RGBD_RTK_COMMON} ${RGBD_RTK_VISUAL_MEMORY}
+									 )																		
 target_link_libraries(motion_estimator_surf_test ${PCL_LIBRARIES} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING}
-	                                         ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUALIZATION}
-	                                         ${RGBD_RTK_MOTION_ESTIMATION}  ${RGBD_RTK_VISUAL_MEMORY})
+	                                         ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUALIZATION} ${RGBD_RTK_VISUAL_MEMORY}
+	                                         ${RGBD_RTK_MOTION_ESTIMATION} )
 
 target_link_libraries(visual_memory_test  ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING} 
 	                                         ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUAL_MEMORY} ${OPEN_FAB_MAP_LIBRARIES} )
 
-include_directories(openfab_map_memory_test ${OPEN_FAB_MAP_INCLUDE_DIRS})
+include_directories(openfab_map_memory_test ${RGBD_RTK_IO}  ${RGBD_RTK_COMMON} ${OPEN_FAB_MAP_INCLUDE_DIRS})
 target_link_libraries(openfab_map_memory_test ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING}
 	                                         ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUAL_MEMORY} ${OPEN_FAB_MAP_LIBRARIES})
 

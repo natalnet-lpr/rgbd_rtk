@@ -26,15 +26,13 @@ class FABMapMemory{
 
     protected:
         cv::Mat vocab_train_mat_; 
+        cv::Ptr<cv::FeatureDetector> detector_;
 
     public:
-        FABMapMemory(){
-                vocab_train_mat_ = Mat();
+        FABMapMemory();
+        ~FABMapMemory();
 
-        }
-
-
-        void addTrainDataToVocab(cv::Mat train_frame,cv::Ptr<cv::FeatureDetector> &detector,cv::Ptr<cv::DescriptorExtractor> &extractor);
+        void addTrainDataToVocab(cv::Mat train_frame, const bool to_show=false);
         void generateVocabTrainDataFile(std::string filename);
         //input: a untrained vocabulary that will be trained and returned by this function
         Mat trainVocabulary(Mat untrained_vocab,double clusterRadius);
