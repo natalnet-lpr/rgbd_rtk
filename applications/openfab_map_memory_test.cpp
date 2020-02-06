@@ -20,6 +20,7 @@ class openFabMapArgParser{
 		//input vocab or output
 		char * vocab_filename;
 		char * index_filename;
+		string mode;
 		openFabMapArgParser(){
 
 			valid_args.push_back("genVocab");
@@ -54,10 +55,12 @@ class openFabMapArgParser{
 					if(argc>i+1){
 						i=i+1;
 						if(is_valid_arg(argv[i])){
+							mode = string(argv[i]);
+
 							i = i+1;
-							if(str == "-mode")
+							if(str == "-mode"){
 								vocab_filename = argv[i];
-							
+							}
 							valid_args = true;
 						}
 						else if(str == "-index"){
@@ -101,12 +104,16 @@ int main(int argc, char **argv){
 
 
 	loader.processFile(parser.index_filename);
-
 	for(int i = 0; i < loader.num_images_; i++)
 	{
 		loader.getNextImage(frame, depth);
-        
-		memory.addTrainDataToVocab(frame,true);
+        if(parser.mode == "genVocab"){
+			memory.addTrainDataToVocab(frame,true);
+			if(i==loader.num_images_+1)
+			{
+				memory.generateVocabTrainDataFile(parser.vocab_filename);
+			}
+		}
         //imshow("img", frame);
 		char key = waitKey(15);
 			

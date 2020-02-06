@@ -49,3 +49,4 @@ Mat FABMapMemory::trainVocabulary(Mat untrained_vocab,double clusterRadius){
 
 
 }
+
