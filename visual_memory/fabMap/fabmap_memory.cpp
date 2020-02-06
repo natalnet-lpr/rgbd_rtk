@@ -7,8 +7,6 @@ FABMapMemory::FABMapMemory(){
 }
 
 FABMapMemory::~FABMapMemory(){
-    delete detector_;
-
 
 }
 
