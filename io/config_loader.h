@@ -48,9 +48,7 @@ public:
      * Load configuration file.
      * Uses the default path "../config_files/tum_odometry.yaml"
      */
-    ConfigLoader(){
-        loadFile("../config_files/tum_odometry.yaml");
-    }
+    ConfigLoader();
     /**
      * Load configuration file.
      * @Params filename: path where the config. file is located
