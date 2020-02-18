@@ -31,21 +31,21 @@
 #include <opencv2/imgproc/imgproc.hpp>
 
 #include <rgbd_loader.h>
-#include <flexible_feature_detector.h>
+#include <flexible_feature_tracker.h>
 #include <common_types.h>
 
 using namespace std;
 using namespace cv;
 
-void draw_last_track(Mat &img, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts)
+void draw_last_track(Mat &img, const vector<KeyPoint> prev_pts, const vector<KeyPoint> curr_pts)
 {
 	for (size_t k = 0; k < curr_pts.size(); k++)
 	{
 		Point2i pt1, pt2;
-		pt1.x = prev_pts[k].x;
-		pt1.y = prev_pts[k].y;
-		pt2.x = curr_pts[k].x;
-		pt2.y = curr_pts[k].y;
+		pt1.x = prev_pts[k].pt.x;
+		pt1.y = prev_pts[k].pt.y;
+		pt2.x = curr_pts[k].pt.x;
+		pt2.y = curr_pts[k].pt.y;
 
 		circle(img, pt1, 1, CV_RGB(0, 0, 255), 1);
 		circle(img, pt2, 3, CV_RGB(0, 255, 0), 1);
@@ -91,7 +91,7 @@ int main(int argc, char **argv)
 	// Create a BruteForce matcher
 	Ptr<DescriptorMatcher> brute_force_matcher = DescriptorMatcher::create("BruteForce");
 
-	FlexibleFeatureDetector detector(akaze_detector, orb_extractor, brute_force_matcher);
+	FlexibleFeatureTracker detector(akaze_detector, orb_extractor, brute_force_matcher);
 
 	Mat frame, depth;
 
@@ -114,7 +114,7 @@ int main(int argc, char **argv)
 		detector.track(frame);
 		frame.copyTo(current_frame);
 
-		draw_last_track(frame, detector.prev_good_Pts_, detector.curr_good_Pts_);
+		//draw_last_track(frame, detector.prev_KPs_, detector.curr_KPs_);
 
 		if (i > 0)
 		{

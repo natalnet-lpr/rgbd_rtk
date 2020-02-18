@@ -31,7 +31,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 
 #include <rgbd_loader.h>
-#include <flexible_feature_detector.h>
+#include <flexible_feature_tracker.h>
 #include <common_types.h>
 
 using namespace std;
@@ -88,7 +88,7 @@ int main(int argc, char **argv)
 	// Create a BruteForce matcher
 	Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create("BruteForce");
 
-	FlexibleFeatureDetector detector(orb_detector, brisk_extractor, matcher);
+	FlexibleFeatureTracker detector(orb_detector, brisk_extractor, matcher);
 	
 	Mat frame, depth;
 

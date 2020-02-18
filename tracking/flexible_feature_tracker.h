@@ -1,38 +1,58 @@
-#include "opencv2/features2d.hpp"
-#include "opencv2/core.hpp"
-#include <vector>
-
-using namespace cv;
-
 /*
  * Authors: 
  * Luiz Felipe Maciel Correia (y9luizufrn@gmail.com)
  * Marcos Henrique Fernandes Marcone (marcosmarcone48@gmail.com)
  */
 
-class FlexibleFeatureDetector
+#include "opencv2/features2d.hpp"
+#include <opencv2/core/core.hpp>
+#include <vector>
+
+#include <common_types.h>
+
+using namespace cv;
+
+
+
+class FlexibleFeatureTracker
 {
 protected:
-    //Feature Detector object
+    // Feature Tracker object
     Ptr<cv::FeatureDetector> feature_detector_;
 
-    //Descriptor Extractor object
+    // Descriptor Extractor object
     Ptr<cv::DescriptorExtractor> descriptor_extractor_;
 
-    //current gray frame
+    // Current gray frame
     Mat curr_frame_gray_;
 
-    //previous gray frame
+    // Previous gray frame
     Mat prev_frame_gray_;
 
-    //maximum number of features
+    // Maximum number of features
     int numMax_;
 
-    //flag variable to indicated if the process is able to matching features
-    //that is, if we have 2 or more frames to matching process
+    // Flag variable to indicated if the process is able to matching features
+    // that is, if we have 2 or more frames to matching process
     bool initialized_;
 
+    // Current frame number
+    int frame_idx_;
+
+    // Boolean vector that indicates if the keypoint i have a match
+    std::vector<bool> keypoints_with_matches;
+
+    // Adds keypoints detected in the first frame to the tracker
+    void addKeypoints();
+
+    // Searches if a keypoint have a match
+    int searchMatches(int keypoint_index);
+
 public:
+    
+    // Tracklets: history of each point as a vector of point2f
+    std::vector<Tracklet> tracklets_;
+
     //Store all the current keypoints founded in the current frame
     std::vector<KeyPoint> curr_KPs_;
 
@@ -64,10 +84,10 @@ public:
     Ptr<cv::DescriptorMatcher> matcher_;
 
     //Default constructor: create a ORB detector and extractor and a BruteForce matcher.
-    FlexibleFeatureDetector();
+    FlexibleFeatureTracker();
 
     //Constructor with flexible feature detector, descriptor extractor and matcher
-    FlexibleFeatureDetector(Ptr<cv::FeatureDetector> feature_detector, Ptr<cv::DescriptorExtractor> descriptor_extractor, Ptr<cv::DescriptorMatcher> matcher);
+    FlexibleFeatureTracker(Ptr<cv::FeatureDetector> feature_detector, Ptr<cv::DescriptorExtractor> descriptor_extractor, Ptr<cv::DescriptorMatcher> matcher);
 
     //Detect KeyPoints and extract descriptors using this function
     void detect(Mat curr_frame);
