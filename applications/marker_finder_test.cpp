@@ -56,8 +56,8 @@ int main(int argc, char **argv)
 	OpticalFlowVisualOdometry vo(intr);
 	ReconstructionVisualizer visualizer;
 	Mat frame, depth;
-	float marker_size;
-	string camera_calibration_file;
+	float marker_size, aruco_max_distance;
+	string camera_calibration_file, aruco_dic, index_file;
 
 	if(argc != 2)
 	{
@@ -66,10 +66,14 @@ int main(int argc, char **argv)
 	}
 	ConfigLoader param_loader(argv[1]);
 	param_loader.checkAndGetFloat("aruco_marker_size", marker_size);
-	param_loader.checkAndGetString("camera_calibration_file", camera_calibration_file)
-	MarkerFinder marker_finder(camera_calibration_file, marker_size);
+	param_loader.checkAndGetFloat("aruco_max_distance", aruco_max_distance);
+	param_loader.checkAndGetString("camera_calibration_file", camera_calibration_file);
+	param_loader.checkAndGetString("index_file", index_file);
+	param_loader.checkAndGetString("aruco_dic", aruco_dic);
+	MarkerFinder marker_finder;
+	marker_finder.markerParam(camera_calibration_file, marker_size, aruco_dic);
 	
-	loader.processFile(param_loader.index_file_);
+	loader.processFile(index_file);
 
 	//Compute visual odometry and find markers on each image
 	for(int i = 0; i < loader.num_images_; i++)
@@ -81,7 +85,7 @@ int main(int argc, char **argv)
 		vo.computeCameraPose(frame, depth);
 		
 		//Find ARUCO markers and compute their poses
-		marker_finder.detectMarkers(frame, vo.pose_, param_loader.aruco_max_distance_);
+		marker_finder.detectMarkers(frame, vo.pose_, aruco_max_distance);
         for (size_t i = 0; i < marker_finder.markers_.size(); i++)
 		{
             marker_finder.markers_[i].draw(frame, Scalar(0,0,255), 1);

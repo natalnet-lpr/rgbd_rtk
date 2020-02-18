@@ -1,6 +1,7 @@
 local
 Build
 Release
+cmake
 .vscode
 .cproject
 .project

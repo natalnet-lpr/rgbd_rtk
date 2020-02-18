@@ -67,6 +67,12 @@ protected:
 	 */	
 	void setMarkerPosesGlobal(const Eigen::Affine3f& cam_pose, const float& aruco_max_distance);
 
+	/**
+	 * Set the pose of all detected markers plus a distance in the global ref. frame
+	 * @param camera pose as Affine3f and minimum distance to aruco marker be considered valid
+	 */
+	void setMarkerPointPosesGlobal(Eigen::Affine3f cam_pose, float aruco_max_distance);
+
 public:
 	
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -80,23 +86,24 @@ public:
 	//Vector with the pose of each detected marker (w.r.t. the local/camera ref. frame)
 	std::vector<Eigen::Affine3f,Eigen::aligned_allocator<Eigen::Affine3f> > marker_poses_local_;
 	
+	//Vector with the pose of each 3d point marker needed by the robot Global
+	std::vector<Eigen::Vector4f> marker_point_poses_;
+
 	//Vector with the pose of each detected marker 
 	std::vector<Eigen::Affine3f,Eigen::aligned_allocator<Eigen::Affine3f> > marker_poses_;
 	
 	//Default constructor
-	MarkerFinder();
+	MarkerFinder(){}
 	/**
-	 * Constructor
-	 * @param camera intrinsic and marker size
+	 * Fucntion to load params
+	 * @param camera intrinsic marker size and aruco dictionary
 	 */
-	MarkerFinder(string params, float size);
-
-	void detectMarkers(const cv::Mat img, Eigen::Affine3f cam_pose, float aruco_minimum_distance);
+	void markerParam(const string& params, const float& size, const string& aruco_dic);
 	/**
 	 * Detect ARUCO markers. Also sets the poses of all detected markers in the local and global ref. frames
 	 * @param rgb image, camera pose, and  aruco max distance
 	 */	
-	void detectMarkers(const cv::Mat img, const Eigen::Affine3f& cam_pose, const float& aruco_max_distance);
+	void detectMarkers(const cv::Mat& img,const Eigen::Affine3f& cam_pose,const float& aruco_max_distance);
 };
 
 #endif /* INCLUDE_MARKER_FINDER_H_ */
