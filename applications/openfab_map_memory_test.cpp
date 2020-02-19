@@ -8,83 +8,45 @@
 using namespace std;
 class openFabMapArgParser{
 	public:
-		static void usage(){
-			cout<<";/openfab_map_memory -mode <mode> <filename>\n";
-			cout<<"modes:\n";
-			cout<<"\tgenVocab\n";
-			cout<<"\tshowFeatures\n";
-			cout<<"\ttrainVocab\n";
-			exit(0);
-		}
-		vector<string> valid_args;
-		//input vocab or output
-		char * vocab_filename;
-		char * index_filename;
-		string mode;
+		std::map<string,string> input_map;
 		openFabMapArgParser(){
-
-			valid_args.push_back("genVocab");
-			valid_args.push_back("showFeatures");
-			valid_args.push_back("trainVocab");
-			vocab_filename = NULL;
-			index_filename = NULL;
+			input_map["mode"] = "None";
+			input_map["index_file"] = "None";
+			input_map["untrainedVocab"] = "None";
+			input_map["trainedVocab"] = "None";
 
 		}
-		~openFabMapArgParser(){
-			
-		}
-		bool is_valid_arg(const char * arg){
+		
+		void arg_parser(int argc, char ** argv){
 
-			for(int i = 0 ;i<valid_args.size();i++){
-				
-				if(valid_args[i].compare(arg) == 0)
-					return true;
+			for(int i = 0;i<argc;i++){
+				if(i+1<argc)
+				{
+					string str = argv[i];
 
-			}
-			return false;
-
-		}
-
-
-		void arg_parser(int argc , char **argv){
-			bool valid_args = false;
-			for (int i =0;i<argc;i++){
-				string str = argv[i];
-				
-				if(str== "-mode" || str == "-index"){
-					if(argc>i+1){
-						i=i+1;
-						if(is_valid_arg(argv[i])){
-							mode = string(argv[i]);
-
-							i = i+1;
-							if(str == "-mode"){
-								vocab_filename = argv[i];
-							}
-							valid_args = true;
-						}
-						else if(str == "-index"){
-								index_filename = argv[i];
-						}
-						else
-						{
-							valid_args = false;
-
-						}
-						
+					if(str=="-index")
+					{	
+						input_map["index_file"] = argv[i+1];
 					}
-					else{
-						cout<<"entrou\n";
-						usage();
+					if(str == "-mode")
+					{
+						input_map["mode"] = argv[i+1];
+					}
+					if(str == "-untrainedVocab")
+					{
+						input_map["untrainedVocab"] = argv[i+1];
+					}
+					if(str == "-trainedVocab")
+					{
+						input_map["trainedVocab"] = argv[i+1];
+
 					}
 				}
-
-
-			}
-			if(index_filename == NULL || vocab_filename == NULL){
-				usage();
 			}
 
+		}
+		string get_second(char * map_first){
+			return input_map[map_first];
 		}
 
 };
@@ -99,20 +61,23 @@ int main(int argc, char **argv){
     FABMapMemory memory;
 	openFabMapArgParser parser;
 
-
 	parser.arg_parser(argc,argv);
-
-
-	loader.processFile(parser.index_filename);
+	loader.processFile(parser.get_second("index_file"));
+	cout<<parser.get_second("untrainedVocab")<<endl;
 	for(int i = 0; i < loader.num_images_; i++)
 	{
 		loader.getNextImage(frame, depth);
-        if(parser.mode == "genVocab"){
+        if(parser.get_second("mode") == "genVocab"){
 			memory.addTrainDataToVocab(frame,true);
-			if(i==loader.num_images_+1)
+			
+			if(i+1==loader.num_images_)
 			{
-				memory.generateVocabTrainDataFile(parser.vocab_filename);
+				memory.generateVocabTrainDataFile(parser.get_second("untrainedVocab"));
 			}
+		}
+		else if(parser.get_second("mode") == "trainVocab"){
+			memory.trainVocabulary(parser.get_second("trainedVocab"),parser.get_second("untrainedVocab"),0.5);
+			break;
 		}
         //imshow("img", frame);
 		char key = waitKey(15);
@@ -124,6 +89,8 @@ int main(int argc, char **argv){
 			break;
 		}
 	}
+	destroyAllWindows();
+
 
 	return 0;
 

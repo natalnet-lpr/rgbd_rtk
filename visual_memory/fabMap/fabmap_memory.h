@@ -35,8 +35,9 @@ class FABMapMemory{
         void addTrainDataToVocab(cv::Mat train_frame, const bool to_show=false);
         void generateVocabTrainDataFile(std::string filename);
         //input: a untrained vocabulary that will be trained and returned by this function
-        Mat trainVocabulary(Mat untrained_vocab,double clusterRadius);
-
+        int trainVocabulary(std::string vocabPath,
+                    std::string vocabTrainDataPath,
+                    double clusterRadius);        
 
 
 };
