@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -22,6 +22,9 @@
  *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
+ *  Author:
+ *
+ *  Bruno Silva
  */
 
 #include <cstdio>
@@ -32,7 +35,9 @@
 #include <opencv2/imgproc/imgproc.hpp>
 
 #include <geometry.h>
+#include <config_loader.h>
 #include <rgbd_loader.h>
+#include <event_logger.h>
 #include <klt_tracker.h>
 #include <motion_estimator_ransac.h>
 #include <reconstruction_visualizer.h>
@@ -40,15 +45,23 @@
 using namespace std;
 using namespace cv;
 
+/**
+ * This program shows the use of camera motion estimation based on
+ * KLT keypoint tracking and RANSAC.
+ * @param .yml config. file (from which index_file is used)
+ */
 int main(int argc, char **argv)
 {
-	string index_file_name;
+	EventLogger& logger = EventLogger::getInstance();
+	logger.setVerbosityLevel(pcl::console::L_DEBUG);
+
 	RGBDLoader loader;
 	KLTTracker tracker;
 	Intrinsics intr(0);
-	MotionEstimatorRANSAC motion_estimator(intr);
 	ReconstructionVisualizer visualizer;
 	Mat frame, depth;
+	string index_file;
+	float ransac_distance_threshold, ransac_inliers_ratio;
 	Eigen::Affine3f pose = Eigen::Affine3f::Identity();
 	Eigen::Affine3f trans = Eigen::Affine3f::Identity();
 	pcl::PointCloud<PointT>::Ptr prev_cloud(new pcl::PointCloud<PointT>);
@@ -56,12 +69,17 @@ int main(int argc, char **argv)
 
 	if(argc != 2)
 	{
-		fprintf(stderr, "Usage: %s <index file>\n", argv[0]);
+		logger.print(pcl::console::L_INFO, "[motion_estimation_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
+	ConfigLoader param_loader(argv[1]);
+	param_loader.checkAndGetString("index_file", index_file);
+	param_loader.checkAndGetFloat("ransac_distance_threshold", ransac_distance_threshold);
+	param_loader.checkAndGetFloat("ransac_inliers_ratio", ransac_inliers_ratio);
+	loader.processFile(index_file);
 
-	index_file_name = argv[1];
-	loader.processFile(index_file_name);
+	MotionEstimatorRANSAC motion_estimator(intr, ransac_distance_threshold,
+											ransac_inliers_ratio);
 
 	//Track points on each image
 	for(int i = 0; i < loader.num_images_; i++)
@@ -95,7 +113,7 @@ int main(int argc, char **argv)
 		//visualizer.addQuantizedPointCloud(curr_cloud, 0.3, pose);
 		visualizer.viewReferenceFrame(pose);
 		//visualizer.viewPointCloud(curr_cloud, pose);
-		visualizer.viewQuantizedPointCloud(curr_cloud, 0.02, pose);
+		//visualizer.viewQuantizedPointCloud(curr_cloud, 0.02, pose);
 
 		visualizer.spinOnce();
 
@@ -105,7 +123,7 @@ int main(int argc, char **argv)
 		char key = waitKey(1);
 		if(key == 27 || key == 'q' || key == 'Q')
 		{
-			printf("Exiting.\n");
+			logger.print(pcl::console::L_INFO, "[motion_estimator_test.cpp] Exiting\n", argv[0]);
 			break;
 		}
 

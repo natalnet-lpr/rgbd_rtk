@@ -35,6 +35,10 @@
 using namespace cv;
 using namespace std;
 
+/** 
+ * This program calibrates a monocular camera using a chessboard.
+ * @param numbers of chess corners in horizontal and vertical directions, input (0 for webcam, 1 for kinect)
+ */
 int main(int argc, char** argv)
 {
 	if(argc != 4)
@@ -53,7 +57,6 @@ int main(int argc, char** argv)
 
 	const char* output_file = "cd.yml"; //calibration file
 	int delta_t = 2.0; //time between frames in seconds
-	int flags = 0; //calibration flags
 	int n_images = 10; //number of images
 	float sq_size = 1.0; //chessboard square size
 

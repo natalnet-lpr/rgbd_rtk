@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -22,6 +22,9 @@
  *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
+ *  Author:
+ *
+ *  Bruno Silva
  */
 
 #include <cstdio>
@@ -29,25 +32,33 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
+#include <config_loader.h>
 #include <rgbd_loader.h>
+#include <event_logger.h>
 
 using namespace std;
 using namespace cv;
 
+/** This program shows how to use RGBDLoader class to process a sequence of RGB-D images.
+ * @param .yml config. file (from which index_file is used)
+ */
 int main(int argc, char **argv)
 {
-	string index_file_name;
+	EventLogger& logger = EventLogger::getInstance();
+	logger.setVerbosityLevel(pcl::console::L_INFO);
+
 	RGBDLoader loader;
 	Mat frame, depth;
+	string index_file;
 
 	if(argc != 2)
 	{
-		fprintf(stderr, "Usage: %s <index file>\nExiting.\n", argv[0]);
+		logger.print(pcl::console::L_INFO, "[rgbd_loader_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
-
-	index_file_name = argv[1];
-	loader.processFile(index_file_name);
+	ConfigLoader param_loader(argv[1]);
+	param_loader.checkAndGetString("index_file", index_file);
+	loader.processFile(index_file);
 
 	for(int i = 0; i < loader.num_images_; i++)
 	{
@@ -57,6 +68,7 @@ int main(int argc, char **argv)
 		char key = waitKey(16);
 		if(key == 'q' || key == 'Q' || key == 27)
 		{
+			logger.print(pcl::console::L_INFO, "[rgbd_loader_test.cpp] Exiting\n", argv[0]);
 			break;
 		}
 	}

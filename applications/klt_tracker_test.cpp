@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -22,6 +22,9 @@
  *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
+ *  Author:
+ *
+ *  Bruno Silva
  */
 
 #include <cstdio>
@@ -31,14 +34,81 @@
 #include <opencv2/imgproc/imgproc.hpp>
 
 #include <rgbd_loader.h>
+#include <config_loader.h>
+#include <event_logger.h>
 #include <klt_tracker.h>
 #include <common_types.h>
 
 using namespace std;
 using namespace cv;
 
-void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts)
+void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts, bool is_kf);
+void draw_tracks(Mat& img, const vector<Tracklet> tracklets);
+
+/**
+ * This program shows the use of keypoint tracking KLT algorithm.
+ * @param .yml config. file (from which index_file is used)
+ */
+int main(int argc, char **argv)
 {
+	EventLogger& logger = EventLogger::getInstance();
+	logger.setVerbosityLevel(pcl::console::L_INFO);
+
+	RGBDLoader loader;
+	int min_pts, max_pts, log_stats;
+	Mat frame, depth;
+	string index_file;
+
+	if(argc != 2)
+	{
+		logger.print(pcl::console::L_INFO, "[klt_tracker_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
+		exit(0);
+	}
+	ConfigLoader param_loader(argv[1]);
+	param_loader.checkAndGetInt("min_pts",min_pts);
+	param_loader.checkAndGetInt("max_pts",max_pts);	
+	param_loader.checkAndGetInt("log_stats", log_stats);
+	param_loader.checkAndGetString("index_file", index_file);
+	KLTTracker tracker(min_pts,max_pts,log_stats);
+	loader.processFile(index_file);
+
+	//Track points on each image
+	for(int i = 0; i < loader.num_images_; i++)
+	{
+		loader.getNextImage(frame, depth);
+
+		double el_time = (double) cvGetTickCount();
+		bool is_kf = tracker.track(frame);
+		el_time = ((double) cvGetTickCount() - el_time)/(cvGetTickFrequency()*1000.0);
+		logger.print(pcl::console::L_INFO,"[klt_tracker_test.cpp] INFO: Tracking time: %f ms\n", el_time);
+		
+		draw_last_track(frame, tracker.prev_pts_, tracker.curr_pts_, is_kf);
+		//draw_tracks(frame, tracker.tracklets_);
+
+		imshow("Image view", frame);
+		imshow("Depth view", depth);
+		char key = waitKey(15);
+		if(key == 27 || key == 'q' || key == 'Q')
+		{
+			logger.print(pcl::console::L_INFO, "[klt_tracker_test.cpp] Exiting\n", argv[0]);
+			break;
+		}
+	}
+
+	return 0;
+}
+
+void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts, bool is_kf)
+{
+	Scalar color;
+	if(is_kf)
+	{
+		color = CV_RGB(255, 0, 0);
+	}
+	else
+	{
+		color = CV_RGB(0, 255, 0);
+	}
 	for(size_t k = 0; k < curr_pts.size(); k++)
 	{
 		Point2i pt1, pt2;
@@ -47,12 +117,11 @@ void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Poin
 		pt2.x = curr_pts[k].x;
 		pt2.y = curr_pts[k].y;
 
-		circle(img, pt1, 1, CV_RGB(0,0,255), 1);
-		circle(img, pt2, 3, CV_RGB(0,255,0), 1);
-		line(img, pt1, pt2, CV_RGB(0,255,0));
+		circle(img, pt1, 1, color, 2);
+		circle(img, pt2, 3, color, 2);
+		line(img, pt1, pt2, color);
 	}
 }
-
 void draw_tracks(Mat& img, const vector<Tracklet> tracklets)
 {
 	for(size_t i = 0; i < tracklets.size(); i++)
@@ -72,44 +141,4 @@ void draw_tracks(Mat& img, const vector<Tracklet> tracklets)
 			}
 		}
 	}
-}
-
-int main(int argc, char **argv)
-{
-	string index_file_name;
-	RGBDLoader loader;
-	KLTTracker tracker;
-
-	Mat frame, depth;
-
-	if(argc != 2)
-	{
-		fprintf(stderr, "Usage: %s <index file>\n", argv[0]);
-		exit(0);
-	}
-
-	index_file_name = argv[1];
-	loader.processFile(index_file_name);
-
-	//Track points on each image
-	for(int i = 0; i < loader.num_images_; i++)
-	{
-		loader.getNextImage(frame, depth);
-
-		tracker.track(frame);
-		
-		draw_last_track(frame, tracker.prev_pts_, tracker.curr_pts_);
-		//draw_tracks(frame, tracker.tracklets_);
-
-		imshow("Image view", frame);
-		imshow("Depth view", depth);
-		char key = waitKey(15);
-		if(key == 27 || key == 'q' || key == 'Q')
-		{
-			printf("Exiting.\n");
-			break;
-		}
-	}
-
-	return 0;
 }

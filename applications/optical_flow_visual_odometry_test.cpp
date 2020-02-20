@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -22,6 +22,9 @@
  *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
+ *  Author:
+ *
+ *  Bruno Silva
  */
 
 #include <cstdio>
@@ -32,30 +35,39 @@
 #include <opencv2/imgproc/imgproc.hpp>
 
 #include <geometry.h>
+#include <config_loader.h>
 #include <rgbd_loader.h>
+#include <event_logger.h>
 #include <optical_flow_visual_odometry.h>
 #include <reconstruction_visualizer.h>
 
 using namespace std;
 using namespace cv;
 
+/**
+ * This program shows the use of camera pose estimation using optical flow visual odometry.
+ * @param .yml config. file (from which index_file is used)
+ */
 int main(int argc, char **argv)
 {
-	string index_file_name;
+	EventLogger& logger = EventLogger::getInstance();
+	logger.setVerbosityLevel(pcl::console::L_DEBUG);
+	
 	RGBDLoader loader;
 	Intrinsics intr(0);
 	OpticalFlowVisualOdometry vo(intr);
 	ReconstructionVisualizer visualizer;
+	string index_file;
 	Mat frame, depth;
 
 	if(argc != 2)
 	{
-		fprintf(stderr, "Usage: %s <index file>\n", argv[0]);
+		logger.print(pcl::console::L_INFO, "[optical_flow_visual_odometry_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
-
-	index_file_name = argv[1];
-	loader.processFile(index_file_name);
+	ConfigLoader param_loader(argv[1]);
+	param_loader.checkAndGetString("index_file",index_file);
+	loader.processFile(index_file);
 
 	//Compute visual odometry on each image
 	for(int i = 0; i < loader.num_images_; i++)
@@ -77,10 +89,12 @@ int main(int argc, char **argv)
 		}
 
 		if(i == 0) visualizer.addReferenceFrame(vo.pose_, "origin");
-		visualizer.addQuantizedPointCloud(vo.curr_dense_cloud_, 0.3, vo.pose_);
+		//visualizer.addQuantizedPointCloud(vo.curr_dense_cloud_, 0.1, vo.pose_);
+		//visualizer.addPointCloud(vo.curr_dense_cloud_, vo.pose_);
 		visualizer.viewReferenceFrame(vo.pose_);
-		visualizer.viewPointCloud(vo.curr_dense_cloud_, vo.pose_);
-		//visualizer.viewQuantizedPointCloud(vo.curr_dense_cloud_, 0.02, vo.pose_);
+		//visualizer.viewPointCloud(vo.curr_dense_cloud_, vo.pose_);
+		visualizer.viewQuantizedPointCloud(vo.curr_dense_cloud_, 0.05, vo.pose_);
+		//visualizer.addCameraPath(vo.pose_);
 
 		visualizer.spinOnce();
 
@@ -90,7 +104,7 @@ int main(int argc, char **argv)
 		char key = waitKey(1);
 		if(key == 27 || key == 'q' || key == 'Q')
 		{
-			printf("Exiting.\n");
+			logger.print(pcl::console::L_INFO, "[optical_flow_visual_odometry_test.cpp] Exiting\n", argv[0]);
 			break;
 		}
 	}

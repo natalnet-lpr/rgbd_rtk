@@ -4,11 +4,11 @@ project(RGBD_RTK)
 
 message(STATUS ">>> tracking subdirectory")
 
-set(RGBD_RTK_TRACKING_SRC klt_tracker.cpp flexible_feature_tracker.cpp)
-set(RGBD_RTK_TRACKING_INCLUDES klt_tracker.h flexible_feature_tracker.h)
+set(RGBD_RTK_TRACKING_SRC feature_tracker.cpp klt_tracker.cpp klttw_tracker.cpp klttcw_tracker.cpp kltatcw_tracker.cpp kltqt_tracker.cpp flexible_feature_tracker.cpp)
+set(RGBD_RTK_TRACKING_INCLUDES feature_tracker.h klt_tracker.h klttw_tracker.h klttcw_tracker.h kltatcw_tracker.h kltqt_tracker.h flexible_feature_tracker.h)
 
 add_library(rgbd_rtk_tracking SHARED ${RGBD_RTK_TRACKING_SRC})
-target_link_libraries(rgbd_rtk_tracking ${OpenCV_LIBS})
+target_link_libraries(rgbd_rtk_tracking ${RGBD_RTK_COMMON} ${RGBD_RTK_QUADTREE} ${OpenCV_LIBS})
 
 set_target_properties(rgbd_rtk_tracking PROPERTIES OUTPUT_NAME "rgbd_rtk_tracking")
 set_target_properties(rgbd_rtk_tracking PROPERTIES VERSION 1.0)

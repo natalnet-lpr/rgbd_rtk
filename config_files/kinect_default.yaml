@@ -1,0 +1,20 @@
+%YAML:1.0
+calibration_time: "Tue Jan 12 15:27:31 2016"
+image_width: 640
+image_height: 480
+board_width: 9
+board_height: 6
+square_size: 2.3749999701976776e-02
+flags: 0
+camera_matrix: !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   data: [525.0,   0.0, 319.5,
+            0.0, 525.0, 239.5,
+            0.0,   0.0,   1.0]
+distortion_coefficients: !!opencv-matrix
+   rows: 5
+   cols: 1
+   dt: d
+   data: [0, 0, 0, 0, 0]

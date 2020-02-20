@@ -96,6 +96,9 @@ struct Intrinsics
 	/* Scale factor for the Kinect depth */
 	double scale_;
 
+	/* Distance between cameras (used in stereo) */
+	double baseline_;
+
 	/* First radial distortion coefficient (d0) */
 	double k1_;
 
@@ -113,14 +116,14 @@ struct Intrinsics
 
 	/* Default constructor: zero for all parameters */
 	Intrinsics(): fx_(0.0), fy_(0.0), cx_(0.0), cy_(0.0),
-			      scale_(0.0), k1_(0.0), k2_(0.0), p1_(0.0),
+			      scale_(0.0), baseline_(0.0), k1_(0.0), k2_(0.0), p1_(0.0),
 			      p2_(0.0), k3_(0.0){}
 
 	/*
 	 * Constructor for the Freiburg1, Freiburg2, Freiburg3 TUM datasets
 	 * or for the Kinect factor defaults.
 	 */
-	Intrinsics(int set)
+	Intrinsics(const int& set)
 	{
 		switch(set)
 		{
@@ -130,6 +133,7 @@ struct Intrinsics
 				cx_ = 318.6;
 				cy_ = 255.3;
 				scale_ = 5000;
+				baseline_ = 0.0; //not used by Kinect
 				//k1_ = 0.2624;
 				//k2_ = -0.9531;
 				//p1_ = -0.0054;
@@ -147,6 +151,7 @@ struct Intrinsics
 				cx_ = 325.1;
 				cy_ = 249.7;
 				scale_ = 5000;
+				baseline_ = 0.0; //not used by Kinect
 				//k1_ = 0.2312;
 				//k2_ = -0.7849;
 				//p1_ = -0.0033;
@@ -164,6 +169,7 @@ struct Intrinsics
 				cx_ = 320.1;
 				cy_ = 247.6;
 				scale_ = 5000;
+				baseline_ = 0.0; //not used by Kinect
 				k1_ = 0.0;
 				k2_ = 0.0;
 				p1_ = 0.0;
@@ -176,16 +182,23 @@ struct Intrinsics
 				cx_ = 319.5;
 				cy_ = 239.5;
 				scale_ = 5000;
+				baseline_ = 0.0; //not used by Kinect
 				k1_ = 0.0;
 				k2_ = 0.0;
 				p1_ = 0.0;
 				p2_ = 0.0;
 				k3_ = 0.0;
 				break;
-
 		}
-
 	}
+	/*
+	 * Constructor for a perspective camera with given focal lengths
+	 * and center of projection (scale is 1.0).
+	 */
+	Intrinsics(const double& fx, const double& fy, const double& cx, const double& cy,
+		       const double& baseline): fx_(fx), fy_(fy), cx_(cx), cy_(cy), scale_(1.0),
+	           baseline_(baseline), k1_(0.0), k2_(0.0), p1_(0.0), p2_(0.0), k3_(0.0)
+	{}
 };
 
 #endif /* COMMON_TYPES_H_ */

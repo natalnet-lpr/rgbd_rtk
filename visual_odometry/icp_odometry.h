@@ -31,6 +31,7 @@
 #include <pcl/point_cloud.h>
 
 #include <common_types.h>
+#include <config_loader.h>
 #include <motion_estimator_icp.h>
 
 class ICPOdometry
@@ -43,6 +44,8 @@ private:
 	Intrinsics intr_;
 
 public:
+
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	//Previous dense point cloud
 	pcl::PointCloud<PointT>::Ptr prev_dense_cloud_;
@@ -62,11 +65,20 @@ public:
 	//Default constructor
 	ICPOdometry();
 
-	//Constructor with the matrix of intrinsic parameters
-	ICPOdometry(const Intrinsics intr);
+	/**
+	 * Constructor with the matrix of intrinsic parameters
+	 * @param Camera intrisics
+	 */	
+	ICPOdometry(const Intrinsics& intr);
 
-	//Main member function: computes the current camera pose
-	void computeCameraPose(cv::Mat rgb, cv::Mat depth);
+	/**
+	 * Main member function: computes the current camera pose
+	 * @param rgb and depth image
+	 */	
+	void computeCameraPose(const cv::Mat& rgb, const cv::Mat& depth);
+	/**
+	 * load motion_estimator_icp params
+	 */
 };
 
 #endif /* INCLUDE_ICP_ODOMETRY_H_ */

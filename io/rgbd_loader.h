@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2020, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -29,6 +29,7 @@
 
 #include <vector>
 #include <opencv2/core/core.hpp>
+#include <event_logger.h>
 
 class RGBDLoader
 {
@@ -60,24 +61,25 @@ public:
 
 	/* 
 	 * Constructor with the file name of the image sequence.
+	 * @param index_file
 	 */ 
-	RGBDLoader(const std::string index_file_name)
+	RGBDLoader(const std::string& index_file_name)
 	{
 		num_images_ = 0;
 		curr_img_ = 0;
 		processFile(index_file_name);
 	}
-
-	/*
-	 * Main function: scans the index file and inserts the RGB/depth file names into two vectors,
-	 * assuming the index file has a 4-tuple <timestamp rgb_name timestamp depth_name> per line. 
-     * The function is public and thus can be called directly.
-     */
-	void processFile(const std::string index_file_name);
-
-	/*
-	 * Returns the next RGB-D image of the sequence.
-	 */ 
+	/**
+ 	  * Main function: scans the index file and inserts the RGB/depth file names into two vectors,
+ 	  * assuming the index file has a 4-tuple <timestamp rgb_name timestamp depth_name> per line. 
+ 	  * The function is public and thus can be called directly.
+ 	  * @param index_file
+ 	  */
+	void processFile(const std::string& index_file_name);
+	/**
+	  * Returns the next RGB-D image of the sequence.
+	  * @param rgb and depth image
+	  */ 
 	void getNextImage(cv::Mat& rgb_img, cv::Mat& depth_img);
 };
 

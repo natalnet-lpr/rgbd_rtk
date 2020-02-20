@@ -29,24 +29,28 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
+#include <config_loader.h>
 #include <sequence_loader.h>
 
 using namespace std;
 using namespace cv;
 
+/** This program shows how to use SequenceLoader class to process a sequence of RGB images.
+ * ConfigFile.yaml needed(onyl uses index_file(rgb.txt))
+ */
 int main(int argc, char **argv)
 {
-	string index_file_name;
+	string index_file;
 	Mat frame;
 
 	if(argc != 2)
 	{
-		fprintf(stderr, "Usage: %s <index file>\nExiting.\n", argv[0]);
+		fprintf(stderr, "Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
-
-	index_file_name = argv[1];
-	SequenceLoader loader(index_file_name);
+	ConfigLoader param_loader(argv[1]);
+	param_loader.checkAndGetString("index_file",index_file);
+	SequenceLoader loader(index_file);
 
 	for(int i = 0; i < loader.num_images_; i++)
 	{

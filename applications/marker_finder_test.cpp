@@ -37,32 +37,43 @@
 #include <optical_flow_visual_odometry.h>
 #include <reconstruction_visualizer.h>
 #include <marker_finder.h>
+#include <config_loader.h>
+#include <event_logger.h>
 
 using namespace std;
 using namespace cv;
 using namespace aruco;
 
+/**
+ * This program shows the use of ARUCO marker detection.
+ * @param .yml config. file (used fields: index_file, aruco_marker_size, camera_calibration_file, aruco_max_distance)
+ */
 int main(int argc, char **argv)
 {
-	string index_file_name;
+	EventLogger& logger = EventLogger::getInstance();
 	RGBDLoader loader;
 	Intrinsics intr(0);
 	OpticalFlowVisualOdometry vo(intr);
 	ReconstructionVisualizer visualizer;
 	Mat frame, depth;
-	float marker_size;
+	float marker_size, aruco_max_distance;
+	string camera_calibration_file, aruco_dic, index_file;
 
-	if(argc != 4)
+	if(argc != 2)
 	{
-		fprintf(stderr, "Usage: %s <index file> <camera calibration file> <marker size>\n", argv[0]);
+		logger.print(pcl::console::L_ERROR, "[icp_odometry_test.cpp] ERROR: Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
-
-	index_file_name = argv[1];
-	marker_size = stof(argv[3]);
-	MarkerFinder marker_finder(argv[2], marker_size);
+	ConfigLoader param_loader(argv[1]);
+	param_loader.checkAndGetFloat("aruco_marker_size", marker_size);
+	param_loader.checkAndGetFloat("aruco_max_distance", aruco_max_distance);
+	param_loader.checkAndGetString("camera_calibration_file", camera_calibration_file);
+	param_loader.checkAndGetString("index_file", index_file);
+	param_loader.checkAndGetString("aruco_dic", aruco_dic);
+	MarkerFinder marker_finder;
+	marker_finder.markerParam(camera_calibration_file, marker_size, aruco_dic);
 	
-	loader.processFile(index_file_name);
+	loader.processFile(index_file);
 
 	//Compute visual odometry and find markers on each image
 	for(int i = 0; i < loader.num_images_; i++)
@@ -74,7 +85,7 @@ int main(int argc, char **argv)
 		vo.computeCameraPose(frame, depth);
 		
 		//Find ARUCO markers and compute their poses
-		marker_finder.detectMarkers(frame, vo.pose_);
+		marker_finder.detectMarkers(frame, vo.pose_, aruco_max_distance);
         for (size_t i = 0; i < marker_finder.markers_.size(); i++)
 		{
             marker_finder.markers_[i].draw(frame, Scalar(0,0,255), 1);

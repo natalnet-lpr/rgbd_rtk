@@ -40,14 +40,19 @@ class MotionEstimatorRANSAC
 
 protected:
 
-	//Sets the data of the source and target point clouds with the 3D coords. of each 2D point.
-	//The function assumes that tgt_points and src_points have the same size and also that
-	//the 3D points related to tgt_points[i] and src_points[i] are added to the point clouds
-	//only if neither of them are invalid.
-	void setDataFromCorrespondences(const std::vector<cv::Point2f> tgt_points, const pcl::PointCloud<PointT>::Ptr tgt_dense_cloud,
-		                            const std::vector<cv::Point2f> src_points, const pcl::PointCloud<PointT>::Ptr src_dense_cloud);
+	/**
+	 * Sets the data of the source and target point clouds with the 3D coords. of each 2D point.
+	 * The function assumes that tgt_points and src_points have the same size and also that
+	 * the 3D points related to tgt_points[i] and src_points[i] are added to the point clouds
+	 * only if neither of them are invalid.
+	 * @param two point clouds
+	 */
+	void setDataFromCorrespondences(const std::vector<cv::Point2f>& tgt_points, const pcl::PointCloud<PointT>::Ptr& tgt_dense_cloud,
+		                            const std::vector<cv::Point2f>& src_points, const pcl::PointCloud<PointT>::Ptr& src_dense_cloud);
 
 public:
+
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	//DEBUG
 	pcl::Correspondences src_to_tgt; 
@@ -64,21 +69,28 @@ public:
 	//Number of inlier correspondences after motion estimation
 	long unsigned num_inliers_;
 
+	//Distance threshold used by ransac
+	float distance_threshold_;
+
+	//inliers ration
+	float inliers_ratio_;
+
 	//Vector telling if each correspondence is an inlier or not
 	std::vector<unsigned char> is_inlier_;
 
 	//Default constructor
 	MotionEstimatorRANSAC();
-
-	//Constructor with the matrix of intrinsic parameters
-	MotionEstimatorRANSAC(const Intrinsics intr);
-
+	/**
+	 * Constructor with the matrix of intrinsic parameters, distance threshold and inliers_ratio
+	 * @param camera intrinsics, two floats distance_threshold and inliers_ratio
+    */	
+   MotionEstimatorRANSAC(const Intrinsics& intr, const float& distance_threshold, const float& inliers_ratio);
 	/* Main member function: estimates the motion between two point clouds as the registration transformation
 	 * between two sparse clouds of visual features. The sparse clouds are given as two vectors of 2D points,
 	 * from which the corresponding 3D points are extracted.
 	 */
-	Eigen::Matrix4f estimate(const std::vector<cv::Point2f> tgt_points, const pcl::PointCloud<PointT>::Ptr tgt_dense_cloud,
-		                     const std::vector<cv::Point2f> src_points, const pcl::PointCloud<PointT>::Ptr src_dense_cloud);
+	Eigen::Matrix4f estimate(const std::vector<cv::Point2f>& tgt_points, const pcl::PointCloud<PointT>::Ptr& tgt_dense_cloud,
+		                     const std::vector<cv::Point2f>& src_points, const pcl::PointCloud<PointT>::Ptr& src_dense_cloud);
 
 };
 

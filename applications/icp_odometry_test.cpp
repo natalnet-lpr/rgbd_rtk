@@ -34,27 +34,42 @@
 #include <rgbd_loader.h>
 #include <icp_odometry.h>
 #include <reconstruction_visualizer.h>
+#include <config_loader.h>
+#include <event_logger.h>
 
 using namespace std;
 using namespace cv;
 
+/**
+ * This program shows the use of camera pose estimation (visual odometry) using ICP algorithm.
+ * @param .yml config. file (from which index_file is used)
+ */
 int main(int argc, char **argv)
 {
-	string index_file_name;
-	RGBDLoader loader;
+	RGBDLoader loader; 
+	EventLogger& logger = EventLogger::getInstance();
 	Intrinsics intr(0);
 	ICPOdometry icpo(intr);
 	ReconstructionVisualizer visualizer;
 	Mat frame, depth;
-
+	string index_file;
+	int icp_maximum_iteration;
+	float icp_radius, icp_max_correspondence_distance,icp_transformation_epsilon,icp_euclidean_fitness_epsilon;
 	if(argc != 2)
 	{
-		fprintf(stderr, "Usage: %s <index file>\n", argv[0]);
+		logger.print(pcl::console::L_ERROR, "[icp_odometry_test.cpp] ERROR: Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
+	ConfigLoader param_loader(argv[1]);
+	param_loader.checkAndGetString("index_file",index_file);
+	param_loader.checkAndGetFloat("icp_radius",icp_radius);
+	param_loader.checkAndGetFloat("icp_max_correspondence_distance",icp_max_correspondence_distance);
+	param_loader.checkAndGetInt("icp_maximum_iteration",icp_maximum_iteration);
+	param_loader.checkAndGetFloat("icp_transformation_epsilon",icp_transformation_epsilon);
+	param_loader.checkAndGetFloat("icp_euclidean_fitness_epsilon",icp_euclidean_fitness_epsilon);
 
-	index_file_name = argv[1];
-	loader.processFile(index_file_name);
+	loader.processFile(index_file);
+
 
 	//Compute ICP odometry on each image
 	for(int i = 0; i < loader.num_images_; i++)
@@ -69,7 +84,7 @@ int main(int argc, char **argv)
 		//visualizer.addQuantizedPointCloud(icpo.curr_dense_cloud_, 0.3, icpo.pose_);
 		visualizer.viewReferenceFrame(icpo.pose_);
 		//visualizer.viewPointCloud(icpo.curr_dense_cloud_, icpo.pose_);
-		//visualizer.viewQuantizedPointCloud(icpo.curr_dense_cloud_, 0.02, icpo.pose_);
+		visualizer.viewQuantizedPointCloud(icpo.curr_dense_cloud_, 0.02, icpo.pose_);
 
 		visualizer.spinOnce();
 

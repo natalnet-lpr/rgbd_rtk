@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016-2017, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -22,6 +22,9 @@
  *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
+ *  Author:
+ *
+ *  Bruno Silva
  */
 
 #include <optical_flow_visual_odometry.h>
@@ -39,7 +42,7 @@ OpticalFlowVisualOdometry::OpticalFlowVisualOdometry()
 	curr_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
 }
 
-OpticalFlowVisualOdometry::OpticalFlowVisualOdometry(const Intrinsics intr)
+OpticalFlowVisualOdometry::OpticalFlowVisualOdometry(const Intrinsics& intr)
 {
 	frame_idx_ = 0;
 	pose_ = Eigen::Affine3f::Identity();
@@ -49,7 +52,7 @@ OpticalFlowVisualOdometry::OpticalFlowVisualOdometry(const Intrinsics intr)
 	curr_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
 }
 
-void OpticalFlowVisualOdometry::computeCameraPose(cv::Mat rgb, cv::Mat depth)
+void OpticalFlowVisualOdometry::computeCameraPose(const cv::Mat& rgb, const cv::Mat& depth)
 {
 	Eigen::Affine3f trans = Eigen::Affine3f::Identity();
 
