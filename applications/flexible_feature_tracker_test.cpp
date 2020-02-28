@@ -111,7 +111,7 @@ int main(int argc, char **argv)
 	{
 		loader.getNextImage(frame, depth);
 
-		detector.track(frame);
+		bool detected = detector.track(frame);
 		frame.copyTo(current_frame);
 
 		//draw_last_track(frame, detector.prev_KPs_, detector.curr_KPs_);

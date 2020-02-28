@@ -18,7 +18,6 @@ add_executable(kltqt_tracker_test kltqt_tracker_test.cpp)
 add_executable(motion_estimator_test motion_estimator_test.cpp)
 add_executable(optical_flow_visual_odometry_test optical_flow_visual_odometry_test.cpp)
 add_executable(icp_odometry_test icp_odometry_test.cpp)
-add_executable(flexible_feature_detector_test flexible_feature_detector_test.cpp)
 add_executable(flexible_feature_tracker_test flexible_feature_tracker_test.cpp)
 add_executable(kitti_loader_test kitti_loader_test.cpp)
 add_executable(stereo_cloud_generator_test stereo_cloud_generator_test.cpp)
@@ -63,7 +62,7 @@ target_link_libraries(icp_odometry_test ${PCL_LIBRARIES} ${RGBD_RTK_IO} ${RGBD_R
 	                                    ${RGBD_RTK_VISUAL_ODOMETRY})
 
 														
-target_link_libraries(flexible_feature_detector_test ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING})
+
 target_link_libraries(flexible_feature_tracker_test ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING})
 target_link_libraries(kitti_loader_test ${RGBD_RTK_IO})
 target_link_libraries(stereo_cloud_generator_test ${PCL_LIBRARIES} ${RGBD_RTK_IO}
@@ -90,7 +89,6 @@ install(TARGETS monocular_calibration
                 motion_estimator_test
                 optical_flow_visual_odometry_test
 				icp_odometry_test
-		flexible_feature_detector_test
 		flexible_feature_tracker_test
                 kitti_loader_test
                 stereo_cloud_generator_test
