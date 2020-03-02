@@ -1,0 +1,18 @@
+# - Config file for the rgbd_rtk package
+# It defines the following variables
+#  RGBD_RTK_INCLUDE_DIRS - include directories for rgbd_rtk
+#  RGBD_RTK_LIBRARIES    - libraries to link against
+#  RGBD_RTK_EXECUTABLE   - the executable
+
+# Compute paths
+get_filename_component(RGBD_RTK_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+set(RGBD_RTK_INCLUDE_DIRS "@CONF_INCLUDE_DIRS@")
+
+# Our library dependencies (contains definitions for IMPORTED targets)
+if(NOT TARGET rgbd_rtk_common AND NOT rgbd_rtk_BINARY_DIR)
+  include("${RGBD_RTK_CMAKE_DIR}/rgbd_rtkTargets.cmake")
+endif()
+
+# These are IMPORTED targets created by FooBarTargets.cmake
+set(RGBD_RTK_LIBRARIES rgbd_rtk_common rgbd_rtk_io rgbd_rtk_quadtree rgbd_rtk_tracking rgbd_rtk_visualization rgbd_rtk_motion_estimation rgbd_rtk_stereo rgbd_rtk_visual_odometry)
+set(RGBD_RTK_EXECUTABLE applications)
