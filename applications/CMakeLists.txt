@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 2.6)
 
-project(RGBD_RTK)
-
 message(STATUS ">>> applications subdirectory")
 
 add_executable(monocular_calibration monocular_calibration.cpp)
@@ -88,7 +86,9 @@ install(TARGETS monocular_calibration
                 stereo_cloud_generator_test
                 kitti_velodyne_loader_test
                 stereo_optical_flow_visual_odometry_test
-        RUNTIME DESTINATION bin)
+            EXPORT rgbd_rtkTargets
+            RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin)
+        
 
 # Build SLAM related applications only if ARUCO was found
 if(aruco_FOUND)
@@ -99,5 +99,7 @@ if(aruco_FOUND)
                                          ${RGBD_RTK_MOTION_ESTIMATION}
                                          ${RGBD_RTK_VISUAL_ODOMETRY}
                                          ${RGBD_RTK_SLAM})
-    install(TARGETS marker_finder_test RUNTIME DESTINATION bin)
+    install(TARGETS marker_finder_test 
+        EXPORT rgbd_rtkTargets
+        RUNTIME DESTINATION bin)
 endif()
