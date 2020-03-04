@@ -32,6 +32,8 @@
 
 #include <rgbd_loader.h>
 #include <flexible_feature_tracker.h>
+#include<config_loader.h>
+#include<event_logger.h>
 #include <common_types.h>
 
 using namespace std;
@@ -76,6 +78,9 @@ void draw_tracks(Mat &img, const vector<Tracklet> tracklets)
 
 int main(int argc, char **argv)
 {
+	EventLogger& logger = EventLogger::getInstance();
+	logger.setVerbosityLevel(pcl::console::L_INFO);
+	
 	string index_file_name;
 	RGBDLoader loader;
 
@@ -91,21 +96,24 @@ int main(int argc, char **argv)
 	// Create a BruteForce matcher
 	Ptr<DescriptorMatcher> brute_force_matcher = DescriptorMatcher::create("BruteForce");
 
-	FlexibleFeatureTracker detector(akaze_detector, orb_extractor, brute_force_matcher);
+	bool log_stats = 0;
+	FlexibleFeatureTracker detector(akaze_detector, orb_extractor, brute_force_matcher,log_stats);
 
 	Mat frame, depth;
+	Mat current_frame;
+	Mat previous_frame;
+
 
 	if (argc != 2)
 	{
-		fprintf(stderr, "Usage: %s <index file>\n", argv[0]);
+		logger.print(pcl::console::L_INFO, "[flexible_feature_tracker_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
 
 	index_file_name = argv[1];
 	loader.processFile(index_file_name);
-	Mat current_frame;
-	Mat previous_frame;
 
+	
 	//Track points on each image
 	for (int i = 0; i < loader.num_images_; i++)
 	{
@@ -119,7 +127,7 @@ int main(int argc, char **argv)
 		if (i > 0)
 		{
 			Mat img_matches;
-			drawMatches(current_frame, detector.curr_KPs_, previous_frame, detector.prev_KPs_, detector.good_matches_, img_matches, Scalar::all(-1),
+			drawMatches(current_frame, detector.curr_KPs_, previous_frame, detector.prev_KPs_, detector.matches_, img_matches, Scalar::all(-1),
 						Scalar::all(-1), std::vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
 
 			//-- Show detected matches
@@ -133,7 +141,7 @@ int main(int argc, char **argv)
 
 		if (key == 27 || key == 'q' || key == 'Q')
 		{
-			printf("Exiting.\n");
+			logger.print(pcl::console::L_INFO, "[flexible_feature_tracker_test.cpp] Exiting\n",argv[0]);
 			break;
 		}
 

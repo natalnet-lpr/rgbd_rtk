@@ -63,7 +63,7 @@ target_link_libraries(icp_odometry_test ${PCL_LIBRARIES} ${RGBD_RTK_IO} ${RGBD_R
 
 														
 
-target_link_libraries(flexible_feature_tracker_test ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING})
+target_link_libraries(flexible_feature_tracker_test ${RGBD_RTK_COMMON} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING})
 target_link_libraries(kitti_loader_test ${RGBD_RTK_IO})
 target_link_libraries(stereo_cloud_generator_test ${PCL_LIBRARIES} ${RGBD_RTK_IO}
                                                   ${RGBD_RTK_VISUALIZATION}

@@ -30,9 +30,6 @@ protected:
     //Matcher who store all the descriptors of the scene
     Ptr<cv::DescriptorMatcher> matcher_;
 
-    // Maximum number of features
-    int numMax_;
-
     // Boolean vector that indicates if the keypoint i have a match
     std::vector<bool> keypoints_with_matches;
 
@@ -82,7 +79,7 @@ public:
     FlexibleFeatureTracker();
 
     //Constructor with flexible feature detector, descriptor extractor and matcher
-    FlexibleFeatureTracker(Ptr<cv::FeatureDetector> feature_detector, Ptr<cv::DescriptorExtractor> descriptor_extractor, Ptr<cv::DescriptorMatcher> matcher);
+    FlexibleFeatureTracker(Ptr<cv::FeatureDetector> feature_detector, Ptr<cv::DescriptorExtractor> descriptor_extractor, Ptr<cv::DescriptorMatcher> matcher, const bool& log_stats);
     
     //Get the "good" Matches of your features
     void getGoodMatches(double threshold);

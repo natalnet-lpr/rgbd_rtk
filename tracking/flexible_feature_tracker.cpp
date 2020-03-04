@@ -1,8 +1,11 @@
-#include "flexible_feature_tracker.h"
-#include "opencv2/imgproc.hpp"
 #include <iostream>
+
+#include "opencv2/imgproc.hpp"
 #include "opencv2/highgui.hpp"
 #include "opencv2/features2d.hpp"
+
+#include "flexible_feature_tracker.h"
+#include <event_logger.h>
 
 FlexibleFeatureTracker::FlexibleFeatureTracker()
 {
@@ -14,13 +17,18 @@ FlexibleFeatureTracker::FlexibleFeatureTracker()
     
 }
 
-FlexibleFeatureTracker::FlexibleFeatureTracker(Ptr<cv::FeatureDetector> feature_detector, Ptr<cv::DescriptorExtractor> descriptor_extractor, Ptr<DescriptorMatcher> matcher)
+FlexibleFeatureTracker::FlexibleFeatureTracker(Ptr<cv::FeatureDetector> feature_detector, Ptr<cv::DescriptorExtractor> descriptor_extractor, Ptr<DescriptorMatcher> matcher, const bool& log_stats)
 {
     feature_detector_ = feature_detector;
     descriptor_extractor_ = descriptor_extractor;
     matcher_ = matcher;
     initialized_ = false;
     frame_idx_ = 0;
+
+    if (log_stats)
+    {
+        initialize_logger("timing_stats.txt","tracking_stats.txt","heatmap_stats.txt");
+    }
 }
 
 void FlexibleFeatureTracker:: add_keypoints()
@@ -33,6 +41,8 @@ void FlexibleFeatureTracker:: add_keypoints()
         tr.keypoint_indices_.push_back(i);
         tracklets_.push_back(tr);
     }
+    logger.print(pcl::console::L_DEBUG, "[FlexibleFeatureTracker::add_keypoints DEBUG: adding keypoints...\n");
+    logger.print(pcl::console::L_DEBUG, "[FlexibleFeatureTracker::add_keypoints DEBUG: added pts.: %lu\n",tracklets_.size());
 }
 
 int FlexibleFeatureTracker::searchMatches(int keypoint_index){
@@ -51,6 +61,8 @@ void FlexibleFeatureTracker::detect_keypoints()
     curr_KPs_.clear();
     feature_detector_->detect(curr_frame_gray_, curr_KPs_);
     descriptor_extractor_->compute(curr_frame_gray_, curr_KPs_, curr_descriptors_);
+    logger.print(pcl::console::L_DEBUG, "[FlexibleFeatureTracker::detect_keypoints] DEBUG: detecting keyponts...\n");
+    logger.print(pcl::console::L_DEBUG, "[FlexibleFeatureTracker::detect_keypoints] DEBUG: detected pts.: %lu\n",curr_KPs_.size());
 }
 
 void FlexibleFeatureTracker::getGoodMatches(double threshold)
@@ -61,7 +73,7 @@ void FlexibleFeatureTracker::getGoodMatches(double threshold)
     double min_dist = 100;
 
     //-- Quick calculation of max and min distances between keypoints
-    for (int i = 0; i < prev_descriptors_.rows; i++)
+    for (size_t i = 0; i < prev_descriptors_.rows; i++)
     {
         double dist = matches_[i].distance;
         if (dist < min_dist)
@@ -70,7 +82,7 @@ void FlexibleFeatureTracker::getGoodMatches(double threshold)
             max_dist = dist;
     }
 
-    for (int i = 0; i < matches_.size(); i++)
+    for (size_t i = 0; i < matches_.size(); i++)
     {
         if (matches_[i].distance <= max(2 * min_dist, threshold))
         {
@@ -96,9 +108,17 @@ void FlexibleFeatureTracker::update_buffers()
 
 bool FlexibleFeatureTracker::track(const cv::Mat& img)
 {
-    // Make a grayscale copy of the current frame
-    cvtColor(img, curr_frame_gray_, CV_BGR2GRAY);
+    //Make a grayscale copy of the current frame if it is in color
+    if(img.channels() > 1)
+    {
+        cvtColor(img, curr_frame_gray_, CV_BGR2GRAY);
+    }
+    else
+    {
+        img.copyTo(curr_frame_gray_);
+    }
 
+    logger.print(pcl::console::L_DEBUG, "[FlexibleFeatureTracker::track] DEBUG: tracking frame%i\n",frame_idx_);
     //Update the internal buffers
     update_buffers();
 
@@ -114,6 +134,7 @@ bool FlexibleFeatureTracker::track(const cv::Mat& img)
     {
         
         matcher_->match(curr_descriptors_, prev_descriptors_, matches_);
+        logger.print(pcl::console::L_DEBUG, "[FlexibleFeatureTracker::track] DEBUG: matching descriptos...\n");
         
         keypoints_with_matches.resize(curr_KPs_.size());
         int tracked_pts = 0;
@@ -135,7 +156,7 @@ bool FlexibleFeatureTracker::track(const cv::Mat& img)
             else
             {
                 // Remove the tracklet without match
-                continue;    
+                continue;   
             }
             
         }
@@ -150,42 +171,20 @@ bool FlexibleFeatureTracker::track(const cv::Mat& img)
                 tr.pts2D_.push_back(curr_KPs_[i].pt);
                 tr.keypoint_indices_.push_back(i);
                 tracklets_.push_back(tr);
+                tracked_pts++;
             }
         }
-             
-
-        std::cout << "\n--------------------------------------------- " << std::endl;
-        std::cout << "Matches: " << std::endl;
-
-        for(size_t i = 0; i < matches_.size(); i++)
-        {
-            std::cout << i << ": " << matches_[i].trainIdx << " ---> " << matches_[i].queryIdx << std::endl; 
-        }
         
-        std::cout << "\n--------------------------------------------- " << std::endl;
-        std::cout << "Tracklets: " << std::endl;
+        logger.print(pcl::console::L_DEBUG, "[FlexibleFeatureTracker::track] DEBUG: tracked points: %i\n",tracked_pts);
         
-        for(size_t i = 0; i < tracklets_.size(); i++)
-        {
-            for (size_t j = 0; j < tracklets_[i].keypoint_indices_.size(); j++) 
-            {
-                std::cout << tracklets_[i].keypoint_indices_[j]<< "  "; 
-            }
-            std::cout << "\n--------------------------------------------------------------------------------\n";
-        }
-        
-
-        getGoodMatches(0.1);
-        std:: cout << "CKPs size: " << curr_KPs_.size() << std:: endl;
-        std:: cout << "Tracklets size: " << curr_KPs_.size() << std:: endl;
-        
+        getGoodMatches(0.1);   
         
     }
 
+    keypoints_with_matches.clear();
     cv::swap(curr_frame_gray_, prev_frame_gray_);
     frame_idx_++;
 
     return true;
 }
-
 
