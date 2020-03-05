@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 2.6)
 
-project(RGBD_RTK)
-
 message(STATUS ">>> stereo subdirectory")
 
 set(RGBD_RTK_STEREO_SRC stereo_cloud_generator.cpp)
@@ -16,6 +14,9 @@ set_target_properties(rgbd_rtk_stereo PROPERTIES VERSION 1.0)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
 install(TARGETS rgbd_rtk_stereo
-        LIBRARY DESTINATION lib)
-
+          EXPORT rgbd_rtkTargets
+  		  RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
+  		  LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib
+  		  PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}/rgbd_rtk_stereo"
+    	  COMPONENT dev)
 install(FILES ${RGBD_RTK_STEREO_INCLUDES} DESTINATION include)
