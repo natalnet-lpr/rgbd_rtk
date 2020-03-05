@@ -2,12 +2,6 @@ cmake_minimum_required(VERSION 2.6)
 
 project(RGBD_RTK)
 
-set(FOOBAR_MAJOR_VERSION 1)
-set(FOOBAR_MINOR_VERSION 0)
-set(FOOBAR_PATCH_VERSION 0)
-set(FOOBAR_VERSION
-  ${FOOBAR_MAJOR_VERSION}.${FOOBAR_MINOR_VERSION}.${FOOBAR_PATCH_VERSION})
-
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
@@ -25,7 +19,7 @@ set(DEF_INSTALL_CMAKE_DIR CMake)
 set(INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH "Installation directory for CMake files")
 
 
-# Make relative paths absolute (needed later on)
+# Make relative paths absolute (needed to create rgbd_rtkConfig.cmake)
 foreach(p LIB BIN INCLUDE CMAKE)
   set(var INSTALL_${p}_DIR)
   if(NOT IS_ABSOLUTE "${${var}}")
@@ -81,36 +75,38 @@ set(RGBD_RTK_STEREO rgbd_rtk_stereo)
 add_subdirectory(visual_odometry)
 set(RGBD_RTK_VISUAL_ODOMETRY rgbd_rtk_visual_odometry)
 
+# Export the package for use from the build tree (registers the build-tree with a global CMake-registry)
+export(TARGETS rgbd_rtk_common rgbd_rtk_io rgbd_rtk_quadtree rgbd_rtk_tracking  rgbd_rtk_visualization rgbd_rtk_motion_estimation rgbd_rtk_stereo rgbd_rtk_visual_odometry
+FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
+
 # Build SLAM module only if ARUCO was found
-find_package(aruco 2.0 QUIET)
+find_package(aruco QUIET)
 if(aruco_FOUND)
-    message(STATUS "Aruco found")
-    message(STATUS "Aruco INCLUDES: " ${aruco_INCLUDE_DIRS})
-    message(STATUS "Aruco LIBS: " ${aruco_LIBS})
+  message(STATUS "aruco version: " ${aruco_VERSION})
+  if(aruco_VERSION VERSION_LESS "2.0")
+    message(WARNING "WARNING: aruco version >= 2.0 required")
+  else()
     include_directories(slam)
     add_subdirectory(slam)
     set(RGBD_RTK_SLAM rgbd_rtk_slam)
-else()
-    message(WARNING "Aruco was not found in your system. SLAM module will not be built.")
+
+    export(TARGETS rgbd_rtk_slam
+    FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
+  endif()
 endif()
 
-add_subdirectory(applications)
-
-
-# Export the package for use from the build tree (registers the build-tree with a global CMake-registry)
-export(TARGETS rgbd_rtk_common rgbd_rtk_io rgbd_rtk_quadtree rgbd_rtk_tracking rgbd_rtk_visualization rgbd_rtk_motion_estimation rgbd_rtk_stereo rgbd_rtk_visual_odometry 
-    FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
 export(PACKAGE rgbd_rtk)
 
 
+add_subdirectory(applications)
+
 # Create the rgbd_rtkConfig.cmake 
-file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}"
-   "${INSTALL_INCLUDE_DIR}")
-# ... for the build tree
+file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}" "${INSTALL_INCLUDE_DIR}")
+# For the build tree
 set(CONF_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}" "${PROJECT_BINARY_DIR}")
 configure_file(rgbd_rtkConfig.cmake.in
   "${PROJECT_BINARY_DIR}/rgbd_rtkConfig.cmake" @ONLY)
-# ... for the install tree
+# For the install tree
 set(CONF_INCLUDE_DIRS "\${rgbd_rtk_CMAKE_DIR}/${REL_INCLUDE_DIR}")
 configure_file(rgbd_rtkConfig.cmake.in
   "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/rgbd_rtkConfig.cmake" @ONLY)
