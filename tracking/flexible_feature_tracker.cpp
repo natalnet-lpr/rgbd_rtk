@@ -119,6 +119,7 @@ bool FlexibleFeatureTracker::track(const cv::Mat& img)
     }
 
     logger.print(pcl::console::L_DEBUG, "[FlexibleFeatureTracker::track] DEBUG: tracking frame%i\n",frame_idx_);
+   
     //Update the internal buffers
     update_buffers();
 

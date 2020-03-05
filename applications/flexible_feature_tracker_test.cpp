@@ -39,6 +39,98 @@
 using namespace std;
 using namespace cv;
 
+void draw_last_track(Mat &img, const vector<KeyPoint> prev_pts, const vector<KeyPoint> curr_pts);
+void draw_tracks(Mat &img, const vector<Tracklet> tracklets);
+
+
+/**
+ * This program shows the use of tracking by detection algorithm.
+ * @param .yml config. file (from which index_file is used)
+ */
+
+int main(int argc, char **argv)
+{
+	EventLogger& logger = EventLogger::getInstance();
+	logger.setVerbosityLevel(pcl::console::L_INFO);
+	
+	RGBDLoader loader;
+	string index_file;
+	int log_stats;
+	Mat frame, depth, current_frame, previous_frame;
+	Ptr<cv::FeatureDetector> feature_detector;
+	Ptr<cv::DescriptorExtractor> descriptor_extractor;
+	Ptr<cv::DescriptorMatcher> descriptor_matcher;
+
+	//default constructor: create a ORB detector and extractor and a BruteForce matcher.
+	//FlexibleFeatureDetector detector;
+
+	// Create a AKAZE feature detector
+	//Ptr<AKAZE> akaze_detector = AKAZE::create();
+
+	// Create a ORB descriptor extractor
+	//Ptr<ORB> orb_extractor = ORB::create();
+
+	// Create a BruteForce matcher
+	//Ptr<DescriptorMatcher> brute_force_matcher = DescriptorMatcher::create("BruteForce");
+
+	//bool log_stats = 0;
+	//FlexibleFeatureTracker detector(akaze_detector, orb_extractor, brute_force_matcher,log_stats);
+
+	
+	if (argc != 2)
+	{
+		logger.print(pcl::console::L_INFO, "[flexible_feature_tracker_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
+		exit(0);
+	}
+
+	ConfigLoader param_loader(argv[1]);
+	param_loader.checkAndGetString("index_file",index_file);
+	param_loader.checkAndGetInt("log_stats",log_stats);
+	param_loader.checkAndGetFeatureDetector("feature_detector",feature_detector);
+	param_loader.checkAndGetDescriptorExtractor("descriptor_extractor",descriptor_extractor);
+	param_loader.checkAndGetDescriptorMatcher("descriptor_matcher",descriptor_matcher);
+	
+	FlexibleFeatureTracker flexible_feature_tracker(feature_detector,descriptor_extractor,descriptor_matcher,log_stats);
+
+	loader.processFile(index_file);
+	
+	//Track points on each image
+	for (int i = 0; i < loader.num_images_; i++)
+	{
+		loader.getNextImage(frame, depth);
+
+		bool detected = flexible_feature_tracker.track(frame);
+		frame.copyTo(current_frame);
+
+		//draw_last_track(frame, detector.prev_KPs_, detector.curr_KPs_);
+
+		if (i > 0)
+		{
+			Mat img_matches;
+			drawMatches(current_frame, flexible_feature_tracker.curr_KPs_, previous_frame, flexible_feature_tracker.prev_KPs_, flexible_feature_tracker.matches_, img_matches, Scalar::all(-1),
+						Scalar::all(-1), std::vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
+
+			//-- Show detected matches
+			imshow("Good Matches", img_matches);
+		}
+
+		imshow("Image view", frame);
+		imshow("Depth view", depth);
+
+		char key = waitKey(15);
+
+		if (key == 27 || key == 'q' || key == 'Q')
+		{
+			logger.print(pcl::console::L_INFO, "[flexible_feature_tracker_test.cpp] Exiting\n",argv[0]);
+			break;
+		}
+
+		current_frame.copyTo(previous_frame);
+	}
+
+	return 0;
+}
+
 void draw_last_track(Mat &img, const vector<KeyPoint> prev_pts, const vector<KeyPoint> curr_pts)
 {
 	for (size_t k = 0; k < curr_pts.size(); k++)
@@ -74,79 +166,4 @@ void draw_tracks(Mat &img, const vector<Tracklet> tracklets)
 			}
 		}
 	}
-}
-
-int main(int argc, char **argv)
-{
-	EventLogger& logger = EventLogger::getInstance();
-	logger.setVerbosityLevel(pcl::console::L_INFO);
-	
-	string index_file_name;
-	RGBDLoader loader;
-
-	//default constructor: create a ORB detector and extractor and a BruteForce matcher.
-	//FlexibleFeatureDetector detector;
-
-	// Create a AKAZE feature detector
-	Ptr<AKAZE> akaze_detector = AKAZE::create();
-
-	// Create a ORB descriptor extractor
-	Ptr<ORB> orb_extractor = ORB::create();
-
-	// Create a BruteForce matcher
-	Ptr<DescriptorMatcher> brute_force_matcher = DescriptorMatcher::create("BruteForce");
-
-	bool log_stats = 0;
-	FlexibleFeatureTracker detector(akaze_detector, orb_extractor, brute_force_matcher,log_stats);
-
-	Mat frame, depth;
-	Mat current_frame;
-	Mat previous_frame;
-
-
-	if (argc != 2)
-	{
-		logger.print(pcl::console::L_INFO, "[flexible_feature_tracker_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
-		exit(0);
-	}
-
-	index_file_name = argv[1];
-	loader.processFile(index_file_name);
-
-	
-	//Track points on each image
-	for (int i = 0; i < loader.num_images_; i++)
-	{
-		loader.getNextImage(frame, depth);
-
-		bool detected = detector.track(frame);
-		frame.copyTo(current_frame);
-
-		//draw_last_track(frame, detector.prev_KPs_, detector.curr_KPs_);
-
-		if (i > 0)
-		{
-			Mat img_matches;
-			drawMatches(current_frame, detector.curr_KPs_, previous_frame, detector.prev_KPs_, detector.matches_, img_matches, Scalar::all(-1),
-						Scalar::all(-1), std::vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
-
-			//-- Show detected matches
-			imshow("Good Matches", img_matches);
-		}
-
-		imshow("Image view", frame);
-		imshow("Depth view", depth);
-
-		char key = waitKey(15);
-
-		if (key == 27 || key == 'q' || key == 'Q')
-		{
-			logger.print(pcl::console::L_INFO, "[flexible_feature_tracker_test.cpp] Exiting\n",argv[0]);
-			break;
-		}
-
-		current_frame.copyTo(previous_frame);
-	}
-
-	return 0;
 }
