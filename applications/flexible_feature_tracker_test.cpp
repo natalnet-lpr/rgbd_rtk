@@ -111,7 +111,7 @@ int main(int argc, char **argv)
 						Scalar::all(-1), std::vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
 
 			//-- Show detected matches
-			imshow("Good Matches", img_matches);
+			imshow("Matches", img_matches);
 		}
 
 		imshow("Image view", frame);

@@ -38,6 +38,7 @@
 #include <opencv2/opencv.hpp>
 #include "opencv2/highgui.hpp"
 #include "opencv2/features2d.hpp"
+#include "opencv2/xfeatures2d.hpp"
 
 #include <config_loader.h>
 #include <event_logger.h>
@@ -108,6 +109,24 @@ bool ConfigLoader::checkAndGetFeatureDetector(const string& parameter, Ptr<cv::F
         else if (feature_detector_text == "AKAZE"){
             feature_detector = cv::AKAZE::create();
         }
+        else if (feature_detector_text == "GFTT"){
+            feature_detector = cv::GFTTDetector::create();
+        }
+        else if (feature_detector_text == "FAST"){
+            feature_detector = cv::FastFeatureDetector::create();
+        }
+        else if (feature_detector_text == "AGAST"){
+            feature_detector = cv::AgastFeatureDetector::create();
+        }
+        else if (feature_detector_text == "BRISK"){
+            feature_detector = cv::BRISK::create();
+        }
+        else if (feature_detector_text == "SURF"){
+            feature_detector = cv::xfeatures2d::SURF::create();
+        }
+        else if (feature_detector_text == "SIFT"){
+            feature_detector = cv::xfeatures2d::SIFT::create();
+        }
         else{
             logger.print(pcl::console::L_INFO, "[config_loader.cpp] INFO: Parameter %s couldn't be loaded, insert a valid feature detector\n", feature_detector_text.c_str());
             return false;
@@ -134,6 +153,15 @@ bool ConfigLoader::checkAndGetDescriptorExtractor(const string& parameter, Ptr<c
         else if (descriptor_extractor_text == "AKAZE"){
             descriptor_extractor = cv::AKAZE::create();
         }
+        else if (descriptor_extractor_text == "BRISK"){
+            descriptor_extractor = cv::BRISK::create();
+        }
+        else if (descriptor_extractor_text == "SURF"){
+            descriptor_extractor = cv::xfeatures2d::SURF::create();
+        }
+        else if (descriptor_extractor_text == "SIFT"){
+            descriptor_extractor = cv::xfeatures2d::SIFT::create();
+        }
         else{
             logger.print(pcl::console::L_INFO, "[config_loader.cpp] INFO: Parameter %s couldn't be loaded, insert a valid descriptor extractor\n", descriptor_extractor_text.c_str());
             return false;
@@ -156,6 +184,9 @@ bool ConfigLoader::checkAndGetDescriptorMatcher(const string& parameter, Ptr<cv:
         
         if (descriptor_matcher_text == "BRUTEFORCE"){
             descriptor_matcher = cv::DescriptorMatcher::create("BruteForce");
+        }
+        else if (descriptor_matcher_text == "FLANNBASED"){
+            descriptor_matcher = cv::DescriptorMatcher::create("FlannBased");
         }
         else{
             logger.print(pcl::console::L_INFO, "[config_loader.cpp] INFO: Parameter %s couldn't be loaded, insert a valid descriptor mstcher\n", descriptor_matcher_text.c_str());
