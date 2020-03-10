@@ -69,6 +69,7 @@ void MarkerFinder::setMarkerPosesLocal(float aruco_max_distance)
 		}
 		else //marker is further than the max distance
 		{
+			markers_.clear();
 			continue;
 		}
 	}
@@ -107,6 +108,7 @@ void MarkerFinder::setMarkerPosesGlobal(const Eigen::Affine3f& cam_pose, const f
 		}
 		else //marker is further than the max distance
 		{
+			markers_.clear();
 			continue;
 		}
 	}
@@ -152,6 +154,7 @@ void MarkerFinder::setMarkerPointPosesGlobal(Eigen::Affine3f cam_pose, float aru
 			marker_point_poses_.push_back(cam_pose.inverse() * V);  //Find the pose point 3d Global ref frame
 		}
 		else {//aruco is further than the minimum distance
+			markers_.clear();
 			continue;
 		}
 	}
@@ -169,4 +172,5 @@ void MarkerFinder::detectMarkers(const cv::Mat& img,const Eigen::Affine3f& cam_p
 	
 	setMarkerPosesLocal(aruco_max_distance);
 	setMarkerPosesGlobal(cam_pose, aruco_max_distance);
+	setMarkerPointPosesGlobal(cam_pose, aruco_max_distance);
 }
