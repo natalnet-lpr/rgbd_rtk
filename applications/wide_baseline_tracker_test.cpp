@@ -31,7 +31,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 
 #include <rgbd_loader.h>
-#include <flexible_feature_tracker.h>
+#include <wide_baseline_tracker.h>
 #include<config_loader.h>
 #include<event_logger.h>
 #include <common_types.h>
@@ -60,22 +60,6 @@ int main(int argc, char **argv)
 	Ptr<cv::FeatureDetector> feature_detector;
 	Ptr<cv::DescriptorExtractor> descriptor_extractor;
 	Ptr<cv::DescriptorMatcher> descriptor_matcher;
-
-	//default constructor: create a ORB detector and extractor and a BruteForce matcher.
-	//FlexibleFeatureDetector detector;
-
-	// Create a AKAZE feature detector
-	//Ptr<AKAZE> akaze_detector = AKAZE::create();
-
-	// Create a ORB descriptor extractor
-	//Ptr<ORB> orb_extractor = ORB::create();
-
-	// Create a BruteForce matcher
-	//Ptr<DescriptorMatcher> brute_force_matcher = DescriptorMatcher::create("BruteForce");
-
-	//bool log_stats = 0;
-	//FlexibleFeatureTracker detector(akaze_detector, orb_extractor, brute_force_matcher,log_stats);
-
 	
 	if (argc != 2)
 	{
@@ -90,7 +74,7 @@ int main(int argc, char **argv)
 	param_loader.checkAndGetDescriptorExtractor("descriptor_extractor",descriptor_extractor);
 	param_loader.checkAndGetDescriptorMatcher("descriptor_matcher",descriptor_matcher);
 	
-	FlexibleFeatureTracker flexible_feature_tracker(feature_detector,descriptor_extractor,descriptor_matcher,log_stats);
+	WideBaselineTracker wide_baseline_tracker(feature_detector,descriptor_extractor,descriptor_matcher,log_stats);
 
 	loader.processFile(index_file);
 	
@@ -99,7 +83,7 @@ int main(int argc, char **argv)
 	{
 		loader.getNextImage(frame, depth);
 
-		bool detected = flexible_feature_tracker.track(frame);
+		bool detected = wide_baseline_tracker.track(frame);
 		frame.copyTo(current_frame);
 
 		//draw_last_track(frame, detector.prev_KPs_, detector.curr_KPs_);
@@ -107,7 +91,7 @@ int main(int argc, char **argv)
 		if (i > 0)
 		{
 			Mat img_matches;
-			drawMatches(current_frame, flexible_feature_tracker.curr_KPs_, previous_frame, flexible_feature_tracker.prev_KPs_, flexible_feature_tracker.matches_, img_matches, Scalar::all(-1),
+			drawMatches(current_frame, wide_baseline_tracker.curr_KPs_, previous_frame, wide_baseline_tracker.prev_KPs_, wide_baseline_tracker.matches_, img_matches, Scalar::all(-1),
 						Scalar::all(-1), std::vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
 
 			//-- Show detected matches

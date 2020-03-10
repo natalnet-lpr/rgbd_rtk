@@ -26,6 +26,7 @@
  *
  *  Rodrigo Sarmento Xavier
  *  Bruno Silva
+ *  Marcos Henrique F. Marcone
  */
 
 #include <cstdio>

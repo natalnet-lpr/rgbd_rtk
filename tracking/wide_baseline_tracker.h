@@ -4,8 +4,8 @@
  * Marcos Henrique Fernandes Marcone (marcosmarcone48@gmail.com)
  */
 
-#ifndef INCLUDE_FLEXIBLE_FEATURE_TRACKER_H_
-#define INCLUDE_FLEXIBLE_FEATURE_TRACKER_H_
+#ifndef INCLUDE_WIDE_BASELINE_TRACKER_H_
+#define INCLUDE_WIDE_BASELINE_TRACKER_H_
 
 #include "opencv2/features2d.hpp"
 #include "opencv2/xfeatures2d.hpp"
@@ -18,7 +18,7 @@
 using namespace cv;
 
 
-class FlexibleFeatureTracker : public FeatureTracker
+class WideBaselineTracker : public FeatureTracker
 {
 
 protected:
@@ -77,16 +77,19 @@ public:
     std::vector<DMatch> good_matches_;
 
     //Default constructor: create a ORB detector and extractor and a BruteForce matcher.
-    FlexibleFeatureTracker();
+    WideBaselineTracker();
 
     //Constructor with flexible feature detector, descriptor extractor and matcher
-    FlexibleFeatureTracker(Ptr<cv::FeatureDetector> feature_detector, Ptr<cv::DescriptorExtractor> descriptor_extractor, Ptr<cv::DescriptorMatcher> matcher, const bool& log_stats);
+    WideBaselineTracker(Ptr<cv::FeatureDetector> feature_detector, Ptr<cv::DescriptorExtractor> descriptor_extractor, Ptr<cv::DescriptorMatcher> matcher, const bool& log_stats);
     
     //Get the "good" Matches of your features
     void getGoodMatches(double threshold);
     
     //Tracks keypoints between the current frame and the previous.
     bool track(const cv::Mat& img);
+
+    // Clear all data about tracked points
+    void clear();
 };
 
-#endif /* INCLUDE_FLEXIBLE_FEATURE_TRACKER_H_ */
+#endif /* INCLUDE_WIDE_BASELINE_TRACKER_H_ */

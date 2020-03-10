@@ -26,6 +26,7 @@
  *
  *  Rodrigo Sarmento Xavier
  *  Bruno Silva
+ *  Marcos Henrique F. Marcone
  */
 
 #ifndef INCLUDE_CONFIG_LOADER_H_

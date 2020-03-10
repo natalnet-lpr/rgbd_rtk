@@ -5,10 +5,65 @@
 #include "opencv2/features2d.hpp"
 #include "opencv2/xfeatures2d.hpp"
 
-#include "flexible_feature_tracker.h"
+#include "wide_baseline_tracker.h"
 #include <event_logger.h>
 
-FlexibleFeatureTracker::FlexibleFeatureTracker()
+
+/* #####################################################
+ * #####                                           #####
+ * #####               Private Impl.               #####
+ * #####                                           #####
+ * #####################################################
+ */
+
+void WideBaselineTracker::detect_keypoints()
+{
+    curr_KPs_.clear();
+    feature_detector_->detect(curr_frame_gray_, curr_KPs_);
+    descriptor_extractor_->compute(curr_frame_gray_, curr_KPs_, curr_descriptors_);
+    logger.print(pcl::console::L_DEBUG, "[WideBaselineTracker::detect_keypoints] DEBUG: detecting keyponts...\n");
+    logger.print(pcl::console::L_DEBUG, "[WideBaselineTracker::detect_keypoints] DEBUG: detected pts.: %lu\n",curr_KPs_.size());
+}
+
+void WideBaselineTracker:: add_keypoints()
+{
+    for(size_t i = 0; i < curr_KPs_.size(); i++){
+        
+        //Create and add tracklet
+        Tracklet tr(frame_idx_);
+        tr.pts2D_.push_back(curr_KPs_[i].pt);
+        tr.keypoint_indices_.push_back(i);
+        tracklets_.push_back(tr);
+    }
+    logger.print(pcl::console::L_DEBUG, "[WideBaselineTracker::add_keypoints DEBUG: adding keypoints...\n");
+    logger.print(pcl::console::L_DEBUG, "[WideBaselineTracker::add_keypoints DEBUG: added pts.: %lu\n",tracklets_.size());
+}
+
+int WideBaselineTracker::searchMatches(int keypoint_index){
+    for (size_t i = 0; i < matches_.size(); i++)
+    {
+        if(keypoint_index == matches_[i].trainIdx)
+        {
+            return matches_[i].queryIdx;
+        }
+    }
+    return -1;
+}
+
+void WideBaselineTracker::update_buffers()
+{
+    std::swap(curr_KPs_, prev_KPs_);
+    std::swap(curr_descriptors_, prev_descriptors_);
+}
+
+/* #####################################################
+ * #####                                           #####
+ * #####               Public Impl.                #####
+ * #####                                           #####
+ * #####################################################
+ */
+
+WideBaselineTracker::WideBaselineTracker()
 {
     feature_detector_ = ORB::create();
     descriptor_extractor_ = ORB::create();
@@ -18,7 +73,7 @@ FlexibleFeatureTracker::FlexibleFeatureTracker()
     
 }
 
-FlexibleFeatureTracker::FlexibleFeatureTracker(Ptr<cv::FeatureDetector> feature_detector, Ptr<cv::DescriptorExtractor> descriptor_extractor, Ptr<DescriptorMatcher> matcher, const bool& log_stats)
+WideBaselineTracker::WideBaselineTracker(Ptr<cv::FeatureDetector> feature_detector, Ptr<cv::DescriptorExtractor> descriptor_extractor, Ptr<DescriptorMatcher> matcher, const bool& log_stats)
 {
     feature_detector_ = feature_detector;
     descriptor_extractor_ = descriptor_extractor;
@@ -32,41 +87,7 @@ FlexibleFeatureTracker::FlexibleFeatureTracker(Ptr<cv::FeatureDetector> feature_
     }
 }
 
-void FlexibleFeatureTracker:: add_keypoints()
-{
-    for(size_t i = 0; i < curr_KPs_.size(); i++){
-        
-        //Create and add tracklet
-        Tracklet tr(frame_idx_);
-        tr.pts2D_.push_back(curr_KPs_[i].pt);
-        tr.keypoint_indices_.push_back(i);
-        tracklets_.push_back(tr);
-    }
-    logger.print(pcl::console::L_DEBUG, "[FlexibleFeatureTracker::add_keypoints DEBUG: adding keypoints...\n");
-    logger.print(pcl::console::L_DEBUG, "[FlexibleFeatureTracker::add_keypoints DEBUG: added pts.: %lu\n",tracklets_.size());
-}
-
-int FlexibleFeatureTracker::searchMatches(int keypoint_index){
-    for (size_t i = 0; i < matches_.size(); i++)
-    {
-        if(keypoint_index == matches_[i].trainIdx)
-        {
-            return matches_[i].queryIdx;
-        }
-    }
-    return -1;
-}
-
-void FlexibleFeatureTracker::detect_keypoints()
-{
-    curr_KPs_.clear();
-    feature_detector_->detect(curr_frame_gray_, curr_KPs_);
-    descriptor_extractor_->compute(curr_frame_gray_, curr_KPs_, curr_descriptors_);
-    logger.print(pcl::console::L_DEBUG, "[FlexibleFeatureTracker::detect_keypoints] DEBUG: detecting keyponts...\n");
-    logger.print(pcl::console::L_DEBUG, "[FlexibleFeatureTracker::detect_keypoints] DEBUG: detected pts.: %lu\n",curr_KPs_.size());
-}
-
-void FlexibleFeatureTracker::getGoodMatches(double threshold)
+void WideBaselineTracker::getGoodMatches(double threshold)
 {
     good_matches_.clear();
 
@@ -101,13 +122,7 @@ void FlexibleFeatureTracker::getGoodMatches(double threshold)
     }
 }
 
-void FlexibleFeatureTracker::update_buffers()
-{
-    std::swap(curr_KPs_, prev_KPs_);
-    std::swap(curr_descriptors_, prev_descriptors_);
-}
-
-bool FlexibleFeatureTracker::track(const cv::Mat& img)
+bool WideBaselineTracker::track(const cv::Mat& img)
 {
     //Make a grayscale copy of the current frame if it is in color
     if(img.channels() > 1)
@@ -119,7 +134,7 @@ bool FlexibleFeatureTracker::track(const cv::Mat& img)
         img.copyTo(curr_frame_gray_);
     }
 
-    logger.print(pcl::console::L_DEBUG, "[FlexibleFeatureTracker::track] DEBUG: tracking frame%i\n",frame_idx_);
+    logger.print(pcl::console::L_DEBUG, "[WideBaselineTracker::track] DEBUG: tracking frame%i\n",frame_idx_);
    
     //Update the internal buffers
     update_buffers();
@@ -136,7 +151,7 @@ bool FlexibleFeatureTracker::track(const cv::Mat& img)
     {
         
         matcher_->match(curr_descriptors_, prev_descriptors_, matches_);
-        logger.print(pcl::console::L_DEBUG, "[FlexibleFeatureTracker::track] DEBUG: matching descriptos...\n");
+        logger.print(pcl::console::L_DEBUG, "[WideBaselineTracker::track] DEBUG: matching descriptos...\n");
         
         keypoints_with_matches.resize(curr_KPs_.size());
         int tracked_pts = 0;
@@ -177,7 +192,7 @@ bool FlexibleFeatureTracker::track(const cv::Mat& img)
             }
         }
         
-        logger.print(pcl::console::L_DEBUG, "[FlexibleFeatureTracker::track] DEBUG: tracked points: %i\n",tracked_pts);
+        logger.print(pcl::console::L_DEBUG, "[WideBaselineTracker::track] DEBUG: tracked points: %i\n",tracked_pts);
         
         getGoodMatches(0.1);   
         
@@ -188,5 +203,13 @@ bool FlexibleFeatureTracker::track(const cv::Mat& img)
     frame_idx_++;
 
     return true;
+}
+
+void WideBaselineTracker::clear(){
+    tracklets_.clear();
+    curr_KPs_.clear();
+    prev_KPs_.clear();
+    matches_.clear();
+    //initialized_ = false;
 }
 
