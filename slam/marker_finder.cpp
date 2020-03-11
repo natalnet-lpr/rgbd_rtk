@@ -165,12 +165,13 @@ void MarkerFinder::markerParam(const string& params, const float& size, const st
 	camera_params_.readFromXMLFile(params);
 	marker_size_ = size;
 }
-void MarkerFinder::detectMarkers(const cv::Mat& img,const Eigen::Affine3f& cam_pose,const float& aruco_max_distance)
+void MarkerFinder::detectMarkers(const cv::Mat& img, const Eigen::Affine3f& cam_pose, const float& aruco_max_distance, const string& poses_format)
 {
 	markers_.clear();
 	marker_detector_.detect(img, markers_, camera_params_, marker_size_);
 	
-	setMarkerPosesLocal(aruco_max_distance);
-	setMarkerPosesGlobal(cam_pose, aruco_max_distance);
-	setMarkerPointPosesGlobal(cam_pose, aruco_max_distance);
+	if(poses_format == "local") setMarkerPosesLocal(aruco_max_distance);
+	else if (poses_format == "global") setMarkerPosesGlobal(cam_pose, aruco_max_distance);
+	else if (poses_format == "point_global") setMarkerPointPosesGlobal(cam_pose, aruco_max_distance);
+	else setMarkerPosesGlobal(cam_pose, aruco_max_distance);
 }

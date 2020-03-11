@@ -101,9 +101,10 @@ public:
 	void markerParam(const string& params, const float& size, const string& aruco_dic);
 	/**
 	 * Detect ARUCO markers. Also sets the poses of all detected markers in the local and global ref. frames
-	 * @param rgb image, camera pose, and  aruco max distance
+	 * @param rgb image, camera pose, aruco max distance and poses_format(poses_local, poses_global, point_poses_global)
+	 * Uses poses_global as default
 	 */	
-	void detectMarkers(const cv::Mat& img,const Eigen::Affine3f& cam_pose,const float& aruco_max_distance);
-};
+	void detectMarkers(const cv::Mat& img, const Eigen::Affine3f& cam_pose, const float& aruco_max_distance, const string& poses_format);
 
+};
 #endif /* INCLUDE_MARKER_FINDER_H_ */
