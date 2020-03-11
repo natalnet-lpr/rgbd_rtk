@@ -57,7 +57,7 @@ int main(int argc, char **argv)
 	ReconstructionVisualizer visualizer;
 	Mat frame, depth;
 	float marker_size, aruco_max_distance;
-	string camera_calibration_file, aruco_dic, index_file;
+	string camera_calibration_file, aruco_dic, index_file, poses_format;
 
 	if(argc != 2)
 	{
@@ -70,6 +70,8 @@ int main(int argc, char **argv)
 	param_loader.checkAndGetString("camera_calibration_file", camera_calibration_file);
 	param_loader.checkAndGetString("index_file", index_file);
 	param_loader.checkAndGetString("aruco_dic", aruco_dic);
+    param_loader.checkAndGetString("poses_format", poses_format);
+
 	MarkerFinder marker_finder;
 	marker_finder.markerParam(camera_calibration_file, marker_size, aruco_dic);
 	
@@ -85,7 +87,7 @@ int main(int argc, char **argv)
 		vo.computeCameraPose(frame, depth);
 		
 		//Find ARUCO markers and compute their poses
-		marker_finder.detectMarkers(frame, vo.pose_, aruco_max_distance);
+		marker_finder.detectMarkers(frame, vo.pose_, aruco_max_distance, poses_format);
         for (size_t i = 0; i < marker_finder.markers_.size(); i++)
 		{
             marker_finder.markers_[i].draw(frame, Scalar(0,0,255), 1);
