@@ -39,7 +39,7 @@
 using namespace std;
 using namespace cv;
 
-void draw_last_track(Mat &img, const vector<KeyPoint> prev_pts, const vector<KeyPoint> curr_pts);
+void draw_last_track(Mat &img, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts);
 void draw_tracks(Mat &img, const vector<Tracklet> tracklets);
 
 
@@ -63,7 +63,7 @@ int main(int argc, char **argv)
 	
 	if (argc != 2)
 	{
-		logger.print(pcl::console::L_INFO, "[flexible_feature_tracker_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
+		logger.print(pcl::console::L_INFO, "[wide_baseline_tracker_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
 
@@ -86,7 +86,8 @@ int main(int argc, char **argv)
 		bool detected = wide_baseline_tracker.track(frame);
 		frame.copyTo(current_frame);
 
-		//draw_last_track(frame, detector.prev_KPs_, detector.curr_KPs_);
+		//draw_last_track(frame, wide_baseline_tracker.prev_pts_, wide_baseline_tracker.curr_pts_);
+		draw_tracks(frame, wide_baseline_tracker.tracklets_);
 
 		if (i > 0)
 		{
@@ -105,7 +106,7 @@ int main(int argc, char **argv)
 
 		if (key == 27 || key == 'q' || key == 'Q')
 		{
-			logger.print(pcl::console::L_INFO, "[flexible_feature_tracker_test.cpp] Exiting\n",argv[0]);
+			logger.print(pcl::console::L_INFO, "[wide_baseline_tracker_test.cpp] Exiting\n",argv[0]);
 			break;
 		}
 
@@ -115,15 +116,15 @@ int main(int argc, char **argv)
 	return 0;
 }
 
-void draw_last_track(Mat &img, const vector<KeyPoint> prev_pts, const vector<KeyPoint> curr_pts)
+void draw_last_track(Mat &img, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts)
 {
 	for (size_t k = 0; k < curr_pts.size(); k++)
 	{
 		Point2i pt1, pt2;
-		pt1.x = prev_pts[k].pt.x;
-		pt1.y = prev_pts[k].pt.y;
-		pt2.x = curr_pts[k].pt.x;
-		pt2.y = curr_pts[k].pt.y;
+		pt1.x = prev_pts[k].x;
+		pt1.y = prev_pts[k].y;
+		pt2.x = curr_pts[k].x;
+		pt2.y = curr_pts[k].y;
 
 		circle(img, pt1, 1, CV_RGB(0, 0, 255), 1);
 		circle(img, pt2, 3, CV_RGB(0, 255, 0), 1);

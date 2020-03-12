@@ -47,6 +47,12 @@ protected:
     // Searches if a keypoint have a match
     int searchMatches(int keypoint_index);
 
+    // Set the coordinates of the current keypoints to curr_pts_.
+    void setCurrentPoints();
+
+    // Set the coordinates of the previous keypoints to prev_pts_.
+    void setPreviousPoints();
+
 public:
     
     //Store all the current keypoints founded in the current frame
@@ -90,6 +96,7 @@ public:
 
     // Clear all data about tracked points
     void clear();
+
 };
 
 #endif /* INCLUDE_WIDE_BASELINE_TRACKER_H_ */

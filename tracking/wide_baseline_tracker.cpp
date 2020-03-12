@@ -35,8 +35,15 @@ void WideBaselineTracker:: add_keypoints()
         tr.keypoint_indices_.push_back(i);
         tracklets_.push_back(tr);
     }
+
     logger.print(pcl::console::L_DEBUG, "[WideBaselineTracker::add_keypoints DEBUG: adding keypoints...\n");
     logger.print(pcl::console::L_DEBUG, "[WideBaselineTracker::add_keypoints DEBUG: added pts.: %lu\n",tracklets_.size());
+}
+
+void WideBaselineTracker::update_buffers()
+{
+    std::swap(curr_KPs_, prev_KPs_);
+    std::swap(curr_descriptors_, prev_descriptors_);
 }
 
 int WideBaselineTracker::searchMatches(int keypoint_index){
@@ -50,10 +57,28 @@ int WideBaselineTracker::searchMatches(int keypoint_index){
     return -1;
 }
 
-void WideBaselineTracker::update_buffers()
+void WideBaselineTracker::setCurrentPoints()
 {
-    std::swap(curr_KPs_, prev_KPs_);
-    std::swap(curr_descriptors_, prev_descriptors_);
+    curr_pts_.clear();
+    //curr_pts_.resize(matches_.size());
+
+    for(size_t i=0; i<matches_.size();i++)
+    {
+        curr_pts_.push_back(curr_KPs_[matches_[i].queryIdx].pt);
+    }
+
+}
+
+void WideBaselineTracker::setPreviousPoints()
+{
+    prev_pts_.clear();
+    //prev_pts_.resize(matches_.size());
+
+    for(size_t i=0; i<matches_.size();i++)
+    {
+        prev_pts_.push_back(prev_KPs_[matches_[i].trainIdx].pt);
+    }
+
 }
 
 /* #####################################################
@@ -144,7 +169,7 @@ bool WideBaselineTracker::track(const cv::Mat& img)
 
     if (!initialized_)
     {
-        initialized_ = true;;
+        initialized_ = true;
         add_keypoints();
     }
     else
@@ -152,6 +177,9 @@ bool WideBaselineTracker::track(const cv::Mat& img)
         
         matcher_->match(curr_descriptors_, prev_descriptors_, matches_);
         logger.print(pcl::console::L_DEBUG, "[WideBaselineTracker::track] DEBUG: matching descriptos...\n");
+
+        setPreviousPoints();
+        setCurrentPoints();
         
         keypoints_with_matches.resize(curr_KPs_.size());
         int tracked_pts = 0;
@@ -205,11 +233,16 @@ bool WideBaselineTracker::track(const cv::Mat& img)
     return true;
 }
 
-void WideBaselineTracker::clear(){
+void WideBaselineTracker::clear()
+{
     tracklets_.clear();
     curr_KPs_.clear();
     prev_KPs_.clear();
     matches_.clear();
-    //initialized_ = false;
+    curr_pts_.clear();
+    prev_pts_.clear();
+    initialized_ = false;
 }
+
+
 
