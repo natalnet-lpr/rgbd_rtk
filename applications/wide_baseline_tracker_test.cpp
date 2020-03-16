@@ -51,7 +51,7 @@ void draw_tracks(Mat &img, const vector<Tracklet> tracklets);
 int main(int argc, char **argv)
 {
 	EventLogger& logger = EventLogger::getInstance();
-	logger.setVerbosityLevel(pcl::console::L_INFO);
+	logger.setVerbosityLevel(pcl::console::L_DEBUG);
 	
 	RGBDLoader loader;
 	string index_file;

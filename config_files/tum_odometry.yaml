@@ -25,7 +25,7 @@ log_stats: 0 #false
 windows_size: 20 #square of size 20 
 #wide_baseline_tracker
 feature_detector: "AKAZE" #default ORB
-descriptor_extractor: "AKAZE" #default ORB
+descriptor_extractor: "ORB" #default ORB
 descriptor_matcher: "BruteForce" #default BruteForce 
 
 

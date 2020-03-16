@@ -8,6 +8,7 @@
 #include "wide_baseline_tracker.h"
 #include <event_logger.h>
 
+using namespace cv;
 
 /* #####################################################
  * #####                                           #####
@@ -23,6 +24,7 @@ void WideBaselineTracker::detect_keypoints()
     descriptor_extractor_->compute(curr_frame_gray_, curr_KPs_, curr_descriptors_);
     logger.print(pcl::console::L_DEBUG, "[WideBaselineTracker::detect_keypoints] DEBUG: detecting keyponts...\n");
     logger.print(pcl::console::L_DEBUG, "[WideBaselineTracker::detect_keypoints] DEBUG: detected pts.: %lu\n",curr_KPs_.size());
+    //std::cout<< "Keypoints detected: " << curr_KPs_.size() << std::endl;
 }
 
 void WideBaselineTracker:: add_keypoints()
@@ -220,7 +222,9 @@ bool WideBaselineTracker::track(const cv::Mat& img)
             }
         }
         
-        logger.print(pcl::console::L_DEBUG, "[WideBaselineTracker::track] DEBUG: tracked points: %i\n",tracked_pts);
+        //logger.print(pcl::console::L_DEBUG, "[WideBaselineTracker::track] DEBUG: tracked points: %i\n",tracked_pts);
+        logger.print(pcl::console::L_DEBUG, "[WideBaselineTracker::track] DEBUG: tracked points: %i\n",curr_KPs_.size());
+        
         
         getGoodMatches(0.1);   
         

@@ -24,10 +24,10 @@
  *
  */
 
-#ifndef INCLUDE_WIDE_BASELINE_ODOMETRY_H_
-#define INCLUDE_WIDE_BASELINE_ODOMETRY_H_
+#ifndef INCLUDE_WIDE_BASELINE_VISUAL_ODOMETRY_H_
+#define INCLUDE_WIDE_BASELINE_VISUAL_ODOMETRY_H_
 
-#include <Eingen/Geometry>
+#include <Eigen/Geometry>
 #include <opencv2/core/core.hpp>
 #include <pcl/point_cloud.h>
 
@@ -35,7 +35,7 @@
 #include <wide_baseline_tracker.h>
 #include <motion_estimator_ransac.h>
 
-class WideBaselineOdometry
+class WideBaselineVisualOdometry
 {
 private:
     //Current frame index
@@ -61,13 +61,13 @@ public:
     Eigen::Affine3f pose_;
 
     //Default constructor
-    WideBaselineOdometry();
+    WideBaselineVisualOdometry();
 
     /**
      * Constructor with the matrix of intrinsic parameters
      * @param camera instrinsics
      */
-    WideBaselineOdometry(const Intrinsics& intr);
+    WideBaselineVisualOdometry(const Intrinsics& intr);
     /**
      * Main member function: computes the current camera pose
      * @param rgb image
@@ -76,4 +76,4 @@ public:
     void computeCameraPose(const cv::Mat& rgb, const cv::Mat& depth);
 };
 
-#endif /* INCLUDE_WIDE_BASELINE_ODOMETRY_H_ */
+#endif /* INCLUDE_WIDE_BASELINE_VISUAL_ODOMETRY_H_ */
