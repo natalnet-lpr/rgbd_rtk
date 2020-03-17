@@ -82,8 +82,8 @@ int main(int argc, char **argv)
 		el_time = ((double) cvGetTickCount() - el_time)/(cvGetTickFrequency()*1000.0);
 		logger.print(pcl::console::L_INFO,"[klt_tracker_test.cpp] INFO: Tracking time: %f ms\n", el_time);
 		
-		//draw_last_track(frame, tracker.prev_pts_, tracker.curr_pts_, is_kf);
-		draw_tracks(frame, tracker.tracklets_);
+		draw_last_track(frame, tracker.prev_pts_, tracker.curr_pts_, is_kf);
+		//draw_tracks(frame, tracker.tracklets_);
 
 		imshow("Image view", frame);
 		imshow("Depth view", depth);

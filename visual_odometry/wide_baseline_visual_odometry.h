@@ -52,7 +52,7 @@ public:
     pcl::PointCloud<PointT>::Ptr curr_dense_cloud_;
 
     //Feature Tracker
-    WideBaselineTracker tracker_;
+    WideBaselineTracker* tracker_;
 
     //Motion Estimator
     MotionEstimatorRANSAC motion_estimator_;
@@ -73,7 +73,20 @@ public:
      * @param rgb image
      * @param depth image
      */
+    WideBaselineVisualOdometry(const Intrinsics& intr, WideBaselineTracker& tracker);
+    /**
+     * Main member function: computes the current camera pose
+     * @param rgb image
+     * @param depth image
+     */
     void computeCameraPose(const cv::Mat& rgb, const cv::Mat& depth);
+
+    /** Set aa wide baseline tracker to the tracker_ attribute 
+     * @param tracker wide baseline tracker
+     */
+    void setTracker(WideBaselineTracker& tracker);
+
+
 };
 
 #endif /* INCLUDE_WIDE_BASELINE_VISUAL_ODOMETRY_H_ */

@@ -24,7 +24,6 @@ void WideBaselineTracker::detect_keypoints()
     descriptor_extractor_->compute(curr_frame_gray_, curr_KPs_, curr_descriptors_);
     logger.print(pcl::console::L_DEBUG, "[WideBaselineTracker::detect_keypoints] DEBUG: detecting keyponts...\n");
     logger.print(pcl::console::L_DEBUG, "[WideBaselineTracker::detect_keypoints] DEBUG: detected pts.: %lu\n",curr_KPs_.size());
-    //std::cout<< "Keypoints detected: " << curr_KPs_.size() << std::endl;
 }
 
 void WideBaselineTracker:: add_keypoints()
@@ -62,8 +61,7 @@ int WideBaselineTracker::searchMatches(int keypoint_index){
 void WideBaselineTracker::setCurrentPoints()
 {
     curr_pts_.clear();
-    //curr_pts_.resize(matches_.size());
-
+    
     for(size_t i=0; i<matches_.size();i++)
     {
         curr_pts_.push_back(curr_KPs_[matches_[i].queryIdx].pt);
@@ -74,8 +72,7 @@ void WideBaselineTracker::setCurrentPoints()
 void WideBaselineTracker::setPreviousPoints()
 {
     prev_pts_.clear();
-    //prev_pts_.resize(matches_.size());
-
+    
     for(size_t i=0; i<matches_.size();i++)
     {
         prev_pts_.push_back(prev_KPs_[matches_[i].trainIdx].pt);
@@ -90,28 +87,33 @@ void WideBaselineTracker::setPreviousPoints()
  * #####################################################
  */
 
-WideBaselineTracker::WideBaselineTracker()
+WideBaselineTracker::WideBaselineTracker():
+    FeatureTracker()
 {
     feature_detector_ = ORB::create();
     descriptor_extractor_ = ORB::create();
-    matcher_ = DescriptorMatcher::create("BruteForce");
-    initialized_ = false;
-    frame_idx_ = 0; 
-    
+    matcher_ = DescriptorMatcher::create("BruteForce");    
 }
 
-WideBaselineTracker::WideBaselineTracker(Ptr<cv::FeatureDetector> feature_detector, Ptr<cv::DescriptorExtractor> descriptor_extractor, Ptr<DescriptorMatcher> matcher, const bool& log_stats)
+WideBaselineTracker::WideBaselineTracker(Ptr<cv::FeatureDetector> feature_detector, Ptr<cv::DescriptorExtractor> descriptor_extractor, Ptr<DescriptorMatcher> matcher, const bool& log_stats):
+    FeatureTracker()
 {
     feature_detector_ = feature_detector;
     descriptor_extractor_ = descriptor_extractor;
     matcher_ = matcher;
-    initialized_ = false;
-    frame_idx_ = 0;
 
     if (log_stats)
     {
         initialize_logger("timing_stats.txt","tracking_stats.txt","heatmap_stats.txt");
     }
+}
+
+WideBaselineTracker::WideBaselineTracker(Ptr<cv::FeatureDetector> feature_detector, Ptr<cv::DescriptorExtractor> descriptor_extractor, Ptr<DescriptorMatcher> matcher, const int& min_pts, const int& max_pts, const bool& log_stats):
+    FeatureTracker(min_pts, max_pts,log_stats)
+{
+    feature_detector_ = feature_detector;
+    descriptor_extractor_ = descriptor_extractor;
+    matcher_ = matcher;    
 }
 
 void WideBaselineTracker::getGoodMatches(double threshold)
@@ -122,7 +124,7 @@ void WideBaselineTracker::getGoodMatches(double threshold)
     double min_dist = 100;
 
     //-- Quick calculation of max and min distances between keypoints
-    for (size_t i = 0; i < prev_descriptors_.rows; i++)
+    for (int i = 0; i < prev_descriptors_.rows; i++)
     {
         double dist = matches_[i].distance;
         if (dist < min_dist)
@@ -142,7 +144,7 @@ void WideBaselineTracker::getGoodMatches(double threshold)
     prev_good_Pts_.clear();
     curr_good_Pts_.clear();
 
-    for (int i = 0; i < good_matches_.size(); i++)
+    for (size_t i = 0; i < good_matches_.size(); i++)
     {
         prev_good_Pts_.push_back(prev_KPs_[good_matches_[i].trainIdx].pt);
         curr_good_Pts_.push_back(curr_KPs_[good_matches_[i].queryIdx].pt);
@@ -151,6 +153,8 @@ void WideBaselineTracker::getGoodMatches(double threshold)
 
 bool WideBaselineTracker::track(const cv::Mat& img)
 {
+    bool is_keyframe = false;
+
     //Make a grayscale copy of the current frame if it is in color
     if(img.channels() > 1)
     {
@@ -176,7 +180,7 @@ bool WideBaselineTracker::track(const cv::Mat& img)
     }
     else
     {
-        
+    
         matcher_->match(curr_descriptors_, prev_descriptors_, matches_);
         logger.print(pcl::console::L_DEBUG, "[WideBaselineTracker::track] DEBUG: matching descriptos...\n");
 
@@ -221,20 +225,24 @@ bool WideBaselineTracker::track(const cv::Mat& img)
                 tracked_pts++;
             }
         }
+
         
-        //logger.print(pcl::console::L_DEBUG, "[WideBaselineTracker::track] DEBUG: tracked points: %i\n",tracked_pts);
-        logger.print(pcl::console::L_DEBUG, "[WideBaselineTracker::track] DEBUG: tracked points: %i\n",curr_KPs_.size());
-        
-        
-        getGoodMatches(0.1);   
-        
-    }
+        logger.print(pcl::console::L_DEBUG, "[WideBaselineTracker::track] DEBUG: tracked points: %i\n",tracked_pts);        
+        getGoodMatches(0.1);  
+
+         //Insufficient number of points being tracked
+		if(tracked_pts < min_pts_)
+		{
+			//Make the current frame a new keyframe
+			is_keyframe = true;
+		}
+	} 
 
     keypoints_with_matches.clear();
     cv::swap(curr_frame_gray_, prev_frame_gray_);
     frame_idx_++;
 
-    return true;
+    return is_keyframe;
 }
 
 void WideBaselineTracker::clear()

@@ -39,6 +39,7 @@
 #include <config_loader.h>
 #include <rgbd_loader.h>
 #include <event_logger.h>
+#include <wide_baseline_tracker.h>
 #include <wide_baseline_visual_odometry.h>
 #include <reconstruction_visualizer.h>
 
@@ -60,6 +61,11 @@ int main(int argc, char **argv)
 	ReconstructionVisualizer visualizer;
 	string index_file;
 	Mat frame, depth;
+	int log_stats;
+	Ptr<cv::FeatureDetector> feature_detector;
+	Ptr<cv::DescriptorExtractor> descriptor_extractor;
+	Ptr<cv::DescriptorMatcher> descriptor_matcher;
+
 
 	if(argc != 2)
 	{
@@ -68,7 +74,17 @@ int main(int argc, char **argv)
 	}
 	ConfigLoader param_loader(argv[1]);
 	param_loader.checkAndGetString("index_file",index_file);
+	param_loader.checkAndGetInt("log_stats",log_stats);
+	param_loader.checkAndGetFeatureDetector("feature_detector",feature_detector);
+	param_loader.checkAndGetDescriptorExtractor("descriptor_extractor",descriptor_extractor);
+	param_loader.checkAndGetDescriptorMatcher("descriptor_matcher",descriptor_matcher);
+	
+	WideBaselineTracker wide_baseline_tracker(feature_detector, descriptor_extractor, descriptor_matcher, log_stats);
+	vo.setTracker(wide_baseline_tracker);
+	//WideBaselineVisualOdometry vo(intr, wide_baseline_tracker);
+
 	loader.processFile(index_file);
+	
 
 	//Compute visual odometry on each image
 	for(int i = 0; i < loader.num_images_; i++)
@@ -80,10 +96,10 @@ int main(int argc, char **argv)
 		vo.computeCameraPose(frame, depth);
 
 		//View tracked points
-		for(size_t k = 0; k < vo.tracker_.curr_pts_.size(); k++)
+		for(size_t k = 0; k < vo.tracker_->curr_pts_.size(); k++)
 		{
-			Point2i pt1 = vo.tracker_.prev_pts_[k];
-			Point2i pt2 = vo.tracker_.curr_pts_[k];
+			Point2i pt1 = vo.tracker_->prev_pts_[k];
+			Point2i pt2 = vo.tracker_->curr_pts_[k];
 			circle(frame, pt1, 1, CV_RGB(255,0,0), -1);
 			circle(frame, pt2, 3, CV_RGB(0,0,255), -1);
 			line(frame, pt1, pt2, CV_RGB(0,0,255));

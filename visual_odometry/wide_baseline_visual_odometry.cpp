@@ -53,6 +53,17 @@ WideBaselineVisualOdometry::WideBaselineVisualOdometry(const Intrinsics& intr)
 	curr_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
 }
 
+WideBaselineVisualOdometry::WideBaselineVisualOdometry(const Intrinsics& intr, WideBaselineTracker& tracker)
+{
+	frame_idx_ = 0;
+	pose_ = Eigen::Affine3f::Identity();
+	motion_estimator_.intr_ = intr;
+	tracker_ = &tracker;
+
+	prev_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
+	curr_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
+}
+
 void WideBaselineVisualOdometry::computeCameraPose(const cv::Mat& rgb, const cv::Mat& depth)
 {
 	Eigen::Affine3f trans = Eigen::Affine3f::Identity();
@@ -60,14 +71,14 @@ void WideBaselineVisualOdometry::computeCameraPose(const cv::Mat& rgb, const cv:
 	//Get dense point cloud from RGB-D data
 	*curr_dense_cloud_ = getPointCloud(rgb, depth, motion_estimator_.intr_);
 
-	//Track keypoints using KLT optical flow
-	tracker_.track(rgb);
+	//Track keypoints using Wide Baseline Tracker
+	tracker_->track(rgb);
 
 	//Estimate motion between the current and the previous point clouds
 	if(frame_idx_ > 0)
 	{
-		trans = motion_estimator_.estimate(tracker_.prev_pts_, prev_dense_cloud_,
-			                               tracker_.curr_pts_, curr_dense_cloud_);
+		trans = motion_estimator_.estimate(tracker_->prev_pts_, prev_dense_cloud_,
+			                               tracker_->curr_pts_, curr_dense_cloud_);
 		pose_ = pose_*trans;
 	}
 
@@ -77,3 +88,8 @@ void WideBaselineVisualOdometry::computeCameraPose(const cv::Mat& rgb, const cv:
 	//Increment the frame index
 	frame_idx_++;
 }
+
+void WideBaselineVisualOdometry::setTracker(WideBaselineTracker& tracker){
+	tracker_ = &tracker;
+}
+

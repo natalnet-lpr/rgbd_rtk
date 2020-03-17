@@ -83,9 +83,12 @@ public:
     //Default constructor: create a ORB detector and extractor and a BruteForce matcher.
     WideBaselineTracker();
 
-    //Constructor with flexible feature detector, descriptor extractor and matcher
+    //Constructor with flexible feature detector, descriptor extractor and matcher and flag to log statistics
     WideBaselineTracker(cv::Ptr<cv::FeatureDetector> feature_detector, cv::Ptr<cv::DescriptorExtractor> descriptor_extractor, cv::Ptr<cv::DescriptorMatcher> matcher, const bool& log_stats);
     
+    //Constructor with the minimum number of tracked points, maximum number of tracked points and flag to log statistics
+    WideBaselineTracker(cv::Ptr<cv::FeatureDetector> feature_detector, cv::Ptr<cv::DescriptorExtractor> descriptor_extractor, cv::Ptr<cv::DescriptorMatcher> matcher, const int& min_pts, const int& max_pts, const bool& log_stats);
+
     //Get the "good" Matches of your features
     void getGoodMatches(double threshold);
     
