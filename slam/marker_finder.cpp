@@ -37,7 +37,7 @@ using namespace std;
 using namespace cv;
 using namespace aruco;
 
-void MarkerFinder::setMarkerPosesLocal(float aruco_max_distance)
+void MarkerFinder::setMarkerPosesLocal(const float& aruco_max_distance)
 {	
 	double x=0,y=0,z=0;
 	marker_poses_local_.clear();
@@ -113,7 +113,7 @@ void MarkerFinder::setMarkerPosesGlobal(const Eigen::Affine3f& cam_pose, const f
 		}
 	}
 }
-void MarkerFinder::setMarkerPointPosesGlobal(Eigen::Affine3f cam_pose, float aruco_max_distance)
+void MarkerFinder::setMarkerPointPosesGlobal(const Eigen::Affine3f& cam_pose, const float& aruco_max_distance, const float& aruco_close_distance)
 {/* This function save the marker pose where the robot need to go.
  It's the same aruco pose but with a value added in order to the robot always find a place inside of the map
  In Some situations the aruco marker can be detected outside of the map, since it is oftenly
@@ -129,7 +129,7 @@ void MarkerFinder::setMarkerPointPosesGlobal(Eigen::Affine3f cam_pose, float aru
 		double x=0,y=0,z=0;
 		F(0,0) = 0.0;
 		F(1,0) = 0.0;
-		F(2,0) = 0.5;
+		F(2,0) = aruco_close_distance;
 		F(3,0) = 1.0;
 
 		Rodrigues(markers_[i].Rvec, R);
@@ -165,13 +165,13 @@ void MarkerFinder::markerParam(const string& params, const float& size, const st
 	camera_params_.readFromXMLFile(params);
 	marker_size_ = size;
 }
-void MarkerFinder::detectMarkers(const cv::Mat& img, const Eigen::Affine3f& cam_pose, const float& aruco_max_distance, const string& poses_format)
+void MarkerFinder::detectMarkers(const cv::Mat& img, const Eigen::Affine3f& cam_pose, const float& aruco_max_distance, const float& aruco_close_distance, const string& poses_format)
 {
 	markers_.clear();
 	marker_detector_.detect(img, markers_, camera_params_, marker_size_);
 	
 	if(poses_format == "local") setMarkerPosesLocal(aruco_max_distance);
 	else if (poses_format == "global") setMarkerPosesGlobal(cam_pose, aruco_max_distance);
-	else if (poses_format == "point_global") setMarkerPointPosesGlobal(cam_pose, aruco_max_distance);
+	else if (poses_format == "point_global") setMarkerPointPosesGlobal(cam_pose, aruco_max_distance, aruco_close_distance);
 	else setMarkerPosesGlobal(cam_pose, aruco_max_distance);
 }
