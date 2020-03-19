@@ -59,7 +59,7 @@ protected:
 	 * Set the pose of all detected markers w.r.t. the local/camera ref. frame
 	 * @param minimum distance(camera to marker) to aruco be considered valid
 	 */	
-	void setMarkerPosesLocal(float aruco_max_distance);
+	void setMarkerPosesLocal(const float& aruco_max_distance);
 	
 	/**
 	 * Set the pose of all detected markers w.r.t. the global ref. frame
@@ -71,7 +71,7 @@ protected:
 	 * Set the pose of all detected markers plus a distance in the global ref. frame
 	 * @param camera pose as Affine3f and minimum distance to aruco marker be considered valid
 	 */
-	void setMarkerPointPosesGlobal(Eigen::Affine3f cam_pose, float aruco_max_distance);
+	void setMarkerPointPosesGlobal(const Eigen::Affine3f& cam_pose, const float& aruco_max_distance, const float& aruco_close_distance);
 
 public:
 	
@@ -104,7 +104,7 @@ public:
 	 * @param rgb image, camera pose, aruco max distance and poses_format(poses_local, poses_global, point_poses_global)
 	 * Uses poses_global as default
 	 */	
-	void detectMarkers(const cv::Mat& img, const Eigen::Affine3f& cam_pose, const float& aruco_max_distance, const string& poses_format);
+	void detectMarkers(const cv::Mat& img, const Eigen::Affine3f& cam_pose, const float& aruco_max_distance, const float& aruco_close_distance, const string& poses_format);
 
 };
 #endif /* INCLUDE_MARKER_FINDER_H_ */
