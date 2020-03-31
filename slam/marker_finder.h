@@ -100,11 +100,20 @@ public:
 	 */
 	void markerParam(const string& params, const float& size, const string& aruco_dic);
 	/**
-	 * Detect ARUCO markers. Also sets the poses of all detected markers in the local and global ref. frames
-	 * @param rgb image, camera pose, aruco max distance and poses_format(poses_local, poses_global, point_poses_global)
-	 * Uses poses_global as default
+	 * Detect ARUCO markers and sets the poses of all detected markers in the local ref. frames
+	 * @param rgb image, camera pose, aruco max distance
 	 */	
-	void detectMarkers(const cv::Mat& img, const Eigen::Affine3f& cam_pose, const float& aruco_max_distance, const float& aruco_close_distance, const string& poses_format);
+	void detectMarkersPosesLocal(const cv::Mat& img, const Eigen::Affine3f& cam_pose, const float& aruco_max_distance);
+		/**
+	 * Detect ARUCO markers and sets the poses of all detected markers in the global ref. frames
+	 * @param rgb image, camera pose, aruco max distance aruco_close_distance
+	 */	
+	void detectMarkersPosesGlobal(const cv::Mat& img, const Eigen::Affine3f& cam_pose, const float& aruco_max_distance, const float& aruco_close_distance);
+		/**
+	 * Detect ARUCO markers and sets the poses of all detected markers in the Point Poses Global ref. frames
+	 * @param rgb image, camera pose, aruco max distance aruco close distante
+	 */	
+	void detectMarkersPointPosesGlobal(const cv::Mat& img, const Eigen::Affine3f& cam_pose, const float& aruco_max_distance, const float& aruco_close_distance);
 
 };
 #endif /* INCLUDE_MARKER_FINDER_H_ */
