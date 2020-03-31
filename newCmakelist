@@ -1,4 +1,0 @@
-Now there is a rgbdConfig.cmake in order to link rgbd_rtk in another 
-library using "find_package(rgbd_rtk)" in any cmakelist.txt
-
-
