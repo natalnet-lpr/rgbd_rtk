@@ -103,7 +103,7 @@ public:
 	 * Detect ARUCO markers and sets the poses of all detected markers in the local ref. frames
 	 * @param rgb image, camera pose, aruco max distance
 	 */	
-	void detectMarkersPosesLocal(const cv::Mat& img, const Eigen::Affine3f& cam_pose, const float& aruco_max_distance);
+	void detectMarkersPosesLocal(const cv::Mat& img, const float& aruco_max_distance);
 		/**
 	 * Detect ARUCO markers and sets the poses of all detected markers in the global ref. frames
 	 * @param rgb image, camera pose, aruco max distance aruco_close_distance

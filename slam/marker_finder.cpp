@@ -166,7 +166,7 @@ void MarkerFinder::markerParam(const string& params, const float& size, const st
 	marker_size_ = size;
 }
 
-void MarkerFinder::detectMarkersPosesLocal(const cv::Mat& img, const Eigen::Affine3f& cam_pose, const float& aruco_max_distance)
+void MarkerFinder::detectMarkersPosesLocal(const cv::Mat& img, const float& aruco_max_distance)
 {
 	markers_.clear();
 	marker_detector_.detect(img, markers_, camera_params_, marker_size_); //detec markers
