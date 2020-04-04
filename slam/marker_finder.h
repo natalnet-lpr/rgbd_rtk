@@ -56,22 +56,16 @@ protected:
 	float marker_size_;
 	
 	/**
-	 * Set the pose of all detected markers w.r.t. the local/camera ref. frame
-	 * @param minimum distance(camera to marker) to aruco be considered valid
-	 */	
-	void setMarkerPosesLocal(const float& aruco_max_distance);
-	
-	/**
 	 * Set the pose of all detected markers w.r.t. the global ref. frame
 	 * @param camera pose as affine3f and minimum distance to aruco be considered valid
 	 */	
-	void setMarkerPosesGlobal(const Eigen::Affine3f& cam_pose, const float& aruco_max_distance);
+	void setMarkerPoses(const Eigen::Affine3f& cam_pose, const float& aruco_max_distance);
 
 	/**
 	 * Set the pose of all detected markers plus a distance in the global ref. frame
 	 * @param camera pose as Affine3f and minimum distance to aruco marker be considered valid
 	 */
-	void setMarkerPointPosesGlobal(const Eigen::Affine3f& cam_pose, const float& aruco_max_distance, const float& aruco_close_distance);
+	void setMarkerPointPoses(const Eigen::Affine3f& cam_pose, const float& aruco_max_distance, const float& aruco_close_distance);
 
 public:
 	
@@ -83,11 +77,8 @@ public:
 	//Vector with each detected marker
 	std::vector<aruco::Marker> markers_;
 	
-	//Vector with the pose of each detected marker (w.r.t. the local/camera ref. frame)
-	std::vector<Eigen::Affine3f,Eigen::aligned_allocator<Eigen::Affine3f> > marker_poses_local_;
-	
 	//Vector with the pose of each 3d point marker needed by the robot Global
-	std::vector<Eigen::Vector4f> marker_point_poses_;
+	std::vector<Eigen::Affine3f> marker_point_poses_;
 
 	//Vector with the pose of each detected marker 
 	std::vector<Eigen::Affine3f,Eigen::aligned_allocator<Eigen::Affine3f> > marker_poses_;
@@ -100,20 +91,17 @@ public:
 	 */
 	void markerParam(const string& params, const float& size, const string& aruco_dic);
 	/**
-	 * Detect ARUCO markers and sets the poses of all detected markers in the local ref. frames
+	 * If you want to detect the marker related to the robot, just pass a identity matrix to cam_pose
+	 * Detect ARUCO markers and sets the poses of all detected markers in the global ref. frames
 	 * @param rgb image, camera pose, aruco max distance
 	 */	
-	void detectMarkersPosesLocal(const cv::Mat& img, const float& aruco_max_distance);
-		/**
-	 * Detect ARUCO markers and sets the poses of all detected markers in the global ref. frames
-	 * @param rgb image, camera pose, aruco max distance aruco_close_distance
-	 */	
-	void detectMarkersPosesGlobal(const cv::Mat& img, const Eigen::Affine3f& cam_pose, const float& aruco_max_distance, const float& aruco_close_distance);
-		/**
+	void detectMarkersPoses(const cv::Mat& img, const Eigen::Affine3f& cam_pose, const float& aruco_max_distance);
+	/**
+	 * If you want to detect the marker related to the robot, just pass a identity matrix to cam_pose
 	 * Detect ARUCO markers and sets the poses of all detected markers in the Point Poses Global ref. frames
 	 * @param rgb image, camera pose, aruco max distance aruco close distante
 	 */	
-	void detectMarkersPointPosesGlobal(const cv::Mat& img, const Eigen::Affine3f& cam_pose, const float& aruco_max_distance, const float& aruco_close_distance);
+	void detectMarkersPointPoses(const cv::Mat& img, const Eigen::Affine3f& cam_pose, const float& aruco_max_distance, const float& aruco_close_distance);
 
 };
 #endif /* INCLUDE_MARKER_FINDER_H_ */
