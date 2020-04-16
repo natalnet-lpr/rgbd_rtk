@@ -106,6 +106,9 @@ void MarkerFinder::setMarkerPointPoses(const Eigen::Affine3f& cam_pose, const fl
 		y = pow(P(1,3),2);
 		z = pow(P(2,3),2);
 
+		//Para achar um ponto a frente de uma pose a gente multiplica a pose a esquerda do vetor do ponto
+		//Para achar uma pose em outro sistema de refencial se multiplica o sistema referencial a esquerda e a pose do que quer a direita
+		
 		V = P * F;  //Find a vector pose in the Aruco ref frame
 		V = cam_pose.inverse() * V; //Find a vector pose in global ref frame
 		resultado = cam_pose.inverse() * P; //Find the Rotation matrix
