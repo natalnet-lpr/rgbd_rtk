@@ -29,7 +29,9 @@
 
 #include <opencv2/core/core.hpp>
 #include <pcl/point_cloud.h>
- 
+#include <Eigen/Geometry>
+#include <Eigen/StdVector>
+
 #include <common_types.h>
 
 /**
@@ -51,5 +53,12 @@ PointT get3Dfrom2D(const cv::Point2f& point, const pcl::PointCloud<PointT>::Ptr&
  * @return Point cloud as pcl::PointCloud<PointT>
  */
  pcl::PointCloud<PointT> getPointCloud(const cv::Mat& rgb, const cv::Mat& depth, const Intrinsics& intr);
+/**
+ * Update the pose given by a distance offset
+ * @param pose as Affine3f, offset distance as float
+ * @return new pose
+ */ 
+Eigen::Affine3f newPoseOffset(const Eigen::Affine3f& pose, const float& offset_distance);
+
 
 #endif /* INCLUDE_GEOMETRY_H_ */

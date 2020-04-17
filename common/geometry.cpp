@@ -110,3 +110,25 @@ pcl::PointCloud<PointT> getPointCloud(const Mat& rgb, const Mat& depth, const In
 
 	return cloud;
 }
+
+Eigen::Affine3f newPoseOffset(const Eigen::Affine3f& pose, const float& offset_distance)
+{/* This function gets a 3d pose and an offset distance, this offset will be added as a distance
+  updating the pose to a new pose with the same orientation but a new position in space.
+ */  
+	Eigen::Vector4f F = Eigen::Vector4f(); // Distance between aruco and the 3D point we want
+	Eigen::Affine3f resultado = Eigen::Affine3f::Identity();// Marker pose resultado
+	Eigen::Vector4f V = Eigen::Vector4f(); // 3D point pose 
+	F(0,0) = 0.0;
+	F(1,0) = 0.0;
+	F(2,0) = offset_distance;
+	F(3,0) = 1.0;
+
+	//In order to get a new position related to a pose, we should make the operatioin with the pose
+	//in the left and the point vector at the right.
+
+		
+	V = pose * F;  //Find the xyz position of the new 3d pose 
+	resultado(0,3) = V(0,0); resultado(1,3) = V(1,0); resultado(2,3) = V(2,0); //Setting the last column
+
+	return resultado;
+}

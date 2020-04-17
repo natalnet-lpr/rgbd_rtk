@@ -61,12 +61,6 @@ protected:
 	 */	
 	void setMarkerPoses(const Eigen::Affine3f& cam_pose, const float& aruco_max_distance);
 
-	/**
-	 * Set the pose of all detected markers plus a distance in the global ref. frame
-	 * @param camera pose as Affine3f and minimum distance to aruco marker be considered valid
-	 */
-	void setMarkerPointPoses(const Eigen::Affine3f& cam_pose, const float& aruco_max_distance, const float& aruco_close_distance);
-
 public:
 	
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -77,9 +71,6 @@ public:
 	//Vector with each detected marker
 	std::vector<aruco::Marker> markers_;
 	
-	//Vector with the pose of each 3d point marker needed by the robot Global
-	std::vector<Eigen::Affine3f> marker_point_poses_;
-
 	//Vector with the pose of each detected marker 
 	std::vector<Eigen::Affine3f,Eigen::aligned_allocator<Eigen::Affine3f> > marker_poses_;
 	
@@ -91,17 +82,12 @@ public:
 	 */
 	void markerParam(const string& params, const float& size, const string& aruco_dic);
 	/**
-	 * If you want to detect the marker related to the robot, just pass a identity matrix to cam_pose
-	 * Detect ARUCO markers and sets the poses of all detected markers in the global ref. frames
+	 * Detect the marker related to the cam_pose, just pass a identity matrix to cam_pose if you 
+	 * want to detect the pose of the marker related to the camera, just pass a identity matrix 
+	 * in cam_pose parameter
 	 * @param rgb image, camera pose, aruco max distance
 	 */	
 	void detectMarkersPoses(const cv::Mat& img, const Eigen::Affine3f& cam_pose, const float& aruco_max_distance);
-	/**
-	 * If you want to detect the marker related to the robot, just pass a identity matrix to cam_pose
-	 * Detect ARUCO markers and sets the poses of all detected markers in the Point Poses Global ref. frames
-	 * @param rgb image, camera pose, aruco max distance aruco close distante
-	 */	
-	void detectMarkersPointPoses(const cv::Mat& img, const Eigen::Affine3f& cam_pose, const float& aruco_max_distance, const float& aruco_close_distance);
 
 };
 #endif /* INCLUDE_MARKER_FINDER_H_ */

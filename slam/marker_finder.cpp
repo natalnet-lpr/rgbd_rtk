@@ -38,7 +38,12 @@ using namespace cv;
 using namespace aruco;
 
 void MarkerFinder::setMarkerPoses(const Eigen::Affine3f& cam_pose, const float& aruco_max_distance)
-{
+{/* This function save the marker pose related to the cam_pose, of course, you can always use a identity matrix
+in order to get the pose of the aruco marker assuming that the camera is the initial pose.
+there is an max distance that a marker can be related to the camera in order to be a valid marker
+this is helpfull when you want to decrease error due to detect a marker that is too far away.
+*/  
+	
 	double x=0,y=0,z=0;
 	marker_poses_.clear();
 	for(size_t i = 0; i < markers_.size(); i++)
@@ -58,10 +63,12 @@ void MarkerFinder::setMarkerPoses(const Eigen::Affine3f& cam_pose, const float& 
 		z = pow(P(2,3),2);
 		
 		//getting the absolute distance between camera and marker
-
 		///if their distance is closer then  aruco_max_distance meters save marker pose
 		if(aruco_max_distance == -1) //infinite
 		{
+			//Multiplying the cam_pose at the left of operation will transform the right pose 
+			//to the left pose orientation, we add a inverse operation in cam_pose because the 
+			//way aruco uses orientation.
 			marker_poses_.push_back(cam_pose.inverse() *P);
 		}
 		else if(sqrt(x + y + z) < aruco_max_distance) //marker is closer than the max distance
@@ -75,59 +82,7 @@ void MarkerFinder::setMarkerPoses(const Eigen::Affine3f& cam_pose, const float& 
 		}
 	}
 }
-void MarkerFinder::setMarkerPointPoses(const Eigen::Affine3f& cam_pose, const float& aruco_max_distance, const float& aruco_close_distance)
-{/* This function save the marker pose where the robot need to go.
- It's the same aruco pose but with a value added in order to the robot always find a place inside of the map
- In Some situations the aruco marker can be detected outside of the map, since it is oftenly
- placed in a wall(Precision erros can place the aruco marker outside of the map)
- */  
-	marker_point_poses_.clear();
-	for(size_t i = 0; i < markers_.size(); i++)
-	{
-		Mat R = Mat::eye(3, 3, CV_32FC1); // Orientation 
-		Eigen::Affine3f P = Eigen::Affine3f::Identity();// Marker pose
-		Eigen::Affine3f resultado = Eigen::Affine3f::Identity();// Marker pose resultado
-		Eigen::Vector4f F = Eigen::Vector4f(); // Distance between aruco and the 3D point we want
-		Eigen::Vector4f V = Eigen::Vector4f(); // 3D point pose 
-		double x=0,y=0,z=0;
-		F(0,0) = 0.0;
-		F(1,0) = 0.0;
-		F(2,0) = aruco_close_distance;
-		F(3,0) = 1.0;
 
-		Rodrigues(markers_[i].Rvec, R);
-	
-		P(0,0) = R.at<float>(0,0); P(0,1) = R.at<float>(0,1); P(0,2) = R.at<float>(0,2);
-		P(1,0) = R.at<float>(1,0); P(1,1) = R.at<float>(1,1); P(1,2) = R.at<float>(1,2);
-		P(2,0) = R.at<float>(2,0); P(2,1) = R.at<float>(2,1); P(2,2) = R.at<float>(2,2);
-		P(0,3) = markers_[i].Tvec.at<float>(0,0); P(1,3) = markers_[i].Tvec.at<float>(1,0); P(2,3) = markers_[i].Tvec.at<float>(2,0);
-
-		x = pow(P(0,3),2);
-		y = pow(P(1,3),2);
-		z = pow(P(2,3),2);
-
-		//Para achar um ponto a frente de uma pose a gente multiplica a pose a esquerda do vetor do ponto
-		//Para achar uma pose em outro sistema de refencial se multiplica o sistema referencial a esquerda e a pose do que quer a direita
-		
-		V = P * F;  //Find a vector pose in the Aruco ref frame
-		V = cam_pose.inverse() * V; //Find a vector pose in global ref frame
-		resultado = cam_pose.inverse() * P; //Find the Rotation matrix
-		resultado(0,3) = V(0,0); resultado(1,3) = V(1,0); resultado(2,3) = V(2,0); //Setting the last column
-
-		//getting the absolute distance between camera and marker
-		//if their distance is closer then aruco_max_distance save marker pose
-		if(aruco_max_distance == -1){//infinite
-			marker_point_poses_.push_back(resultado);
-		}
-		else if(sqrt(x + y + z) < aruco_max_distance){//aruco is closer than the minimum distance
-			marker_point_poses_.push_back(resultado);  
-		}
-		else {//aruco is further than the minimum distance
-			markers_.clear();
-			continue;
-		}
-	}
-}
 void MarkerFinder::markerParam(const string& params, const float& size, const string& aruco_dic)
 {//Load params 
 	marker_detector_.setDictionary(aruco_dic,0);
@@ -143,10 +98,3 @@ void MarkerFinder::detectMarkersPoses(const cv::Mat& img, const Eigen::Affine3f&
 	setMarkerPoses(cam_pose, aruco_max_distance); //set the pose
 }
 
-void MarkerFinder::detectMarkersPointPoses(const cv::Mat& img, const Eigen::Affine3f& cam_pose, const float& aruco_max_distance, const float& aruco_close_distance)
-{
-	markers_.clear();
-	marker_detector_.detect(img, markers_, camera_params_, marker_size_); //detec markers
-	
-    setMarkerPointPoses(cam_pose, aruco_max_distance, aruco_close_distance); //set the pose
-}
