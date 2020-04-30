@@ -27,7 +27,6 @@ foreach(p LIB BIN INCLUDE CMAKE)
   endif()
 endforeach()
 
-
 # set up include-directories
 include_directories(
   "${PROJECT_SOURCE_DIR}"   
@@ -55,7 +54,13 @@ else()
 	message(FATAL_ERROR "Error: PCL was not found in your system")
 endif()
 
-include_directories(${OpenCV_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} common io quadtree tracking visualization motion_estimation stereo visual_odometry)
+LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+SET(G2O_ROOT /usr/local/include/g2o)
+
+find_package(G2O REQUIRED)
+message(STATUS "G2O Found: " ${g2o_FOUND})
+
+include_directories(${OpenCV_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} ${G2O_INCLUDE_DIR} ${CSPARSE_INCLUDE_DIR} common io quadtree tracking visualization motion_estimation stereo visual_odometry)
 link_directories(${PCL_LIBRARY_DIRS})
 
 add_subdirectory(common)
@@ -96,7 +101,6 @@ if(aruco_FOUND)
 endif()
 
 export(PACKAGE rgbd_rtk)
-
 
 add_subdirectory(applications)
 
