@@ -6,7 +6,7 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -Wextra")
 set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
 set(CMAKE_CXX_FLAGS_RELEASE "-march=native -mno-avx -O3") # WITH -march=native: seg_fault. on Mac OS
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}" )
@@ -36,7 +36,6 @@ message(STATUS "Project source directory: " ${PROJECT_SOURCE_DIR})
 message(STATUS "Build directory: " ${PROJECT_BINARY_DIR})
 message(STATUS "Build type: " ${CMAKE_BUILD_TYPE})
 
-
 find_package(OpenCV REQUIRED)
 if(OpenCV_FOUND)
 	message(STATUS "OpenCV version: " ${OpenCV_VERSION})
@@ -55,13 +54,35 @@ else()
 endif()
 
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-SET(G2O_ROOT /usr/local/include/g2o)
 
 find_package(G2O REQUIRED)
-message(STATUS "G2O Found: " ${g2o_FOUND})
+if(G2O_FOUND)
+  message(STATUS "G2O Found: " ${G2O_FOUND})
+else()
+  message(FATAL_ERROR "Error: G2O not found in your system")
+endif()
+
+SET(CSPARSE_INCLUDE_DIRS /home/csarmento/LIB/g2o-20200410_git/EXTERNAL/csparse)
+find_package(CSPARSE REQUIRED)
+if(CSPARSE_FOUND)
+  message(STATUS "CSparse Found: " ${CSPARSE_FOUND})
+else()
+  message(FATAL_ERROR "CSparse Found: "${CSPARSE_FOUND})
+endif()
 
 include_directories(${OpenCV_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} ${G2O_INCLUDE_DIR} ${CSPARSE_INCLUDE_DIR} common io quadtree tracking visualization motion_estimation stereo visual_odometry)
 link_directories(${PCL_LIBRARY_DIRS})
+
+
+LIST(APPEND G2O_LIBS
+    ${G2O_CORE_LIBRARY} ${G2O_STUFF_LIBRARY} ${G2O_CLI_LIBRARY} ${G2O_SOLVER_CHOLMOD}
+    ${G2O_SOLVER_CSPARSE} ${G2O_SOLVER_CSPARSE_EXTENSION} ${G2O_SOLVER_DENSE}
+    ${G2O_SOLVER_PCG} ${G2O_SOLVER_SLAM2D_LINEAR} ${G2O_SOLVER_STRUCTURE_ONLY}
+    ${G2O_SOLVER_EIGEN} ${G2O_TYPES_DATA} ${G2O_TYPES_ICP} ${G2O_TYPES_SBA}
+    ${G2O_TYPES_SCLAM2D} ${G2O_TYPES_SIM3} ${G2O_TYPES_SLAM2D} ${G2O_TYPES_SLAM3D}
+    ${CSPARSE_LIBRARY}
+)
+
 
 add_subdirectory(common)
 set(RGBD_RTK_COMMON rgbd_rtk_common)

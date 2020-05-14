@@ -21,7 +21,7 @@
 #include <common_types.h>
 
 //convenience typedefs
-typedef g2o::BlockSolver< g2o::BlockSolverTraits<Eigen::Dynamic, Eigen::Dynamic> >  Block_Solver;
+typedef g2o::BlockSolver< g2o::BlockSolverTraits<Eigen::Dynamic, Eigen::Dynamic>>  Block_Solver;
 typedef g2o::LinearSolverCSparse<Block_Solver::PoseMatrixType> Linear_Solver;
 
 class SLAM_Solver

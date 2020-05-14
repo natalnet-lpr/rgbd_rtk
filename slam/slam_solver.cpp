@@ -78,7 +78,7 @@ void SLAM_Solver::update_state()
 	}
 
 	//Update all odometry edges
-	for(int i = 0; i < m_odometry_edges.size(); i++)
+	for(unsigned int i = 0; i < m_odometry_edges.size(); i++)
 	{
 		const int idx0 = m_odometry_edges[i].m_id0;
 		const int idx1 = m_odometry_edges[i].m_id1;
@@ -88,7 +88,7 @@ void SLAM_Solver::update_state()
 	}
 
 	//Update all loop closing edges
-	for(int i = 0; i < m_loop_edges.size(); i++)
+	for(unsigned int i = 0; i < m_loop_edges.size(); i++)
 	{
 		const int idx0 = m_loop_edges[i].m_id0;
 		const int idx1 = m_loop_edges[i].m_id1;
@@ -99,6 +99,7 @@ void SLAM_Solver::update_state()
 	printf("loop closing edges: %lu\n", m_loop_edges.size());
 }
 
+
 /* #####################################################
  * #####                                           #####
  * #####               Public Impl.                #####
@@ -106,17 +107,25 @@ void SLAM_Solver::update_state()
  * #####################################################
  */
 
+
 SLAM_Solver::SLAM_Solver()
 {
 	m_num_vertices = 0;
 	m_last_added_id = -1;
 
-	Linear_Solver* linear_solver = new Linear_Solver();
-	Block_Solver* block_solver = new Block_Solver(linear_solver);
-	g2o::OptimizationAlgorithmLevenberg* solver = new g2o::OptimizationAlgorithmLevenberg(block_solver);
+	std::unique_ptr<g2o::LinearSolverCSparse<BlockSolver::PoseMatrixType> linear_solver (new g2o:Linear_Solver)
+	//std::unique_ptr<g2o::BlockSolverTraits::LinearSolverType> linearSolver (new g2o::LinearSolverCSparse<g2o::BlockSolver::PoseMatrixType());
+	//std::unique_ptr<g2o::BlockSolver_6_3> solver_ptr (new g2o::BlockSolver_6_3(std::move(linearSolver)));
+	//g2o::OptimizationAlgorithmLevenberg * solver = new g2o::OptimizationAlgorithmLevenberg(std::move(solver_ptr));
 
-	m_optimizer.setAlgorithm(solver);
-	m_optimizer.setVerbose(true);
+	//Linear_Solver* linear_solver = new Linear_Solver();
+	//Block_Solver* block_solver = new Block_Solver(linear_solver);
+//	g2o::OptimizationAlgorithmLevenberg *solver = new g2o::OptimizationAlgorithmLevenberg(block_solver);
+//	typedef g2o::BlockSolver< g2o::BlockSolverTraits<Eigen::Dynamic, Eigen::Dynamic>>  Block_Solver;
+//	typedef g2o::LinearSolverCSparse<Block_Solver::PoseMatrixType> Linear_Solver;
+
+	//m_optimizer.setAlgorithm(solver);
+	//m_optimizer.setVerbose(true);
 }
 
 void SLAM_Solver::add_vertex_and_edge(const Eigen::Matrix4f pose, const int id)
