@@ -22,6 +22,11 @@
  *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
+ *  Author:
+ *
+ *  Luiz Felipe Maciel Correia
+ *  Marcos Henrique Marcone
+ *  Bruno Silva
  */
 
 #include <cstdio>
@@ -32,8 +37,8 @@
 
 #include <rgbd_loader.h>
 #include <wide_baseline_tracker.h>
-#include<config_loader.h>
-#include<event_logger.h>
+#include <config_loader.h>
+#include <event_logger.h>
 #include <common_types.h>
 
 using namespace std;
@@ -42,12 +47,10 @@ using namespace cv;
 void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts, bool is_kf);
 void draw_tracks(Mat &img, const vector<Tracklet> tracklets);
 
-
 /**
  * This program shows the use of tracking by detection algorithm.
  * @param .yml config. file (from which index_file is used)
  */
-
 int main(int argc, char **argv)
 {
 	EventLogger& logger = EventLogger::getInstance();
@@ -68,13 +71,13 @@ int main(int argc, char **argv)
 	}
 
 	ConfigLoader param_loader(argv[1]);
-	param_loader.checkAndGetString("index_file",index_file);
-	param_loader.checkAndGetInt("log_stats",log_stats);
-	param_loader.checkAndGetFeatureDetector("feature_detector",feature_detector);
-	param_loader.checkAndGetDescriptorExtractor("descriptor_extractor",descriptor_extractor);
-	param_loader.checkAndGetDescriptorMatcher("descriptor_matcher",descriptor_matcher);
+	param_loader.checkAndGetString("index_file", index_file);
+	param_loader.checkAndGetInt("log_stats", log_stats);
+	param_loader.checkAndGetFeatureDetector("feature_detector", feature_detector);
+	param_loader.checkAndGetDescriptorExtractor("descriptor_extractor", descriptor_extractor);
+	param_loader.checkAndGetDescriptorMatcher("descriptor_matcher", descriptor_matcher);
 	
-	WideBaselineTracker wide_baseline_tracker(feature_detector,descriptor_extractor,descriptor_matcher,log_stats);
+	WideBaselineTracker wide_baseline_tracker(feature_detector, descriptor_extractor, descriptor_matcher, log_stats);
 
 	loader.processFile(index_file);
 	
