@@ -165,6 +165,12 @@ public:
      * printError("my_module::MyClass", "Error message");
      */
 	void printError(const char* module_class, const char* msg);
+
+     /**
+      * @return a string with the current local data and time, Format YYYY-MM-DD HH:mm:ss
+      */
+     std::string currentDateTime();
+     
 };
 
 extern EventLogger& logger;

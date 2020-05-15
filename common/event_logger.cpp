@@ -138,8 +138,8 @@ void EventLogger::printDebug(const char* module_class, const char* msg)
 
 	if(!is_initialized_)
 		initialize();
-
-	print(pcl::console::L_DEBUG, "[%s] DEBUG: %s\n", module_class, msg);
+	cout<<currentDateTime();
+	print(pcl::console::L_DEBUG, "[%s] [%s] DEBUG: %s\n", currentDateTime(), module_class, msg);
 }
 
 void EventLogger::printInfo(const char* module_class, const char* msg)
@@ -150,7 +150,7 @@ void EventLogger::printInfo(const char* module_class, const char* msg)
 	if(!is_initialized_)
 		initialize();
 
-	print(pcl::console::L_INFO, "[%s] INFO: %s\n", module_class, msg);
+	print(pcl::console::L_INFO, "[%s] [%s] INFO: %s\n",currentDateTime(), module_class, msg);
 }
 
 void EventLogger::printWarning(const char* module_class, const char* msg)
@@ -161,7 +161,7 @@ void EventLogger::printWarning(const char* module_class, const char* msg)
 	if(!is_initialized_)
 		initialize();
 
-	print(pcl::console::L_WARN, "[%s] WARNING: %s\n", module_class, msg);
+	print(pcl::console::L_WARN, "[%s] [%s] WARNING: %s\n",currentDateTime(), module_class, msg);
 }
 
 void EventLogger::printError(const char* module_class, const char* msg)
@@ -172,5 +172,15 @@ void EventLogger::printError(const char* module_class, const char* msg)
 	if(!is_initialized_)
 		initialize();
 
-	print(pcl::console::L_ERROR, "[%s] ERROR: %s\n", module_class, msg);
+	print(pcl::console::L_ERROR, "[%s] [%s] ERROR: %s\n",currentDateTime(), module_class, msg);
+}
+
+string EventLogger::currentDateTime() {
+    time_t     now = time(0);
+    struct tm  tstruct;
+    char       buf[80];
+    tstruct = *localtime(&now);
+    strftime(buf, sizeof(buf), "%Y-%m-%d %X", &tstruct);
+
+    return buf;
 }
