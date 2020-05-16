@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2020, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -25,7 +25,7 @@
  *  Author:
  *
  *  Luiz Felipe Maciel Correia
- *  Marcos Henrique Marcone
+ *  Marcos Henrique F. Marcone
  *  Bruno Silva
  */
 
@@ -60,9 +60,7 @@ int main(int argc, char **argv)
 	string index_file;
 	int log_stats;
 	Mat frame, depth, current_frame, previous_frame;
-	Ptr<cv::FeatureDetector> feature_detector;
-	Ptr<cv::DescriptorExtractor> descriptor_extractor;
-	Ptr<cv::DescriptorMatcher> descriptor_matcher;
+	string feature_detector, descriptor_extractor, descriptor_matcher;
 	
 	if (argc != 2)
 	{
@@ -73,9 +71,9 @@ int main(int argc, char **argv)
 	ConfigLoader param_loader(argv[1]);
 	param_loader.checkAndGetString("index_file", index_file);
 	param_loader.checkAndGetInt("log_stats", log_stats);
-	param_loader.checkAndGetFeatureDetector("feature_detector", feature_detector);
-	param_loader.checkAndGetDescriptorExtractor("descriptor_extractor", descriptor_extractor);
-	param_loader.checkAndGetDescriptorMatcher("descriptor_matcher", descriptor_matcher);
+	param_loader.checkAndGetString("feature_detector", feature_detector);
+	param_loader.checkAndGetString("descriptor_extractor", descriptor_extractor);
+	param_loader.checkAndGetString("descriptor_matcher", descriptor_matcher);
 	
 	WideBaselineTracker wide_baseline_tracker(feature_detector, descriptor_extractor, descriptor_matcher, log_stats);
 
@@ -99,8 +97,7 @@ int main(int argc, char **argv)
 		if (i > 0)
 		{
 			Mat img_matches;
-			drawMatches(current_frame, wide_baseline_tracker.curr_KPs_, previous_frame, wide_baseline_tracker.prev_KPs_, wide_baseline_tracker.matches_, img_matches, Scalar::all(-1),
-						Scalar::all(-1), std::vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
+			drawMatches(current_frame, wide_baseline_tracker.curr_kpts_, previous_frame, wide_baseline_tracker.prev_kpts_, wide_baseline_tracker.matches_, img_matches, Scalar::all(-1),Scalar::all(-1), std::vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
 
 			//-- Show detected matches
 			imshow("Matches", img_matches);

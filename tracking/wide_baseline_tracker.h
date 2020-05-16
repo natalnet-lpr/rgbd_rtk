@@ -1,7 +1,32 @@
-/*
- * Authors: 
- * Luiz Felipe Maciel Correia (y9luizufrn@gmail.com)
- * Marcos Henrique Fernandes Marcone (marcosmarcone48@gmail.com)
+/* 
+ *  Software License Agreement (BSD License)
+ *
+ *  Copyright (c) 2016-2020, Natalnet Laboratory for Perceptual Robotics
+ *  All rights reserved.
+ *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
+ *  that the following conditions are met:
+ *
+ *  1. Redistributions of source code must retain the above copyright notice, this list of conditions and
+ *     the following disclaimer.
+ *
+ *  2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and
+ *     the following disclaimer in the documentation and/or other materials provided with the distribution.
+ * 
+ *  3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or
+ *     promote products derived from this software without specific prior written permission.
+ * 
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, *  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+ *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ *  Author:
+ *
+ *  Bruno Silva
+ *  Luiz Felipe Maciel Correia 
+ *  Marcos Henrique F. Marcone 
  */
 
 #ifndef INCLUDE_WIDE_BASELINE_TRACKER_H_
@@ -51,27 +76,36 @@ protected:
     // Set the coordinates of the previous keypoints to prev_pts_.
     void setPreviousPoints();
 
+    // Set the feature_detector_ attribute from a string
+    void setFeatureDetector(std::string feature_detector);
+
+    // Set the descriptor_extractor_ attribute from a string
+    void setDescriptorExtractor(std::string descriptor_extractor);
+
+    // Set the matcher_ attribute from a string
+    void setMatcher(std::string matcher);
+
 public:
     
     //Store all the current keypoints founded in the current frame
-    std::vector<cv::KeyPoint> curr_KPs_;
+    std::vector<cv::KeyPoint> curr_kpts_;
 
     //Store all the current descriptors founded in the current frame
     cv::Mat curr_descriptors_;
 
     //Store all the previous keypoints founded in the previous frame
-    std::vector<cv::KeyPoint> prev_KPs_;
+    std::vector<cv::KeyPoint> prev_kpts_;
 
     //Store all the previous descriptors founded in the previous frame
     cv::Mat prev_descriptors_;
 
     //Store all the "good" current keypoints that's points who has more
     //accurracy than others calculed through euclidian distance
-    std::vector<cv::Point2f> curr_good_Pts_;
+    std::vector<cv::Point2f> curr_good_pts_;
 
     //Store all the "good" previous keypoints that's points who has more
     //accurracy than others calculed through euclidian distance
-    std::vector<cv::Point2f> prev_good_Pts_;
+    std::vector<cv::Point2f> prev_good_pts_;
 
     //Store all the matches beetween features
     std::vector<cv::DMatch> matches_;
@@ -84,10 +118,10 @@ public:
     WideBaselineTracker();
 
     //Constructor with flexible feature detector, descriptor extractor and matcher and flag to log statistics
-    WideBaselineTracker(cv::Ptr<cv::FeatureDetector> feature_detector, cv::Ptr<cv::DescriptorExtractor> descriptor_extractor, cv::Ptr<cv::DescriptorMatcher> matcher, const bool& log_stats);
+    WideBaselineTracker(std::string feature_detector, std::string descriptor_extractor, std::string matcher, const bool& log_stats);
     
     //Constructor with the minimum number of tracked points, maximum number of tracked points and flag to log statistics
-    WideBaselineTracker(cv::Ptr<cv::FeatureDetector> feature_detector, cv::Ptr<cv::DescriptorExtractor> descriptor_extractor, cv::Ptr<cv::DescriptorMatcher> matcher, const int& min_pts, const int& max_pts, const bool& log_stats);
+    WideBaselineTracker(std::string feature_detector, std::string descriptor_extractor, std::string matcher, const int& min_pts, const int& max_pts, const bool& log_stats);
 
     //Get the "good" Matches of your features
     void getGoodMatches(double threshold);

@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2020, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -25,7 +25,7 @@
  *  Authors:
  *
  *  Bruno Silva
- *  Marcos Henrique
+ *  Marcos Henrique F. Marcone
  */
 
 #include <cstdio>
@@ -57,35 +57,31 @@ int main(int argc, char **argv)
 	
 	RGBDLoader loader;
 	Intrinsics intr(0);
-	WideBaselineVisualOdometry vo(intr);
 	ReconstructionVisualizer visualizer;
 	string index_file;
 	Mat frame, depth;
 	int log_stats;
-	Ptr<cv::FeatureDetector> feature_detector;
-	Ptr<cv::DescriptorExtractor> descriptor_extractor;
-	Ptr<cv::DescriptorMatcher> descriptor_matcher;
-
+	string feature_detector, descriptor_extractor, descriptor_matcher;
 
 	if(argc != 2)
 	{
 		logger.print(pcl::console::L_INFO, "[wide_baseline_visual_odometry_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
+	
 	ConfigLoader param_loader(argv[1]);
 	param_loader.checkAndGetString("index_file",index_file);
 	param_loader.checkAndGetInt("log_stats",log_stats);
-	param_loader.checkAndGetFeatureDetector("feature_detector",feature_detector);
-	param_loader.checkAndGetDescriptorExtractor("descriptor_extractor",descriptor_extractor);
-	param_loader.checkAndGetDescriptorMatcher("descriptor_matcher",descriptor_matcher);
+	param_loader.checkAndGetString("feature_detector",feature_detector);
+	param_loader.checkAndGetString("descriptor_extractor",descriptor_extractor);
+	param_loader.checkAndGetString("descriptor_matcher",descriptor_matcher);
 	
 	WideBaselineTracker wide_baseline_tracker(feature_detector, descriptor_extractor, descriptor_matcher, log_stats);
-	vo.setTracker(wide_baseline_tracker);
-	//WideBaselineVisualOdometry vo(intr, wide_baseline_tracker);
+	
+	WideBaselineVisualOdometry vo(intr, wide_baseline_tracker);
 
 	loader.processFile(index_file);
 	
-
 	//Compute visual odometry on each image
 	for(int i = 0; i < loader.num_images_; i++)
 	{

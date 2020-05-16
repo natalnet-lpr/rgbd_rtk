@@ -32,14 +32,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
-#include <string>
-#include <boost/algorithm/string.hpp>
-
 
 #include <opencv2/opencv.hpp>
-#include "opencv2/highgui.hpp"
-#include "opencv2/features2d.hpp"
-#include "opencv2/xfeatures2d.hpp"
 
 #include <config_loader.h>
 #include <event_logger.h>
@@ -94,107 +88,3 @@ bool ConfigLoader::checkAndGetString(const string& parameter, string& parameter_
     }
 }
 
-bool ConfigLoader::checkAndGetFeatureDetector(const string& parameter, Ptr<cv::FeatureDetector>& feature_detector){
-     if(fs[parameter].empty()){
-        logger.print(pcl::console::L_INFO, "[config_loader.cpp] INFO: Parameter %s couldn't be loaded, check your ConfigFile.yaml\n", parameter.c_str());
-        return false;
-    }     
-    else{
-        string feature_detector_text;
-        fs[parameter] >> feature_detector_text;
-        boost::to_upper(feature_detector_text);
-        
-        if (feature_detector_text == "ORB"){
-            feature_detector = cv::ORB::create();
-        }
-        else if (feature_detector_text == "AKAZE"){
-            feature_detector = cv::AKAZE::create();
-        }
-        else if (feature_detector_text == "GFTT"){
-            feature_detector = cv::GFTTDetector::create();
-        }
-        else if (feature_detector_text == "FAST"){
-            feature_detector = cv::FastFeatureDetector::create();
-        }
-        else if (feature_detector_text == "AGAST"){
-            feature_detector = cv::AgastFeatureDetector::create();
-        }
-        else if (feature_detector_text == "BRISK"){
-            feature_detector = cv::BRISK::create();
-        }
-        else if (feature_detector_text == "SURF"){
-            feature_detector = cv::xfeatures2d::SURF::create();
-        }
-        else if (feature_detector_text == "SIFT"){
-            feature_detector = cv::xfeatures2d::SIFT::create();
-        }
-        else{
-            logger.print(pcl::console::L_INFO, "[config_loader.cpp] INFO: Parameter %s couldn't be loaded, insert a valid feature detector\n", feature_detector_text.c_str());
-            return false;
-        }
-    
-        logger.print(pcl::console::L_INFO, "[config_loader.cpp] INFO: Parameter %s = %s\n", parameter.c_str(), feature_detector_text.c_str());
-        return true;
-    }
-}
-
-bool ConfigLoader::checkAndGetDescriptorExtractor(const string& parameter, Ptr<cv::DescriptorExtractor>& descriptor_extractor){
-     if(fs[parameter].empty()){
-        logger.print(pcl::console::L_INFO, "[config_loader.cpp] INFO: Parameter %s couldn't be loaded, check your ConfigFile.yaml\n", parameter.c_str());
-        return false;
-    }     
-    else{
-        string descriptor_extractor_text;
-        fs[parameter] >> descriptor_extractor_text;
-        boost::to_upper(descriptor_extractor_text);
-        
-        if (descriptor_extractor_text == "ORB"){
-            descriptor_extractor = cv::ORB::create();
-        }
-        else if (descriptor_extractor_text == "AKAZE"){
-            descriptor_extractor = cv::AKAZE::create();
-        }
-        else if (descriptor_extractor_text == "BRISK"){
-            descriptor_extractor = cv::BRISK::create();
-        }
-        else if (descriptor_extractor_text == "SURF"){
-            descriptor_extractor = cv::xfeatures2d::SURF::create();
-        }
-        else if (descriptor_extractor_text == "SIFT"){
-            descriptor_extractor = cv::xfeatures2d::SIFT::create();
-        }
-        else{
-            logger.print(pcl::console::L_INFO, "[config_loader.cpp] INFO: Parameter %s couldn't be loaded, insert a valid descriptor extractor\n", descriptor_extractor_text.c_str());
-            return false;
-        }
-    
-        logger.print(pcl::console::L_INFO, "[config_loader.cpp] INFO: Parameter %s = %s\n", parameter.c_str(), descriptor_extractor_text.c_str());
-        return true;
-    }
-}
-
-bool ConfigLoader::checkAndGetDescriptorMatcher(const string& parameter, Ptr<cv::DescriptorMatcher>& descriptor_matcher){
-     if(fs[parameter].empty()){
-        logger.print(pcl::console::L_INFO, "[config_loader.cpp] INFO: Parameter %s couldn't be loaded, check your ConfigFile.yaml\n", parameter.c_str());
-        return false;
-    }     
-    else{
-        string descriptor_matcher_text;
-        fs[parameter] >> descriptor_matcher_text;
-        boost::to_upper(descriptor_matcher_text);
-        
-        if (descriptor_matcher_text == "BRUTEFORCE"){
-            descriptor_matcher = cv::DescriptorMatcher::create("BruteForce");
-        }
-        else if (descriptor_matcher_text == "FLANNBASED"){
-            descriptor_matcher = cv::DescriptorMatcher::create("FlannBased");
-        }
-        else{
-            logger.print(pcl::console::L_INFO, "[config_loader.cpp] INFO: Parameter %s couldn't be loaded, insert a valid descriptor mstcher\n", descriptor_matcher_text.c_str());
-            return false;
-        }
-    
-        logger.print(pcl::console::L_INFO, "[config_loader.cpp] INFO: Parameter %s = %s\n", parameter.c_str(), descriptor_matcher_text.c_str());
-        return true;
-    }
-}

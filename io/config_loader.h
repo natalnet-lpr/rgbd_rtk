@@ -38,9 +38,6 @@
 #include <event_logger.h>
 
 #include <opencv2/opencv.hpp>
-#include "opencv2/highgui.hpp"
-#include "opencv2/features2d.hpp"
-#include "opencv2/xfeatures2d.hpp"
 
 using namespace std;
 
@@ -80,24 +77,6 @@ public:
      * @Return boolean, false if the parameter is not in configfile and true if it is
      */
     bool checkAndGetString(const string& parameter, string& parameter_string);
-    /**
-     * get a feature detector parameter in ConfigFile
-     * @Params string with the name of the parameter in configfile, and a feature detector pointer where the value will be returned
-     * @Return boolean, false if the parameter is not in configfile and true if it is
-     */
-    bool checkAndGetFeatureDetector(const string& parameter, cv::Ptr<cv::FeatureDetector>& feature_detector);
-    /**
-     * get a descriptor extractor parameter in ConfigFile
-     * @Params string with the name of the parameter in configfile, and a descriptor extractor pointer where the value will be returned
-     * @Return boolean, false if the parameter is not in configfile and true if it is
-     */
-    bool checkAndGetDescriptorExtractor(const string& parameter, cv::Ptr<cv::DescriptorExtractor>& descriptor_extractor);
-    /**
-     * get a descriptor matcher parameter in ConfigFile
-     * @Params string with the name of the parameter in configfile, and a descriptor matcher pointer where the value will be returned
-     * @Return boolean, false if the parameter is not in configfile and true if it is
-     */
-    bool checkAndGetDescriptorMatcher(const string& parameter, cv::Ptr<cv::DescriptorMatcher>& descriptor_matcher);
 };
 
 #endif
