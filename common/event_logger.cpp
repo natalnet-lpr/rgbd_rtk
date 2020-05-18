@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2020, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -22,12 +22,17 @@
  *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
+ *  Author:
+ *
+ *  Bruno Silva
+ *  Rodrigo Xavier
  */
 
 #include <iostream>
 #include <cstdarg>
 #include <cstdio>
-#include <string.h>
+#include <cstring>
+#include <sstream>
 
 #include <event_logger.h>
 
@@ -118,6 +123,7 @@ void EventLogger::print(pcl::console::VERBOSITY_LEVEL level, const char *format,
 	//Write message to stdout
 	va_start(stdout_args, format);
 	va_copy(file_args, stdout_args);
+	fprintf(stdout, "[%s] ", currentDateTime().c_str());
 	vfprintf(stdout, format, stdout_args);
 	va_end(stdout_args);
 
@@ -126,6 +132,7 @@ void EventLogger::print(pcl::console::VERBOSITY_LEVEL level, const char *format,
 		initialize();
 
 	//Write message to file
+	fprintf(log_file_, "[%s] ", currentDateTime().c_str());
 	vfprintf(log_file_, format, file_args);
 	va_end(file_args);
 
@@ -139,7 +146,7 @@ void EventLogger::printDebug(const char* module_class, const char* msg)
 
 	if(!is_initialized_)
 		initialize();
-	print(pcl::console::L_DEBUG, "[%s] [%s] DEBUG: %s\n",currentDateTime().c_str(), module_class, msg);
+	print(pcl::console::L_DEBUG, "[%s] DEBUG: %s\n", module_class, msg);
 }
 
 void EventLogger::printInfo(const char* module_class, const char* msg)
@@ -150,7 +157,7 @@ void EventLogger::printInfo(const char* module_class, const char* msg)
 	if(!is_initialized_)
 		initialize();
 
-	print(pcl::console::L_INFO, "[%s] [%s] INFO: %s\n",currentDateTime().c_str(), module_class, msg);
+	print(pcl::console::L_INFO, "[%s] INFO: %s\n", module_class, msg);
 }
 
 void EventLogger::printWarning(const char* module_class, const char* msg)
@@ -161,7 +168,7 @@ void EventLogger::printWarning(const char* module_class, const char* msg)
 	if(!is_initialized_)
 		initialize();
 
-	print(pcl::console::L_WARN, "[%s] [%s] WARNING: %s\n",currentDateTime().c_str(), module_class, msg);
+	print(pcl::console::L_WARN, "[%s] WARNING: %s\n", module_class, msg);
 }
 
 void EventLogger::printError(const char* module_class, const char* msg)
@@ -172,7 +179,7 @@ void EventLogger::printError(const char* module_class, const char* msg)
 	if(!is_initialized_)
 		initialize();
 
-	print(pcl::console::L_ERROR, "[%s] [%s] ERROR: %s\n",currentDateTime().c_str(), module_class, msg);
+	print(pcl::console::L_ERROR, "[%s] ERROR: %s\n", module_class, msg);
 }
 
 string EventLogger::currentDateTime()
