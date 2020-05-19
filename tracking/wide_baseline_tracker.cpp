@@ -152,7 +152,7 @@ void WideBaselineTracker::setFeatureDetector(const std::string& feature_detector
     }
     else
     {
-        logger.print(pcl::console::L_DEBUG, "[WideBaselinaTracker::setFeatureDetector] DEBUG: Attribute %s couldn't be loaded, insert a valid feature detector\n", upper_feature_detector.c_str());
+        logger.print(pcl::console::L_ERROR, "[WideBaselinaTracker::setFeatureDetector] ERROR: Attribute %s couldn't be loaded, insert a valid feature detector\n", upper_feature_detector.c_str());
         throw std::invalid_argument("Insert a valid feature detector");
     }
 
@@ -186,7 +186,7 @@ void WideBaselineTracker::setDescriptorExtractor(const std::string& descriptor_e
     }
     else
     {
-        logger.print(pcl::console::L_DEBUG, "[WideBaselinaTracker::setDescriptorExtractor] DEBUG: Attribute %s couldn't be loaded, insert a valid descriptor extractor\n", upper_descriptor_extractor.c_str());
+        logger.print(pcl::console::L_ERROR, "[WideBaselinaTracker::setDescriptorExtractor] ERROR: Attribute %s couldn't be loaded, insert a valid descriptor extractor\n", upper_descriptor_extractor.c_str());
         throw std::invalid_argument("Insert a valid descriptor extractor");
     }
 
@@ -208,7 +208,7 @@ void WideBaselineTracker::setMatcher(const std::string& matcher)
     }
     else
     {
-        logger.print(pcl::console::L_DEBUG, "[WideBaselinaTracker::setMatcher] DEBUG: Attribute %s couldn't be loaded, insert a valid matcher\n", upper_matcher.c_str());
+        logger.print(pcl::console::L_ERROR, "[WideBaselinaTracker::setMatcher] ERROR: Attribute %s couldn't be loaded, insert a valid matcher\n", upper_matcher.c_str());
         throw std::invalid_argument("Insert a valid matcher");
     }
 
