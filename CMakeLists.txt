@@ -11,13 +11,14 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
 set(CMAKE_CXX_FLAGS_RELEASE "-march=native -mno-avx -O3") # WITH -march=native: seg_fault. on Mac OS
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}" )
 
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+
 # Offer the user the choice of overriding the installation directories
 set(INSTALL_LIB_DIR lib CACHE PATH "Installation directory for libraries")
 set(INSTALL_BIN_DIR bin CACHE PATH "Installation directory for executables")
 set(INSTALL_INCLUDE_DIR include CACHE PATH "Installation directory for header files")
 set(DEF_INSTALL_CMAKE_DIR CMake)
 set(INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH "Installation directory for CMake files")
-
 
 # Make relative paths absolute (needed to create rgbd_rtkConfig.cmake)
 foreach(p LIB BIN INCLUDE CMAKE)
@@ -53,26 +54,20 @@ else()
 	message(FATAL_ERROR "Error: PCL was not found in your system")
 endif()
 
-LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-
 find_package(G2O REQUIRED)
-if(G2O_FOUND)
-  message(STATUS "G2O Found: " ${G2O_FOUND})
-else()
-  message(FATAL_ERROR "Error: G2O not found in your system")
-endif()
+message(STATUS "G2O Found: " ${G2O_FOUND})
 
-SET(CSPARSE_INCLUDE_DIRS /home/csarmento/LIB/g2o-20200410_git/EXTERNAL/csparse)
-find_package(CSPARSE REQUIRED)
-if(CSPARSE_FOUND)
-  message(STATUS "CSparse Found: " ${CSPARSE_FOUND})
-else()
-  message(FATAL_ERROR "CSparse Found: "${CSPARSE_FOUND})
-endif()
+find_package(Eigen3 REQUIRED)
+message(STATUS "Eigen3 Found: " ${EIGEN3_FOUND})
 
-include_directories(${OpenCV_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} ${G2O_INCLUDE_DIR} ${CSPARSE_INCLUDE_DIR} common io quadtree tracking visualization motion_estimation stereo visual_odometry)
+find_package(CSparse REQUIRED)
+message(STATUS "CSparse Found: " ${CSPARSE_FOUND})
+
+include_directories(${OpenCV_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS}
+                    ${EIGEN3_INCLUDE_DIR} ${G2O_INCLUDE_DIR} ${CSPARSE_INCLUDE_DIR}
+                    common io tracking motion_estimation visualization visual_odometry
+                    quadtree stereo)
 link_directories(${PCL_LIBRARY_DIRS})
-
 
 LIST(APPEND G2O_LIBS
     ${G2O_CORE_LIBRARY} ${G2O_STUFF_LIBRARY} ${G2O_CLI_LIBRARY} ${G2O_SOLVER_CHOLMOD}
@@ -83,6 +78,7 @@ LIST(APPEND G2O_LIBS
     ${CSPARSE_LIBRARY}
 )
 
+message(STATUS "G2O libs: " ${G2O_LIBS})
 
 add_subdirectory(common)
 set(RGBD_RTK_COMMON rgbd_rtk_common)
@@ -109,10 +105,12 @@ FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
 find_package(aruco QUIET)
 if(aruco_FOUND)
   message(STATUS "aruco version: " ${aruco_VERSION})
+  message(STATUS "Aruco INCLUDES: " ${aruco_INCLUDE_DIRS})
+  message(STATUS "Aruco LIBS: " ${aruco_LIBS})
   if(aruco_VERSION VERSION_LESS "2.0")
     message(WARNING "WARNING: aruco version >= 2.0 required")
   else()
-    include_directories(slam)
+    include_directories(slam ${aruco_INCLUDE_DIRS})
     add_subdirectory(slam)
     set(RGBD_RTK_SLAM rgbd_rtk_slam)
 
