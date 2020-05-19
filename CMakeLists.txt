@@ -33,7 +33,7 @@ include_directories(
   "${PROJECT_SOURCE_DIR}"   
   "${PROJECT_BINARY_DIR}")  
 
-message(STATUS "Project source directory: " ${PROJECT_SOURCE_DIR})
+message(STATUS "Project source directry: " ${PROJECT_SOURCE_DIR})
 message(STATUS "Build directory: " ${PROJECT_BINARY_DIR})
 message(STATUS "Build type: " ${CMAKE_BUILD_TYPE})
 

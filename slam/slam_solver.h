@@ -19,6 +19,7 @@
 #include <g2o/solvers/csparse/linear_solver_csparse.h>
 
 #include <common_types.h>
+#include <event_logger.h>
 
 //convenience typedefs
 typedef g2o::BlockSolver< g2o::BlockSolverTraits<Eigen::Dynamic, Eigen::Dynamic>>  Block_Solver;
@@ -35,11 +36,16 @@ class SLAM_Solver
 
 		g2o::SparseOptimizer m_optimizer;
 
-		//Internal function to create edges
-		void add_edge_to_list(const int from_id, const int to_id);
+		/**
+		 * Internal function to create edges
+		 * @param from_edge_id type int, @param to_edge_id type int
+		 */
+		void addEdgeToList(const int from_id, const int to_id);
 
-		//Update internal state after optimization
-		void update_state();
+		/**
+		 * Update internal state after optimization
+		 */
+		void updateState();
 
 	public:
 
@@ -58,21 +64,26 @@ class SLAM_Solver
 		//Default constructor
 		SLAM_Solver();
 
-		//Adds a vertex to the graph with the given pose and id
-		//and also an "odometry" edge connecting it to the previous
-		//vertex in the graph
-		void add_vertex_and_edge(const Eigen::Matrix4f pose, const int id);
+		/**
+		 * Adds a vertex to the graph with the given pose and id
+		 * and also an "odometry" edge connecting it to the previous
+		 * vertex in the graph
+		 * @param pose type Matrix4f, @param id type id
+		 */
+		void addVertexAndEdge(const Eigen::Matrix4f pose, const int id);
 
-		//Adds a "loop closing" edge connecting the vertex with given id to the
-		//origin (vertex with id = 0)
-		void add_loop_closing_edge(const Eigen::Matrix4f vertex_to_origin_transf, const int id);
+		/**
+		 * Adds a "loop closing" edge connecting the vertex with given id to the
+		 * origin (vertex with id = 0)
+		 * @param vertex_to_origin_transformation type Matrix4f, @param id type int
+		 */
+		void addLoopClosingEdge(const Eigen::Matrix4f vertex_to_origin_transf, const int id);
 
-		//Optimizes the graph with Levenberg-Marquardt for the given n. of iterations
-		void optimize_graph(const int k);
-
-		//set nodes fixed
-
-		//void print_debug_info();
+		/**
+		 * Optimizes the graph with Levenberg-Marquardt for the given n. of iterations
+		 * @param k number of iterations type int
+		 */
+		void optimizeGraph(const int k);
 };
 
 

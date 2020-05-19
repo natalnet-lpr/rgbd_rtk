@@ -26,7 +26,7 @@ using namespace g2o;
  * #####################################################
  */
 
-void SLAM_Solver::add_edge_to_list(const int from_id, const int to_id)
+void SLAM_Solver::addEdgeToList(const int from_id, const int to_id)
 {
 	Graph_Edge ep(from_id, to_id, m_positions[from_id], m_positions[to_id]);
 	stringstream edge_name;
@@ -44,11 +44,16 @@ void SLAM_Solver::add_edge_to_list(const int from_id, const int to_id)
 	}
 }
 
-void SLAM_Solver::update_state()
+void SLAM_Solver::updateState()
 {
+	EventLogger& logger = EventLogger::getInstance();
+	logger.setVerbosityLevel(pcl::console::L_DEBUG);
+	logger.setLogFileName("log_event_slam_solver.txt");
+
 	m_optimized_estimates.clear();
 	m_optimized_estimates.resize(m_positions.size());
-	printf("Updating %lu vertices\n", m_positions.size());
+
+	logger.print(pcl::console::L_INFO, "[slam_solver.cpp] INFO: Updating %lu vertices\n", m_positions.size());
 
 	//Update estimates of all vertices and positions
 	for(OptimizableGraph::VertexIDMap::const_iterator it = m_optimizer.vertices().begin();
@@ -68,9 +73,15 @@ void SLAM_Solver::update_state()
 
 		m_optimized_estimates[v_id] = new_estimate;
 
-		//printf("### Updating node %i\n", v_id);
-		//printf("### from %f %f %f to %f %f %f\n", m_vertices[v_id].x(), m_vertices[v_id].y(), m_vertices[v_id].z(),
-		//										  new_estimate(0,3), new_estimate(1,3), new_estimate(2,3));
+
+		logger.print(pcl::console::L_INFO, "[slam_solver.cpp] INFO: Updating node %i \n", v_id);
+		//verificar se é m_positions mesmo o desejado
+		logger.print(pcl::console::L_INFO, "[slam_solver.cpp] INFO: ### from %f %f %f to %f %f %f\n",
+						m_positions[v_id].x(), m_positions[v_id].y(), m_positions[v_id].z(),
+						new_estimate(0,3), new_estimate(1,3), new_estimate(2,3), v_id);
+
+		
+		//logger.print(pcl::console::L_INFO, "[slam_solver.cpp] INFO: ### from %f %f %f to %f %f %f\n", m_vertices[v_id].x(), m_vertices[v_id].y(), m_vertices[v_id].z(), new_estimate(0,3), new_estimate(1,3), new_estimate(2,3), v_id));
 
 		m_positions[v_id](0,0) = new_estimate(0,3);
 		m_positions[v_id](1,0) = new_estimate(1,3);
@@ -96,9 +107,8 @@ void SLAM_Solver::update_state()
 		m_loop_edges[i].m_pos0 = m_positions[idx0];
 		m_loop_edges[i].m_pos1 = m_positions[idx1];
 	}
-	printf("loop closing edges: %lu\n", m_loop_edges.size());
+	logger.print(pcl::console::L_INFO, "[slam_solver.cpp] INFO: Loop closing edges: %lu\n", m_loop_edges.size());
 }
-
 
 /* #####################################################
  * #####                                           #####
@@ -107,30 +117,22 @@ void SLAM_Solver::update_state()
  * #####################################################
  */
 
-
 SLAM_Solver::SLAM_Solver()
 {
 	m_num_vertices = 0;
 	m_last_added_id = -1;
 
-	std::unique_ptr<g2o::LinearSolverCSparse<BlockSolver::PoseMatrixType> linear_solver (new g2o:Linear_Solver)
-	//std::unique_ptr<g2o::BlockSolverTraits::LinearSolverType> linearSolver (new g2o::LinearSolverCSparse<g2o::BlockSolver::PoseMatrixType());
-	//std::unique_ptr<g2o::BlockSolver_6_3> solver_ptr (new g2o::BlockSolver_6_3(std::move(linearSolver)));
-	//g2o::OptimizationAlgorithmLevenberg * solver = new g2o::OptimizationAlgorithmLevenberg(std::move(solver_ptr));
+	Linear_Solver* linear_solver = new Linear_Solver();
+	Block_Solver* block_solver = new Block_Solver(linear_solver);
+	g2o::OptimizationAlgorithmLevenberg *solver = new g2o::OptimizationAlgorithmLevenberg(block_solver);
 
-	//Linear_Solver* linear_solver = new Linear_Solver();
-	//Block_Solver* block_solver = new Block_Solver(linear_solver);
-//	g2o::OptimizationAlgorithmLevenberg *solver = new g2o::OptimizationAlgorithmLevenberg(block_solver);
-//	typedef g2o::BlockSolver< g2o::BlockSolverTraits<Eigen::Dynamic, Eigen::Dynamic>>  Block_Solver;
-//	typedef g2o::LinearSolverCSparse<Block_Solver::PoseMatrixType> Linear_Solver;
-
-	//m_optimizer.setAlgorithm(solver);
-	//m_optimizer.setVerbose(true);
+	m_optimizer.setAlgorithm(solver);
+	m_optimizer.setVerbose(true);
 }
 
-void SLAM_Solver::add_vertex_and_edge(const Eigen::Matrix4f pose, const int id)
+void SLAM_Solver::addVertexAndEdge(const Eigen::Matrix4f pose, const int id)
 {
-	//We didn't add any node yet. Add the first and fix it.
+	//Add the first node and fix it.
 	if(m_num_vertices == 0)
 	{
 		Eigen::Isometry3d est(pose.cast<double>());
@@ -166,14 +168,14 @@ void SLAM_Solver::add_vertex_and_edge(const Eigen::Matrix4f pose, const int id)
 		e->setMeasurementFromState();
 		m_optimizer.addEdge(e);
 
-		add_edge_to_list(v0->id(), v1->id());
+		addEdgeToList(v0->id(), v1->id());
 	}
 
 	m_last_added_id = id;
 	m_num_vertices++;
 }
 
-void SLAM_Solver::add_loop_closing_edge(const Eigen::Matrix4f vertex_to_origin_transf, const int id)
+void SLAM_Solver::addLoopClosingEdge(const Eigen::Matrix4f vertex_to_origin_transf, const int id)
 {
 	//assumes the first vertex has id = 0
 	VertexSE3* origin = dynamic_cast<g2o::VertexSE3*>(m_optimizer.vertex(0));
@@ -187,15 +189,15 @@ void SLAM_Solver::add_loop_closing_edge(const Eigen::Matrix4f vertex_to_origin_t
 	e->setMeasurement(measurement);
 	m_optimizer.addEdge(e);
 
-	add_edge_to_list(v->id(), origin->id());
+	addEdgeToList(v->id(), origin->id());
 }
 
-void SLAM_Solver::optimize_graph(const int k)
+void SLAM_Solver::optimizeGraph(const int k)
 {
 	//m_optimizer.save("graph.g2o");
 
 	m_optimizer.initializeOptimization();
 	m_optimizer.optimize(k);
 
-	update_state();
+	updateState();
 }
