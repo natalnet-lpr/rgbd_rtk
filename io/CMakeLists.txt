@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 2.6)
 
-project(RGBD_RTK)
-
 message(STATUS ">>> io subdirectory")
 
 set(RGBD_RTK_IO_SRC sequence_loader.cpp rgbd_loader.cpp config_loader.cpp 
@@ -18,6 +16,10 @@ set_target_properties(rgbd_rtk_io PROPERTIES VERSION 1.0)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
 install(TARGETS rgbd_rtk_io
-        LIBRARY DESTINATION lib)
+          EXPORT rgbd_rtkTargets
+  		  RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
+  		  LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib
+  		  PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}/rgbd_rtk_io"
+    	  COMPONENT dev)
 
 install(FILES ${RGBD_RTK_IO_INCLUDES} DESTINATION include)

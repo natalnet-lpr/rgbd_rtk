@@ -20,4 +20,3 @@
 #
 # ===================================================================================
 message(WARNING "Aruco is required for the SLAM module. To find Aruco, replace the file rgbd_rtk/cmake/Findaruco.cmake by the one generated after compiling Aruco in your machine.")
-

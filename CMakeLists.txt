@@ -11,11 +11,32 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
 set(CMAKE_CXX_FLAGS_RELEASE "-march=native -mno-avx -O3") # WITH -march=native: seg_fault. on Mac OS
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}" )
 
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+# Offer the user the choice of overriding the installation directories
+set(INSTALL_LIB_DIR lib CACHE PATH "Installation directory for libraries")
+set(INSTALL_BIN_DIR bin CACHE PATH "Installation directory for executables")
+set(INSTALL_INCLUDE_DIR include CACHE PATH "Installation directory for header files")
+set(DEF_INSTALL_CMAKE_DIR CMake)
+set(INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH "Installation directory for CMake files")
+
+
+# Make relative paths absolute (needed to create rgbd_rtkConfig.cmake)
+foreach(p LIB BIN INCLUDE CMAKE)
+  set(var INSTALL_${p}_DIR)
+  if(NOT IS_ABSOLUTE "${${var}}")
+    set(${var} "${CMAKE_INSTALL_PREFIX}/${${var}}")
+  endif()
+endforeach()
+
+
+# set up include-directories
+include_directories(
+  "${PROJECT_SOURCE_DIR}"   
+  "${PROJECT_BINARY_DIR}")  
 
 message(STATUS "Project source directory: " ${PROJECT_SOURCE_DIR})
 message(STATUS "Build directory: " ${PROJECT_BINARY_DIR})
 message(STATUS "Build type: " ${CMAKE_BUILD_TYPE})
+
 
 find_package(OpenCV REQUIRED)
 if(OpenCV_FOUND)
@@ -34,13 +55,8 @@ else()
 	message(FATAL_ERROR "Error: PCL was not found in your system")
 endif()
 
-# Force OpenCV versions if ROS is installed
-#set(OpenCV_INCLUDE_DIRS "/home/ferreira/Documentos/libs/opencv-3.4.1/include")
-
-include_directories(${OpenCV_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} common io tracking
-                    motion_estimation visualization visual_odometry quadtree stereo)
+include_directories(${OpenCV_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} common io quadtree tracking visualization motion_estimation stereo visual_odometry)
 link_directories(${PCL_LIBRARY_DIRS})
-#add_definitions(${PCL_DEFINITIONS}) #apparently not needed
 
 add_subdirectory(common)
 set(RGBD_RTK_COMMON rgbd_rtk_common)
@@ -59,17 +75,48 @@ set(RGBD_RTK_STEREO rgbd_rtk_stereo)
 add_subdirectory(visual_odometry)
 set(RGBD_RTK_VISUAL_ODOMETRY rgbd_rtk_visual_odometry)
 
+# Export the package for use from the build tree (registers the build-tree with a global CMake-registry)
+export(TARGETS rgbd_rtk_common rgbd_rtk_io rgbd_rtk_quadtree rgbd_rtk_tracking  rgbd_rtk_visualization rgbd_rtk_motion_estimation rgbd_rtk_stereo rgbd_rtk_visual_odometry
+FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
+
 # Build SLAM module only if ARUCO was found
-find_package(aruco 2.0 QUIET)
+find_package(aruco QUIET)
 if(aruco_FOUND)
-    message(STATUS "Aruco found")
-    message(STATUS "Aruco INCLUDES: " ${aruco_INCLUDE_DIRS})
-    message(STATUS "Aruco LIBS: " ${aruco_LIBS})
+  message(STATUS "aruco version: " ${aruco_VERSION})
+  if(aruco_VERSION VERSION_LESS "2.0")
+    message(WARNING "WARNING: aruco version >= 2.0 required")
+  else()
     include_directories(slam)
     add_subdirectory(slam)
     set(RGBD_RTK_SLAM rgbd_rtk_slam)
-else()
-    message(WARNING "Aruco was not found in your system. SLAM module will not be built.")
+
+    export(TARGETS rgbd_rtk_slam
+    FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
+  endif()
 endif()
 
+export(PACKAGE rgbd_rtk)
+
+
 add_subdirectory(applications)
+
+# Create the rgbd_rtkConfig.cmake 
+file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}" "${INSTALL_INCLUDE_DIR}")
+# For the build tree
+set(CONF_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}" "${PROJECT_BINARY_DIR}")
+configure_file(rgbd_rtkConfig.cmake.in
+  "${PROJECT_BINARY_DIR}/rgbd_rtkConfig.cmake" @ONLY)
+# For the install tree
+set(CONF_INCLUDE_DIRS "\${rgbd_rtk_CMAKE_DIR}/${REL_INCLUDE_DIR}")
+configure_file(rgbd_rtkConfig.cmake.in
+  "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/rgbd_rtkConfig.cmake" @ONLY)
+
+
+# Install the rgbd_rtkConfig.cmake
+install(FILES
+  "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/rgbd_rtkConfig.cmake"
+  DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev)
+
+# Install the export set for use with the install-tree
+install(EXPORT rgbd_rtkTargets DESTINATION
+  "${INSTALL_CMAKE_DIR}" COMPONENT dev)
