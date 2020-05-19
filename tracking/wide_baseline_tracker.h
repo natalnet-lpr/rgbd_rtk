@@ -68,7 +68,7 @@ protected:
     void update_buffers();
 
     // Searches if a keypoint have a match
-    int searchMatches(int keypoint_index);
+    int searchMatches(const int& keypoint_index);
 
     // Set the coordinates of the current keypoints to curr_pts_.
     void setCurrentPoints();
@@ -77,13 +77,13 @@ protected:
     void setPreviousPoints();
 
     // Set the feature_detector_ attribute from a string
-    void setFeatureDetector(std::string feature_detector);
+    void setFeatureDetector(const std::string& feature_detector);
 
     // Set the descriptor_extractor_ attribute from a string
-    void setDescriptorExtractor(std::string descriptor_extractor);
+    void setDescriptorExtractor(const std::string& descriptor_extractor);
 
     // Set the matcher_ attribute from a string
-    void setMatcher(std::string matcher);
+    void setMatcher(const std::string& matcher);
 
 public:
     
@@ -118,13 +118,13 @@ public:
     WideBaselineTracker();
 
     //Constructor with flexible feature detector, descriptor extractor and matcher and flag to log statistics
-    WideBaselineTracker(std::string feature_detector, std::string descriptor_extractor, std::string matcher, const bool& log_stats);
+    WideBaselineTracker(const std::string& feature_detector, const std::string& descriptor_extractor, const std::string& matcher, const bool& log_stats);
     
     //Constructor with the minimum number of tracked points, maximum number of tracked points and flag to log statistics
-    WideBaselineTracker(std::string feature_detector, std::string descriptor_extractor, std::string matcher, const int& min_pts, const int& max_pts, const bool& log_stats);
+    WideBaselineTracker(const std::string& feature_detector, const std::string& descriptor_extractor, const std::string& matcher, const int& min_pts, const int& max_pts, const bool& log_stats);
 
     //Get the "good" Matches of your features
-    void getGoodMatches(double threshold);
+    void getGoodMatches(const double& threshold);
     
     //Tracks keypoints between the current frame and the previous.
     bool track(const cv::Mat& img);

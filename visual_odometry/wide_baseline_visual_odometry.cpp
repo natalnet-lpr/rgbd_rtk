@@ -41,6 +41,8 @@ WideBaselineVisualOdometry::WideBaselineVisualOdometry()
 
 	prev_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
 	curr_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
+
+	tracker_ = new WideBaselineTracker;
 }
 
 WideBaselineVisualOdometry::WideBaselineVisualOdometry(const Intrinsics& intr)
@@ -51,6 +53,8 @@ WideBaselineVisualOdometry::WideBaselineVisualOdometry(const Intrinsics& intr)
 
 	prev_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
 	curr_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
+
+	tracker_ = new WideBaselineTracker;
 }
 
 WideBaselineVisualOdometry::WideBaselineVisualOdometry(const Intrinsics& intr, WideBaselineTracker& tracker)
