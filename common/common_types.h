@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2020, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -22,14 +22,19 @@
  *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
+ *  Author:
+ *
+ *  Bruno Silva
  */
 
 #ifndef INCLUDE_COMMON_TYPES_H_
 #define INCLUDE_COMMON_TYPES_H_
 
 #include <vector>
+#include <Eigen/Geometry>
 #include <opencv2/core/core.hpp>
 #include <pcl/point_types.h>
+#include <pcl/point_cloud.h>
 
 typedef pcl::PointXYZRGB PointT;
 
@@ -193,6 +198,36 @@ struct Intrinsics
 		       const double& baseline): fx_(fx), fy_(fy), cx_(cx), cy_(cy), scale_(1.0),
 	           baseline_(baseline), k1_(0.0), k2_(0.0), p1_(0.0), p2_(0.0), k3_(0.0)
 	{}
+};
+
+/*
+ * Keyframe contains all the relevant information for SLAM with pose graph optimization:
+ * keypoints, RGB image, camera pose, point cloud, etc. captured in a given time step.
+ */
+struct Keyframe
+{
+	//Index of the keyframe
+	int idx_;
+
+	//Pose of the keyframe (in the global reference frame)
+	Eigen::Affine3f pose_;
+
+	//RGB image of the keyframe
+	cv::Mat img_;
+
+	//RGB-D point cloud of the keyframe (in local reference frame)
+	pcl::PointCloud<PointT>::Ptr local_cloud_;
+
+	//Keypoints detected in the keyframe
+	std::vector<cv::Point2f> keypoints_;
+
+	Keyframe() : 
+		idx_(0),
+		pose_(Eigen::Affine3f::Identity()),
+		local_cloud_(new pcl::PointCloud<PointT>)
+	{
+
+	}
 };
 
 #endif /* COMMON_TYPES_H_ */

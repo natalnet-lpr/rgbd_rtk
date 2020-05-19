@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2020, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -27,11 +27,27 @@
  *  Bruno Silva
  */
 
+#include <algorithm>
+
 #include <optical_flow_visual_odometry.h>
 #include <geometry.h>
 
 using namespace std;
 using namespace cv;
+
+void OpticalFlowVisualOdometry::addKeyFrame(const Mat& rgb)
+{
+	Keyframe kf;
+	kf.idx_ = frame_idx_;
+	kf.pose_ = pose_;
+	rgb.copyTo(kf.img_);
+	*kf.local_cloud_ = *curr_dense_cloud_;
+	kf.keypoints_.resize(tracker_.curr_pts_.size());
+	copy(tracker_.curr_pts_.begin(), tracker_.curr_pts_.end(), kf.keypoints_.begin());
+
+	logger.print(pcl::console::L_DEBUG, "[OpticalFlowVisualOdometry::addKeyFrame] DEBUG: adding %lu as keyframe\n", frame_idx_);
+	keyframes_.insert(pair<size_t, Keyframe>(kf.idx_, kf));
+}
 
 OpticalFlowVisualOdometry::OpticalFlowVisualOdometry()
 {
@@ -52,15 +68,23 @@ OpticalFlowVisualOdometry::OpticalFlowVisualOdometry(const Intrinsics& intr)
 	curr_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
 }
 
-void OpticalFlowVisualOdometry::computeCameraPose(const cv::Mat& rgb, const cv::Mat& depth)
+bool OpticalFlowVisualOdometry::computeCameraPose(const cv::Mat& rgb, const cv::Mat& depth)
 {
+	bool is_kf;
+
 	Eigen::Affine3f trans = Eigen::Affine3f::Identity();
 
 	//Get dense point cloud from RGB-D data
 	*curr_dense_cloud_ = getPointCloud(rgb, depth, motion_estimator_.intr_);
 
 	//Track keypoints using KLT optical flow
-	tracker_.track(rgb);
+	is_kf = tracker_.track(rgb);
+
+	//If a new keyframe is found, add it to the internal buffer
+	if(is_kf)
+	{
+		addKeyFrame(rgb);
+	}
 
 	//Estimate motion between the current and the previous point clouds
 	if(frame_idx_ > 0)
@@ -75,4 +99,15 @@ void OpticalFlowVisualOdometry::computeCameraPose(const cv::Mat& rgb, const cv::
 
 	//Increment the frame index
 	frame_idx_++;
+
+	return is_kf;
+}
+
+Keyframe  OpticalFlowVisualOdometry::getLastKeyframe()
+{
+	map<size_t, Keyframe>::iterator it;
+
+	it = keyframes_.end();
+	logger.print(pcl::console::L_DEBUG, "[OpticalFlowVisualOdometry::getLastKeyframe] DEBUG: last keyframe has id %lu\n", it->first);
+	return prev(it)->second; //prev from std
 }
