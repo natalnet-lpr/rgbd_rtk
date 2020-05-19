@@ -1,6 +1,6 @@
 %YAML:1.0
-camera_calibration_file: "/home/sarmento/rgbd_rtk/config_files/kinect_default.yaml"
-index_file: "/home/hmarcos/Downloads/TUM-Datasets/rgbd_dataset_freiburg1_rpy/index"
+camera_calibration_file: "/path/to/camera_calibration.yaml"
+index_file: "/path/to/dataset/dataset_specific/index"
 
 #motion estimation ransac parameters
 ransac_distance_threshold: 0.008 #8mm
