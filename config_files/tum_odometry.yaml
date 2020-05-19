@@ -1,6 +1,6 @@
 %YAML:1.0
-camera_calibration_file: "/home/sarmento/rgbd_rtk/config_files/kinect_default.yaml"
-index_file: "/home/sarmento/Downloads/Dataset/tgz/rgbd_dataset_freiburg2_desk/index.txt"
+camera_calibration_file: "/path/to/camera_calibration.yaml"
+index_file: "/path/to/dataset/dataset_specific/index"
 
 #motion estimation ransac parameters
 ransac_distance_threshold: 0.008 #8mm
@@ -23,6 +23,10 @@ max_r: 50 #default 50
 radius: 30 #default 30
 log_stats: 0 #false
 windows_size: 20 #square of size 20 
+#wide_baseline_tracker
+feature_detector: "ORB" #default ORB
+descriptor_extractor: "ORB" #default ORB
+descriptor_matcher: "BruteForce" #default BruteForce 
 
 
 

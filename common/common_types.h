@@ -59,6 +59,12 @@ struct Tracklet
 	 */
 	std::vector<int> cloud_indices_;
 
+	/*
+	 * At position i, the vector stores the index of the keypoint
+	 * corresponding to the 2D point stored in pts2D_.
+	 */
+	std::vector<int> keypoint_indices_;
+
 	/* Initializes a tracklet with start_ = 0 */
 	Tracklet() : start_(0) {}
 

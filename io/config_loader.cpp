@@ -26,6 +26,7 @@
  *
  *  Rodrigo Sarmento Xavier
  *  Bruno Silva
+ *  Marcos Henrique F. Marcone
  */
 
 #include <cstdio>
@@ -86,3 +87,4 @@ bool ConfigLoader::checkAndGetString(const string& parameter, string& parameter_
         return true;
     }
 }
+
