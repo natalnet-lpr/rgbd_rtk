@@ -70,14 +70,14 @@ class SLAM_Solver
 		 * vertex in the graph
 		 * @param pose type Matrix4f, @param id type id
 		 */
-		void addVertexAndEdge(const Eigen::Matrix4f pose, const int id);
+		void addVertexAndEdge(const Eigen::Matrix4f& pose, const int id);
 
 		/**
 		 * Adds a "loop closing" edge connecting the vertex with given id to the
 		 * origin (vertex with id = 0)
 		 * @param vertex_to_origin_transformation type Matrix4f, @param id type int
 		 */
-		void addLoopClosingEdge(const Eigen::Matrix4f vertex_to_origin_transf, const int id);
+		void addLoopClosingEdge(const Eigen::Matrix4f& vertex_to_origin_transf, const int id);
 
 		/**
 		 * Optimizes the graph with Levenberg-Marquardt for the given n. of iterations

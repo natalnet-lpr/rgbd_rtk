@@ -130,7 +130,7 @@ SLAM_Solver::SLAM_Solver()
 	m_optimizer.setVerbose(true);
 }
 
-void SLAM_Solver::addVertexAndEdge(const Eigen::Matrix4f pose, const int id)
+void SLAM_Solver::addVertexAndEdge(const Eigen::Matrix4f& pose, const int id)
 {
 	//Add the first node and fix it.
 	if(m_num_vertices == 0)
@@ -175,7 +175,7 @@ void SLAM_Solver::addVertexAndEdge(const Eigen::Matrix4f pose, const int id)
 	m_num_vertices++;
 }
 
-void SLAM_Solver::addLoopClosingEdge(const Eigen::Matrix4f vertex_to_origin_transf, const int id)
+void SLAM_Solver::addLoopClosingEdge(const Eigen::Matrix4f& vertex_to_origin_transf, const int id)
 {
 	//assumes the first vertex has id = 0
 	VertexSE3* origin = dynamic_cast<g2o::VertexSE3*>(m_optimizer.vertex(0));

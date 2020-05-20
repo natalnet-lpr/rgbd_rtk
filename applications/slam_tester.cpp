@@ -39,6 +39,7 @@
 #include <marker_finder.h>
 #include <config_loader.h>
 #include <event_logger.h>
+#include <slam_solver.h>
 
 using namespace std;
 using namespace cv;
@@ -48,9 +49,25 @@ using namespace aruco;
  * This program shows the use of ARUCO marker detection.
  * @param .yml config. file (used fields: index_file, aruco_marker_size, camera_calibration_file, aruco_max_distance)
  */
+
+struct markerFound{
+  int id;
+  float x_pose;
+  float y_pose;
+  float z_pose;
+  float x_rotation;
+  float y_rotation;
+  float z_rotation;
+  float w_rotation;
+};
+
+
 int main(int argc, char **argv)
 {
-	EventLogger& logger = EventLogger::getInstance();
+	SLAM_Solver slam_solver;
+	int id = 0;
+	Eigen::Matrix4f M;
+	markerFound all_markers[255]; //list of marker struct
 	RGBDLoader loader;
 	Intrinsics intr(0);
 	OpticalFlowVisualOdometry vo(intr);
@@ -58,10 +75,14 @@ int main(int argc, char **argv)
 	Mat frame, depth;
 	float marker_size, aruco_max_distance;
 	string camera_calibration_file, aruco_dic, index_file;
+	EventLogger& logger = EventLogger::getInstance();
+	//logger.setVerbosityLevel(pcl::console::L_DEBUG);
+	logger.setLogFileName("log_marker_finder_test.txt");
+
 
 	if(argc != 2)
 	{
-		logger.print(pcl::console::L_ERROR, "[marker_finder_test.cpp] ERROR: Usage: %s <path/to/config_file.yaml>\n", argv[0]);
+		logger.print(pcl::console::L_ERROR, "[marker_finder_test.cpp] ERROR: Missing configfile, Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
 	ConfigLoader param_loader(argv[1]);
@@ -70,11 +91,16 @@ int main(int argc, char **argv)
 	param_loader.checkAndGetString("camera_calibration_file", camera_calibration_file);
 	param_loader.checkAndGetString("index_file", index_file);
 	param_loader.checkAndGetString("aruco_dic", aruco_dic);
-
+	cout<<endl<<index_file<<endl;
 	MarkerFinder marker_finder;
 	marker_finder.markerParam(camera_calibration_file, marker_size, aruco_dic);
 	
 	loader.processFile(index_file);
+
+	for(int k=0; k<255; k++)
+	{   //initializing markers
+    	all_markers[k].id = 0;
+	}
 
 	//Compute visual odometry and find markers on each image
 	for(int i = 0; i < loader.num_images_; i++)
@@ -87,13 +113,22 @@ int main(int argc, char **argv)
 		
 		//Find ARUCO markers and compute their poses
 		marker_finder.detectMarkersPoses(frame, vo.pose_, aruco_max_distance);
-        for (size_t i = 0; i < marker_finder.markers_.size(); i++)
+        for (size_t j = 0; j < marker_finder.markers_.size(); j++)
 		{
-            marker_finder.markers_[i].draw(frame, Scalar(0,0,255), 1);
-			CvDrawingUtils::draw3dAxis(frame, marker_finder.markers_[i], marker_finder.camera_params_);
+			id = marker_finder.markers_[j].id;
+			if(all_markers[id].id == 0)
+			{
+				all_markers[id].id = id;
+				cout<<all_markers[id].id<<endl;
+				M = marker_finder.marker_poses_[j].matrix();
+				slam_solver.addVertexAndEdge(M, id);
+			}
+
+            marker_finder.markers_[j].draw(frame, Scalar(0,0,255), 1);
+			CvDrawingUtils::draw3dAxis(frame, marker_finder.markers_[j], marker_finder.camera_params_);
 			stringstream ss;
-			ss << "m" << marker_finder.markers_[i].id;
-			visualizer.viewReferenceFrame(marker_finder.marker_poses_[i], ss.str());
+			ss << "m" << marker_finder.markers_[j].id;
+			visualizer.viewReferenceFrame(marker_finder.marker_poses_[j], ss.str());
         }
 
 		if(i == 0) visualizer.addReferenceFrame(vo.pose_, "origin");
@@ -113,6 +148,7 @@ int main(int argc, char **argv)
 			break;
 		}
 	}
+	slam_solver.optimizeGraph(10);
 
 	return 0;
 }
