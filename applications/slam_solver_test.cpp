@@ -120,22 +120,22 @@ int main(int argc, char **argv)
 			{
 				all_markers[id].id = id;
 				cout<<all_markers[id].id<<endl;
-				M = marker_finder.marker_poses_[j].matrix();
-				slam_solver.addVertexAndEdge(M, id);
+				slam_solver.addVertexAndEdge(marker_finder.marker_poses_[id], id);
 			}
 
             marker_finder.markers_[j].draw(frame, Scalar(0,0,255), 1);
 			CvDrawingUtils::draw3dAxis(frame, marker_finder.markers_[j], marker_finder.camera_params_);
 			stringstream ss;
 			ss << "m" << marker_finder.markers_[j].id;
-			visualizer.viewReferenceFrame(marker_finder.marker_poses_[j], ss.str());
+			//visualizer.viewReferenceFrame(marker_finder.marker_poses_[j], ss.str());
+			//visualizer.viewReferenceFrame(slam_solver.m_positions_[j], ss.str())
         }
 
 		if(i == 0) visualizer.addReferenceFrame(vo.pose_, "origin");
-		visualizer.addQuantizedPointCloud(vo.curr_dense_cloud_, 0.05, vo.pose_);
-		visualizer.viewReferenceFrame(vo.pose_);
+		//visualizer.addQuantizedPointCloud(vo.curr_dense_cloud_, 0.05, vo.pose_);
+		//visualizer.viewReferenceFrame(vo.pose_);
 		//visualizer.viewPointCloud(vo.curr_dense_cloud_, vo.pose_);
-		visualizer.viewQuantizedPointCloud(vo.curr_dense_cloud_, 0.02, vo.pose_);
+		//visualizer.viewQuantizedPointCloud(vo.curr_dense_cloud_, 0.02, vo.pose_);
 
 		visualizer.spinOnce();
 

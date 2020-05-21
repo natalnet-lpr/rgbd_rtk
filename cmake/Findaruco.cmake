@@ -19,4 +19,16 @@
 #      - aruco_VERSION_PATCH : Patch version part of VERSION. Example: "0"
 #
 # ===================================================================================
-message(WARNING "Aruco is required for the SLAM module. To find Aruco, replace the file rgbd_rtk/cmake/Findaruco.cmake by the one generated after compiling Aruco in your machine.")
+INCLUDE_DIRECTORIES("/home/sarmento/LIB/aruco-2.0.20-git-g/install/include")
+SET(aruco_INCLUDE_DIRS "/home/sarmento/LIB/aruco-2.0.20-git-g/install/include")
+
+LINK_DIRECTORIES("/home/sarmento/LIB/aruco-2.0.20-git-g/install/lib")
+SET(aruco_LIB_DIR "/home/sarmento/LIB/aruco-2.0.20-git-g/install/lib")
+
+SET(aruco_LIBS opencv_calib3d;opencv_core;opencv_dnn;opencv_features2d;opencv_flann;opencv_highgui;opencv_imgcodecs;opencv_imgproc;opencv_ml;opencv_objdetect;opencv_photo;opencv_shape;opencv_stitching;opencv_superres;opencv_video;opencv_videoio;opencv_videostab;opencv_viz aruco)
+
+SET(aruco_FOUND 1)
+SET(aruco_VERSION        2.0.20) 
+SET(aruco_VERSION_MAJOR  2)
+SET(aruco_VERSION_MINOR  0)
+SET(aruco_VERSION_PATCH  1)

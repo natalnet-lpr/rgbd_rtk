@@ -28,7 +28,7 @@ using namespace g2o;
 
 void SLAM_Solver::addEdgeToList(const int from_id, const int to_id)
 {
-	Graph_Edge ep(from_id, to_id, m_positions[from_id], m_positions[to_id]);
+	Graph_Edge ep(from_id, to_id, m_positions_[from_id], m_positions_[to_id]);
 	stringstream edge_name;
 	edge_name << "edge_" << from_id << "_" << to_id;
 	ep.m_name = edge_name.str();
@@ -36,11 +36,11 @@ void SLAM_Solver::addEdgeToList(const int from_id, const int to_id)
 	//Check if the edge is "odometry" (from i to i+1) or "loop closing" (from i to j)
 	if(to_id - from_id == 1)
 	{
-		m_odometry_edges.push_back(ep);
+		m_odometry_edges_.push_back(ep);
 	}
 	else
 	{
-		m_loop_edges.push_back(ep);
+		m_loop_edges_.push_back(ep);
 	}
 }
 
@@ -50,10 +50,10 @@ void SLAM_Solver::updateState()
 	logger.setVerbosityLevel(pcl::console::L_DEBUG);
 	logger.setLogFileName("log_event_slam_solver.txt");
 
-	m_optimized_estimates.clear();
-	m_optimized_estimates.resize(m_positions.size());
+	m_optimized_estimates_.clear();
+	m_optimized_estimates_.resize(m_positions_.size());
 
-	logger.print(pcl::console::L_INFO, "[slam_solver.cpp] INFO: Updating %lu vertices\n", m_positions.size());
+	logger.print(pcl::console::L_INFO, "[slam_solver.cpp] INFO: Updating %lu vertices\n", m_positions_.size());
 
 	//Update estimates of all vertices and positions
 	for(OptimizableGraph::VertexIDMap::const_iterator it = m_optimizer.vertices().begin();
@@ -64,50 +64,50 @@ void SLAM_Solver::updateState()
 		VertexSE3* v = static_cast<VertexSE3*>(it->second);
 
 		Eigen::Isometry3f new_estimate_tmp = v->estimate().cast<float>();
-		Eigen::Matrix4f new_estimate = Eigen::Matrix4f::Identity();
+		Eigen::Affine3f new_estimate = Eigen::Affine3f::Identity();
 
 		new_estimate(0,0) = new_estimate_tmp(0,0); new_estimate(0,1) = new_estimate_tmp(0,1); new_estimate(0,2) = new_estimate_tmp(0,2);
 		new_estimate(1,0) = new_estimate_tmp(1,0); new_estimate(1,1) = new_estimate_tmp(1,1); new_estimate(1,2) = new_estimate_tmp(1,2);
 		new_estimate(2,0) = new_estimate_tmp(2,0); new_estimate(2,1) = new_estimate_tmp(2,1); new_estimate(2,2) = new_estimate_tmp(2,2);
 		new_estimate(0,3) = new_estimate_tmp(0,3); new_estimate(1,3) = new_estimate_tmp(1,3); new_estimate(2,3) = new_estimate_tmp(2,3);
 
-		m_optimized_estimates[v_id] = new_estimate;
+		m_optimized_estimates_[v_id] = new_estimate;
 
 
 		logger.print(pcl::console::L_INFO, "[slam_solver.cpp] INFO: Updating node %i \n", v_id);
-		//verificar se é m_positions mesmo o desejado
+		//verificar se é m_positions_ mesmo o desejado
 		logger.print(pcl::console::L_INFO, "[slam_solver.cpp] INFO: ### from %f %f %f to %f %f %f\n",
-						m_positions[v_id].x(), m_positions[v_id].y(), m_positions[v_id].z(),
+						m_positions_[v_id].x(), m_positions_[v_id].y(), m_positions_[v_id].z(),
 						new_estimate(0,3), new_estimate(1,3), new_estimate(2,3), v_id);
 
 		
 		//logger.print(pcl::console::L_INFO, "[slam_solver.cpp] INFO: ### from %f %f %f to %f %f %f\n", m_vertices[v_id].x(), m_vertices[v_id].y(), m_vertices[v_id].z(), new_estimate(0,3), new_estimate(1,3), new_estimate(2,3), v_id));
 
-		m_positions[v_id](0,0) = new_estimate(0,3);
-		m_positions[v_id](1,0) = new_estimate(1,3);
-		m_positions[v_id](2,0) = new_estimate(2,3);
+		m_positions_[v_id](0,0) = new_estimate(0,3);
+		m_positions_[v_id](1,0) = new_estimate(1,3);
+		m_positions_[v_id](2,0) = new_estimate(2,3);
 	}
 
 	//Update all odometry edges
-	for(unsigned int i = 0; i < m_odometry_edges.size(); i++)
+	for(unsigned int i = 0; i < m_odometry_edges_.size(); i++)
 	{
-		const int idx0 = m_odometry_edges[i].m_id0;
-		const int idx1 = m_odometry_edges[i].m_id1;
+		const int idx0 = m_odometry_edges_[i].m_id0;
+		const int idx1 = m_odometry_edges_[i].m_id1;
 
-		m_odometry_edges[i].m_pos0 = m_positions[idx0];
-		m_odometry_edges[i].m_pos1 = m_positions[idx1];
+		m_odometry_edges_[i].m_pos0 = m_positions_[idx0];
+		m_odometry_edges_[i].m_pos1 = m_positions_[idx1];
 	}
 
 	//Update all loop closing edges
-	for(unsigned int i = 0; i < m_loop_edges.size(); i++)
+	for(unsigned int i = 0; i < m_loop_edges_.size(); i++)
 	{
-		const int idx0 = m_loop_edges[i].m_id0;
-		const int idx1 = m_loop_edges[i].m_id1;
+		const int idx0 = m_loop_edges_[i].m_id0;
+		const int idx1 = m_loop_edges_[i].m_id1;
 
-		m_loop_edges[i].m_pos0 = m_positions[idx0];
-		m_loop_edges[i].m_pos1 = m_positions[idx1];
+		m_loop_edges_[i].m_pos0 = m_positions_[idx0];
+		m_loop_edges_[i].m_pos1 = m_positions_[idx1];
 	}
-	logger.print(pcl::console::L_INFO, "[slam_solver.cpp] INFO: Loop closing edges: %lu\n", m_loop_edges.size());
+	logger.print(pcl::console::L_INFO, "[slam_solver.cpp] INFO: Loop closing edges: %lu\n", m_loop_edges_.size());
 }
 
 /* #####################################################
@@ -119,8 +119,8 @@ void SLAM_Solver::updateState()
 
 SLAM_Solver::SLAM_Solver()
 {
-	m_num_vertices = 0;
-	m_last_added_id = -1;
+	m_num_vertices_ = 0;
+	m_last_added_id_ = -1;
 
 	Linear_Solver* linear_solver = new Linear_Solver();
 	Block_Solver* block_solver = new Block_Solver(linear_solver);
@@ -130,12 +130,12 @@ SLAM_Solver::SLAM_Solver()
 	m_optimizer.setVerbose(true);
 }
 
-void SLAM_Solver::addVertexAndEdge(const Eigen::Matrix4f& pose, const int id)
+void SLAM_Solver::addVertexAndEdge(const Eigen::Affine3f& pose, const int id)
 {
 	//Add the first node and fix it.
-	if(m_num_vertices == 0)
+	if(m_num_vertices_ == 0)
 	{
-		Eigen::Isometry3d est(pose.cast<double>());
+		Eigen::Isometry3d est(pose.matrix().cast<double>());
 
 		VertexSE3* v0 = new VertexSE3;
 		v0->setId(id);
@@ -144,15 +144,15 @@ void SLAM_Solver::addVertexAndEdge(const Eigen::Matrix4f& pose, const int id)
 		m_optimizer.addVertex(v0);
 
 		Eigen::Vector3d pos = est.translation();
-		m_positions.push_back(pos);
+		m_positions_.push_back(pos);
 	}
 	//When adding any nodes other than the first, add an edge connecting
 	//to the previous one
 	else
 	{
-		VertexSE3* v0 = dynamic_cast<g2o::VertexSE3*>(m_optimizer.vertex(m_last_added_id));
+		VertexSE3* v0 = dynamic_cast<g2o::VertexSE3*>(m_optimizer.vertex(m_last_added_id_));
 
-		Eigen::Isometry3d est(pose.cast<double>());
+		Eigen::Isometry3d est(pose.matrix().cast<double>());
 
 		VertexSE3* v1 = new VertexSE3;
 		v1->setId(id);
@@ -160,7 +160,7 @@ void SLAM_Solver::addVertexAndEdge(const Eigen::Matrix4f& pose, const int id)
 		m_optimizer.addVertex(v1);
 
 		Eigen::Vector3d pos = est.translation();
-		m_positions.push_back(pos);
+		m_positions_.push_back(pos);
 
 		EdgeSE3* e = new EdgeSE3;
 		e->vertices()[0] = v0;
@@ -171,17 +171,17 @@ void SLAM_Solver::addVertexAndEdge(const Eigen::Matrix4f& pose, const int id)
 		addEdgeToList(v0->id(), v1->id());
 	}
 
-	m_last_added_id = id;
-	m_num_vertices++;
+	m_last_added_id_ = id;
+	m_num_vertices_++;
 }
 
-void SLAM_Solver::addLoopClosingEdge(const Eigen::Matrix4f& vertex_to_origin_transf, const int id)
+void SLAM_Solver::addLoopClosingEdge(const Eigen::Affine3f& vertex_to_origin_transf, const int id)
 {
 	//assumes the first vertex has id = 0
 	VertexSE3* origin = dynamic_cast<g2o::VertexSE3*>(m_optimizer.vertex(0));
 	VertexSE3* v = dynamic_cast<g2o::VertexSE3*>(m_optimizer.vertex(id));
 
-	Eigen::Isometry3d measurement(vertex_to_origin_transf.cast<double>());
+	Eigen::Isometry3d measurement(vertex_to_origin_transf.matrix().cast<double>());
 
 	EdgeSE3* e = new EdgeSE3;
 	e->vertices()[0] = v;

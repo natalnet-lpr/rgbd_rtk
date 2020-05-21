@@ -29,10 +29,10 @@ class SLAM_Solver
 {
 	private:
 		//Number of vertices in the graph
-		int m_num_vertices;
+		int m_num_vertices_;
 
 		//Id of the last added vertex (used when adding edges)
-		int m_last_added_id;
+		int m_last_added_id_;
 
 		g2o::SparseOptimizer m_optimizer;
 
@@ -50,16 +50,16 @@ class SLAM_Solver
 	public:
 
 		//3D position in the global ref. frame of each node (for visualization)
-		std::vector<Eigen::Vector3d> m_positions;
+		std::vector<Eigen::Vector3d> m_positions_;
 
 		//Stores information about all "odometry" edges
-		std::vector<Graph_Edge> m_odometry_edges;
+		std::vector<Graph_Edge> m_odometry_edges_;
 
 		//Stores information about all "loop closing" edges
-		std::vector<Graph_Edge> m_loop_edges;
+		std::vector<Graph_Edge> m_loop_edges_;
 
 		//Estimate of each active vertex after optimization
-		std::vector<Eigen::Matrix4f> m_optimized_estimates;
+		std::vector<Eigen::Affine3f> m_optimized_estimates_;
 
 		//Default constructor
 		SLAM_Solver();
@@ -68,16 +68,16 @@ class SLAM_Solver
 		 * Adds a vertex to the graph with the given pose and id
 		 * and also an "odometry" edge connecting it to the previous
 		 * vertex in the graph
-		 * @param pose type Matrix4f, @param id type id
+		 * @param pose type Affine3f, @param id type id
 		 */
-		void addVertexAndEdge(const Eigen::Matrix4f& pose, const int id);
+		void addVertexAndEdge(const Eigen::Affine3f& pose, const int id);
 
 		/**
 		 * Adds a "loop closing" edge connecting the vertex with given id to the
 		 * origin (vertex with id = 0)
-		 * @param vertex_to_origin_transformation type Matrix4f, @param id type int
+		 * @param vertex_to_origin_transformation type Affine3f, @param id type int
 		 */
-		void addLoopClosingEdge(const Eigen::Matrix4f& vertex_to_origin_transf, const int id);
+		void addLoopClosingEdge(const Eigen::Affine3f& vertex_to_origin_transf, const int id);
 
 		/**
 		 * Optimizes the graph with Levenberg-Marquardt for the given n. of iterations
