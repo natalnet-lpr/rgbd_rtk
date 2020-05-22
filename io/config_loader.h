@@ -77,6 +77,12 @@ public:
      * @Return boolean, false if the parameter is not in configfile and true if it is
      */
     bool checkAndGetString(const string& parameter, string& parameter_string);
+    /**
+     * get a string parameter in ConfigFile
+     * @Params string with the name of the parameter in configfile, and a variable string where the value will be returned
+     * @Return boolean, false if the parameter is not in configfile and true if it is
+     */
+    bool checkAndGetMat(const string& parameter, cv::Mat& parameter_mat);
 };
 
 #endif

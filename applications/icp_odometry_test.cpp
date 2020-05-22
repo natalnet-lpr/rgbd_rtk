@@ -57,7 +57,7 @@ int main(int argc, char **argv)
 	float icp_radius, icp_max_correspondence_distance,icp_transformation_epsilon,icp_euclidean_fitness_epsilon;
 	if(argc != 2)
 	{
-		logger.print(pcl::console::L_ERROR, "[icp_odometry_test.cpp] ERROR: Usage: %s <path/to/config_file.yaml>\n", argv[0]);
+		logger.print(EventLogger::L_ERROR, "[icp_odometry_test.cpp] ERROR: Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
 	ConfigLoader param_loader(argv[1]);

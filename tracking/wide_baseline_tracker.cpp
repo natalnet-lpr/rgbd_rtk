@@ -55,8 +55,8 @@ void WideBaselineTracker::detect_keypoints()
     curr_kpts_.clear();
     feature_detector_->detect(curr_frame_gray_, curr_kpts_);
     descriptor_extractor_->compute(curr_frame_gray_, curr_kpts_, curr_descriptors_);
-    logger.print(pcl::console::L_DEBUG, "[WideBaselineTracker::detect_keypoints] DEBUG: detecting keyponts...\n");
-    logger.print(pcl::console::L_DEBUG, "[WideBaselineTracker::detect_keypoints] DEBUG: detected pts.: %lu\n", curr_kpts_.size());
+    logger.print(EventLogger::L_DEBUG, "[WideBaselineTracker::detect_keypoints] DEBUG: detecting keyponts...\n");
+    logger.print(EventLogger::L_DEBUG, "[WideBaselineTracker::detect_keypoints] DEBUG: detected pts.: %lu\n", curr_kpts_.size());
 }
 
 void WideBaselineTracker::add_keypoints()
@@ -71,8 +71,8 @@ void WideBaselineTracker::add_keypoints()
         tracklets_.push_back(tr);
     }
 
-    logger.print(pcl::console::L_DEBUG, "[WideBaselineTracker::add_keypoints DEBUG: adding keypoints...\n");
-    logger.print(pcl::console::L_DEBUG, "[WideBaselineTracker::add_keypoints DEBUG: added pts.: %lu\n", tracklets_.size());
+    logger.print(EventLogger::L_DEBUG, "[WideBaselineTracker::add_keypoints DEBUG: adding keypoints...\n");
+    logger.print(EventLogger::L_DEBUG, "[WideBaselineTracker::add_keypoints DEBUG: added pts.: %lu\n", tracklets_.size());
 }
 
 void WideBaselineTracker::update_buffers()
@@ -152,11 +152,11 @@ void WideBaselineTracker::setFeatureDetector(const std::string& feature_detector
     }
     else
     {
-        logger.print(pcl::console::L_ERROR, "[WideBaselinaTracker::setFeatureDetector] ERROR: Attribute %s couldn't be loaded, insert a valid feature detector\n", upper_feature_detector.c_str());
+        logger.print(EventLogger::L_ERROR, "[WideBaselinaTracker::setFeatureDetector] ERROR: Attribute %s couldn't be loaded, insert a valid feature detector\n", upper_feature_detector.c_str());
         throw std::invalid_argument("Insert a valid feature detector");
     }
 
-    logger.print(pcl::console::L_DEBUG, "[WideBaselinaTracker::setFeatureDetector] DEBUG: Attribute feature_detector_ = %s\n", upper_feature_detector.c_str());
+    logger.print(EventLogger::L_DEBUG, "[WideBaselinaTracker::setFeatureDetector] DEBUG: Attribute feature_detector_ = %s\n", upper_feature_detector.c_str());
 }
 
 void WideBaselineTracker::setDescriptorExtractor(const std::string& descriptor_extractor)
@@ -186,11 +186,11 @@ void WideBaselineTracker::setDescriptorExtractor(const std::string& descriptor_e
     }
     else
     {
-        logger.print(pcl::console::L_ERROR, "[WideBaselinaTracker::setDescriptorExtractor] ERROR: Attribute %s couldn't be loaded, insert a valid descriptor extractor\n", upper_descriptor_extractor.c_str());
+        logger.print(EventLogger::L_ERROR, "[WideBaselinaTracker::setDescriptorExtractor] ERROR: Attribute %s couldn't be loaded, insert a valid descriptor extractor\n", upper_descriptor_extractor.c_str());
         throw std::invalid_argument("Insert a valid descriptor extractor");
     }
 
-    logger.print(pcl::console::L_DEBUG, "[WideBaselinaTracker::setDescriptorExtractor] DEBUG: Attribute descriptor_extractor_ = %s\n", upper_descriptor_extractor.c_str());
+    logger.print(EventLogger::L_DEBUG, "[WideBaselinaTracker::setDescriptorExtractor] DEBUG: Attribute descriptor_extractor_ = %s\n", upper_descriptor_extractor.c_str());
 }
 
 void WideBaselineTracker::setMatcher(const std::string& matcher)
@@ -208,11 +208,11 @@ void WideBaselineTracker::setMatcher(const std::string& matcher)
     }
     else
     {
-        logger.print(pcl::console::L_ERROR, "[WideBaselinaTracker::setMatcher] ERROR: Attribute %s couldn't be loaded, insert a valid matcher\n", upper_matcher.c_str());
+        logger.print(EventLogger::L_ERROR, "[WideBaselinaTracker::setMatcher] ERROR: Attribute %s couldn't be loaded, insert a valid matcher\n", upper_matcher.c_str());
         throw std::invalid_argument("Insert a valid matcher");
     }
 
-    logger.print(pcl::console::L_DEBUG, "[WideBaselinaTracker::setMatcher] DEBUG: Attribute matcher_ = %s\n", upper_matcher.c_str());
+    logger.print(EventLogger::L_DEBUG, "[WideBaselinaTracker::setMatcher] DEBUG: Attribute matcher_ = %s\n", upper_matcher.c_str());
 }
 
 /* #####################################################
@@ -300,7 +300,7 @@ bool WideBaselineTracker::track(const cv::Mat &img)
         img.copyTo(curr_frame_gray_);
     }
 
-    logger.print(pcl::console::L_DEBUG, "[WideBaselineTracker::track] DEBUG: tracking frame%i\n", frame_idx_);
+    logger.print(EventLogger::L_DEBUG, "[WideBaselineTracker::track] DEBUG: tracking frame%i\n", frame_idx_);
 
     //Update the internal buffers
     update_buffers();
@@ -317,7 +317,7 @@ bool WideBaselineTracker::track(const cv::Mat &img)
     {
 
         matcher_->match(curr_descriptors_, prev_descriptors_, matches_);
-        logger.print(pcl::console::L_DEBUG, "[WideBaselineTracker::track] DEBUG: matching descriptos...\n");
+        logger.print(EventLogger::L_DEBUG, "[WideBaselineTracker::track] DEBUG: matching descriptos...\n");
 
         setPreviousPoints();
         setCurrentPoints();
@@ -362,7 +362,7 @@ bool WideBaselineTracker::track(const cv::Mat &img)
             }
         }
 
-        logger.print(pcl::console::L_DEBUG, "[WideBaselineTracker::track] DEBUG: tracked points: %i\n", tracked_pts);
+        logger.print(EventLogger::L_DEBUG, "[WideBaselineTracker::track] DEBUG: tracked points: %i\n", tracked_pts);
         getGoodMatches(0.1);
 
         //Insufficient number of points being tracked
