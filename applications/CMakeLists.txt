@@ -21,6 +21,7 @@ add_executable(wide_baseline_tracker_test wide_baseline_tracker_test.cpp)
 add_executable(kitti_loader_test kitti_loader_test.cpp)
 add_executable(stereo_cloud_generator_test stereo_cloud_generator_test.cpp)
 add_executable(kitti_velodyne_loader_test kitti_velodyne_loader_test.cpp)
+add_executable(kitti_relations_test kitti_relations_test.cpp)
 add_executable(stereo_optical_flow_visual_odometry_test stereo_optical_flow_visual_odometry_test.cpp)
 
 
@@ -65,8 +66,6 @@ target_link_libraries(icp_odometry_test ${PCL_LIBRARIES} ${RGBD_RTK_IO} ${RGBD_R
 	                                    ${RGBD_RTK_MOTION_ESTIMATION}
 	                                    ${RGBD_RTK_VISUAL_ODOMETRY})
 
-														
-
 target_link_libraries(wide_baseline_tracker_test ${RGBD_RTK_COMMON} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING})
 target_link_libraries(kitti_loader_test ${RGBD_RTK_IO})
 target_link_libraries(stereo_cloud_generator_test ${PCL_LIBRARIES} ${RGBD_RTK_IO}
@@ -74,6 +73,7 @@ target_link_libraries(stereo_cloud_generator_test ${PCL_LIBRARIES} ${RGBD_RTK_IO
                                                   ${RGBD_RTK_STEREO})
 target_link_libraries(kitti_velodyne_loader_test ${PCL_LIBRARIES} ${RGBD_RTK_IO}
                                                  ${RGBD_RTK_VISUALIZATION})
+target_link_libraries(kitti_relations_test ${RGBD_RTK_IO})
 target_link_libraries(stereo_optical_flow_visual_odometry_test ${PCL_LIBRARIES} ${RGBD_RTK_IO}
                                                  ${RGBD_RTK_VISUALIZATION}
                                                  ${RGBD_RTK_STEREO}
@@ -98,6 +98,7 @@ install(TARGETS monocular_calibration
                 kitti_loader_test
                 stereo_cloud_generator_test
                 kitti_velodyne_loader_test
+                kitti_relations_test
                 stereo_optical_flow_visual_odometry_test
             EXPORT rgbd_rtkTargets
             RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin)

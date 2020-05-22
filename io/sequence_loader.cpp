@@ -24,10 +24,7 @@
  *
  */
 
-#include <cstdio>
-#include <cstdlib>
 #include <fstream>
-#include <limits>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
@@ -42,10 +39,10 @@ void SequenceLoader::processFile(const string& file_name)
 	ifstream index_file(file_name.c_str());
 	if(!index_file.is_open())
 	{
-		logger.print(pcl::console::L_ERROR, "[sequence_loader.cpp] ERROR: File %s was not found.\nExiting.\n", file_name.c_str());
+		LOG_ERROR("[sequence_loader.cpp] ERROR: File %s was not found.\nExiting.\n", file_name.c_str());
 		exit(0);
 	}
-	logger.print(pcl::console::L_INFO, "[sequence_loader.cpp] WARN: Opening index file: %s\n", file_name.c_str());
+	LOG_INFO("[sequence_loader.cpp] WARN: Opening index file: %s\n", file_name.c_str());
 
 	//Extract path from the supplied argument
 	int p = file_name.rfind('/');
@@ -83,14 +80,14 @@ Mat SequenceLoader::getNextImage()
 		Mat img = imread(file_name, CV_LOAD_IMAGE_UNCHANGED);
 		if(img.empty())
 		{
-			logger.print(pcl::console::L_ERROR, "[sequence_loader.cpp] ERROR: Image file %s not found.\nExiting.\n", file_name.c_str());
+			LOG_ERROR("[sequence_loader.cpp] ERROR: Image file %s not found.\nExiting.\n", file_name.c_str());
 			exit(0);
 		}
 		return img;
 	}
 	else
 	{
-		logger.print(pcl::console::L_ERROR, "[sequence_loader.cpp] ERROR: All images of the sequence have been loaded.\nExiting.\n");
+		LOG_ERROR("[sequence_loader.cpp] ERROR: All images of the sequence have been loaded.\nExiting.\n");
 		exit(0);
 	}
 }

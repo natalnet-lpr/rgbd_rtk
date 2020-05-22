@@ -51,7 +51,7 @@ using namespace cv;
 int main(int argc, char **argv)
 {
 	EventLogger& logger = EventLogger::getInstance();
-	logger.setVerbosityLevel(pcl::console::L_DEBUG);
+	logger.setVerbosityLevel(EventLogger::L_DEBUG);
 	
 	RGBDLoader loader;
 	Intrinsics intr(0);
@@ -62,7 +62,7 @@ int main(int argc, char **argv)
 
 	if(argc != 2)
 	{
-		logger.print(pcl::console::L_INFO, "[optical_flow_visual_odometry_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
+		logger.print(EventLogger::L_INFO, "[optical_flow_visual_odometry_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
 	ConfigLoader param_loader(argv[1]);
@@ -104,7 +104,7 @@ int main(int argc, char **argv)
 		char key = waitKey(1);
 		if(key == 27 || key == 'q' || key == 'Q')
 		{
-			logger.print(pcl::console::L_INFO, "[optical_flow_visual_odometry_test.cpp] Exiting\n", argv[0]);
+			logger.print(EventLogger::L_INFO, "[optical_flow_visual_odometry_test.cpp] Exiting\n", argv[0]);
 			break;
 		}
 	}

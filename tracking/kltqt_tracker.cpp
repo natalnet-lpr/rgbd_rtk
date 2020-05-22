@@ -83,8 +83,8 @@ void KLTQTTracker::detect_keypoints()
 	//The buffer is erased at the end of add_keypoints()
 	goodFeaturesToTrack(curr_frame_gray_, added_pts_, max_pts_, quality_level_, 10.0, mask_, 3, false, 0.04);
 
-	logger.print(pcl::console::L_DEBUG, "[KLTQTTracker::detect_keypoints] DEBUG: detecting keypoints...\n");
-	logger.print(pcl::console::L_DEBUG, "[KLTQTTracker::detect_keypoints] DEBUG: detected pts.: %lu\n", added_pts_.size());
+	logger.print(EventLogger::L_DEBUG, "[KLTQTTracker::detect_keypoints] DEBUG: detecting keypoints...\n");
+	logger.print(EventLogger::L_DEBUG, "[KLTQTTracker::detect_keypoints] DEBUG: detected pts.: %lu\n", added_pts_.size());
 }
 
 void KLTQTTracker::add_keypoints()
@@ -99,9 +99,9 @@ void KLTQTTracker::add_keypoints()
 			tracklets_.push_back(tr);
 	}
 
-	logger.print(pcl::console::L_DEBUG, "[KLTQTTracker::add_keypoints] DEBUG: adding keypoints...\n");
-	logger.print(pcl::console::L_DEBUG, "[KLTQTTracker::add_keypoints] DEBUG: added pts.: %lu\n", added_pts_.size());
-	logger.print(pcl::console::L_DEBUG, "[KLTQTTracker::add_keypoints] DEBUG: prev pts.: %lu\n", prev_pts_.size());
+	logger.print(EventLogger::L_DEBUG, "[KLTQTTracker::add_keypoints] DEBUG: adding keypoints...\n");
+	logger.print(EventLogger::L_DEBUG, "[KLTQTTracker::add_keypoints] DEBUG: added pts.: %lu\n", added_pts_.size());
+	logger.print(EventLogger::L_DEBUG, "[KLTQTTracker::add_keypoints] DEBUG: prev pts.: %lu\n", prev_pts_.size());
 
 	//Erase buffer
 	added_pts_.clear();
@@ -136,7 +136,7 @@ bool KLTQTTracker::track(const Mat& curr_frame)
 		curr_frame.copyTo(curr_frame_gray_);
 	}
 
-	logger.print(pcl::console::L_DEBUG, "[KLTQTTracker::track] DEBUG: tracking frame %i\n", frame_idx_);
+	logger.print(EventLogger::L_DEBUG, "[KLTQTTracker::track] DEBUG: tracking frame %i\n", frame_idx_);
 
 	//Swap buffers: prev_pts_ = curr_pts_
 	update_buffers();
@@ -167,7 +167,7 @@ bool KLTQTTracker::track(const Mat& curr_frame)
 		calcOpticalFlowPyrLK(prev_frame_gray_, curr_frame_gray_, prev_pts_, curr_pts_, status, err, win_size,
 							 3, crit, 0, 0.00001);
 
-		logger.print(pcl::console::L_DEBUG, "[KLTQTTracker::track] DEBUG: tracking...\n");
+		logger.print(EventLogger::L_DEBUG, "[KLTQTTracker::track] DEBUG: tracking...\n");
 
 		//Update internal data according to the tracking result
 		//Additional tests have to be applied to discard points outside the image boundaries.
@@ -180,7 +180,7 @@ bool KLTQTTracker::track(const Mat& curr_frame)
 				continue;
 			}
 
-			//logger.print(pcl::console::L_DEBUG, "[KLTQTTracker::track] DEBUG: tracked[%i]: (%f,%f) -> (%f,%f)\n", i, prev_pts_[i].x, prev_pts_[i].y, curr_pts_[i].x, curr_pts_[i].y);
+			//logger.print(EventLogger::L_DEBUG, "[KLTQTTracker::track] DEBUG: tracked[%i]: (%f,%f) -> (%f,%f)\n", i, prev_pts_[i].x, prev_pts_[i].y, curr_pts_[i].x, curr_pts_[i].y);
 
 			prev_pts_[tracked_pts] = prev_pts_[i];
 			curr_pts_[tracked_pts] = curr_pts_[i];
@@ -194,7 +194,7 @@ bool KLTQTTracker::track(const Mat& curr_frame)
 		curr_pts_.resize(tracked_pts);
 		tracklets_.resize(tracked_pts);
 
-		logger.print(pcl::console::L_DEBUG, "[KLTQTTracker::track] DEBUG: tracked points/max_points:  %i/%i\n", tracked_pts, max_pts_);
+		logger.print(EventLogger::L_DEBUG, "[KLTQTTracker::track] DEBUG: tracked points/max_points:  %i/%i\n", tracked_pts, max_pts_);
 
 		//Detect new features at every frame, hold them and add them to the tracker in the next frame
 		if(tracked_pts <= FeatureTracker::min_pts_ || !is_filled_with_black(mask_, 0.4))
@@ -229,7 +229,7 @@ bool KLTQTTracker::track(const Mat& curr_frame)
 	//write_heatmap_info();
 	//float total_time = get_time_per_frame();
 
-	logger.print(pcl::console::L_DEBUG, "[KLTQTTracker::track] DEBUG: curr_points:  %lu\n", curr_pts_.size());
+	logger.print(EventLogger::L_DEBUG, "[KLTQTTracker::track] DEBUG: curr_points:  %lu\n", curr_pts_.size());
 
 	cv::swap(curr_frame_gray_, prev_frame_gray_);
 	frame_idx_++;

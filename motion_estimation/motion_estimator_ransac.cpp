@@ -55,7 +55,7 @@ void MotionEstimatorRANSAC::setDataFromCorrespondences(const std::vector<cv::Poi
 	//tgt_cloud_->height = 1;
 	//tgt_cloud_->points.resize(tgt_cloud_->width*tgt_cloud_->height);
 
-	logger.print(pcl::console::L_DEBUG, "[MotionEstimatorRANSAC] DEBUG: setting 3D correspondences:\n");
+	LOG_DEBUG("[MotionEstimatorRANSAC] DEBUG: setting 3D correspondences:\n");
 
 	//For each correspondence, get both points and their corresponding 3D points in the dense 3D clouds
 	//A correspondence is removed if any of the 3D points is invalid
@@ -68,7 +68,7 @@ void MotionEstimatorRANSAC::setDataFromCorrespondences(const std::vector<cv::Poi
 		if(is_valid(tpt) && is_valid(spt))
 		{
 			/*
-			logger.print(pcl::console::L_DEBUG, "[MotionEstimatorRANSAC] DEBUG: [%lu]: (%f,%f) <-> (%f,%f) [(%f,%f,%f) <-> (%f,%f,%f)]:\n",
+			logger.print(EventLogger::L_DEBUG, "[MotionEstimatorRANSAC] DEBUG: [%lu]: (%f,%f) <-> (%f,%f) [(%f,%f,%f) <-> (%f,%f,%f)]:\n",
 				                                  k, src_points[k].x, src_points[k].y,
 				                                  tgt_points[k].x, tgt_points[k].y,
 				                                  spt.x, spt.y, spt.z, 
@@ -84,7 +84,7 @@ void MotionEstimatorRANSAC::setDataFromCorrespondences(const std::vector<cv::Poi
 	}
 	//tgt_cloud_->points.resize(valid_points);
 	//src_cloud_->points.resize(valid_points);
-	logger.print(pcl::console::L_DEBUG, "[MotionEstimatorRANSAC] DEBUG: valid points (with depth)/total points: %lu/%lu\n", valid_points, src_points.size());
+	logger.print(EventLogger::L_DEBUG, "[MotionEstimatorRANSAC] DEBUG: valid points (with depth)/total points: %lu/%lu\n", valid_points, src_points.size());
 }
 MotionEstimatorRANSAC::MotionEstimatorRANSAC()
 {
@@ -108,8 +108,8 @@ MotionEstimatorRANSAC::MotionEstimatorRANSAC(const Intrinsics& intr, const float
 
 	//Initialize intrinsics with the given values
 	intr_ = intr;
-	logger.print(pcl::console::L_INFO, "[MotionEstimatorRANSAC] INFO: loading intrinsics...\n");
-	logger.print(pcl::console::L_INFO, "[MotionEstimatorRANSAC] INFO: %f %f %f %f %f\n", intr.fx_, intr.fy_, intr.cx_, intr.cy_, intr.scale_);
+	logger.print(EventLogger::L_INFO, "[MotionEstimatorRANSAC] INFO: loading intrinsics...\n");
+	logger.print(EventLogger::L_INFO, "[MotionEstimatorRANSAC] INFO: %f %f %f %f %f\n", intr.fx_, intr.fy_, intr.cx_, intr.cy_, intr.scale_);
 }
 
 Eigen::Matrix4f MotionEstimatorRANSAC::estimate(const vector<cv::Point2f>& tgt_points, const pcl::PointCloud<PointT>::Ptr& tgt_dense_cloud,
@@ -120,7 +120,7 @@ Eigen::Matrix4f MotionEstimatorRANSAC::estimate(const vector<cv::Point2f>& tgt_p
 
 	long unsigned N = src_cloud_->points.size();
 
-	logger.print(pcl::console::L_DEBUG, "[MotionEstimatorRANSAC] DEBUG: RANSAC motion estimation: %lu <-> %lu\n", tgt_cloud_->size(), src_cloud_->size());
+	logger.print(EventLogger::L_DEBUG, "[MotionEstimatorRANSAC] DEBUG: RANSAC motion estimation: %lu <-> %lu\n", tgt_cloud_->size(), src_cloud_->size());
 
 	//Build a RANSAC registration model to estimate the rigid transformation
 	pcl::SampleConsensusModelRegistration<PointT>::Ptr sac_model(new pcl::SampleConsensusModelRegistration<PointT>(src_cloud_));
@@ -145,7 +145,7 @@ Eigen::Matrix4f MotionEstimatorRANSAC::estimate(const vector<cv::Point2f>& tgt_p
 	num_inliers_ = inl.size();
 		
 	float inl_ratio = float(inl.size())/N;
-	logger.print(pcl::console::L_INFO, "[MotionEstimatorRANSAC] INFO: inlier ratio: %f\n", inl_ratio);
+	logger.print(EventLogger::L_INFO, "[MotionEstimatorRANSAC] INFO: inlier ratio: %f\n", inl_ratio);
 
 	//Optimize registration transformation using all inlier correspondences
 	sac_model->optimizeModelCoefficients(inl, coeffs, opt_coeffs);

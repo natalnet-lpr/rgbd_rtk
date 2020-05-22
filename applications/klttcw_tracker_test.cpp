@@ -53,7 +53,7 @@ void draw_rejected_points(Mat& img, const vector<Point2f> pts);
 int main(int argc, char **argv)
 {
 	EventLogger& logger = EventLogger::getInstance();
-	logger.setVerbosityLevel(pcl::console::L_INFO);
+	logger.setVerbosityLevel(EventLogger::L_INFO);
 
 	RGBDLoader loader;
 	int min_pts, max_pts,log_stats;
@@ -63,7 +63,7 @@ int main(int argc, char **argv)
 
 	if(argc != 2)
 	{
-		logger.print(pcl::console::L_INFO, "[klttcw_tracker_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
+		logger.print(EventLogger::L_INFO, "[klttcw_tracker_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
 	ConfigLoader param_loader(argv[1]);
@@ -84,7 +84,7 @@ int main(int argc, char **argv)
 		double el_time = (double) cvGetTickCount();
 		bool is_kf = tracker.track(frame);
 		el_time = ((double) cvGetTickCount() - el_time)/(cvGetTickFrequency()*1000.0);
-		logger.print(pcl::console::L_INFO,"[klttcw_tracker_test.cpp] INFO: Tracking time: %f ms\n", el_time);
+		logger.print(EventLogger::L_INFO,"[klttcw_tracker_test.cpp] INFO: Tracking time: %f ms\n", el_time);
 		
 		draw_last_track(frame, tracker.prev_pts_, tracker.curr_pts_, tracker.window_radius_, is_kf);
 		draw_rejected_points(frame, tracker.rejected_points_);

@@ -104,7 +104,7 @@ void help(const char* prog_name)
 int main(int argc, char** argv)
 {
 	EventLogger& logger = EventLogger::getInstance();
-	logger.setVerbosityLevel(pcl::console::L_INFO);
+	logger.setVerbosityLevel(EventLogger::L_INFO);
 
 	//Program variables
 	bool record = false;
@@ -134,7 +134,7 @@ int main(int argc, char** argv)
 	//Check if directory exists and create it if it does not
 	if(!dirExists(prefix.c_str()))
 	{
-		logger.print(pcl::console::L_INFO, "[kinect_grabber.cpp] INFO: creating directory %s.\n", prefix.c_str());
+		logger.print(EventLogger::L_INFO, "[kinect_grabber.cpp] INFO: creating directory %s.\n", prefix.c_str());
 		boost::filesystem::create_directory(prefix.c_str());
 		//Create rgb dir.
 		if(!dirExists(rgb_dir.c_str()))
@@ -149,13 +149,13 @@ int main(int argc, char** argv)
 		}
 	}
 	
-	logger.print(pcl::console::L_INFO, "[kinect_grabber.cpp] INFO: saving data to %s directory.\n", prefix.c_str());
+	logger.print(EventLogger::L_INFO, "[kinect_grabber.cpp] INFO: saving data to %s directory.\n", prefix.c_str());
 
 	//Open Kinect capture device
 	cv::VideoCapture cam(CV_CAP_OPENNI);
 	if(!cam.isOpened())
 	{
-		logger.print(pcl::console::L_ERROR, "[kinect_grabber.cpp] ERROR: there's a problem opening the capture device.\n");
+		logger.print(EventLogger::L_ERROR, "[kinect_grabber.cpp] ERROR: there's a problem opening the capture device.\n");
 		exit(-1);
 	}
 
@@ -163,13 +163,13 @@ int main(int argc, char** argv)
 	ofstream rgb_index(rgb_index_name.c_str());
 	if(!rgb_index.is_open())
 	{
-		logger.print(pcl::console::L_ERROR, "[kinect_grabber.cpp] ERROR: there's a problem opening the RGB index file.\n");
+		logger.print(EventLogger::L_ERROR, "[kinect_grabber.cpp] ERROR: there's a problem opening the RGB index file.\n");
 		exit(-1);
 	}
 	ofstream depth_index(depth_index_name.c_str());
 	if(!depth_index.is_open())
 	{
-		logger.print(pcl::console::L_ERROR, "[kinect_grabber.cpp] ERROR: there's a problem opening the depth index file.\n");
+		logger.print(EventLogger::L_ERROR, "[kinect_grabber.cpp] ERROR: there's a problem opening the depth index file.\n");
 		exit(-1);
 	}
 
@@ -192,7 +192,7 @@ int main(int argc, char** argv)
 		cam.retrieve(cv_cloud, CV_CAP_OPENNI_POINT_CLOUD_MAP);
 		if(rgb_img.empty() || depth_buffer.empty() || cv_cloud.empty())
 		{
-			logger.print(pcl::console::L_ERROR, "[kinect_grabber.cpp] ERROR: there's a problem capturing the RGB-D data.\n");
+			logger.print(EventLogger::L_ERROR, "[kinect_grabber.cpp] ERROR: there's a problem capturing the RGB-D data.\n");
 			exit(-1);
 		}
 		cv::Mat frame_c;

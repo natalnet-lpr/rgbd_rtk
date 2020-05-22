@@ -47,43 +47,56 @@ void ConfigLoader::loadFile(const string& filename)
     fs.open(filename, FileStorage::READ);  //Reading config file
     if(fs.isOpened() == false)
     {
-        logger.print(pcl::console::L_ERROR, "[config_loader.cpp] ERROR: ConfigFile couldn't be opened, check if your path is right\n");
+        logger.print(EventLogger::L_ERROR, "[config_loader.cpp] ERROR: ConfigFile couldn't be opened, check if your path is right\n");
         exit(0);
     }
 }
 
 bool ConfigLoader::checkAndGetInt(const string& parameter, int& parameter_int){
     if(fs[parameter].empty()){
-        logger.print(pcl::console::L_INFO, "[config_loader.cpp] INFO: Parameter %s couldn't be loaded, check your ConfigFile.yaml\n", parameter.c_str());
+        logger.print(EventLogger::L_INFO, "[config_loader.cpp] INFO: Parameter %s couldn't be loaded, check your ConfigFile.yaml\n", parameter.c_str());
         return false;
     } 
     else{
         fs[parameter] >> parameter_int;
-        logger.print(pcl::console::L_INFO, "[config_loader.cpp] INFO: Parameter %s = %i\n", parameter.c_str(), parameter_int);
+        logger.print(EventLogger::L_INFO, "[config_loader.cpp] INFO: Parameter %s = %i\n", parameter.c_str(), parameter_int);
         return true;
     }
 }
 
 bool ConfigLoader::checkAndGetFloat(const string& parameter, float& parameter_float){
     if(fs[parameter].empty()){
-        logger.print(pcl::console::L_INFO, "[config_loader.cpp] INFO: Parameter %s couldn't be loaded, check your ConfigFile.yaml\n", parameter.c_str());
+        logger.print(EventLogger::L_INFO, "[config_loader.cpp] INFO: Parameter %s couldn't be loaded, check your ConfigFile.yaml\n", parameter.c_str());
         return false;
     }     
     else{
         fs[parameter] >> parameter_float;
-        logger.print(pcl::console::L_INFO, "[config_loader.cpp] INFO: Parameter %s = %f\n", parameter.c_str(), parameter_float);
+        logger.print(EventLogger::L_INFO, "[config_loader.cpp] INFO: Parameter %s = %f\n", parameter.c_str(), parameter_float);
         return true;
     }
 }
 
 bool ConfigLoader::checkAndGetString(const string& parameter, string& parameter_string){
     if(fs[parameter].empty()){
-        logger.print(pcl::console::L_INFO, "[config_loader.cpp] INFO: Parameter %s couldn't be loaded, check your ConfigFile.yaml\n", parameter.c_str());
+        logger.print(EventLogger::L_INFO, "[config_loader.cpp] INFO: Parameter %s couldn't be loaded, check your ConfigFile.yaml\n", parameter.c_str());
         return false;
     }     
     else{
         fs[parameter] >> parameter_string;
-        logger.print(pcl::console::L_INFO, "[config_loader.cpp] INFO: Parameter %s = %s\n", parameter.c_str(), parameter_string.c_str());
+        logger.print(EventLogger::L_INFO, "[config_loader.cpp] INFO: Parameter %s = %s\n", parameter.c_str(), parameter_string.c_str());
+        return true;
+    }
+}
+
+bool ConfigLoader::checkAndGetMat(const string& parameter, Mat& parameter_mat)
+{
+    if(fs[parameter].empty()){
+        logger.print(EventLogger::L_INFO, "[config_loader.cpp] INFO: Parameter %s couldn't be loaded, check your ConfigFile.yaml\n", parameter.c_str());
+        return false;
+    }     
+    else{
+        fs[parameter] >> parameter_mat;
+        logger.print(EventLogger::L_INFO, "[config_loader.cpp] INFO: Parameter %s loaded.\n", parameter.c_str());
         return true;
     }
 }
