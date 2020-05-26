@@ -70,18 +70,47 @@ ReconstructionVisualizer::ReconstructionVisualizer(const std::string& title)
 	                           0.0, -1.0, 0.0); //up;
 }
 
+void ReconstructionVisualizer::addCameraPath(const Eigen::Affine3f& pose)
+{
+	curr_pos_.x = pose(0,3);
+	curr_pos_.y = pose(1,3);
+	curr_pos_.z = pose(2,3);
+
+	stringstream line_name;
+	line_name << "line" << num_lines_++;
+	viewer_->addLine(prev_pos_, curr_pos_, 1.0, 0.0, 0.0, line_name.str());
+	viewer_->setShapeRenderingProperties(pcl::visualization::PCL_VISUALIZER_LINE_WIDTH, 5, line_name.str());
+
+	prev_pos_ = curr_pos_;
+}
+
 void ReconstructionVisualizer::addReferenceFrame(const Eigen::Affine3f& pose, const std::string& text)
 {
 	stringstream frame_name;
 	frame_name << "ref" << num_ref_frames_;
 	viewer_->addCoordinateSystem(0.3, pose, frame_name.str());
 	num_ref_frames_++;
-	PointT pos;
-	pos.x = pose(0,3) + 0.02;
-	pos.y = pose(1,3) + 0.05;
-	pos.z = pose(2,3);
+	PointT text_pose;
+	text_pose.x = pose(0,3) + 0.02;
+	text_pose.y = pose(1,3) + 0.05;
+	text_pose.z = pose(2,3);
 	frame_name << "_text";
-	viewer_->addText3D(text, pos, 0.025, 1, 1, 1, frame_name.str());
+	viewer_->addText3D(text, text_pose, 0.025, 1, 1, 1, frame_name.str());
+}
+
+
+void ReconstructionVisualizer::addKeyFrame(const Eigen::Affine3f& pose, const std::string& text)
+{
+	stringstream frame_name;
+	frame_name << "key" << num_key_frames_;
+	viewer_->addCoordinateSystem(0.3, pose, frame_name.str());
+	num_key_frames_++;
+	PointT text_pose;
+	text_pose.x = pose(0,3) + 0.02;
+	text_pose.y = pose(1,3) + 0.05;
+	text_pose.z = pose(2,3);
+	frame_name << "_text";
+	viewer_->addText3D(text, text_pose, 0.025, 0, 0, 1, frame_name.str());
 }
 
 void ReconstructionVisualizer::addPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud, const Eigen::Affine3f& pose)
@@ -182,16 +211,3 @@ void ReconstructionVisualizer::spinOnce()
 	viewer_->spinOnce();
 }
 
-void ReconstructionVisualizer::addCameraPath(const Eigen::Affine3f& pose)
-{
-	curr_pos_.x = pose(0,3);
-	curr_pos_.y = pose(1,3);
-	curr_pos_.z = pose(2,3);
-
-	stringstream line_name;
-	line_name << "line" << num_lines_++;
-	viewer_->addLine(prev_pos_, curr_pos_, 1.0, 0.0, 0.0, line_name.str());
-	viewer_->setShapeRenderingProperties(pcl::visualization::PCL_VISUALIZER_LINE_WIDTH, 5, line_name.str());
-
-	prev_pos_ = curr_pos_;
-}
