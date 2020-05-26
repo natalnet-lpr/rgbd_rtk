@@ -11,6 +11,7 @@ Requirements
 ------------
 
 - OpenCV: www.opencv.org  (version >= 3.X)
+- OpenCV-contrib: https://github.com/opencv/opencv_contrib  (Same version as OpenCv)
 - PCL: www.pointclouds.org (version 1.8)
 
 It is recommended to install both dependencies from source. The following two links will redirect you to their official tutorials to do so.
