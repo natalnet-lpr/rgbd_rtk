@@ -48,6 +48,12 @@ private:
 	//Number of reference frames added to the visualizer
 	int num_ref_frames_;
 
+	//Number of keyframes added to the visualizer
+	int num_keyframes_;
+
+	//Number of edged added to the visualizer
+	int num_edges_;
+	
 	//PointCloudsLibrary 3D visualizer (only works with a pointer to the object)
 	PCLVisualizerPtr viewer_;
 
@@ -63,57 +69,70 @@ public:
 	/**
 	 * Default constructor
 	 */
-  ReconstructionVisualizer();
-
+	ReconstructionVisualizer();
 
 	/**
 	 * Constructor with the window title as a string
-	 * @param string 
+	 * @param title Title as String
 	 */
-  ReconstructionVisualizer(const std::string& title);
+	ReconstructionVisualizer(const std::string &title);
+
+	/**
+	   * Adds a line between the previous and the current camera position
+	   * @param pose current camera pose as Affine3f
+	   */
+	void addCameraPath(const Eigen::Affine3f &pose);
 
 	/**
 	 * Adds a ref. frame with the given pose to the 3D reconstruction
-	 * @param ref pose and string 
+	 * @param pose as Affine3f, @param text text of the pose in visualization as String 
 	 */
-  void addReferenceFrame(const Eigen::Affine3f& pose, const std::string& text);
+	void addReferenceFrame(const Eigen::Affine3f &pose, const std::string &text);
+
+	/**
+	 * Adds a key. frame with the given pose to the 3D reconstruction
+	 * @param pose as Affine3f, @param text text of the pose in visualization as String 
+	 */
+	void addKeyFrame(const Eigen::Affine3f &pose, const std::string &text);
 
 	/**
 	 * Adds a point cloud with the given pose to the 3D reconstruction
-	 * @param point cloud and pose
+	 * @param cloud PointCloud as pcl::PointCloud<PointT>, @param pose pose of the 3d Reconstruction as Affine3f
 	 */
-  void addPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud, const Eigen::Affine3f& pose);
-
+	void addPointCloud(const pcl::PointCloud<PointT>::Ptr &cloud, const Eigen::Affine3f &pose);
 
 	/**
 	 * Adds a point cloud after quantization (uniform sampling) with the given pose to the 3D reconstruction
-	 * @param point cloud, radius and pose
+	 * @param cloud point cloud after quantization as pcl::PointCloud<PointT>, 
+	 * @param radius as float, @param pose of the point cloud as Affine3f
 	 */
-  void addQuantizedPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud, const float& radius, const Eigen::Affine3f& pose);
+	void addQuantizedPointCloud(const pcl::PointCloud<PointT>::Ptr &cloud, const float &radius, const Eigen::Affine3f &pose);
 
 	/**
 	 * Views a ref. frame with the given pose in the 3D reconstruction
-	 * @param pose and text("cam" as default)
+	 * @param pose of the frame as Affine3f, @param text pose text in visualization as String.("cam" as default)
 	 */
-  void viewReferenceFrame(const Eigen::Affine3f& pose, const std::string& text="cam");
+	void viewReferenceFrame(const Eigen::Affine3f &pose, const std::string &text = "cam");
 
 	/**
 	 * Views a point cloud in the 3D reconstruction
-	 * @param point cloud and pose
+	 * @param cloud PointCloud as pcl::PointCloud<PointT>, @param pose pose of the 3d Reconstruction as Affine3f
 	 */
-  void viewPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud, const Eigen::Affine3f& pose);
+	void viewPointCloud(const pcl::PointCloud<PointT>::Ptr &cloud, const Eigen::Affine3f &pose);
 
 	/**
 	 * Views a point cloud after quantization (uniform sampling) in the 3D reconstruction
-	 * @param point cloud, radius and pose
+	 * @param cloud point cloud after quantization as pcl::PointCloud<PointT>, 
+	 * @param radius as float, @param pose of the point cloud as Affine3f
 	 */
-  void viewQuantizedPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud, const float& radius, const Eigen::Affine3f& pose);
+	void viewQuantizedPointCloud(const pcl::PointCloud<PointT>::Ptr &cloud, const float &radius, const Eigen::Affine3f &pose);
 
 	/**
-   *Sets the virtual camera position in the virtual world
-   * @param 3 floats: x, y and z position
-   */
-	void setCameraPosition(const float& pos_x, const float& pos_y, const float& pos_z);
+   	 *Sets the virtual camera position in the virtual world
+     * @param pos_x x position as float, @param pos_y y position as float
+	 * @param pos_z z position as float
+     */
+	void setCameraPosition(const float &pos_x, const float &pos_y, const float &pos_z);
 
 	/**
 	 * Wrapper to the interactor function of pcl::visualizer
@@ -124,9 +143,6 @@ public:
 	 * Wrapper to the interactor function of pcl::visualizer
 	 */
 	void spinOnce();
-
-	//Adds a line between the previous and the current camera position
-	void addCameraPath(const Eigen::Affine3f& pose);
 };
 
 #endif /* INCLUDE_RECONSTRUCTION_VISUALIZER_H_ */
