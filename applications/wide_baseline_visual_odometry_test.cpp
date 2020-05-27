@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2020, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -22,9 +22,10 @@
  *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  Author:
+ *  Authors:
  *
  *  Bruno Silva
+ *  Marcos Henrique F. Marcone
  */
 
 #include <cstdio>
@@ -38,7 +39,8 @@
 #include <config_loader.h>
 #include <rgbd_loader.h>
 #include <event_logger.h>
-#include <optical_flow_visual_odometry.h>
+#include <wide_baseline_tracker.h>
+#include <wide_baseline_visual_odometry.h>
 #include <reconstruction_visualizer.h>
 
 using namespace std;
@@ -55,20 +57,31 @@ int main(int argc, char **argv)
 	
 	RGBDLoader loader;
 	Intrinsics intr(0);
-	OpticalFlowVisualOdometry vo(intr);
 	ReconstructionVisualizer visualizer;
 	string index_file;
 	Mat frame, depth;
+	int log_stats;
+	string feature_detector, descriptor_extractor, descriptor_matcher;
 
 	if(argc != 2)
 	{
-		logger.print(EventLogger::L_INFO, "[optical_flow_visual_odometry_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
+		logger.print(EventLogger::L_INFO, "[wide_baseline_visual_odometry_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
+	
 	ConfigLoader param_loader(argv[1]);
 	param_loader.checkAndGetString("index_file",index_file);
-	loader.processFile(index_file);
+	param_loader.checkAndGetInt("log_stats",log_stats);
+	param_loader.checkAndGetString("feature_detector",feature_detector);
+	param_loader.checkAndGetString("descriptor_extractor",descriptor_extractor);
+	param_loader.checkAndGetString("descriptor_matcher",descriptor_matcher);
+	
+	WideBaselineTracker wide_baseline_tracker(feature_detector, descriptor_extractor, descriptor_matcher, log_stats);
+	
+	WideBaselineVisualOdometry vo(intr, wide_baseline_tracker);
 
+	loader.processFile(index_file);
+	
 	//Compute visual odometry on each image
 	for(int i = 0; i < loader.num_images_; i++)
 	{
@@ -79,10 +92,10 @@ int main(int argc, char **argv)
 		vo.computeCameraPose(frame, depth);
 
 		//View tracked points
-		for(size_t k = 0; k < vo.tracker_.curr_pts_.size(); k++)
+		for(size_t k = 0; k < vo.tracker_->curr_pts_.size(); k++)
 		{
-			Point2i pt1 = vo.tracker_.prev_pts_[k];
-			Point2i pt2 = vo.tracker_.curr_pts_[k];
+			Point2i pt1 = vo.tracker_->prev_pts_[k];
+			Point2i pt2 = vo.tracker_->curr_pts_[k];
 			circle(frame, pt1, 1, CV_RGB(255,0,0), -1);
 			circle(frame, pt2, 3, CV_RGB(0,0,255), -1);
 			line(frame, pt1, pt2, CV_RGB(0,0,255));
@@ -104,7 +117,7 @@ int main(int argc, char **argv)
 		char key = waitKey(1);
 		if(key == 27 || key == 'q' || key == 'Q')
 		{
-			logger.print(EventLogger::L_INFO, "[optical_flow_visual_odometry_test.cpp] Exiting\n", argv[0]);
+			logger.print(EventLogger::L_INFO, "[wide_baseline_visual_odometry_test.cpp] Exiting\n", argv[0]);
 			break;
 		}
 	}

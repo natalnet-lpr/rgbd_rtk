@@ -34,14 +34,14 @@ using namespace std;
 int main()
 {
 	EventLogger& logger = EventLogger::getInstance();
-	logger.setVerbosityLevel(pcl::console::L_DEBUG);
+	logger.setVerbosityLevel(EventLogger::L_DEBUG);
 	logger.setLogFileName("log_event_logger_test.txt");
 
 	//These messages are shown on stdout/logged to file according to verbosity level
-	logger.print(pcl::console::L_DEBUG, "[event_logger_test.cpp] DEBUG: calling print from main\n");
-	logger.print(pcl::console::L_INFO, "[event_logger_test.cpp] INFO: calling print from main >>> %i, %s, %f\n", 1, "test string", 5.0);
-    logger.print(pcl::console::L_WARN, "[event_logger_test.cpp] WARN: calling print from main: %s\n", "another string");
-    logger.print(pcl::console::L_ERROR, "[event_logger_test.cpp] ERROR: calling print from main: %f\n", 3.14);
+	logger.print(EventLogger::L_DEBUG, "[event_logger_test.cpp] DEBUG: calling print from main\n");
+	logger.print(EventLogger::L_INFO, "[event_logger_test.cpp] INFO: calling print from main >>> %i, %s, %f\n", 1, "test string", 5.0);
+    logger.print(EventLogger::L_WARN, "[event_logger_test.cpp] WARN: calling print from main: %s\n", "another string");
+    logger.print(EventLogger::L_ERROR, "[event_logger_test.cpp] ERROR: calling print from main: %f\n", 3.14);
 
 	logger.printDebug("event_logger_test.cpp", "Testing DEBUG"); //goes to file if verb. level >= DEBUG
 	logger.printInfo("event_logger_test.cpp", "Testing INFO"); //goes to file if verb. level >= INFO
