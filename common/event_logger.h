@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2020, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -22,20 +22,172 @@
  *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
+ *  Authors:
+ *
+ *  Bruno Silva
+ *  Rodrigo Xavier
+ *
+ * (Various chunks of codes were taken from Point Clouds Library).
  */
 
 #ifndef INCLUDE_EVENT_LOGGER_H_
 #define INCLUDE_EVENT_LOGGER_H_
 
 #include <cstdio>
-#include <iostream>
 
-#include <pcl/console/print.h>
+#define LOG_ERROR(...)   logger.print(EventLogger::L_ERROR, __VA_ARGS__)
+#define LOG_WARN(...)    logger.print(EventLogger::L_WARN, __VA_ARGS__)
+#define LOG_INFO(...)    logger.print(EventLogger::L_INFO, __VA_ARGS__)
+#define LOG_DEBUG(...)   logger.print(EventLogger::L_DEBUG, __VA_ARGS__)
 
 class EventLogger
 {
+public:
+
+    enum VERBOSITY_LEVEL
+    {
+        L_ALWAYS,
+        L_ERROR,
+        L_WARN,
+        L_INFO,
+        L_DEBUG,
+        L_VERBOSE
+    };
+
+    /** 
+     * Class destructor.
+     */
+    ~EventLogger()
+    {
+        if(is_initialized_)
+            fclose(log_file_);
+    }
+
+    /**
+     * Returns the single instance of the class
+     * currently in execution.
+     */
+    static EventLogger& getInstance();
+
+    /**
+     * Sets the verbosity level.
+     * @param level - the following are accepted: L_DEBUG, L_INFO, L_WARN, L_ERROR
+     */
+    void setVerbosityLevel(EventLogger::VERBOSITY_LEVEL level);
+
+    /**
+     * Sets the log file name.
+     * @param file_name: log file name (supports relative/absolute path)
+     */
+    void setLogFileName(const std::string& file_name);
+
+    /**
+     * Returns the verbosity level.
+     */
+    EventLogger::VERBOSITY_LEVEL getVerbosityLevel();
+
+    /**
+     * Returns the log file name.
+     */
+    std::string getLogFileName();
+
+    /** Change the text color (on stdout, stderr, etc.) with an attr:fg:bg
+     * \param stream the output stream (stdout, stderr, etc)
+     * \param attribute the text attribute
+     * \param fg the foreground color
+     */
+    void changeTextColor(FILE *stream, int attribute, int fg);
+
+    /** Reset the text color (on either stdout, stderr, etc) to its original state
+     * \param stream the output stream
+     */
+    void resetTextColor(FILE *stream);
+
+    /**
+     * Returns true if the given verbosity level is enabled.
+     * @param level - the following are accepted: L_DEBUG, L_INFO, L_WARN, L_ERROR
+     */
+    bool isVerbosityLevelEnabled(EventLogger::VERBOSITY_LEVEL level);
+
+    /**
+     * Prints a formatted message to stdout/file.
+     * It works just like printf.
+     * Example use:
+     *
+     * print(EventLogger::L_DEBUG, "Formatted message: %i, %f\n", var1, var2);
+     * L_DEBUG, L_INFO, L_WARN or L_ERROR can be used as verbosity levels.
+     */
+    void print(EventLogger::VERBOSITY_LEVEL level, const char* format, ...);
+
+    /**
+     * Prints a message to stdout/file to denote debug information.
+     * It redirects the call to the print function for proper formatting
+     * (note that this function receives only two parameters).
+     * Example use:
+     *
+     * printDebug("my_module::MyClass", "Debug message");
+     */
+    void printDebug(const char* module_class, const char* msg);
+
+    /**
+     * Prints a message to stdout/file to denote general program information.
+     * It redirects the call to the print function for proper formatting
+     * (note that this function receives only two parameters).
+     * Example use:
+     *
+     * printInfo("my_module::MyClass", "Information message");
+     */
+    void printInfo(const char* module_class, const char* msg);
+
+    /**
+     * Prints a message to stdout/file to denote a program warning.
+     * It redirects the call to the print function for proper formatting
+     * (note that this function receives only two parameters).
+     * Example use:
+     *
+     * printWarning("my_module::MyClass", "Warning message");
+     */
+    void printWarning(const char* module_class, const char* msg);
+
+    /**
+     * Prints a message to stdout/file to denote an error situation.
+     * It redirects the call to the print function for proper formatting
+     * (note that this function receives only two parameters).
+     * Example use:
+     *
+     * printError("my_module::MyClass", "Error message");
+     */
+    void printError(const char* module_class, const char* msg);
+
+     /**
+      * @return a string with the current local data and time, Format YYYY-MM-DD HH:mm:ss
+      */
+     std::string currentDateTime();
 
 private:
+
+    enum TT_ATTIBUTES
+    {
+        TT_RESET     = 0,
+        TT_BRIGHT    = 1,
+        TT_DIM       = 2,
+        TT_UNDERLINE = 3,
+        TT_BLINK     = 4,
+        TT_REVERSE   = 7,
+        TT_HIDDEN    = 8
+    };
+      
+    enum TT_COLORS
+    {
+        TT_BLACK,
+        TT_RED,
+        TT_GREEN,
+        TT_YELLOW,
+        TT_BLUE,
+        TT_MAGENTA,
+        TT_CYAN,
+        TT_WHITE
+    };
 
 	//Informs if the logger has been initialized
 	//(whether it has correctly openned a file)
@@ -47,8 +199,8 @@ private:
 	//Output file for the log file
 	FILE* log_file_;
 
-	//Current verbosity level (uses enum defined in PCL)
-	pcl::console::VERBOSITY_LEVEL verb_level_;
+	//Current verbosity level
+	EventLogger::VERBOSITY_LEVEL verb_level_;
 
 	//Associates the logger with a FILE*
 	void initialize();
@@ -65,106 +217,11 @@ private:
 	{
 		file_name_ = "log.txt";
 		is_initialized_ = false;
-		verb_level_ = pcl::console::L_ERROR;
+		verb_level_ = EventLogger::L_ERROR;
 	}
 
 	EventLogger(EventLogger const&); //don't implement copy constructor
 	void operator=(EventLogger const&); //don't implement assignment operator
-
-public:
-
-	/** 
-	 * Class destructor.
-	 */
-	~EventLogger()
-	{
-		if(is_initialized_)
-			fclose(log_file_);
-	}
-
-	/**
-	 * Returns the single instance of the class
-	 * currently in execution.
-	 */
-	static EventLogger& getInstance();
-
-	/**
-	 * Sets the verbosity level.
-	 * @param level - the following are accepted: L_DEBUG, L_INFO, L_WARN, L_ERROR
-	 */
-    void setVerbosityLevel(pcl::console::VERBOSITY_LEVEL level);
-
-    /**
-     * Sets the log file name.
-     * @param file_name: log file name (supports relative/absolute path)
-     */
-    void setLogFileName(const std::string& file_name);
-
-    /**
-     * Returns the verbosity level.
-     */
-    pcl::console::VERBOSITY_LEVEL getVerbosityLevel();
-
-    /**
-     * Returns the log file name.
-     */
-    std::string getLogFileName();
-
-    /**
-     * Returns true if the given verbosity level is enabled.
-     * @param level - the following are accepted: L_DEBUG, L_INFO, L_WARN, L_ERROR
-     */
-    bool isVerbosityLevelEnabled(pcl::console::VERBOSITY_LEVEL level);
-
-    /**
-     * Prints a formatted message to stdout/file.
-     * It works just like printf.
-     * Example use:
-     *
-     * print(pcl::console::L_DEBUG, "Formatted message: %i, %f\n", var1, var2);
-     * L_DEBUG, L_INFO, L_WARN or L_ERROR can be used as verbosity levels.
-     */
-	void print(pcl::console::VERBOSITY_LEVEL level, const char* format, ...);
-
-	/**
-     * Prints a message to stdout/file to denote debug information.
-     * It redirects the call to the print function for proper formatting
-     * (note that this function receives only two parameters).
-     * Example use:
-     *
-     * printDebug("my_module::MyClass", "Debug message");
-     */
-	void printDebug(const char* module_class, const char* msg);
-
-	/**
-     * Prints a message to stdout/file to denote general program information.
-     * It redirects the call to the print function for proper formatting
-     * (note that this function receives only two parameters).
-     * Example use:
-     *
-     * printInfo("my_module::MyClass", "Information message");
-     */
-	void printInfo(const char* module_class, const char* msg);
-
-	/**
-     * Prints a message to stdout/file to denote a program warning.
-     * It redirects the call to the print function for proper formatting
-     * (note that this function receives only two parameters).
-     * Example use:
-     *
-     * printWarning("my_module::MyClass", "Warning message");
-     */
-	void printWarning(const char* module_class, const char* msg);
-
-	/**
-     * Prints a message to stdout/file to denote an error situation.
-     * It redirects the call to the print function for proper formatting
-     * (note that this function receives only two parameters).
-     * Example use:
-     *
-     * printError("my_module::MyClass", "Error message");
-     */
-	void printError(const char* module_class, const char* msg);
 };
 
 extern EventLogger& logger;

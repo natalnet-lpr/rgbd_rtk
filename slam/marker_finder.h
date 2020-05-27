@@ -57,7 +57,7 @@ protected:
 	
 	/**
 	 * Set the pose of all detected markers w.r.t. the global ref. frame
-	 * @param camera pose as affine3f and minimum distance to aruco be considered valid
+	 * @param cam_psoe camera pose as Affine3f, @param aruco_max_distance max distance to find aruco marker as float
 	 */	
 	void setMarkerPoses(const Eigen::Affine3f& cam_pose, const float& aruco_max_distance);
 
@@ -78,14 +78,16 @@ public:
 	MarkerFinder(){}
 	/**
 	 * Fucntion to load params
-	 * @param camera intrinsic marker size and aruco dictionary
+	 * @param params camera params as string, @param size size of the marker as float
+	 * @param aruco_dic aruco dictionary as String
 	 */
 	void markerParam(const string& params, const float& size, const string& aruco_dic);
 	/**
 	 * Detect the marker related to the cam_pose, just pass a identity matrix to cam_pose if you 
 	 * want to detect the pose of the marker related to the camera, just pass a identity matrix 
 	 * in cam_pose parameter
-	 * @param rgb image, camera pose, aruco max distance
+	 * @param img rgb camera img as cv::Mat, @param cam_pose pose as Affine3f
+	 * @param aruco_max_distance max distance aruco will be detected as float
 	 */	
 	void detectMarkersPoses(const cv::Mat& img, const Eigen::Affine3f& cam_pose, const float& aruco_max_distance);
 

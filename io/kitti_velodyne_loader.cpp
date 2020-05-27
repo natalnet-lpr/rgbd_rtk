@@ -89,7 +89,7 @@ void KITTIVelodyneLoader::loadLIDARSequence(const string& sequence_path, const i
     }
     else
     {
-        logger.print(pcl::console::L_ERROR, "[kitti_velodyne_loader.cpp] ERROR: Could not create index file (error on system command).\nExiting\n");
+        logger.print(EventLogger::L_ERROR, "[kitti_velodyne_loader.cpp] ERROR: Could not create index file (error on system command).\nExiting\n");
         exit(0);
     }
 }

@@ -19,6 +19,7 @@
 #      - aruco_VERSION_PATCH : Patch version part of VERSION. Example: "0"
 #
 # ===================================================================================
+slam_solver
 INCLUDE_DIRECTORIES("/home/sarmento/LIB/aruco-2.0.20-git-g/install/include")
 SET(aruco_INCLUDE_DIRS "/home/sarmento/LIB/aruco-2.0.20-git-g/install/include")
 
@@ -32,3 +33,4 @@ SET(aruco_VERSION        2.0.20)
 SET(aruco_VERSION_MAJOR  2)
 SET(aruco_VERSION_MINOR  0)
 SET(aruco_VERSION_PATCH  1)
+

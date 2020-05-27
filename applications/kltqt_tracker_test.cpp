@@ -53,7 +53,7 @@ void draw_rejected_points(Mat& img, const vector<Point2f> pts);
 int main(int argc, char **argv)
 {
 	EventLogger& logger = EventLogger::getInstance();
-	logger.setVerbosityLevel(pcl::console::L_INFO);
+	logger.setVerbosityLevel(EventLogger::L_INFO);
 	RGBDLoader loader;
 	int min_pts, max_pts, log_stats;
 	Mat frame, depth;
@@ -61,7 +61,7 @@ int main(int argc, char **argv)
 
 	if(argc != 2)
 	{
-		logger.print(pcl::console::L_INFO, "[kltqt_tracker_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
+		logger.print(EventLogger::L_INFO, "[kltqt_tracker_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
 	ConfigLoader param_loader(argv[1]);
@@ -91,7 +91,7 @@ int main(int argc, char **argv)
 
 		tracker.tree->drawTree(frame);		
 
-		logger.print(pcl::console::L_INFO,"[kltqt_tracker_test.cpp] INFO: Tracking time: %f ms\n", el_time);
+		logger.print(EventLogger::L_INFO,"[kltqt_tracker_test.cpp] INFO: Tracking time: %f ms\n", el_time);
 		
 		draw_last_track(frame, tracker.prev_pts_, tracker.curr_pts_, is_kf);
 		draw_rejected_points(frame, tracker.rejected_points_);

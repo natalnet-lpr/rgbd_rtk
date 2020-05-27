@@ -174,25 +174,25 @@ void FeatureTracker::initialize_logger(const string& timing_file_name, const str
 	timing_info_.open(timing_file_name.c_str());
 	if(!timing_info_.is_open())
 	{
-		logger.print(pcl::console::L_ERROR, "[FeatureTracker::initialize_logger] ERROR: there is a problem with the supplied file for the timing information\n");
+		logger.print(EventLogger::L_ERROR, "[FeatureTracker::initialize_logger] ERROR: there is a problem with the supplied file for the timing information\n");
 		exit(-1);
 	}
 
 	tracking_info_.open(tracking_file_name.c_str());
 	if(!tracking_info_.is_open())
 	{
-		logger.print(pcl::console::L_ERROR, "[FeatureTracker::initialize_logger] ERROR: there is a problem with the supplied file for the tracking information\n");
+		logger.print(EventLogger::L_ERROR, "[FeatureTracker::initialize_logger] ERROR: there is a problem with the supplied file for the tracking information\n");
 		exit(-1);
 	}
 
 	heatmap_info_.open(heatmap_file_name.c_str());
 	if(!heatmap_info_.is_open())
 	{
-		logger.print(pcl::console::L_ERROR, "[FeatureTracker::initialize_logger] ERROR: there is a problem with the supplied file for the heatmap information\n");
+		logger.print(EventLogger::L_ERROR, "[FeatureTracker::initialize_logger] ERROR: there is a problem with the supplied file for the heatmap information\n");
 		exit(-1);
 	}
 
-	logger.print(pcl::console::L_INFO, "[FeatureTracker::initialize_logger] INFO: saving tracking information to %s\n", tracking_file_name.c_str());
-	logger.print(pcl::console::L_INFO, "[FeatureTracker::initialize_logger] INFO: saving timing information to %s\n", timing_file_name.c_str());
-	logger.print(pcl::console::L_INFO, "[FeatureTracker::initialize_logger] INFO: saving heatmap information to %s\n", heatmap_file_name.c_str());
+	logger.print(EventLogger::L_INFO, "[FeatureTracker::initialize_logger] INFO: saving tracking information to %s\n", tracking_file_name.c_str());
+	logger.print(EventLogger::L_INFO, "[FeatureTracker::initialize_logger] INFO: saving timing information to %s\n", timing_file_name.c_str());
+	logger.print(EventLogger::L_INFO, "[FeatureTracker::initialize_logger] INFO: saving heatmap information to %s\n", heatmap_file_name.c_str());
 }
