@@ -76,13 +76,13 @@ int main(int argc, char **argv)
 	float marker_size, aruco_max_distance;
 	string camera_calibration_file, aruco_dic, index_file;
 	EventLogger& logger = EventLogger::getInstance();
-	//logger.setVerbosityLevel(pcl::console::L_DEBUG);
+	//logger.setVerbosityLevel(EventLogger::L_DEBUG);
 	logger.setLogFileName("log_marker_finder_test.txt");
 
 
 	if(argc != 2)
 	{
-		logger.print(pcl::console::L_ERROR, "[marker_finder_test.cpp] ERROR: Missing configfile, Usage: %s <path/to/config_file.yaml>\n", argv[0]);
+		logger.print(EventLogger::L_ERROR, "[marker_finder_test.cpp] ERROR: Missing configfile, Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
 	ConfigLoader param_loader(argv[1]);
@@ -127,15 +127,14 @@ int main(int argc, char **argv)
 			CvDrawingUtils::draw3dAxis(frame, marker_finder.markers_[j], marker_finder.camera_params_);
 			stringstream ss;
 			ss << "m" << marker_finder.markers_[j].id;
-			//visualizer.viewReferenceFrame(marker_finder.marker_poses_[j], ss.str());
 			//visualizer.viewReferenceFrame(slam_solver.m_positions_[j], ss.str())
         }
 
 		if(i == 0) visualizer.addReferenceFrame(vo.pose_, "origin");
-		//visualizer.addQuantizedPointCloud(vo.curr_dense_cloud_, 0.05, vo.pose_);
-		//visualizer.viewReferenceFrame(vo.pose_);
+		visualizer.addQuantizedPointCloud(vo.curr_dense_cloud_, 0.05, vo.pose_);
+		visualizer.viewReferenceFrame(vo.pose_);
 		//visualizer.viewPointCloud(vo.curr_dense_cloud_, vo.pose_);
-		//visualizer.viewQuantizedPointCloud(vo.curr_dense_cloud_, 0.02, vo.pose_);
+		visualizer.viewQuantizedPointCloud(vo.curr_dense_cloud_, 0.02, vo.pose_);
 
 		visualizer.spinOnce();
 

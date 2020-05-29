@@ -47,13 +47,13 @@ void SLAM_Solver::addEdgeToList(const int from_id, const int to_id)
 void SLAM_Solver::updateState()
 {
 	EventLogger& logger = EventLogger::getInstance();
-	logger.setVerbosityLevel(pcl::console::L_DEBUG);
+	logger.setVerbosityLevel(EventLogger::L_DEBUG);
 	logger.setLogFileName("log_event_slam_solver.txt");
 
 	m_optimized_estimates_.clear();
 	m_optimized_estimates_.resize(m_positions_.size());
 
-	logger.print(pcl::console::L_INFO, "[slam_solver.cpp] INFO: Updating %lu vertices\n", m_positions_.size());
+	logger.print(EventLogger::L_INFO, "[slam_solver.cpp] INFO: Updating %lu vertices\n", m_positions_.size());
 
 	//Update estimates of all vertices and positions
 	for(OptimizableGraph::VertexIDMap::const_iterator it = m_optimizer.vertices().begin();
@@ -74,14 +74,14 @@ void SLAM_Solver::updateState()
 		m_optimized_estimates_[v_id] = new_estimate;
 
 
-		logger.print(pcl::console::L_INFO, "[slam_solver.cpp] INFO: Updating node %i \n", v_id);
+		logger.print(EventLogger::L_INFO, "[slam_solver.cpp] INFO: Updating node %i \n", v_id);
 		//verificar se é m_positions_ mesmo o desejado
-		logger.print(pcl::console::L_INFO, "[slam_solver.cpp] INFO: ### from %f %f %f to %f %f %f\n",
+		logger.print(EventLogger::L_INFO, "[slam_solver.cpp] INFO: ### from %f %f %f to %f %f %f\n",
 						m_positions_[v_id].x(), m_positions_[v_id].y(), m_positions_[v_id].z(),
 						new_estimate(0,3), new_estimate(1,3), new_estimate(2,3), v_id);
 
 		
-		//logger.print(pcl::console::L_INFO, "[slam_solver.cpp] INFO: ### from %f %f %f to %f %f %f\n", m_vertices[v_id].x(), m_vertices[v_id].y(), m_vertices[v_id].z(), new_estimate(0,3), new_estimate(1,3), new_estimate(2,3), v_id));
+		//logger.print(EventLogger::L_INFO, "[slam_solver.cpp] INFO: ### from %f %f %f to %f %f %f\n", m_vertices[v_id].x(), m_vertices[v_id].y(), m_vertices[v_id].z(), new_estimate(0,3), new_estimate(1,3), new_estimate(2,3), v_id));
 
 		m_positions_[v_id](0,0) = new_estimate(0,3);
 		m_positions_[v_id](1,0) = new_estimate(1,3);
@@ -107,7 +107,7 @@ void SLAM_Solver::updateState()
 		m_loop_edges_[i].m_pos0 = m_positions_[idx0];
 		m_loop_edges_[i].m_pos1 = m_positions_[idx1];
 	}
-	logger.print(pcl::console::L_INFO, "[slam_solver.cpp] INFO: Loop closing edges: %lu\n", m_loop_edges_.size());
+	logger.print(EventLogger::L_INFO, "[slam_solver.cpp] INFO: Loop closing edges: %lu\n", m_loop_edges_.size());
 }
 
 /* #####################################################
