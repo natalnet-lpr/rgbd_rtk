@@ -91,7 +91,6 @@ int main(int argc, char **argv)
 	param_loader.checkAndGetString("camera_calibration_file", camera_calibration_file);
 	param_loader.checkAndGetString("index_file", index_file);
 	param_loader.checkAndGetString("aruco_dic", aruco_dic);
-	cout<<endl<<index_file<<endl;
 	MarkerFinder marker_finder;
 	marker_finder.markerParam(camera_calibration_file, marker_size, aruco_dic);
 	
@@ -119,8 +118,9 @@ int main(int argc, char **argv)
 			if(all_markers[id].id == 0)
 			{
 				all_markers[id].id = id;
-				cout<<all_markers[id].id<<endl;
 				slam_solver.addVertexAndEdge(marker_finder.marker_poses_[id], id);
+				//cout << slam_solver.m_odometry_edges_[0].m_id0 << " to " << slam_solver.m_odometry_edges_[0].m_id1 << endl;
+				visualizer.viewReferenceFrame(marker_finder.marker_poses_[i], to_string(id));
 			}
 
             marker_finder.markers_[j].draw(frame, Scalar(0,0,255), 1);
@@ -129,7 +129,10 @@ int main(int argc, char **argv)
 			ss << "m" << marker_finder.markers_[j].id;
 			//visualizer.viewReferenceFrame(slam_solver.m_positions_[j], ss.str())
         }
-
+		for (size_t i = 0; i < slam_solver.m_loop_edges_.size(); i++)
+		{
+			if(i>2) visualizer.add_edge(slam_solver.m_odometry_edges_[i]);
+		}
 		if(i == 0) visualizer.addReferenceFrame(vo.pose_, "origin");
 		visualizer.addQuantizedPointCloud(vo.curr_dense_cloud_, 0.05, vo.pose_);
 		visualizer.viewReferenceFrame(vo.pose_);

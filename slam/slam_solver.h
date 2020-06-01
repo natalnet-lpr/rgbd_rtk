@@ -84,6 +84,11 @@ class SLAM_Solver
 		 * @param k number of iterations type int
 		 */
 		void optimizeGraph(const int k);
+
+		/**
+		 * @return m_num_vertices_
+		 */
+		int getMNumVertices();
 };
 
 

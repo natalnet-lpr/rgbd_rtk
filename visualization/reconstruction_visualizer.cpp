@@ -147,8 +147,9 @@ void ReconstructionVisualizer::add_edge(const Graph_Edge &edge, const Eigen::Vec
 {
 	pcl::PointXYZ from_pt(edge.m_pos0(0, 0), edge.m_pos0(1, 0), edge.m_pos0(2, 0));
 	pcl::PointXYZ to_pt(edge.m_pos1(0, 0), edge.m_pos1(1, 0), edge.m_pos1(2, 0));
-
+	cout<<"antes de arrow\n";
 	viewer_->addArrow(to_pt, from_pt, color(0, 0), color(1, 0), color(2, 0), false, edge.m_name);
+	cout<<"dps de arrow\n";
 
 	num_edges_++;
 }
