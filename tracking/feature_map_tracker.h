@@ -41,7 +41,7 @@
 #include <feature_tracker.h>
 #include <common_types.h>
 
-class FetureMapTracker : public FeatureTracker
+class FeatureMapTracker : public FeatureTracker
 {
 
 protected:
