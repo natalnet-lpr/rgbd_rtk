@@ -25,23 +25,23 @@
  *  Author:
  *
  *  Bruno Silva
- *  Luiz Felipe Maciel Correia 
  *  Marcos Henrique F. Marcone 
  */
 
-#ifndef INCLUDE_WIDE_BASELINE_TRACKER_H_
-#define INCLUDE_WIDE_BASELINE_TRACKER_H_
+#ifndef INCLUDE_FEATURE_MAP_TRACKER_H_
+#define INCLUDE_FEATURE_MAP_TRACKER_H_
 
 #include "opencv2/features2d.hpp"
 #include "opencv2/xfeatures2d.hpp"
 #include <opencv2/core/core.hpp>
+#include <opencv2/flann/miniflann.hpp>
+
 #include <vector>
 
 #include <feature_tracker.h>
 #include <common_types.h>
 
-
-class WideBaselineTracker : public FeatureTracker
+class FetureMapTracker : public FeatureTracker
 {
 
 protected:
@@ -51,8 +51,8 @@ protected:
     //Descriptor Extractor object
     cv::Ptr<cv::DescriptorExtractor> descriptor_extractor_;
 
-    //Matcher who store all the descriptors of the scene
-    cv::Ptr<cv::DescriptorMatcher> matcher_;
+    //FLANN Index object
+    cv::flann::Index index;
 
     //Boolean vector that indicates if the keypoint i have a match
     std::vector<bool> keypoints_with_matches;
@@ -81,12 +81,9 @@ protected:
     //Set the descriptor_extractor_ attribute from a string
     void setDescriptorExtractor(const std::string& descriptor_extractor);
 
-    //Set the matcher_ attribute from a string
-    void setMatcher(const std::string& matcher);
-
 public:
-    
-    //Store all the current keypoints founded in the current frame
+
+     //Store all the current keypoints founded in the current frame
     std::vector<cv::KeyPoint> curr_kpts_;
 
     //Store all the current descriptors founded in the current frame
@@ -98,39 +95,26 @@ public:
     //Store all the previous descriptors founded in the previous frame
     cv::Mat prev_descriptors_;
 
-    //Store all the "good" current keypoints that's points who has more
-    //accurracy than others calculed through euclidian distance
-    std::vector<cv::Point2f> curr_good_pts_;
-
-    //Store all the "good" previous keypoints that's points who has more
-    //accurracy than others calculed through euclidian distance
-    std::vector<cv::Point2f> prev_good_pts_;
-
     //Store all the matches beetween features
-    std::vector<cv::DMatch> matches_;
+    cv::Mat matches_;
 
-    //Store only the "good" matches, in other words, store only the matchings
-    //of "good" features
-    std::vector<cv::DMatch> good_matches_;
+    //Store the distances beetween the matches 
+    cv::Mat dists_;
 
-    //Default constructor:  create a ORB feature detector and descriptor extractor and a BruteForce matcher.
-    WideBaselineTracker();
+    //Default constructor: create a ORB feature detector and descriptor extractor. 
+    FeatureMapTracker();
 
-    //Constructor with flexible feature detector, descriptor extractor and matcher and flag to log statistics
-    WideBaselineTracker(const std::string& feature_detector, const std::string& descriptor_extractor, const std::string& matcher, const bool& log_stats);
+    //Constructor with flexible feature detector and descriptor extractor and flag to log statistics
+    FeatureMapTracker(const std::string& feature_detector, const std::string& descriptor_extractor, const bool& log_stats);
     
     //Constructor with the minimum number of tracked points, maximum number of tracked points and flag to log statistics
-    WideBaselineTracker(const std::string& feature_detector, const std::string& descriptor_extractor, const std::string& matcher, const int& min_pts, const int& max_pts, const bool& log_stats);
+    FeatureMapTracker(const std::string& feature_detector, const std::string& descriptor_extractor, const int& min_pts, const int& max_pts, const bool& log_stats);
 
-    //Get the "good" Matches of your features
-    void getGoodMatches(const double& threshold);
-    
     //Tracks keypoints between the current frame and the previous.
     bool track(const cv::Mat& img);
 
     //Clear all data about tracked points
     void clear();
-
 };
 
-#endif /* INCLUDE_WIDE_BASELINE_TRACKER_H_ */
+#endif /* INCLUDE_FEATURE_MAP_TRACKER_H_ */
