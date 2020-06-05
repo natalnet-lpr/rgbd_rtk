@@ -52,7 +52,7 @@ protected:
     cv::Ptr<cv::DescriptorExtractor> descriptor_extractor_;
 
     //FLANN Index object
-    cv::flann::Index index;
+    cv::flann::Index index_;
 
     //Boolean vector that indicates if the keypoint i have a match
     std::vector<bool> keypoints_with_matches;
@@ -67,13 +67,13 @@ protected:
     void update_buffers();
 
     //Searches if a keypoint have a match
-    int searchMatches(const int& keypoint_index);
+    //int searchMatches(const int& keypoint_index);
 
     //Set the coordinates of the current keypoints to curr_pts_.
-    void setCurrentPoints();
+    //void setCurrentPoints();
 
     //Set the coordinates of the previous keypoints to prev_pts_.
-    void setPreviousPoints();
+    //void setPreviousPoints();
 
     //Set the feature_detector_ attribute from a string
     void setFeatureDetector(const std::string& feature_detector);
@@ -94,6 +94,12 @@ public:
 
     //Store all the previous descriptors founded in the previous frame
     cv::Mat prev_descriptors_;
+
+    //Store the keypoints that set the feature map.
+    std::vector<cv::KeyPoint> kpts_map_; 
+
+    //Store the descriptors that set the feature map.
+    cv::Mat descriptors_map_;
 
     //Store all the matches beetween features
     cv::Mat matches_;

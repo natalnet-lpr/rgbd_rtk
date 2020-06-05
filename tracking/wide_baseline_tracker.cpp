@@ -152,11 +152,11 @@ void WideBaselineTracker::setFeatureDetector(const std::string& feature_detector
     }
     else
     {
-        logger.print(EventLogger::L_ERROR, "[WideBaselinaTracker::setFeatureDetector] ERROR: Attribute %s couldn't be loaded, insert a valid feature detector\n", upper_feature_detector.c_str());
+        logger.print(EventLogger::L_ERROR, "[WideBaselineTracker::setFeatureDetector] ERROR: Attribute %s couldn't be loaded, insert a valid feature detector\n", upper_feature_detector.c_str());
         throw std::invalid_argument("Insert a valid feature detector");
     }
 
-    logger.print(EventLogger::L_DEBUG, "[WideBaselinaTracker::setFeatureDetector] DEBUG: Attribute feature_detector_ = %s\n", upper_feature_detector.c_str());
+    logger.print(EventLogger::L_DEBUG, "[WideBaselineTracker::setFeatureDetector] DEBUG: Attribute feature_detector_ = %s\n", upper_feature_detector.c_str());
 }
 
 void WideBaselineTracker::setDescriptorExtractor(const std::string& descriptor_extractor)
@@ -186,11 +186,11 @@ void WideBaselineTracker::setDescriptorExtractor(const std::string& descriptor_e
     }
     else
     {
-        logger.print(EventLogger::L_ERROR, "[WideBaselinaTracker::setDescriptorExtractor] ERROR: Attribute %s couldn't be loaded, insert a valid descriptor extractor\n", upper_descriptor_extractor.c_str());
+        logger.print(EventLogger::L_ERROR, "[WideBaselineTracker::setDescriptorExtractor] ERROR: Attribute %s couldn't be loaded, insert a valid descriptor extractor\n", upper_descriptor_extractor.c_str());
         throw std::invalid_argument("Insert a valid descriptor extractor");
     }
 
-    logger.print(EventLogger::L_DEBUG, "[WideBaselinaTracker::setDescriptorExtractor] DEBUG: Attribute descriptor_extractor_ = %s\n", upper_descriptor_extractor.c_str());
+    logger.print(EventLogger::L_DEBUG, "[WideBaselineTracker::setDescriptorExtractor] DEBUG: Attribute descriptor_extractor_ = %s\n", upper_descriptor_extractor.c_str());
 }
 
 void WideBaselineTracker::setMatcher(const std::string& matcher)
@@ -208,11 +208,11 @@ void WideBaselineTracker::setMatcher(const std::string& matcher)
     }
     else
     {
-        logger.print(EventLogger::L_ERROR, "[WideBaselinaTracker::setMatcher] ERROR: Attribute %s couldn't be loaded, insert a valid matcher\n", upper_matcher.c_str());
+        logger.print(EventLogger::L_ERROR, "[WideBaselineTracker::setMatcher] ERROR: Attribute %s couldn't be loaded, insert a valid matcher\n", upper_matcher.c_str());
         throw std::invalid_argument("Insert a valid matcher");
     }
 
-    logger.print(EventLogger::L_DEBUG, "[WideBaselinaTracker::setMatcher] DEBUG: Attribute matcher_ = %s\n", upper_matcher.c_str());
+    logger.print(EventLogger::L_DEBUG, "[WideBaselineTracker::setMatcher] DEBUG: Attribute matcher_ = %s\n", upper_matcher.c_str());
 }
 
 /* #####################################################
