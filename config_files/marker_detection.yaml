@@ -2,7 +2,7 @@
 camera_calibration_file: "kinect_default.yaml" #default: "kinect_default.yaml"
 index_file: "index.txt" #default: "index.txt"
 aruco_dic: "ARUCO" #default: "ARUCO"
-aruco_max_distance: 4 #default: 4
+aruco_max_distance: 4 #default: 4, -1 infinite
 aruco_marker_size: 0.1778 #default: 0.1778 (size of marker in ROS Gazebo)
 
 #Parameter below are not used

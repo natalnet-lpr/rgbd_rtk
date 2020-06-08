@@ -111,7 +111,7 @@ int main(int argc, char **argv)
 		vo.computeCameraPose(frame, depth);
 		
 		//Find ARUCO markers and compute their poses
-		marker_finder.detectMarkersPoses(frame, vo.pose_, aruco_max_distance);
+		marker_finder.detectMarkersPoses(frame, Affine3f::Identity(), aruco_max_distance);
         for (size_t j = 0; j < marker_finder.markers_.size(); j++)
 		{
 			id = marker_finder.markers_[j].id;
@@ -119,20 +119,15 @@ int main(int argc, char **argv)
 			{
 				all_markers[id].id = id;
 				slam_solver.addVertexAndEdge(marker_finder.marker_poses_[id], id);
-				//cout << slam_solver.m_odometry_edges_[0].m_id0 << " to " << slam_solver.m_odometry_edges_[0].m_id1 << endl;
-				visualizer.viewReferenceFrame(marker_finder.marker_poses_[i], to_string(id));
 			}
 
             marker_finder.markers_[j].draw(frame, Scalar(0,0,255), 1);
 			CvDrawingUtils::draw3dAxis(frame, marker_finder.markers_[j], marker_finder.camera_params_);
 			stringstream ss;
 			ss << "m" << marker_finder.markers_[j].id;
-			//visualizer.viewReferenceFrame(slam_solver.m_positions_[j], ss.str())
+			visualizer.viewReferenceFrame(slam_solver.m_positions_[j], ss.str())
         }
-		for (size_t i = 0; i < slam_solver.m_loop_edges_.size(); i++)
-		{
-			if(i>2) visualizer.add_edge(slam_solver.m_odometry_edges_[i]);
-		}
+
 		if(i == 0) visualizer.addReferenceFrame(vo.pose_, "origin");
 		visualizer.addQuantizedPointCloud(vo.curr_dense_cloud_, 0.05, vo.pose_);
 		visualizer.viewReferenceFrame(vo.pose_);

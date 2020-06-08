@@ -190,6 +190,7 @@ void SLAM_Solver::addLoopClosingEdge(const Eigen::Affine3f& vertex_to_origin_tra
 	m_optimizer.addEdge(e);
 
 	addEdgeToList(v->id(), origin->id());
+
 }
 
 void SLAM_Solver::optimizeGraph(const int k)
