@@ -51,8 +51,8 @@ protected:
     //Descriptor Extractor object
     cv::Ptr<cv::DescriptorExtractor> descriptor_extractor_;
 
-    //FLANN Index object
-    cv::flann::Index index_;
+    //FLANN Index object pointer
+    cv::flann::Index* index_;
 
     //Boolean vector that indicates if the keypoint i have a match
     std::vector<bool> keypoints_with_matches;
@@ -67,13 +67,16 @@ protected:
     void update_buffers();
 
     //Searches if a keypoint have a match
-    //int searchMatches(const int& keypoint_index);
+    int searchMatches(const int& keypoint_index);
 
     //Set the coordinates of the current keypoints to curr_pts_.
     //void setCurrentPoints();
 
     //Set the coordinates of the previous keypoints to prev_pts_.
     //void setPreviousPoints();
+
+    //Set the coordinates of the map keypoints to map_pts_.
+    //void setMapPoints();
 
     //Set the feature_detector_ attribute from a string
     void setFeatureDetector(const std::string& feature_detector);
@@ -95,11 +98,17 @@ public:
     //Store all the previous descriptors founded in the previous frame
     cv::Mat prev_descriptors_;
 
+    //Feature Map Positions
+    std::vector<cv::Point2f> map_pts_;
+
     //Store the keypoints that set the feature map.
-    std::vector<cv::KeyPoint> kpts_map_; 
+    std::vector<cv::KeyPoint> map_kpts_; 
 
     //Store the descriptors that set the feature map.
-    cv::Mat descriptors_map_;
+    cv::Mat map_descriptors_;
+
+    //Map Tracklets: history of each point of the feature map as a vector of point2f
+    std::vector<Tracklet> map_tracklets_;
 
     //Store all the matches beetween features
     cv::Mat matches_;

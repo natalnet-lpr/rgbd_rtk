@@ -43,22 +43,60 @@
 
 using namespace cv;
 
+/* #####################################################
+ * #####                                           #####
+ * #####               Private Impl.               #####
+ * #####                                           #####
+ * #####################################################
+ */
+
 void FeatureMapTracker::add_keypoints()
 {
-    std::cout << "To do";
+    for (size_t i = 0; i < curr_kpts_.size(); i++)
+    {
+        //Create and add tracklet
+        Tracklet tr(frame_idx_);
+        tr.pts2D_.push_back(curr_kpts_[i].pt);
+        tr.keypoint_indices_.push_back(i);
+        map_tracklets_.push_back(tr);
+    }
+
+    logger.print(EventLogger::L_DEBUG, "[FeatureMapTracker::add_keypoints DEBUG: adding keypoints...\n");
+    logger.print(EventLogger::L_DEBUG, "[FeatureMapTracker::add_keypoints DEBUG: added pts.: %lu\n", map_tracklets_.size());
 }
 
 void FeatureMapTracker::detect_keypoints()
 {
-    std::cout << "To do";
+    curr_kpts_.clear();
+    feature_detector_->detect(curr_frame_gray_, curr_kpts_);
+    descriptor_extractor_->compute(curr_frame_gray_, curr_kpts_, curr_descriptors_);
+    logger.print(EventLogger::L_DEBUG, "[FeatureMapTracker::detect_keypoints] DEBUG: detecting keyponts...\n");
+    logger.print(EventLogger::L_DEBUG, "[FeatureMapTracker::detect_keypoints] DEBUG: detected pts.: %lu\n", curr_kpts_.size());
 }
 
 void FeatureMapTracker::update_buffers()
 {
-    std::cout << "To do";
+    std::swap(curr_kpts_, map_kpts_);
+    std::swap(curr_descriptors_, map_descriptors_);
 }
 
-void FeatureMapTracker::setFeatureDetector(const std::string& feature_detector)
+int FeatureMapTracker::searchMatches(const int &keypoint_index)
+{
+    int train_index;
+
+    for (int query_index = 0; query_index < matches_.rows; query_index++)
+    {
+        train_index = matches_.at<int>(query_index, 0);
+        if (keypoint_index == train_index)
+        {
+            return query_index;
+        }
+    }
+    return -1;
+}
+
+
+void FeatureMapTracker::setFeatureDetector(const std::string &feature_detector)
 {
     std::string upper_feature_detector = feature_detector;
     boost::to_upper(upper_feature_detector);
@@ -91,7 +129,7 @@ void FeatureMapTracker::setFeatureDetector(const std::string& feature_detector)
     {
         feature_detector_ = cv::xfeatures2d::SURF::create();
     }
-    else if (upper_feature_detector== "SIFT")
+    else if (upper_feature_detector == "SIFT")
     {
         feature_detector_ = cv::xfeatures2d::SIFT::create();
     }
@@ -104,7 +142,7 @@ void FeatureMapTracker::setFeatureDetector(const std::string& feature_detector)
     logger.print(EventLogger::L_DEBUG, "[FeatureMapTracker::setFeatureDetector] DEBUG: Attribute feature_detector_ = %s\n", upper_feature_detector.c_str());
 }
 
-void FeatureMapTracker::setDescriptorExtractor(const std::string& descriptor_extractor)
+void FeatureMapTracker::setDescriptorExtractor(const std::string &descriptor_extractor)
 {
     std::string upper_descriptor_extractor = descriptor_extractor;
     boost::to_upper(upper_descriptor_extractor);
@@ -138,18 +176,20 @@ void FeatureMapTracker::setDescriptorExtractor(const std::string& descriptor_ext
     logger.print(EventLogger::L_DEBUG, "[FeatureMapTracker::setDescriptorExtractor] DEBUG: Attribute descriptor_extractor_ = %s\n", upper_descriptor_extractor.c_str());
 }
 
+/* #####################################################
+ * #####                                           #####
+ * #####               Public Impl.                #####
+ * #####                                           #####
+ * #####################################################
+ */
 
-
-
-FeatureMapTracker::FeatureMapTracker():
-    FeatureTracker()
+FeatureMapTracker::FeatureMapTracker() : FeatureTracker()
 {
     setFeatureDetector("ORB");
     setDescriptorExtractor("ORB");
 }
 
-FeatureMapTracker::FeatureMapTracker(const std::string& feature_detector, const std::string& descriptor_extractor, const bool& log_stats):
-    FeatureTracker()
+FeatureMapTracker::FeatureMapTracker(const std::string &feature_detector, const std::string &descriptor_extractor, const bool &log_stats) : FeatureTracker()
 {
     setFeatureDetector(feature_detector);
     setDescriptorExtractor(descriptor_extractor);
@@ -160,18 +200,49 @@ FeatureMapTracker::FeatureMapTracker(const std::string& feature_detector, const 
     }
 }
 
-FeatureMapTracker::FeatureMapTracker(const std::string& feature_detector, const std::string& descriptor_extractor, const int& min_pts, const int& max_pts, const bool& log_stats):
-    FeatureTracker(min_pts, max_pts, log_stats)
+FeatureMapTracker::FeatureMapTracker(const std::string &feature_detector, const std::string &descriptor_extractor, const int &min_pts, const int &max_pts, const bool &log_stats) : FeatureTracker(min_pts, max_pts, log_stats)
 {
     setFeatureDetector(feature_detector);
     setDescriptorExtractor(descriptor_extractor);
 }
 
-bool FeatureMapTracker::track(const cv::Mat& img)
+bool FeatureMapTracker::track(const cv::Mat &img)
 {
-    std::cout << img.rows << std::endl;
-    std::cout << "To do";
-    return true;
+    bool is_keyframe = false;
+
+    //Make a grayscale copy of the current frame if it is in color
+    if (img.channels() > 1)
+    {
+        cvtColor(img, curr_frame_gray_, CV_BGR2GRAY);
+    }
+    else
+    {
+        img.copyTo(curr_frame_gray_);
+    }
+
+    logger.print(EventLogger::L_DEBUG, "[FeatureMapTracker::track] DEBUG: tracking frame%i\n", frame_idx_);
+
+    //Detect KeyPoints and extract descriptors on the current frame
+    detect_keypoints();
+
+    if (!initialized_)
+    {
+        initialized_ = true;
+        update_buffers();
+        add_keypoints();
+    }
+    else
+    {
+        //Descriptor matcher: FLANN Index Object
+        index_ = new cv::flann::Index(map_descriptors_, cv::flann::KDTreeIndexParams(), cvflann::FLANN_DIST_EUCLIDEAN);
+
+        //Searches similar descriptors in the current frame for each descriptor in the map
+        index_->knnSearch(curr_descriptors_, matches_, dists_, 1, cv::flann::SearchParams());
+
+        delete index_;
+    }
+
+    return is_keyframe;
 }
 
 void FeatureMapTracker::clear()
@@ -179,7 +250,7 @@ void FeatureMapTracker::clear()
     tracklets_.clear();
     curr_kpts_.clear();
     prev_kpts_.clear();
-    kpts_map_.clear();
+    map_kpts_.clear();
     curr_pts_.clear();
     prev_pts_.clear();
     initialized_ = false;
