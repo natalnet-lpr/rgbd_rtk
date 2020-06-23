@@ -31,9 +31,9 @@
 #include <Eigen/Geometry>
 #include <opencv2/core/core.hpp>
 #include <pcl/point_cloud.h>
-#include <common_types.h>
-
 #include <pcl/correspondence.h>
+
+#include <common_types.h>
 
 class MotionEstimatorRANSAC
 {
