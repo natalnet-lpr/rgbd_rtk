@@ -201,4 +201,32 @@ struct Intrinsics
 	{}
 };
 
+struct Graph_Edge
+{
+	//Id of vertex "from"
+	int m_id0;
+
+	//Id of vertex "to"
+	int m_id1;
+
+	//Position of vertex "from"
+	Eigen::Vector3d m_pos0;
+
+	//Position of vertex "to
+	Eigen::Vector3d m_pos1;
+
+	//Edge name
+	std::string m_name;
+
+	Graph_Edge() : m_id0(-1), m_id1(-1) {}
+
+	Graph_Edge(const int from_id, const int to_id, const Eigen::Vector3d from, const Eigen::Vector3d to)
+	{
+		m_id0 = from_id;
+		m_id1 = to_id;
+		m_pos0 = from;
+		m_pos1 = to;
+	}
+};
+
 #endif /* COMMON_TYPES_H_ */

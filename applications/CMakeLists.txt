@@ -170,13 +170,21 @@ endif()
 # Build SLAM related applications only if ARUCO was found
 if(aruco_FOUND AND WITH_IO AND WITH_TRACKING AND WITH_VISUALIZATION AND WITH_MOTION_ESTIMATION AND WITH_VISUAL_ODOMETRY)
     add_executable(marker_finder_test marker_finder_test.cpp)
+    add_executable(slam_solver_test slam_solver_test.cpp)
     find_library(RGBD_RTK_SLAM NAMES rgbd_rtk_slam)
     target_link_libraries(marker_finder_test ${PCL_LIBRARIES} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING}
                                          ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUALIZATION}
                                          ${RGBD_RTK_MOTION_ESTIMATION}
                                          ${RGBD_RTK_VISUAL_ODOMETRY}
                                          ${RGBD_RTK_SLAM})
-    install(TARGETS marker_finder_test 
+    target_link_libraries(slam_solver_test ${PCL_LIBRARIES} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING}
+                                         ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUALIZATION}
+                                         ${RGBD_RTK_MOTION_ESTIMATION}
+                                         ${RGBD_RTK_VISUAL_ODOMETRY}
+                                         ${RGBD_RTK_SLAM})                                         
+    install(TARGETS 
+                marker_finder_test 
+                slam_solver_test
         EXPORT rgbd_rtkTargets
         RUNTIME DESTINATION bin)
 endif()
