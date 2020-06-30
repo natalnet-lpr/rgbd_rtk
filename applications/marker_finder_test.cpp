@@ -61,7 +61,7 @@ int main(int argc, char **argv)
 
 	if(argc != 2)
 	{
-		logger.print(EventLogger::L_ERROR, "[marker_finder_test.cpp] ERROR: Usage: %s <path/to/config_file.yaml>\n", argv[0]);
+		logger.print(EventLogger::L_ERROR, "[icp_odometry_test.cpp] ERROR: Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
 	ConfigLoader param_loader(argv[1]);

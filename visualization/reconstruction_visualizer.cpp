@@ -98,18 +98,19 @@ void ReconstructionVisualizer::addReferenceFrame(const Eigen::Affine3f &pose, co
 	viewer_->addText3D(text, text_pose, 0.025, 1, 1, 1, frame_name.str());
 }
 
-void ReconstructionVisualizer::addKeyFrame(const Eigen::Affine3f &pose, const std::string &text)
+void ReconstructionVisualizer::addKeyframe(const Keyframe kf, const std::string &text)
 {
 	stringstream frame_name;
 	frame_name << "key" << num_keyframes_;
-	viewer_->addCoordinateSystem(0.3, pose, frame_name.str());
+	viewer_->addCoordinateSystem(0.3, kf.m_pose, frame_name.str());
 	num_keyframes_++;
 	PointT text_pose;
-	text_pose.x = pose(0, 3) + 0.02;
-	text_pose.y = pose(1, 3) + 0.05;
-	text_pose.z = pose(2, 3);
+	text_pose.x = kf.m_pose(0, 3) + 0.02;
+	text_pose.y = kf.m_pose(1, 3) + 0.05;
+	text_pose.z = kf.m_pose(2, 3);
 	frame_name << "_text";
 	viewer_->addText3D(text, text_pose, 0.025, 0, 0, 1, frame_name.str());
+	addQuantizedPointCloud(kf.m_global_cloud, 0.01, kf.m_pose);
 }
 
 void ReconstructionVisualizer::addPointCloud(const pcl::PointCloud<PointT>::Ptr &cloud, const Eigen::Affine3f &pose)
@@ -143,7 +144,7 @@ void ReconstructionVisualizer::addQuantizedPointCloud(const pcl::PointCloud<Poin
 	addPointCloud(quant_cloud, pose);
 }
 
-void ReconstructionVisualizer::add_edge(const Graph_Edge &edge, const Eigen::Vector3f &color)
+void ReconstructionVisualizer::addEdge(const Graph_Edge &edge, const Eigen::Vector3f &color)
 {
 	pcl::PointXYZ from_pt(edge.m_pos0(0, 0), edge.m_pos0(1, 0), edge.m_pos0(2, 0));
 	pcl::PointXYZ to_pt(edge.m_pos1(0, 0), edge.m_pos1(1, 0), edge.m_pos1(2, 0));
@@ -153,15 +154,15 @@ void ReconstructionVisualizer::add_edge(const Graph_Edge &edge, const Eigen::Vec
 	num_edges_++;
 }
 
-void ReconstructionVisualizer::add_edges(const std::vector<Graph_Edge> &edges, const Eigen::Vector3f &color)
+void ReconstructionVisualizer::addEdges(const std::vector<Graph_Edge> &edges, const Eigen::Vector3f &color)
 {
 	for (size_t i = 0; i < edges.size(); i++)
 	{
-		add_edge(edges[i], color);
+		addEdge(edges[i], color);
 	}
 }
 
-void ReconstructionVisualizer::add_optimized_edges(const std::vector<Graph_Edge> &edges, const Eigen::Vector3f &color)
+void ReconstructionVisualizer::addOptimizedEdges(const std::vector<Graph_Edge> &edges, const Eigen::Vector3f &color)
 {
 	for (size_t i = 0; i < edges.size(); i++)
 	{
@@ -172,21 +173,14 @@ void ReconstructionVisualizer::add_optimized_edges(const std::vector<Graph_Edge>
 		opt_edge.m_name = edges[i].m_name + "_opt";
 
 		//Check if the edge is "odometry" or "loop"
-		if (idx1 - idx0 == 1) add_edge(opt_edge, color);
-		else add_edge(opt_edge, Eigen::Vector3f(0.0, 1.0, 1.0));
+		if (idx1 - idx0 == 1) addEdge(opt_edge, color);
+		else addEdge(opt_edge, Eigen::Vector3f(0.0, 1.0, 1.0));
 
 	}
 }
 
 void ReconstructionVisualizer::viewReferenceFrame(const Eigen::Affine3f &pose, const std::string &text)
 {
-	/*
-	//THIS DOES NOT WORK AS EXPECTED
-	if(!viewer_->updateCoordinateSystemPose(text, pose))
-	{
-		viewer_->addCoordinateSystem(0.3, pose, text);
-	}
-	*/
 	viewer_->removeCoordinateSystem(text);
 	viewer_->addCoordinateSystem(0.3, pose, text);
 	PointT pose_txt;
@@ -225,12 +219,17 @@ void ReconstructionVisualizer::viewQuantizedPointCloud(const pcl::PointCloud<Poi
 	uniform_sampling.filter(*quant_cloud);
 	viewPointCloud(quant_cloud, pose);
 }
-/**
-void update_keyframes(const std::vector<Keyframe>& keyframes)
+
+void ReconstructionVisualizer::updateKeyframes(const std::vector<Keyframe>& keyframes)
 {
+	EventLogger& logger = EventLogger::getInstance();
+	logger.setVerbosityLevel(EventLogger::L_DEBUG);
+	logger.setLogFileName("log_reconstruction_visualizer.txt");
+	
 	viewer_->removePointCloud("cloud");
 
-	printf("Updating keyframe visualization...\n");
+	logger.print(EventLogger::L_INFO, "[Visualizer::updateKeyframes] INFO: Updating keyframe visualization\n");
+
 	for(size_t i = 0; i < keyframes.size(); i++)
 	{
 		//Grab coord. system and cloud names
@@ -240,7 +239,7 @@ void update_keyframes(const std::vector<Keyframe>& keyframes)
 		ss << "_cloud";
 		string cloud_name = ss.str();
 
-//		viewer_->removeText3D(coord_sys_name);
+		//Viewer_->removeText3D(coord_sys_name);
 
 		//THIS SOLUTION WORKS BUT IS VERY SLOW
 		//Updates ref. frame and point clouds
@@ -255,7 +254,7 @@ void update_keyframes(const std::vector<Keyframe>& keyframes)
 		//viewer_->removePointCloud(cloud_name);
 		//add_keyframe(keyframes[i]);
 
-		Eigen::Matrix4f camera = keyframes[i].m_pose_update;
+		Eigen::Affine3f camera = keyframes[i].m_pose_update;
 		Eigen::Affine3f rel_transf;
 		rel_transf.linear()(0,0) = camera(0,0); rel_transf.linear()(0,1) = camera(0,1); rel_transf.linear()(0,2) = camera(0,2);
 		rel_transf.linear()(1,0) = camera(1,0); rel_transf.linear()(1,1) = camera(1,1); rel_transf.linear()(1,2) = camera(1,2);
@@ -267,20 +266,20 @@ void update_keyframes(const std::vector<Keyframe>& keyframes)
 		PointT pos; pos.x = camera(0,3); pos.y = camera(1,3); pos.z = camera(2,3);
 //		viewer_->addText3D(coord_sys_name, pos, 0.025);
 	}
-	printf("...done\n");
+	logger.print(EventLogger::L_INFO, "[Visualizer::updateKeyframes] INFO: keyframe visualization UPDATED\n");
 }
-*/
 
-void ReconstructionVisualizer::remove_edge(const Graph_Edge &edge)
+
+void ReconstructionVisualizer::removeEdge(const Graph_Edge &edge)
 {
 	viewer_->removeShape(edge.m_name);
 }
 
-void ReconstructionVisualizer::remove_edges(const std::vector<Graph_Edge> &edges)
+void ReconstructionVisualizer::removeEdges(const std::vector<Graph_Edge> &edges)
 {
 	for (size_t i = 0; i < edges.size(); i++)
 	{
-		remove_edge(edges[i]);
+		removeEdge(edges[i]);
 	}
 }
 

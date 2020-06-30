@@ -33,6 +33,7 @@
 #include <pcl/common/boost.h>
 
 #include <common_types.h>
+#include <event_logger.h>
 
 typedef boost::shared_ptr<pcl::visualization::PCLVisualizer> PCLVisualizerPtr;
 
@@ -87,21 +88,21 @@ public:
      * @param edge as Graph_Edge(common_types.h)
      * @param color of the arrow(blue as default) 
      */
-    void add_edge(const Graph_Edge& edge, const Eigen::Vector3f& color = Eigen::Vector3f(0.0, 0.0, 1.0));
+    void addEdge(const Graph_Edge& edge, const Eigen::Vector3f& color = Eigen::Vector3f(0.0, 0.0, 1.0));
 
     /**
      * Adds all given edges to the PCLVisualizer.
      * @param edges as a vector of Graph_Edge(common_types.h)
      * @param color of the arrow(blue as default) 
      */
-    void add_edges(const std::vector<Graph_Edge>& edges, const Eigen::Vector3f& color = Eigen::Vector3f(0.0, 0.0, 1.0));
+    void addEdges(const std::vector<Graph_Edge>& edges, const Eigen::Vector3f& color = Eigen::Vector3f(0.0, 0.0, 1.0));
 
     /**
      * Adds the optimized version of the given edges to the PCLVisualizer.
      * @param edges as a vector of Graph_Edge(common_types.h)
      * @param color of the arrow(blue as default) 
      */
-    void add_optimized_edges(const std::vector<Graph_Edge>& edges, const Eigen::Vector3f& color = Eigen::Vector3f(0.0, 1.0, 0.0));
+    void addOptimizedEdges(const std::vector<Graph_Edge>& edges, const Eigen::Vector3f& color = Eigen::Vector3f(0.0, 1.0, 0.0));
 
     /**
 	 * Adds a ref. frame with the given pose to the 3D reconstruction
@@ -112,10 +113,10 @@ public:
 
     /**
 	 * Adds a key. frame with the given pose to the 3D reconstruction
-	 * @param pose as Affine3f
-     * @param text text of the pose in visualization as String 
+     * @param kf as Keyframe 
+     * @param text text of the pose in visualization as String
 	 */
-    void addKeyFrame(const Eigen::Affine3f &pose, const std::string &text);
+    void addKeyframe(const Keyframe kf, const std::string &text);
 
     /**
 	 * Adds a point cloud with the given pose to the 3D reconstruction
@@ -136,13 +137,13 @@ public:
      * Removes an edge from the PCLVisualizer.
      * @param edge to be removed as a Graph_Edge(common_types.h)
      */
-    void remove_edge(const Graph_Edge& edge);
+    void removeEdge(const Graph_Edge& edge);
 
     /** 
      * Removes all given edges from the PCLVisualizer.
      * @param edges to be removed as a Vector of Graph_Edge(common_types.h)
     */
-    void remove_edges(const std::vector<Graph_Edge>& edges);
+    void removeEdges(const std::vector<Graph_Edge>& edges);
 
     /**
 	 * Views a ref. frame with the given pose in the 3D reconstruction
@@ -170,11 +171,13 @@ public:
      * Updates all given edges in the PCLVisualizer.
      * @param edges to be removed as a Vector of Graph_Edge(common_types.h)
      */
-    void update_edges(const std::vector<Graph_Edge>& edges);
+    void updateEdges(const std::vector<Graph_Edge>& edges);
 
-    /* Updates all keyframes (ref. frames and point clouds).
-    */
-    //void update_keyframes(const std::vector<Keyframe> keyframes);
+    /**
+     * Updates all keyframes (ref. frames and point clouds).
+     * @param keyframes vector of keyframes
+     */ 
+    void updateKeyframes(const std::vector<Keyframe>& keyframes);
 
     /**
    	 *Sets the virtual camera position in the virtual world

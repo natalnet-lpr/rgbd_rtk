@@ -125,7 +125,7 @@ int main(int argc, char **argv)
 			CvDrawingUtils::draw3dAxis(frame, marker_finder.markers_[j], marker_finder.camera_params_);
 			stringstream ss;
 			ss << "m" << marker_finder.markers_[j].id;
-			visualizer.viewReferenceFrame(slam_solver.m_positions_[j], ss.str())
+			//visualizer.viewReferenceFrame(slam_solver.m_positions_[j])
         }
 
 		if(i == 0) visualizer.addReferenceFrame(vo.pose_, "origin");
