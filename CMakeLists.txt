@@ -6,12 +6,10 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -Wextra")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra")
 set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
 set(CMAKE_CXX_FLAGS_RELEASE "-march=native -mno-avx -O3") # WITH -march=native: seg_fault. on Mac OS
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}" )
-
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 # Offer the user the choice of overriding the installation directories
 set(INSTALL_LIB_DIR lib CACHE PATH "Installation directory for libraries")
@@ -19,6 +17,7 @@ set(INSTALL_BIN_DIR bin CACHE PATH "Installation directory for executables")
 set(INSTALL_INCLUDE_DIR include CACHE PATH "Installation directory for header files")
 set(DEF_INSTALL_CMAKE_DIR CMake)
 set(INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH "Installation directory for CMake files")
+
 
 # Make relative paths absolute (needed to create rgbd_rtkConfig.cmake)
 foreach(p LIB BIN INCLUDE CMAKE)
@@ -28,14 +27,16 @@ foreach(p LIB BIN INCLUDE CMAKE)
   endif()
 endforeach()
 
+
 # set up include-directories
 include_directories(
   "${PROJECT_SOURCE_DIR}"   
   "${PROJECT_BINARY_DIR}")  
 
-message(STATUS "Project source directry: " ${PROJECT_SOURCE_DIR})
+message(STATUS "Project source directory: " ${PROJECT_SOURCE_DIR})
 message(STATUS "Build directory: " ${PROJECT_BINARY_DIR})
 message(STATUS "Build type: " ${CMAKE_BUILD_TYPE})
+
 
 find_package(OpenCV REQUIRED)
 if(OpenCV_FOUND)
@@ -54,31 +55,8 @@ else()
 	message(FATAL_ERROR "Error: PCL was not found in your system")
 endif()
 
-find_package(G2O REQUIRED)
-message(STATUS "G2O Found: " ${G2O_FOUND})
-
-find_package(Eigen3 REQUIRED)
-message(STATUS "Eigen3 Found: " ${EIGEN3_FOUND})
-
-find_package(CSparse REQUIRED)
-message(STATUS "CSparse Found: " ${CSPARSE_FOUND})
-
-include_directories(${OpenCV_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS}
-                    ${EIGEN3_INCLUDE_DIR} ${G2O_INCLUDE_DIR} ${CSPARSE_INCLUDE_DIR}
-                    common io tracking motion_estimation visualization visual_odometry
-                    quadtree stereo)
+include_directories(${OpenCV_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} common io quadtree tracking visualization motion_estimation stereo visual_odometry)
 link_directories(${PCL_LIBRARY_DIRS})
-
-LIST(APPEND G2O_LIBS
-    ${G2O_CORE_LIBRARY} ${G2O_STUFF_LIBRARY} ${G2O_CLI_LIBRARY} ${G2O_SOLVER_CHOLMOD}
-    ${G2O_SOLVER_CSPARSE} ${G2O_SOLVER_CSPARSE_EXTENSION} ${G2O_SOLVER_DENSE}
-    ${G2O_SOLVER_PCG} ${G2O_SOLVER_SLAM2D_LINEAR} ${G2O_SOLVER_STRUCTURE_ONLY}
-    ${G2O_SOLVER_EIGEN} ${G2O_TYPES_DATA} ${G2O_TYPES_ICP} ${G2O_TYPES_SBA}
-    ${G2O_TYPES_SCLAM2D} ${G2O_TYPES_SIM3} ${G2O_TYPES_SLAM2D} ${G2O_TYPES_SLAM3D}
-    ${CSPARSE_LIBRARY}
-)
-
-message(STATUS "G2O libs: " ${G2O_LIBS})
 
 
 
@@ -91,7 +69,6 @@ option(WITH_STEREO "Build with stereo" ON)
 option(WITH_VISUAL_ODOMETRY "Build with odometry" ON)
 
 # Needed for every other module
-
 add_subdirectory(common)
 set(RGBD_RTK_COMMON rgbd_rtk_common)
 export(TARGETS rgbd_rtk_common
@@ -160,19 +137,16 @@ endif()
 find_package(aruco QUIET)
 if(aruco_FOUND)
   message(STATUS "aruco version: " ${aruco_VERSION})
-  message(STATUS "Aruco INCLUDES: " ${aruco_INCLUDE_DIRS})
-  message(STATUS "Aruco LIBS: " ${aruco_LIBS})
   if(aruco_VERSION VERSION_LESS "2.0")
     message(WARNING "WARNING: aruco version >= 2.0 required")
   else()
-    include_directories(slam ${aruco_INCLUDE_DIRS})
+    include_directories(slam)
     add_subdirectory(slam)
     set(RGBD_RTK_SLAM rgbd_rtk_slam)
     export(TARGETS rgbd_rtk_slam
     FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
   endif()
 endif()
-
 
 add_subdirectory(applications)
 

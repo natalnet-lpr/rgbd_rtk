@@ -64,17 +64,18 @@ this is helpfull when you want to decrease error due to detect a marker that is 
 		
 		//getting the absolute distance between camera and marker
 		///if their distance is closer then  aruco_max_distance meters save marker pose
-		//Multiplying the cam_pose at the left of operation will transform the right pose 
-		//to the left pose orientation, we add a inverse operation in cam_pose because the 
-		//way aruco uses orientation.
-
-		if(aruco_max_distance == -1) marker_poses_.push_back(cam_pose.inverse() *P);
-
-		//marker is closer than the max distance
-		else if(sqrt(x + y + z) < aruco_max_distance) marker_poses_.push_back(cam_pose.inverse() * P);
-		
-		//marker is further than the max distance
-		else 
+		if(aruco_max_distance == -1) //infinite
+		{
+			//Multiplying the cam_pose at the left of operation will transform the right pose 
+			//to the left pose orientation, we add a inverse operation in cam_pose because the 
+			//way aruco uses orientation.
+			marker_poses_.push_back(cam_pose.inverse() *P);
+		}
+		else if(sqrt(x + y + z) < aruco_max_distance) //marker is closer than the max distance
+		{
+			marker_poses_.push_back(cam_pose.inverse() * P);
+		}
+		else //marker is further than the max distance
 		{
 			markers_.clear();
 			continue;
