@@ -40,10 +40,12 @@
 #include <config_loader.h>
 #include <event_logger.h>
 #include <slam_solver.h>
+#include <chrono>
 
 using namespace std;
 using namespace cv;
 using namespace aruco;
+using namespace std::chrono; 
 
 /**
  * This program shows the use of ARUCO marker detection.
@@ -75,10 +77,10 @@ int main(int argc, char **argv)
 	Mat frame, depth;
 	float marker_size, aruco_max_distance;
 	string camera_calibration_file, aruco_dic, index_file;
+	Keyframe keyframe_detected;
 	EventLogger& logger = EventLogger::getInstance();
 	//logger.setVerbosityLevel(EventLogger::L_DEBUG);
 	logger.setLogFileName("log_marker_finder_test.txt");
-
 
 	if(argc != 2)
 	{
@@ -100,6 +102,7 @@ int main(int argc, char **argv)
 	{   //initializing markers
     	all_markers[k].id = 0;
 	}
+	auto start = high_resolution_clock::now(); 
 
 	//Compute visual odometry and find markers on each image
 	for(int i = 0; i < loader.num_images_; i++)
@@ -111,27 +114,28 @@ int main(int argc, char **argv)
 		vo.computeCameraPose(frame, depth);
 		
 		//Find ARUCO markers and compute their poses
-		marker_finder.detectMarkersPoses(frame, Affine3f::Identity(), aruco_max_distance);
+		marker_finder.detectMarkersPoses(frame, vo.pose_, aruco_max_distance);
         for (size_t j = 0; j < marker_finder.markers_.size(); j++)
 		{
 			id = marker_finder.markers_[j].id;
 			if(all_markers[id].id == 0)
 			{
 				all_markers[id].id = id;
-				slam_solver.addVertexAndEdge(marker_finder.marker_poses_[id], id);
+				keyframe_detected.m_pose = marker_finder.marker_poses_[j];
+				slam_solver.addVertexAndEdge(keyframe_detected.m_pose, id);
+				visualizer.addKeyframe(keyframe_detected, to_string(id));
+				printf("xyz pose %f,%f,%f\n",keyframe_detected.m_pose(0,3),keyframe_detected.m_pose(1,3),keyframe_detected.m_pose(2,3));
 			}
 
             marker_finder.markers_[j].draw(frame, Scalar(0,0,255), 1);
 			CvDrawingUtils::draw3dAxis(frame, marker_finder.markers_[j], marker_finder.camera_params_);
 			stringstream ss;
 			ss << "m" << marker_finder.markers_[j].id;
-			//visualizer.viewReferenceFrame(slam_solver.m_positions_[j])
         }
 
 		if(i == 0) visualizer.addReferenceFrame(vo.pose_, "origin");
 		visualizer.addQuantizedPointCloud(vo.curr_dense_cloud_, 0.05, vo.pose_);
 		visualizer.viewReferenceFrame(vo.pose_);
-		//visualizer.viewPointCloud(vo.curr_dense_cloud_, vo.pose_);
 		visualizer.viewQuantizedPointCloud(vo.curr_dense_cloud_, 0.02, vo.pose_);
 
 		visualizer.spinOnce();
@@ -145,7 +149,10 @@ int main(int argc, char **argv)
 			break;
 		}
 	}
-	slam_solver.optimizeGraph(10);
+	//slam_solver.optimizeGraph(10);
+	auto stop = high_resolution_clock::now();
+	auto duration = duration_cast<seconds>(stop - start); 
 
+	cout << duration.count() << endl; 
 	return 0;
 }

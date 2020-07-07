@@ -234,7 +234,7 @@ struct Graph_Edge
 struct Keyframe
 {
 	//Index of the keyframe
-	int m_idx;
+	int m_id;
 
 	//Keyframe pose in the global reference frame
 	Eigen::Affine3f m_pose;
@@ -245,7 +245,7 @@ struct Keyframe
 	//RGB-D point cloud in the global ref. frame
 	pcl::PointCloud<PointT>::Ptr m_global_cloud;
 
-	Keyframe() : m_idx(0)
+	Keyframe() : m_id(0)
 	{
 		m_pose = Eigen::Affine3f::Identity();
 		m_pose_update = Eigen::Affine3f::Identity();

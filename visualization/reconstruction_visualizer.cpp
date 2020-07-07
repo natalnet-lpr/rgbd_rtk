@@ -234,7 +234,7 @@ void ReconstructionVisualizer::updateKeyframes(const std::vector<Keyframe>& keyf
 	{
 		//Grab coord. system and cloud names
 		stringstream ss;
-		ss << "kf" << keyframes[i].m_idx;
+		ss << "kf" << keyframes[i].m_id;
 		string coord_sys_name = ss.str();
 		ss << "_cloud";
 		string cloud_name = ss.str();
