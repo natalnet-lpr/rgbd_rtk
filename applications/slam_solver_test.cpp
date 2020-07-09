@@ -40,12 +40,11 @@
 #include <config_loader.h>
 #include <event_logger.h>
 #include <slam_solver.h>
-#include <chrono>
+#include <klt_tracker.h>
 
 using namespace std;
 using namespace cv;
 using namespace aruco;
-using namespace std::chrono; 
 
 /**
  * This program shows the use of ARUCO marker detection.
@@ -68,7 +67,6 @@ int main(int argc, char **argv)
 {
 	SLAM_Solver slam_solver;
 	int id = 0;
-	Eigen::Matrix4f M;
 	markerFound all_markers[255]; //list of marker struct
 	RGBDLoader loader;
 	Intrinsics intr(0);
@@ -102,7 +100,6 @@ int main(int argc, char **argv)
 	{   //initializing markers
     	all_markers[k].id = 0;
 	}
-	auto start = high_resolution_clock::now(); 
 
 	//Compute visual odometry and find markers on each image
 	for(int i = 0; i < loader.num_images_; i++)
@@ -124,7 +121,7 @@ int main(int argc, char **argv)
 				keyframe_detected.m_pose = marker_finder.marker_poses_[j];
 				slam_solver.addVertexAndEdge(keyframe_detected.m_pose, id);
 				visualizer.addKeyframe(keyframe_detected, to_string(id));
-				printf("xyz pose %f,%f,%f\n",keyframe_detected.m_pose(0,3),keyframe_detected.m_pose(1,3),keyframe_detected.m_pose(2,3));
+				printf("%i pose %f,%f,%f\n",id,keyframe_detected.m_pose(0,3),keyframe_detected.m_pose(1,3),keyframe_detected.m_pose(2,3));
 			}
 
             marker_finder.markers_[j].draw(frame, Scalar(0,0,255), 1);
@@ -149,10 +146,6 @@ int main(int argc, char **argv)
 			break;
 		}
 	}
-	//slam_solver.optimizeGraph(10);
-	auto stop = high_resolution_clock::now();
-	auto duration = duration_cast<seconds>(stop - start); 
-
-	cout << duration.count() << endl; 
+	slam_solver.optimizeGraph(10);
 	return 0;
 }
