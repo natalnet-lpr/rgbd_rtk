@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016-2017, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2020, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -30,6 +30,7 @@
 #ifndef INCLUDE_OPTICAL_FLOW_VISUAL_ODOMETRY_H_
 #define INCLUDE_OPTICAL_FLOW_VISUAL_ODOMETRY_H_
 
+#include <map>
 #include <Eigen/Geometry>
 #include <opencv2/core/core.hpp>
 #include <pcl/point_cloud.h>
@@ -44,6 +45,9 @@ private:
 	
 	//Current frame index
 	unsigned long int frame_idx_;
+
+	//Adds a new keyframe to the internal container of keyframes
+	void addKeyFrame(const cv::Mat& rgb);
 
 public:
 
@@ -64,6 +68,9 @@ public:
 	//Current camera pose
 	Eigen::Affine3f pose_;
 
+	//Container with pairs idx <-> keyframe
+	std::map<size_t, Keyframe> keyframes_;
+
 	//Default constructor
 	OpticalFlowVisualOdometry();
 
@@ -72,11 +79,18 @@ public:
 	 * @param camera intrinsics 
 	 */	
 	OpticalFlowVisualOdometry(const Intrinsics& intr);
+
 	/**
-	 * Main member function: computes the current camera pose
+	 * Main member function: computes the current camera pose.
+	 * Returns true if the current frame is a keyframe.
 	 * @param rgb and depth image
 	 */	
-	void computeCameraPose(const cv::Mat& rgb, const cv::Mat& depth);
+	bool computeCameraPose(const cv::Mat& rgb, const cv::Mat& depth);
+
+	/**
+	 * Returns the last detected keyframe.
+	 */	
+	Keyframe getLastKeyframe();
 };
 
 #endif /* INCLUDE_OPTICAL_FLOW_VISUAL_ODOMETRY_H_ */
