@@ -26,6 +26,7 @@
  *
  *  Rodrigo Sarmento Xavier
  *  Bruno Silva
+ *  Marcos Henrique F. Marcone
  */
 
 #ifndef INCLUDE_CONFIG_LOADER_H_
@@ -39,6 +40,7 @@
 #include <opencv2/opencv.hpp>
 
 using namespace std;
+
 
 class ConfigLoader
 {
@@ -64,17 +66,23 @@ public:
     */
     bool checkAndGetInt(const string& parameter, int& parameter_int);
     /**
-     * get a int parameter in ConfigFile
+     * get a float parameter in ConfigFile
      * @Params string with the name of the parameter in configfile, and a variable float where the value will be returned
      * @Return boolean, false if the parameter is not in configfile and true if it is
      */
     bool checkAndGetFloat(const string& parameter, float& parameter_float);
     /**
-     * get a int parameter in ConfigFile
+     * get a string parameter in ConfigFile
      * @Params string with the name of the parameter in configfile, and a variable string where the value will be returned
      * @Return boolean, false if the parameter is not in configfile and true if it is
      */
     bool checkAndGetString(const string& parameter, string& parameter_string);
+    /**
+     * get a string parameter in ConfigFile
+     * @Params string with the name of the parameter in configfile, and a variable string where the value will be returned
+     * @Return boolean, false if the parameter is not in configfile and true if it is
+     */
+    bool checkAndGetMat(const string& parameter, cv::Mat& parameter_mat);
 };
 
 #endif

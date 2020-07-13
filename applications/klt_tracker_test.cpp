@@ -52,7 +52,7 @@ void draw_tracks(Mat& img, const vector<Tracklet> tracklets);
 int main(int argc, char **argv)
 {
 	EventLogger& logger = EventLogger::getInstance();
-	logger.setVerbosityLevel(pcl::console::L_INFO);
+	logger.setVerbosityLevel(EventLogger::L_INFO);
 
 	RGBDLoader loader;
 	int min_pts, max_pts, log_stats;
@@ -61,7 +61,7 @@ int main(int argc, char **argv)
 
 	if(argc != 2)
 	{
-		logger.print(pcl::console::L_INFO, "[klt_tracker_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
+		logger.print(EventLogger::L_INFO, "[klt_tracker_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
 	ConfigLoader param_loader(argv[1]);
@@ -80,7 +80,7 @@ int main(int argc, char **argv)
 		double el_time = (double) cvGetTickCount();
 		bool is_kf = tracker.track(frame);
 		el_time = ((double) cvGetTickCount() - el_time)/(cvGetTickFrequency()*1000.0);
-		logger.print(pcl::console::L_INFO,"[klt_tracker_test.cpp] INFO: Tracking time: %f ms\n", el_time);
+		logger.print(EventLogger::L_INFO,"[klt_tracker_test.cpp] INFO: Tracking time: %f ms\n", el_time);
 		
 		draw_last_track(frame, tracker.prev_pts_, tracker.curr_pts_, is_kf);
 		//draw_tracks(frame, tracker.tracklets_);
@@ -90,7 +90,7 @@ int main(int argc, char **argv)
 		char key = waitKey(15);
 		if(key == 27 || key == 'q' || key == 'Q')
 		{
-			logger.print(pcl::console::L_INFO, "[klt_tracker_test.cpp] Exiting\n", argv[0]);
+			logger.print(EventLogger::L_INFO, "[klt_tracker_test.cpp] Exiting\n", argv[0]);
 			break;
 		}
 	}

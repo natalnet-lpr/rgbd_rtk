@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2020, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -22,10 +22,11 @@
  *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  Authors:
+ *  Author:
  *
- *  Luiz Felipe Maciel Correia (y9luiz@hotmail.com)
- *  Bruno Silva (brunomfs@gmail.com)
+ *  Luiz Felipe Maciel Correia
+ *  Marcos Henrique F. Marcone
+ *  Bruno Silva
  */
 
 #include <cstdio>
@@ -35,73 +36,91 @@
 #include <opencv2/imgproc/imgproc.hpp>
 
 #include <rgbd_loader.h>
+#include <wide_baseline_tracker.h>
 #include <config_loader.h>
 #include <event_logger.h>
-#include <klttcw_tracker.h>
 #include <common_types.h>
 
 using namespace std;
 using namespace cv;
 
-void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts, const float radius, bool is_kf);
-void draw_rejected_points(Mat& img, const vector<Point2f> pts);
+void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts, bool is_kf);
+void draw_tracks(Mat &img, const vector<Tracklet> tracklets);
+
 /**
- * This program shows the use of tracking keypoints using
- * the KLT with Tracking Circular Windows algorithm.
+ * This program shows the use of tracking by detection algorithm.
  * @param .yml config. file (from which index_file is used)
  */
 int main(int argc, char **argv)
 {
 	EventLogger& logger = EventLogger::getInstance();
 	logger.setVerbosityLevel(EventLogger::L_INFO);
-
+	
 	RGBDLoader loader;
-	int min_pts, max_pts,log_stats;
-	float radius;
-	Mat frame, depth;
 	string index_file;
-
-	if(argc != 2)
+	int log_stats;
+	Mat frame, depth, current_frame, previous_frame;
+	string feature_detector, descriptor_extractor, descriptor_matcher;
+	
+	if (argc != 2)
 	{
-		logger.print(EventLogger::L_INFO, "[klttcw_tracker_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
+		logger.print(EventLogger::L_INFO, "[wide_baseline_tracker_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
+
 	ConfigLoader param_loader(argv[1]);
-	param_loader.checkAndGetInt("min_pts",min_pts);
-	param_loader.checkAndGetInt("max_pts",max_pts);	
-	param_loader.checkAndGetFloat("radius",radius);
-	param_loader.checkAndGetInt("log_stats", log_stats);
 	param_loader.checkAndGetString("index_file", index_file);
+	param_loader.checkAndGetInt("log_stats", log_stats);
+	param_loader.checkAndGetString("feature_detector", feature_detector);
+	param_loader.checkAndGetString("descriptor_extractor", descriptor_extractor);
+	param_loader.checkAndGetString("descriptor_matcher", descriptor_matcher);
+	
+	WideBaselineTracker wide_baseline_tracker(feature_detector, descriptor_extractor, descriptor_matcher, log_stats);
+
 	loader.processFile(index_file);
-
-	KLTTCWTracker tracker(min_pts,max_pts,radius,log_stats);
-
+	
 	//Track points on each image
-	for(int i = 0; i < loader.num_images_; i++)
+	for (int i = 0; i < loader.num_images_; i++)
 	{
 		loader.getNextImage(frame, depth);
 
 		double el_time = (double) cvGetTickCount();
-		bool is_kf = tracker.track(frame);
+		bool is_kf = wide_baseline_tracker.track(frame);
 		el_time = ((double) cvGetTickCount() - el_time)/(cvGetTickFrequency()*1000.0);
-		logger.print(EventLogger::L_INFO,"[klttcw_tracker_test.cpp] INFO: Tracking time: %f ms\n", el_time);
+		logger.print(EventLogger::L_INFO,"[klt_tracker_test.cpp] INFO: Tracking time: %f ms\n", el_time);
 		
-		draw_last_track(frame, tracker.prev_pts_, tracker.curr_pts_, tracker.window_radius_, is_kf);
-		draw_rejected_points(frame, tracker.rejected_points_);
+		frame.copyTo(current_frame);
+
+		draw_last_track(frame, wide_baseline_tracker.prev_pts_, wide_baseline_tracker.curr_pts_, is_kf);
+		//draw_tracks(frame, wide_baseline_tracker.tracklets_);
+
+		if (i > 0)
+		{
+			Mat img_matches;
+			drawMatches(current_frame, wide_baseline_tracker.curr_kpts_, previous_frame, wide_baseline_tracker.prev_kpts_, wide_baseline_tracker.matches_, img_matches, Scalar::all(-1),Scalar::all(-1), std::vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
+
+			//-- Show detected matches
+			imshow("Matches", img_matches);
+		}
 
 		imshow("Image view", frame);
 		imshow("Depth view", depth);
+
 		char key = waitKey(15);
-		if(key == 27 || key == 'q' || key == 'Q')
+
+		if (key == 27 || key == 'q' || key == 'Q')
 		{
-			printf("Exiting.\n");
+			logger.print(EventLogger::L_INFO, "[wide_baseline_tracker_test.cpp] Exiting\n",argv[0]);
 			break;
 		}
+
+		current_frame.copyTo(previous_frame);
 	}
 
 	return 0;
 }
-void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts, const float radius, bool is_kf)
+
+void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts, bool is_kf)
 {
 	Scalar color;
 	if(is_kf)
@@ -114,24 +133,34 @@ void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Poin
 	}
 	for(size_t k = 0; k < curr_pts.size(); k++)
 	{
-		Point2i pt1, pt2, pr1, pr2;
+		Point2i pt1, pt2;
 		pt1.x = prev_pts[k].x;
 		pt1.y = prev_pts[k].y;
 		pt2.x = curr_pts[k].x;
 		pt2.y = curr_pts[k].y;
 
-		circle(img, pt1, 1, color, 1);
-		circle(img, pt2, 3, color, 1);
+		circle(img, pt1, 1, color, 2);
+		circle(img, pt2, 3, color, 2);
 		line(img, pt1, pt2, color);
-
-		circle(img, curr_pts[k], radius, color, 1);
 	}
 }
-
-void draw_rejected_points(Mat& img, const vector<Point2f> pts)
+void draw_tracks(Mat &img, const vector<Tracklet> tracklets)
 {
-	for(size_t i = 0; i < pts.size(); i++)
+	for (size_t i = 0; i < tracklets.size(); i++)
 	{
-		circle(img, pts[i], 1, CV_RGB(255, 255, 0), 2);
+		for (size_t j = 0; j < tracklets[i].pts2D_.size(); j++)
+		{
+			Point2i pt1;
+			pt1.x = tracklets[i].pts2D_[j].x;
+			pt1.y = tracklets[i].pts2D_[j].y;
+			circle(img, pt1, 3, CV_RGB(0, 255, 0), 1);
+			if (j > 0)
+			{
+				Point2i pt2;
+				pt2.x = tracklets[i].pts2D_[j - 1].x;
+				pt2.y = tracklets[i].pts2D_[j - 1].y;
+				line(img, pt1, pt2, CV_RGB(0, 255, 0));
+			}
+		}
 	}
 }

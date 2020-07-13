@@ -45,7 +45,7 @@ using namespace cv;
 int main(int argc, char **argv)
 {
 	EventLogger& logger = EventLogger::getInstance();
-	logger.setVerbosityLevel(pcl::console::L_INFO);
+	logger.setVerbosityLevel(EventLogger::L_INFO);
 
 	RGBDLoader loader;
 	Mat frame, depth;
@@ -53,7 +53,7 @@ int main(int argc, char **argv)
 
 	if(argc != 2)
 	{
-		logger.print(pcl::console::L_INFO, "[rgbd_loader_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
+		logger.print(EventLogger::L_INFO, "[rgbd_loader_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
 	ConfigLoader param_loader(argv[1]);
@@ -68,7 +68,7 @@ int main(int argc, char **argv)
 		char key = waitKey(16);
 		if(key == 'q' || key == 'Q' || key == 27)
 		{
-			logger.print(pcl::console::L_INFO, "[rgbd_loader_test.cpp] Exiting\n", argv[0]);
+			logger.print(EventLogger::L_INFO, "[rgbd_loader_test.cpp] Exiting\n", argv[0]);
 			break;
 		}
 	}
