@@ -38,6 +38,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/calib3d.hpp>
 #include <pcl/point_cloud.h>
+
 #include <common_types.h>
 
 class StereoCloudGenerator

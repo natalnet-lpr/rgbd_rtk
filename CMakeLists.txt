@@ -58,26 +58,78 @@ endif()
 include_directories(${OpenCV_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} common io quadtree tracking visualization motion_estimation stereo visual_odometry)
 link_directories(${PCL_LIBRARY_DIRS})
 
+option(WITH_IO "Build with io" ON)
+option(WITH_QUADTREE "Build with quadtree" ON)
+option(WITH_TRACKING "Build with tracking-" ON)
+option(WITH_VISUALIZATION "Build with visualization" ON)
+option(WITH_MOTION_ESTIMATION "Build with motion estimation" ON)
+option(WITH_STEREO "Build with stereo" ON)
+option(WITH_VISUAL_ODOMETRY "Build with odometry" ON)
+
+# Needed for every other module
 add_subdirectory(common)
 set(RGBD_RTK_COMMON rgbd_rtk_common)
-add_subdirectory(io)
-set(RGBD_RTK_IO rgbd_rtk_io)
-add_subdirectory(quadtree)
-set(RGBD_RTK_QUADTREE rgbd_rtk_quadtree)
-add_subdirectory(tracking)
-set(RGBD_RTK_TRACKING rgbd_rtk_tracking)
-add_subdirectory(visualization)
-set(RGBD_RTK_VISUALIZATION rgbd_rtk_visualization)
-add_subdirectory(motion_estimation)
-set(RGBD_RTK_MOTION_ESTIMATION rgbd_rtk_motion_estimation)
-add_subdirectory(stereo)
-set(RGBD_RTK_STEREO rgbd_rtk_stereo)
-add_subdirectory(visual_odometry)
-set(RGBD_RTK_VISUAL_ODOMETRY rgbd_rtk_visual_odometry)
-
-# Export the package for use from the build tree (registers the build-tree with a global CMake-registry)
-export(TARGETS rgbd_rtk_common rgbd_rtk_io rgbd_rtk_quadtree rgbd_rtk_tracking  rgbd_rtk_visualization rgbd_rtk_motion_estimation rgbd_rtk_stereo rgbd_rtk_visual_odometry
+export(TARGETS rgbd_rtk_common APPEND
 FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
+
+if(WITH_IO)
+	add_subdirectory(io)
+	set(RGBD_RTK_IO rgbd_rtk_io)
+	export(TARGETS rgbd_rtk_io APPEND
+    FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
+endif()
+
+if(WITH_QUADTREE)
+	add_subdirectory(quadtree)
+	set(RGBD_RTK_QUADTREE rgbd_rtk_quadtree)
+	export(TARGETS rgbd_rtk_quadtree APPEND
+    FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
+endif()
+
+## Quadtree needed for kltqt_tracker
+if(WITH_TRACKING AND WITH_QUADTREE) 
+	add_subdirectory(tracking)
+	set(RGBD_RTK_TRACKING rgbd_rtk_tracking)
+	export(TARGETS rgbd_rtk_tracking APPEND
+    FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
+else()
+	message(WARNING "Can't build Tracking without QuadTree" )
+	SET(WITH_TRACKING OFF)
+endif()
+
+if(WITH_VISUALIZATION)
+	add_subdirectory(visualization)
+	set(RGBD_RTK_VISUALIZATION rgbd_rtk_visualization)
+	export(TARGETS rgbd_rtk_visualization APPEND
+    FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
+endif()
+
+if(WITH_MOTION_ESTIMATION)
+	add_subdirectory(motion_estimation)
+	set(RGBD_RTK_MOTION_ESTIMATION rgbd_rtk_motion_estimation)
+	export(TARGETS rgbd_rtk_motion_estimation APPEND
+    FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
+endif()
+
+if(WITH_STEREO)
+	add_subdirectory(stereo)
+	set(RGBD_RTK_STEREO rgbd_rtk_stereo)
+	export(TARGETS rgbd_rtk_stereo APPEND
+    FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
+endif()
+
+##Motion estimation needed for icp_odometry and wide_baseline_visual_odometry
+##Tracking needed for optical_flow_visual_odometry
+##Stereo needed for stereo_optical_flow_visual_odometry
+if(WITH_VISUAL_ODOMETRY AND WITH_MOTION_ESTIMATION AND WITH_TRACKING AND WITH_STEREO)
+	add_subdirectory(visual_odometry)
+	set(RGBD_RTK_VISUAL_ODOMETRY rgbd_rtk_visual_odometry)
+	export(TARGETS rgbd_rtk_visual_odometry APPEND
+    FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
+else()
+	message(WARNING "Can't build Visual Odometry without motion_estimation, tracking and stereo modules" )
+	set(WITH_VISUAL_ODOMETRY OFF)
+endif()
 
 # Build SLAM module only if ARUCO was found
 find_package(aruco QUIET)
@@ -89,16 +141,14 @@ if(aruco_FOUND)
     include_directories(slam)
     add_subdirectory(slam)
     set(RGBD_RTK_SLAM rgbd_rtk_slam)
-
-    export(TARGETS rgbd_rtk_slam
+    export(TARGETS rgbd_rtk_slam APPEND
     FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
   endif()
 endif()
 
-export(PACKAGE rgbd_rtk)
-
-
 add_subdirectory(applications)
+
+export(PACKAGE rgbd_rtk)
 
 # Create the rgbd_rtkConfig.cmake 
 file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}" "${INSTALL_INCLUDE_DIR}")
