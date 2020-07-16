@@ -58,8 +58,6 @@ endif()
 include_directories(${OpenCV_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} common io quadtree tracking visualization motion_estimation stereo visual_odometry)
 link_directories(${PCL_LIBRARY_DIRS})
 
-
-
 option(WITH_IO "Build with io" ON)
 option(WITH_QUADTREE "Build with quadtree" ON)
 option(WITH_TRACKING "Build with tracking-" ON)
@@ -71,20 +69,20 @@ option(WITH_VISUAL_ODOMETRY "Build with odometry" ON)
 # Needed for every other module
 add_subdirectory(common)
 set(RGBD_RTK_COMMON rgbd_rtk_common)
-export(TARGETS rgbd_rtk_common
+export(TARGETS rgbd_rtk_common APPEND
 FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
 
 if(WITH_IO)
 	add_subdirectory(io)
 	set(RGBD_RTK_IO rgbd_rtk_io)
-	export(TARGETS rgbd_rtk_io
+	export(TARGETS rgbd_rtk_io APPEND
     FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
 endif()
 
 if(WITH_QUADTREE)
 	add_subdirectory(quadtree)
 	set(RGBD_RTK_QUADTREE rgbd_rtk_quadtree)
-	export(TARGETS rgbd_rtk_quadtree
+	export(TARGETS rgbd_rtk_quadtree APPEND
     FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
 endif()
 
@@ -92,7 +90,7 @@ endif()
 if(WITH_TRACKING AND WITH_QUADTREE) 
 	add_subdirectory(tracking)
 	set(RGBD_RTK_TRACKING rgbd_rtk_tracking)
-	export(TARGETS rgbd_rtk_tracking
+	export(TARGETS rgbd_rtk_tracking APPEND
     FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
 else()
 	message(WARNING "Can't build Tracking without QuadTree" )
@@ -102,21 +100,21 @@ endif()
 if(WITH_VISUALIZATION)
 	add_subdirectory(visualization)
 	set(RGBD_RTK_VISUALIZATION rgbd_rtk_visualization)
-	export(TARGETS rgbd_rtk_visualization
+	export(TARGETS rgbd_rtk_visualization APPEND
     FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
 endif()
 
 if(WITH_MOTION_ESTIMATION)
 	add_subdirectory(motion_estimation)
 	set(RGBD_RTK_MOTION_ESTIMATION rgbd_rtk_motion_estimation)
-	export(TARGETS rgbd_rtk_motion_estimation
+	export(TARGETS rgbd_rtk_motion_estimation APPEND
     FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
 endif()
 
 if(WITH_STEREO)
 	add_subdirectory(stereo)
 	set(RGBD_RTK_STEREO rgbd_rtk_stereo)
-	export(TARGETS rgbd_rtk_stereo
+	export(TARGETS rgbd_rtk_stereo APPEND
     FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
 endif()
 
@@ -126,7 +124,7 @@ endif()
 if(WITH_VISUAL_ODOMETRY AND WITH_MOTION_ESTIMATION AND WITH_TRACKING AND WITH_STEREO)
 	add_subdirectory(visual_odometry)
 	set(RGBD_RTK_VISUAL_ODOMETRY rgbd_rtk_visual_odometry)
-	export(TARGETS rgbd_rtk_visual_odometry
+	export(TARGETS rgbd_rtk_visual_odometry APPEND
     FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
 else()
 	message(WARNING "Can't build Visual Odometry without motion_estimation, tracking and stereo modules" )
@@ -143,7 +141,7 @@ if(aruco_FOUND)
     include_directories(slam)
     add_subdirectory(slam)
     set(RGBD_RTK_SLAM rgbd_rtk_slam)
-    export(TARGETS rgbd_rtk_slam
+    export(TARGETS rgbd_rtk_slam APPEND
     FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
   endif()
 endif()
