@@ -45,7 +45,7 @@ void OpticalFlowVisualOdometry::addKeyFrame(const Mat& rgb)
 	kf.keypoints_.resize(tracker_.curr_pts_.size());
 	copy(tracker_.curr_pts_.begin(), tracker_.curr_pts_.end(), kf.keypoints_.begin());
 
-	logger.print(pcl::console::L_DEBUG, "[OpticalFlowVisualOdometry::addKeyFrame] DEBUG: adding %lu as keyframe\n", frame_idx_);
+	logger.print(EventLogger::L_DEBUG, "[OpticalFlowVisualOdometry::addKeyFrame] DEBUG: adding %lu as keyframe\n", frame_idx_);
 	keyframes_.insert(pair<size_t, Keyframe>(kf.idx_, kf));
 }
 
@@ -108,6 +108,6 @@ Keyframe  OpticalFlowVisualOdometry::getLastKeyframe()
 	map<size_t, Keyframe>::iterator it;
 
 	it = keyframes_.end();
-	logger.print(pcl::console::L_DEBUG, "[OpticalFlowVisualOdometry::getLastKeyframe] DEBUG: last keyframe has id %lu\n", it->first);
+	logger.print(EventLogger::L_DEBUG, "[OpticalFlowVisualOdometry::getLastKeyframe] DEBUG: last keyframe has id %lu\n", it->first);
 	return prev(it)->second; //prev from std
 }
