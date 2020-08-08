@@ -97,7 +97,7 @@ if(WITH_IO AND WITH_TRACKING)
 
         target_link_libraries(motion_estimator_test  ${PCL_LIBRARIES} ${RGBD_RTK_COMMON} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING} 
                                                      ${RGBD_RTK_VISUALIZATION}
-	                                                 ${RGBD_RTK_MOTION_ESTIMATION})
+                                                     ${RGBD_RTK_MOTION_ESTIMATION})
         
         install(TARGETS motion_estimator_test
                 EXPORT rgbd_rtkTargets
@@ -108,6 +108,8 @@ if(WITH_IO AND WITH_TRACKING)
             add_executable(optical_flow_visual_odometry_test optical_flow_visual_odometry_test.cpp)
             add_executable(wide_baseline_visual_odometry_test wide_baseline_visual_odometry_test.cpp)
             add_executable(icp_odometry_test icp_odometry_test.cpp)
+            add_executable(reconstruction_visualizer_test reconstruction_visualizer_test.cpp)
+
 
             target_link_libraries(optical_flow_visual_odometry_test ${PCL_LIBRARIES} ${RGBD_RTK_COMMON} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING}
                                                                     ${RGBD_RTK_VISUALIZATION}
@@ -123,8 +125,15 @@ if(WITH_IO AND WITH_TRACKING)
                                                     ${RGBD_RTK_VISUALIZATION}
                                                     ${RGBD_RTK_MOTION_ESTIMATION}
                                                     ${RGBD_RTK_VISUAL_ODOMETRY})
+            target_link_libraries(reconstruction_visualizer_test ${PCL_LIBRARIES} ${RGBD_RTK_COMMON} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING}
+                                                    ${RGBD_RTK_VISUALIZATION}
+                                                    ${RGBD_RTK_MOTION_ESTIMATION}
+                                                    ${RGBD_RTK_VISUAL_ODOMETRY})
+                                                    
 
-            install(TARGETS optical_flow_visual_odometry_test wide_baseline_visual_odometry_test icp_odometry_test
+            install(TARGETS optical_flow_visual_odometry_test 
+                            wide_baseline_visual_odometry_test icp_odometry_test
+                            reconstruction_visualizer_test
                 EXPORT rgbd_rtkTargets
                 RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin)
 

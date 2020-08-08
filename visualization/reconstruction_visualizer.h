@@ -116,7 +116,7 @@ public:
      * @param kf Keyframe to be added
      * @param text text of the pose in visualization 
 	 */
-    void addKeyframe(const Keyframe kf, const std::string& text);
+    void addKeyFrame(const Keyframe kf, const std::string& text);
 
     /**
 	 * Adds a point cloud with the given pose to the 3D reconstruction
