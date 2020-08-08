@@ -92,8 +92,9 @@ if(WITH_TRACKING AND WITH_QUADTREE)
 	set(RGBD_RTK_TRACKING rgbd_rtk_tracking)
 	export(TARGETS rgbd_rtk_tracking APPEND
     FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
-else()
-	message(WARNING "Can't build Tracking without QuadTree" )
+endif()
+if(WITH_TRACKING AND (NOT WITH_QUADTREE))
+	message(SEND_ERROR "Can't build Tracking without QuadTree" )
 	SET(WITH_TRACKING OFF)
 endif()
 
@@ -126,11 +127,12 @@ if(WITH_VISUAL_ODOMETRY AND WITH_MOTION_ESTIMATION AND WITH_TRACKING AND WITH_ST
 	set(RGBD_RTK_VISUAL_ODOMETRY rgbd_rtk_visual_odometry)
 	export(TARGETS rgbd_rtk_visual_odometry APPEND
     FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
-else()
-	message(WARNING "Can't build Visual Odometry without motion_estimation, tracking and stereo modules" )
+endif()
+if(WITH_VISUAL_ODOMETRY AND ((NOT WITH_MOTION_ESTIMATION) OR (NOT WITH_TRACKING) OR (NOT WITH_STEREO)))
+	message(SEND_ERROR "Can't build Visual Odometry without motion_estimation, tracking and stereo modules" )
 	set(WITH_VISUAL_ODOMETRY OFF)
 endif()
-
+#
 # Build SLAM module only if ARUCO was found
 find_package(aruco QUIET)
 if(aruco_FOUND)
