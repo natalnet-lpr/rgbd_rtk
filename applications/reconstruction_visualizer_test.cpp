@@ -147,7 +147,7 @@ int main(int argc, char **argv)
         char key = waitKey(1);
         if (key == 27 || key == 'q' || key == 'Q')
         {
-            logger.print(EventLogger::L_INFO, "[optical_flow_visual_odometry_test.cpp] Exiting\n",
+            logger.print(EventLogger::L_INFO, "[reconstruction_visualizer_test.cpp] Exiting\n",
                          argv[0]);
             break;
         }
