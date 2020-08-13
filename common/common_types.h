@@ -234,4 +234,35 @@ struct Keyframe
     {}
 };
 
+struct Edge
+{
+	//Id of vertex "from"
+	int id_from_;
+
+	//Id of vertex "to"
+	int id_to_;
+
+	//Position of vertex "from"
+	Eigen::Vector3d pose_from_;
+
+	//Position of vertex "to
+	Eigen::Vector3d pose_to_;
+
+	//Edge name
+	std::string name_;
+
+	Edge() : id_from_(-1), id_to_(-1) {}
+
+	Edge(const int& from_id, const int& to_id, const Eigen::Vector3d& from_pose
+	, const Eigen::Vector3d& to_pose, const std::string& name="")
+	{
+		id_from_ = from_id;
+		id_to_ = to_id;
+		pose_from_ = from_pose;
+		pose_to_ = to_pose;
+		name_ = name;
+	}
+};
+
+
 #endif /* COMMON_TYPES_H_ */

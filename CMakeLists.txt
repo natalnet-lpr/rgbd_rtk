@@ -12,6 +12,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-march=native -mno-avx -O3") # WITH -march=native: 
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}" )
 
 # Offer the user the choice of overriding the installation directories
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 set(INSTALL_LIB_DIR lib CACHE PATH "Installation directory for libraries")
 set(INSTALL_BIN_DIR bin CACHE PATH "Installation directory for executables")
 set(INSTALL_INCLUDE_DIR include CACHE PATH "Installation directory for header files")
@@ -55,8 +56,31 @@ else()
 	message(FATAL_ERROR "Error: PCL was not found in your system")
 endif()
 
-include_directories(${OpenCV_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} common io quadtree tracking visualization motion_estimation stereo visual_odometry)
+find_package(G2O REQUIRED)
+message(STATUS "G2O Found: " ${G2O_FOUND})
+
+find_package(Eigen3 REQUIRED)
+message(STATUS "Eigen3 Found: " ${EIGEN3_FOUND})
+
+find_package(CSparse REQUIRED)
+message(STATUS "CSparse Found: " ${CSPARSE_FOUND})
+
+include_directories(${OpenCV_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS}
+                    ${EIGEN3_INCLUDE_DIR} ${G2O_INCLUDE_DIR} ${CSPARSE_INCLUDE_DIR}
+                    common io tracking motion_estimation visualization visual_odometry
+                    quadtree stereo)
 link_directories(${PCL_LIBRARY_DIRS})
+
+LIST(APPEND G2O_LIBS
+    ${G2O_CORE_LIBRARY} ${G2O_STUFF_LIBRARY} ${G2O_CLI_LIBRARY} ${G2O_SOLVER_CHOLMOD}
+    ${G2O_SOLVER_CSPARSE} ${G2O_SOLVER_CSPARSE_EXTENSION} ${G2O_SOLVER_DENSE}
+    ${G2O_SOLVER_PCG} ${G2O_SOLVER_SLAM2D_LINEAR} ${G2O_SOLVER_STRUCTURE_ONLY}
+    ${G2O_SOLVER_EIGEN} ${G2O_TYPES_DATA} ${G2O_TYPES_ICP} ${G2O_TYPES_SBA}
+    ${G2O_TYPES_SCLAM2D} ${G2O_TYPES_SIM3} ${G2O_TYPES_SLAM2D} ${G2O_TYPES_SLAM3D}
+    ${CSPARSE_LIBRARY}
+)
+
+message(STATUS "G2O libs: " ${G2O_LIBS})
 
 option(WITH_IO "Build with io" ON)
 option(WITH_QUADTREE "Build with quadtree" ON)
@@ -138,12 +162,14 @@ if(aruco_FOUND)
   if(aruco_VERSION VERSION_LESS "2.0")
     message(WARNING "WARNING: aruco version >= 2.0 required")
   else()
-    include_directories(slam)
+    include_directories(slam ${aruco_INCLUDE_DIRS})
     add_subdirectory(slam)
     set(RGBD_RTK_SLAM rgbd_rtk_slam)
     export(TARGETS rgbd_rtk_slam APPEND
     FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
   endif()
+  else()
+  	message(WARNING "ARUCO NOT FOUND")
 endif()
 
 add_subdirectory(applications)
