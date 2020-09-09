@@ -12,6 +12,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-march=native -mno-avx -O3") # WITH -march=native: 
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}" )
 
 # Offer the user the choice of overriding the installation directories
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set(INSTALL_LIB_DIR lib CACHE PATH "Installation directory for libraries")
 set(INSTALL_BIN_DIR bin CACHE PATH "Installation directory for executables")
 set(INSTALL_INCLUDE_DIR include CACHE PATH "Installation directory for header files")
@@ -55,8 +56,31 @@ else()
 	message(FATAL_ERROR "Error: PCL was not found in your system")
 endif()
 
-include_directories(${OpenCV_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} common io quadtree tracking visualization motion_estimation stereo visual_odometry)
+find_package(G2O REQUIRED)
+message(STATUS "G2O Found: " ${G2O_FOUND})
+
+find_package(Eigen3 REQUIRED)
+message(STATUS "Eigen3 Found: " ${EIGEN3_FOUND})
+
+find_package(CSparse REQUIRED)
+message(STATUS "CSparse Found: " ${CSPARSE_FOUND})
+
+include_directories(${OpenCV_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS}
+                    ${EIGEN3_INCLUDE_DIR} ${G2O_INCLUDE_DIR} ${CSPARSE_INCLUDE_DIR}
+                    common io tracking motion_estimation visualization visual_odometry
+                    quadtree stereo)
 link_directories(${PCL_LIBRARY_DIRS})
+
+LIST(APPEND G2O_LIBS
+    ${G2O_CORE_LIBRARY} ${G2O_STUFF_LIBRARY} ${G2O_CLI_LIBRARY} ${G2O_SOLVER_CHOLMOD}
+    ${G2O_SOLVER_CSPARSE} ${G2O_SOLVER_CSPARSE_EXTENSION} ${G2O_SOLVER_DENSE}
+    ${G2O_SOLVER_PCG} ${G2O_SOLVER_SLAM2D_LINEAR} ${G2O_SOLVER_STRUCTURE_ONLY}
+    ${G2O_SOLVER_EIGEN} ${G2O_TYPES_DATA} ${G2O_TYPES_ICP} ${G2O_TYPES_SBA}
+    ${G2O_TYPES_SCLAM2D} ${G2O_TYPES_SIM3} ${G2O_TYPES_SLAM2D} ${G2O_TYPES_SLAM3D}
+    ${CSPARSE_LIBRARY}
+)
+
+message(STATUS "G2O libs: " ${G2O_LIBS})
 
 option(WITH_IO "Build with io" ON)
 option(WITH_QUADTREE "Build with quadtree" ON)
@@ -69,21 +93,18 @@ option(WITH_VISUAL_ODOMETRY "Build with odometry" ON)
 # Needed for every other module
 add_subdirectory(common)
 set(RGBD_RTK_COMMON rgbd_rtk_common)
-export(TARGETS rgbd_rtk_common APPEND
-FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
+export(TARGETS rgbd_rtk_common APPEND FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
 
 if(WITH_IO)
 	add_subdirectory(io)
 	set(RGBD_RTK_IO rgbd_rtk_io)
-	export(TARGETS rgbd_rtk_io APPEND
-    FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
+	export(TARGETS rgbd_rtk_io APPEND FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
 endif()
 
 if(WITH_QUADTREE)
 	add_subdirectory(quadtree)
 	set(RGBD_RTK_QUADTREE rgbd_rtk_quadtree)
-	export(TARGETS rgbd_rtk_quadtree APPEND
-    FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
+	export(TARGETS rgbd_rtk_quadtree APPEND FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
 endif()
 
 ## Quadtree needed for kltqt_tracker
@@ -101,25 +122,22 @@ endif()
 if(WITH_VISUALIZATION)
 	add_subdirectory(visualization)
 	set(RGBD_RTK_VISUALIZATION rgbd_rtk_visualization)
-	export(TARGETS rgbd_rtk_visualization APPEND
-    FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
+	export(TARGETS rgbd_rtk_visualization APPEND FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
 endif()
 
 if(WITH_MOTION_ESTIMATION)
 	add_subdirectory(motion_estimation)
 	set(RGBD_RTK_MOTION_ESTIMATION rgbd_rtk_motion_estimation)
-	export(TARGETS rgbd_rtk_motion_estimation APPEND
-    FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
+	export(TARGETS rgbd_rtk_motion_estimation APPEND FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
 endif()
 
 if(WITH_STEREO)
 	add_subdirectory(stereo)
 	set(RGBD_RTK_STEREO rgbd_rtk_stereo)
-	export(TARGETS rgbd_rtk_stereo APPEND
-    FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
+	export(TARGETS rgbd_rtk_stereo APPEND FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
 endif()
 
-##Motion estimation needed for icp_odometry and wide_baseline_visual_odometry
+#Motion estimation needed for icp_odometry and wide_baseline_visual_odometry
 ##Tracking needed for optical_flow_visual_odometry
 ##Stereo needed for stereo_optical_flow_visual_odometry
 if(WITH_VISUAL_ODOMETRY AND WITH_MOTION_ESTIMATION AND WITH_TRACKING AND WITH_STEREO)
@@ -132,6 +150,7 @@ if(WITH_VISUAL_ODOMETRY AND ((NOT WITH_MOTION_ESTIMATION) OR (NOT WITH_TRACKING)
 	message(SEND_ERROR "Can't build Visual Odometry without motion_estimation, tracking and stereo modules" )
 	set(WITH_VISUAL_ODOMETRY OFF)
 endif()
+
 #
 # Build SLAM module only if ARUCO was found
 find_package(aruco QUIET)
@@ -140,12 +159,13 @@ if(aruco_FOUND)
   if(aruco_VERSION VERSION_LESS "2.0")
     message(WARNING "WARNING: aruco version >= 2.0 required")
   else()
-    include_directories(slam)
+    include_directories(slam ${aruco_INCLUDE_DIRS})
     add_subdirectory(slam)
-    set(RGBD_RTK_SLAM rgbd_rtk_slam)
-    export(TARGETS rgbd_rtk_slam APPEND
-    FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
+    set(RGBD_RTK_SLAM rgbd_rtk_slam) 
+    export(TARGETS rgbd_rtk_slam APPEND FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
   endif()
+  else()
+  	message(WARNING "ARUCO NOT FOUND")
 endif()
 
 add_subdirectory(applications)
@@ -156,12 +176,10 @@ export(PACKAGE rgbd_rtk)
 file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}" "${INSTALL_INCLUDE_DIR}")
 # For the build tree
 set(CONF_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}" "${PROJECT_BINARY_DIR}")
-configure_file(rgbd_rtkConfig.cmake.in
-  "${PROJECT_BINARY_DIR}/rgbd_rtkConfig.cmake" @ONLY)
+configure_file(rgbd_rtkConfig.cmake.in "${PROJECT_BINARY_DIR}/rgbd_rtkConfig.cmake" @ONLY)
 # For the install tree
 set(CONF_INCLUDE_DIRS "\${rgbd_rtk_CMAKE_DIR}/${REL_INCLUDE_DIR}")
-configure_file(rgbd_rtkConfig.cmake.in
-  "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/rgbd_rtkConfig.cmake" @ONLY)
+configure_file(rgbd_rtkConfig.cmake.in "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/rgbd_rtkConfig.cmake" @ONLY)
 
 
 # Install the rgbd_rtkConfig.cmake
