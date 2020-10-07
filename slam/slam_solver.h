@@ -12,28 +12,24 @@
 
 #include <vector>
 
-#include <Eigen/Dense>
+#include <Eigen/Geometry>
 
-#include <g2o/core/block_solver.h>
 #include <g2o/core/sparse_optimizer.h>
-#include <g2o/solvers/csparse/linear_solver_csparse.h>
 
 #include <common_types.h>
 #include <event_logger.h>
 
-// convenience typedefs
-typedef g2o::BlockSolver<g2o::BlockSolverTraits<Eigen::Dynamic, Eigen::Dynamic>> Block_Solver;
-typedef g2o::LinearSolverCSparse<Block_Solver::PoseMatrixType> Linear_Solver;
-
 class SLAM_Solver
 {
 private:
+
     // Number of vertices in the graph
     int num_vertices_;
 
     // Id of the last added vertex (used when adding edges)
     int last_added_id_;
 
+    //G2O nonlinear optimizer
     g2o::SparseOptimizer optimizer_;
 
     /**
@@ -49,6 +45,9 @@ private:
     void updateState();
 
 public:
+
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
     // 3D position in the global ref. frame of each node (for visualization)
     std::vector<Eigen::Vector3d> positions_;
 
@@ -90,7 +89,7 @@ public:
     /**
      * @return the number of vertices
      */
-    int getMNumVertices();
+    int getNumVertices();
 };
 
 #endif /* INCLUDE_SLAM_H_ */

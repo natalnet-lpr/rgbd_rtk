@@ -8,10 +8,12 @@
 #include <iostream>
 #include <sstream>
 
-#include <Eigen/Dense>
-
-#include <g2o/core/optimization_algorithm_levenberg.h>
+#include <g2o/core/block_solver.h>
 #include <g2o/core/solver.h>
+#include <g2o/core/optimization_algorithm_levenberg.h>
+#include <g2o/solvers/dense/linear_solver_dense.h>
+#include <g2o/solvers/cholmod/linear_solver_cholmod.h>
+#include <g2o/solvers/csparse/linear_solver_csparse.h>
 #include <g2o/types/slam3d/types_slam3d.h>
 
 #include <common_types.h>
@@ -123,10 +125,8 @@ SLAM_Solver::SLAM_Solver()
     num_vertices_ = 0;
     last_added_id_ = -1;
 
-    Linear_Solver *linear_solver = new Linear_Solver();
-    Block_Solver *block_solver = new Block_Solver(linear_solver);
-    g2o::OptimizationAlgorithmLevenberg *solver =
-        new g2o::OptimizationAlgorithmLevenberg(block_solver);
+    std::unique_ptr<g2o::BlockSolverX::LinearSolverType> linearSolver = g2o::make_unique<g2o::LinearSolverCholmod<g2o::BlockSolverX::PoseMatrixType>>();
+    g2o::OptimizationAlgorithmLevenberg* solver = new g2o::OptimizationAlgorithmLevenberg(g2o::make_unique<g2o::BlockSolverX>(std::move(linearSolver)));
 
     optimizer_.setAlgorithm(solver);
     optimizer_.setVerbose(true);
@@ -203,4 +203,4 @@ void SLAM_Solver::optimizeGraph(const int &k)
 
     updateState();
 }
-int SLAM_Solver::getMNumVertices() { return num_vertices_; }
+int SLAM_Solver::getNumVertices() { return num_vertices_; }
