@@ -214,18 +214,19 @@ void ReconstructionVisualizer::viewReferenceFrame(const Eigen::Affine3f &pose,
     viewer_->addText3D(text, pose_txt, 0.025, 1, 1, 1, ss.str());
 }
 
-void ReconstructionVisualizer::viewPointCloud(const pcl::PointCloud<PointT>::Ptr &cloud,
-                                              const Eigen::Affine3f &pose)
+void ReconstructionVisualizer::viewPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud, const Eigen::Affine3f& pose)
 {
-    // Create a new point cloud
+    //Create a new point cloud
     pcl::PointCloud<PointT>::Ptr transf_cloud(new pcl::PointCloud<PointT>);
 
-    // Transform point cloud
+    //Transform point cloud
     pcl::transformPointCloud(*cloud, *transf_cloud, pose);
 
     pcl::visualization::PointCloudColorHandlerRGBField<PointT> rgb(transf_cloud);
-    if (!viewer_->updatePointCloud<PointT>(transf_cloud, rgb, "cloud"))
-        viewer_->addPointCloud<PointT>(transf_cloud, rgb, "cloud");
+    if(!viewer_->updatePointCloud<PointT>(transf_cloud, rgb, "cloud"))
+    {
+        viewer_->addPointCloud<PointT>(transf_cloud, rgb, "cloud"); //this line triggers a runtime error due to undefined behavior on PCL code
+    }
 }
 
 void ReconstructionVisualizer::viewQuantizedPointCloud(const pcl::PointCloud<PointT>::Ptr &cloud,
@@ -327,3 +328,5 @@ void ReconstructionVisualizer::setCameraPosition(const float &pos_x, const float
 void ReconstructionVisualizer::spin() { viewer_->spin(); }
 
 void ReconstructionVisualizer::spinOnce() { viewer_->spinOnce(); }
+
+void ReconstructionVisualizer::close() {viewer_->close(); }

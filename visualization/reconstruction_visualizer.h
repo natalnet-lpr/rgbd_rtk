@@ -200,6 +200,12 @@ public:
 	 * Wrapper to the interactor function of pcl::visualizer
 	 */
     void spinOnce();
+
+    /**
+     * Closes the visualizer
+     */
+    void close();
+
 };
 
 #endif /* INCLUDE_RECONSTRUCTION_VISUALIZER_H_ */
