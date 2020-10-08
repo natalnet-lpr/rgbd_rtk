@@ -42,11 +42,6 @@ void SLAM_Solver::addEdgeToList(const int &from_id, const int &to_id)
 
 void SLAM_Solver::updateState()
 {
-    // Initialize logger
-    EventLogger &logger = EventLogger::getInstance();
-    logger.setVerbosityLevel(EventLogger::L_DEBUG);
-    logger.setLogFileName("log_event_slam_solver.txt");
-
     optimized_estimates_.clear();
     optimized_estimates_.resize(positions_.size());
 
@@ -196,7 +191,7 @@ void SLAM_Solver::addLoopClosingEdge(const Eigen::Affine3f &vertex_to_origin_tra
 
 void SLAM_Solver::optimizeGraph(const int &k)
 {
-    optimizer_.save("graph.g2o"); // Save file
+    //optimizer_.save("graph.g2o"); // Save file
 
     optimizer_.initializeOptimization();
     optimizer_.optimize(k);
