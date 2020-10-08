@@ -114,5 +114,7 @@ int main(int argc, char **argv)
 		}
 	}
 
+	visualizer.close();
+
 	return 0;
 }

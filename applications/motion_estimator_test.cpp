@@ -59,6 +59,8 @@ int main(int argc, char **argv)
 	KLTTracker tracker;
 	Intrinsics intr(0);
 	ReconstructionVisualizer visualizer;
+	//PCLVisualizerPtr test_viewer;
+
 	Mat frame, depth;
 	string index_file;
 	float ransac_distance_threshold, ransac_inliers_ratio;
@@ -130,6 +132,8 @@ int main(int argc, char **argv)
 		//Let the prev. cloud in the next frame be the current cloud
 		*prev_cloud = *curr_cloud;
 	}
+
+	visualizer.close();
 
 	return 0;
 }

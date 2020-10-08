@@ -74,5 +74,7 @@ int main(int argc, char **argv)
         visualizer.spinOnce();
     }
 
+    visualizer.close();
+
     return 0;
 }
