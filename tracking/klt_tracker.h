@@ -47,14 +47,19 @@ class KLTTracker : public FeatureTracker
 
 protected:
 
-	//Detects keypoints in the current frame
+	/**
+	 * Detects keypoints in the current frame
+	 */
 	void detect_keypoints();
+	/**
+	* Adds keypoints detected in the previous frame to the tracker
+	*/
+	 void add_keypoints();
 
-	//Adds keypoints detected in the previous frame to the tracker
-	void add_keypoints();
-
-	//Updates internal buffers (updates the previous points (in the current frame)
-	//with the current points (from the previous frame))
+	/** 
+	 * Updates internal buffers (updates the previous points (in the current frame)
+	 * with the current points (from the previous frame))
+	 */
 	void update_buffers();
 
 public:
@@ -62,9 +67,18 @@ public:
 	//Default constructor
 	KLTTracker();
 
-	//Constructor with the minimum number of tracked points, maximum number of tracked points and flag to log statistics
+	/**
+	 * Constructor 
+	 * @param min_pts minimum number of tracked points @param max_pts maximum number of tracked points
+	 * @param log_stats boolean for log statistics state
+	 */
 	KLTTracker(const int& min_pts, const int& max_pts, const bool& log_stats = false);
 
+	/**
+	 * Main member function: tracks keypoints between the current frame and the previous.
+	 * @param img rgb image
+	 * @return boolean true if the current frame is a keyframe.
+	 */
 	bool track(const cv::Mat& img);
 };
 

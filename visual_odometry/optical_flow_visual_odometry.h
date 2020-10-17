@@ -76,14 +76,14 @@ public:
 
 	/**
 	 * Constructor with the matrix of intrinsic parameters
-	 * @param camera intrinsics 
+	 * @param intr camera parameters
 	 */	
 	OpticalFlowVisualOdometry(const Intrinsics& intr);
 
 	/**
 	 * Main member function: computes the current camera pose.
 	 * Returns true if the current frame is a keyframe.
-	 * @param rgb and depth image
+	 * @param rgb image @param depth image
 	 */	
 	bool computeCameraPose(const cv::Mat& rgb, const cv::Mat& depth);
 

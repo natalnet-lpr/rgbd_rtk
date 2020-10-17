@@ -69,19 +69,18 @@ public:
 
     /**
      * Constructor with the matrix of intrinsic parameters
-     * @param camera instrinsics
+     * @param intr camera parameters
      */
     WideBaselineVisualOdometry(const Intrinsics& intr);
     /**
-     * Main member function: computes the current camera pose
-     * @param rgb image
-     * @param depth image
+     * Constructor with the matrix of intrinsics and tracker
+     * @param intr image
+     * @param tracker image
      */
     WideBaselineVisualOdometry(const Intrinsics& intr, WideBaselineTracker& tracker);
     /**
      * Main member function: computes the current camera pose
-     * @param rgb image
-     * @param depth image
+     * @param rgb image @param depth image
      */
     void computeCameraPose(const cv::Mat& rgb, const cv::Mat& depth);
 

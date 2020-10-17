@@ -57,79 +57,125 @@ protected:
     // Boolean vector that indicates if the keypoint i have a match
     std::vector<bool> keypoints_with_matches;
 
-    //Detect KeyPoints and extract descriptors using this function
+    /**
+     * Detect KeyPoints and extract descriptors using this function
+     */
     void detect_keypoints();
     
-    // Adds keypoints detected in the first frame to the tracker
+    /**
+     * Adds keypoints detected in the first frame to the tracker
+     */
     void add_keypoints();
 
-    // Update internal buffers (updates the previous points (in the current frame)
-    // with the current points (from the previous frame))
+    /**
+     * Update internal buffers (updates the previous points (in the current frame)
+     * with the current points (from the previous frame))
+     */
     void update_buffers();
 
-    // Searches if a keypoint have a match
+    /**
+     * Searches if a keypoint have a match
+     * @param keypoint_index id of keypoint
+     * @return match id
+     */
     int searchMatches(const int& keypoint_index);
 
-    // Set the coordinates of the current keypoints to curr_pts_.
+    /**
+     * Set the coordinates of the current keypoints to curr_pts_.
+     */
     void setCurrentPoints();
 
-    // Set the coordinates of the previous keypoints to prev_pts_.
+    /**
+     * Set the coordinates of the previous keypoints to prev_pts_.
+     */
     void setPreviousPoints();
 
-    // Set the feature_detector_ attribute from a string
+    /**
+     * Set the feature_detector_ attribute from a string
+     * @param feature_detector name of feature_detector the list of options are:
+     */
     void setFeatureDetector(const std::string& feature_detector);
 
-    // Set the descriptor_extractor_ attribute from a string
+    /**
+     * Set the descriptor_extractor_ attribute from a string
+     * @param descriptor_extractor
+     */
     void setDescriptorExtractor(const std::string& descriptor_extractor);
 
-    // Set the matcher_ attribute from a string
+    /**
+     * Set the matcher_ attribute from a string
+     */
     void setMatcher(const std::string& matcher);
 
 public:
     
-    //Store all the current keypoints founded in the current frame
+    // Store all the current keypoints founded in the current frame
     std::vector<cv::KeyPoint> curr_kpts_;
 
-    //Store all the current descriptors founded in the current frame
+    // Store all the current descriptors founded in the current frame
     cv::Mat curr_descriptors_;
 
-    //Store all the previous keypoints founded in the previous frame
+    // Store all the previous keypoints founded in the previous frame
     std::vector<cv::KeyPoint> prev_kpts_;
 
-    //Store all the previous descriptors founded in the previous frame
+    // Store all the previous descriptors founded in the previous frame
     cv::Mat prev_descriptors_;
 
-    //Store all the "good" current keypoints that's points who has more
-    //accurracy than others calculed through euclidian distance
+    // Store all the "good" current keypoints that's points who has more
+    // accurracy than others calculated through euclidian distance
     std::vector<cv::Point2f> curr_good_pts_;
 
-    //Store all the "good" previous keypoints that's points who has more
-    //accurracy than others calculed through euclidian distance
+    // Store all the "good" previous keypoints that's points who has more
+    // accurracy than others calculated through euclidian distance
     std::vector<cv::Point2f> prev_good_pts_;
 
-    //Store all the matches beetween features
+    // Store all the matches beetween features
     std::vector<cv::DMatch> matches_;
 
-    //Store only the "good" matches, in other words, store only the matchings
-    //of "good" features
+    // Store only the "good" matches, in other words, store only the matchings
+    // of "good" features
     std::vector<cv::DMatch> good_matches_;
 
-    //Default constructor: create a ORB detector and extractor and a BruteForce matcher.
+    /**
+     * Default constructor: create a ORB detector and extractor and a BruteForce matcher.
+     */
     WideBaselineTracker();
 
-    //Constructor with flexible feature detector, descriptor extractor and matcher and flag to log statistics
+    /**
+     * Constructor with flexible feature detector, descriptor extractor and matcher and flag to log statistics
+     * @param feature_detector ORB, AKAZE, GFTT, FAST, AGAST, BRISK, SURF, SIFT
+     * @param descriptor_extractor ORB, AKAZE, GFTT, FAST, AGAST, BRISK, SURF, SIFT
+     * @param matcher BRUTEFORCE AND FLANNBASED
+     * @param log_stats if log statistics should be displayed
+     */
     WideBaselineTracker(const std::string& feature_detector, const std::string& descriptor_extractor, const std::string& matcher, const bool& log_stats);
     
-    //Constructor with the minimum number of tracked points, maximum number of tracked points and flag to log statistics
+   /**
+     * Constructor with flexible feature detector, descriptor extractor and matcher and flag to log statistics
+     * @param feature_detector ORB, AKAZE, GFTT, FAST, AGAST, BRISK, SURF, SIFT
+     * @param descriptor_extractor ORB, AKAZE, GFTT, FAST, AGAST, BRISK, SURF, SIFT
+     * @param matcher BRUTEFORCE AND FLANNBASED
+     * @param min_pts to detect @param max_pts to detect
+     * @param log_stats if log statistics should be displayed
+     */
     WideBaselineTracker(const std::string& feature_detector, const std::string& descriptor_extractor, const std::string& matcher, const int& min_pts, const int& max_pts, const bool& log_stats);
 
-    //Get the "good" Matches of your features
+    /**
+     * Get the "good" Matches of your features
+     * @param threshold as double
+     */
     void getGoodMatches(const double& threshold);
     
-    //Tracks keypoints between the current frame and the previous.
+    /** 
+     * Tracks keypoints between the current frame and the previous.
+     * @param img rgb image
+     * @return boolean
+     */
     bool track(const cv::Mat& img);
 
-    // Clear all data about tracked points
+    /**
+     * Clear all data about tracked points
+     */
     void clear();
 
 };

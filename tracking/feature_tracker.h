@@ -128,10 +128,16 @@ public:
 	//Default constructor
 	FeatureTracker();
 
-	//Constructor with the minimum number of tracked points, maximum number of tracked points and flag to log statistics
+	/**
+	 * Constructor 
+	 * @param min_pts minimum number of tracked points @param max_pts maximum number of tracked points
+	 * @param log_stats boolean for log statistics state
+	 */
 	FeatureTracker(const int& min_pts, const int& max_pts, const bool& log_stats = false);
 
-	//Default destructor
+	/**
+	 * Default Destructor
+	 */
 	virtual ~FeatureTracker()
 	{
 		tracking_info_.close();
@@ -139,16 +145,20 @@ public:
 		heatmap_info_.close();
 	}
 
-	/* Sets the output files for tracking and timing information.
+	/**
+	 * Sets the output files for tracking and timing information.
 	 * If not called, the system will not write any information to file.
+	 * @param timing_file_name file name, @param tracking_file_name file name
+	 * @param heatmap_file_name file name
 	 */
 	void initialize_logger(const std::string& timing_file_name,
 		                   const std::string& tracking_file_name,
 			               const std::string& heatmap_file_name);
 
-	/*
+	/**
 	 * Main member function: tracks keypoints between the current frame and the previous.
-	 * Returns true if the current frame is a keyframe.
+	 * @param img rgb image
+	 * @return boolean true if the current frame is a keyframe.
 	 */
 	virtual bool track(const cv::Mat& img) = 0;
 };

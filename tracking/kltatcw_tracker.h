@@ -47,29 +47,39 @@ class KLTATCWTracker : public FeatureTracker
 
 protected:
 
-	//Minimum radius of a tracking circular window
+	// Minimum radius of a tracking circular window
 	float min_radius_;
 
-	//Maximum radius of a tracking circular window
+	// Maximum radius of a tracking circular window
 	float max_radius_;
 
-	//Number of points in the last keyframe
+	// Number of points in the last keyframe
 	size_t num_points_last_kf_;
 
-	//Detects keypoints in the current frame
+	/** 
+	 * Detects keypoints in the current frame
+	 */
 	void detect_keypoints();
 
-	//Adds keypoints detected in the previous frame to the tracker
+	/** 
+	 * Adds keypoints detected in the previous frame to the tracker
+	 */
 	void add_keypoints();
 
-	//Updates internal buffers (updates the previous points (in the current frame)
-	//with the current points (from the previous frame))
+	/**
+	 * Updates internal buffers (updates the previous points (in the current frame)
+	 * With the current points (from the previous frame))
+	 */
 	void update_buffers();
 
-	//Returns true if the current frame is a keyframe
+	/**
+	 * @return true if the current frame is a keyframe
+	 */
 	bool trigger_keyframe();
 
-	//Updates the radiuses of tracking circles
+	/**
+	 * Updates the radiuses of tracking circles
+	 */
 	void update_tracking_circles();
 
 public:
@@ -83,12 +93,16 @@ public:
 	//Default constructor
 	KLTATCWTracker();
 
-	//Constructor with the minimum number of tracked points, maximum number of tracked points, min/max radiuses of a circular tracking window and flag to log statistics
+	/**
+	 * Constructor 
+	 * @param min_pts minimum number of tracked points @param max_pts maximum number of tracked points
+	 * @param log_stats boolean for log statistics state
+	 */
 	KLTATCWTracker(const int& min_pts, const int& max_pts, const float& min_r, const float& max_r, const bool& log_stats = false);
 
-	/*
+	/**
 	 * Main member function: tracks keypoints between the current frame and the previous.
-	 * Returns true if the current frame is a keyframe.
+	 * @return true if the current frame is a keyframe.
 	 */
 	bool track(const cv::Mat& img);
 };

@@ -47,39 +47,51 @@ class KLTTWTracker : public FeatureTracker
 
 protected:
 
-	//Number of points in the last keyframe
+	// Number of points in the last keyframe
 	size_t num_points_last_kf_;
 
-	//Detects keypoints in the current frame
+	/**
+	 * Detects keypoints in the current frame
+	 */
 	void detect_keypoints();
 
-	//Adds keypoints detected in the previous frame to the tracker
+	/**
+	 * Adds keypoints detected in the previous frame to the tracker
+	 */
 	void add_keypoints();
 
-	//Updates internal buffers (updates the previous points (in the current frame)
-	//with the current points (from the previous frame))
+	/**
+	 * Updates internal buffers (updates the previous points (in the current frame)
+	 * with the current points (from the previous frame))
+	 */
 	void update_buffers();
 
-	//Returns true if the current frame is a keyframe
+	/**
+	 * @return true if the current frame is a keyframe
+	 */
 	bool trigger_keyframe();
 
 public:
 
-	//Debug
+	// Debug
 	std::vector<cv::Point2f> rejected_points_;
 
-	//Size of the rectangular area of each feature when adding new features.
+	// Size of the rectangular area of each feature when adding new features.
 	cv::Size window_size_;
 
 	//Default constructor
 	KLTTWTracker();
 
-	//Constructor with the minimum number of tracked points, maximum number of tracked points, size of tracking window and flag to log statistics
+	/**
+	 * Constructor 
+	 * @param min_pts minimum number of tracked points @param max_pts maximum number of tracked points
+	 * @param log_stats boolean for log statistics state
+	 */
 	KLTTWTracker(const int& min_pts, const int& max_pts, const cv::Size& sz, const bool& log_stats = false);
 
-	/*
+	/**
 	 * Main member function: tracks keypoints between the current frame and the previous.
-	 * Returns true if the current frame is a keyframe.
+	 * @return true if the current frame is a keyframe.
 	 */
 	bool track(const cv::Mat& img);
 };

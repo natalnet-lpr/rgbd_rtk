@@ -70,10 +70,15 @@ public:
 	//Current camera pose
 	Eigen::Affine3f pose_;
 
-	//Constructor with the matrix of intrinsic parameters
+	/**
+	 * @param intr camera parameters
+	 */
 	StereoOpticalFlowVisualOdometry(const Intrinsics& intr);
 
-	//Main member function: computes the current camera pose
+	/** 
+	 * Main member function: computes the current camera pose
+	 * @param left left image of stereo camera @param right right image of stereo camera
+	 */
 	void computeCameraPose(const cv::Mat& left, const cv::Mat& right);
 };
 
