@@ -8,7 +8,7 @@ endif()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra")
 set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
-set(CMAKE_CXX_FLAGS_RELEASE "-march=native -mno-avx -O3") # WITH -march=native: seg_fault. on Mac OS
+set(CMAKE_CXX_FLAGS_RELEASE "-O3") # WITH -march=native: seg_fault. on Mac OS
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}" )
 
 # Offer the user the choice of overriding the installation directories
@@ -55,6 +55,7 @@ if(PCL_FOUND)
 else()
 	message(FATAL_ERROR "Error: PCL was not found in your system")
 endif()
+add_definitions(${PCL_DEFINITIONS})
 
 find_package(G2O REQUIRED)
 message(STATUS "G2O Found: " ${G2O_FOUND})
