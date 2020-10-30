@@ -212,6 +212,8 @@ struct Intrinsics
  */
 struct Keyframe
 {
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+	
     //Index of the keyframe
     int idx_;
 
@@ -236,6 +238,8 @@ struct Keyframe
 
 struct Edge
 {
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
 	//Id of vertex "from"
 	int id_from_;
 
