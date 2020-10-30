@@ -252,6 +252,8 @@ struct Intrinsics
  */
 struct Keyframe
 {
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
     // Index of the keyframe
     int idx_;
 
@@ -277,11 +279,13 @@ struct Keyframe
 };
 
 /**
- * Edge saves two vertix poses that makes an edge
+ * Edge saves two vertex poses that makes an edge
  * it also saves the id of those poses and the name of the edge
  */
 struct Edge
 {
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
     // Id of vertex "from"
     int id_from_;
 
