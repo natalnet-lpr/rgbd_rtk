@@ -103,13 +103,10 @@ void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Poin
 {
 	Scalar color;
 	if(is_kf)
-	{
 		color = CV_RGB(255, 0, 0);
-	}
 	else
-	{
 		color = CV_RGB(0, 255, 0);
-	}
+	
 	for(size_t k = 0; k < curr_pts.size(); k++)
 	{
 		Point2i pt1, pt2, pr1, pr2;

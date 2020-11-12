@@ -12,7 +12,11 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3") # WITH -march=native: seg_fault. on Mac OS
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}" )
 
 # Offer the user the choice of overriding the installation directories
+<<<<<<< HEAD
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+=======
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+>>>>>>> master
 set(INSTALL_LIB_DIR lib CACHE PATH "Installation directory for libraries")
 set(INSTALL_BIN_DIR bin CACHE PATH "Installation directory for executables")
 set(INSTALL_INCLUDE_DIR include CACHE PATH "Installation directory for header files")
@@ -95,21 +99,18 @@ option(WITH_SLAM "Build with slam module" ON)
 # Needed for every other module
 add_subdirectory(common)
 set(RGBD_RTK_COMMON rgbd_rtk_common)
-export(TARGETS rgbd_rtk_common APPEND
-FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
+export(TARGETS rgbd_rtk_common APPEND FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
 
 if(WITH_IO)
 	add_subdirectory(io)
 	set(RGBD_RTK_IO rgbd_rtk_io)
-	export(TARGETS rgbd_rtk_io APPEND
-    FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
+	export(TARGETS rgbd_rtk_io APPEND FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
 endif()
 
 if(WITH_QUADTREE)
 	add_subdirectory(quadtree)
 	set(RGBD_RTK_QUADTREE rgbd_rtk_quadtree)
-	export(TARGETS rgbd_rtk_quadtree APPEND
-    FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
+	export(TARGETS rgbd_rtk_quadtree APPEND FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
 endif()
 
 ## Quadtree needed for kltqt_tracker
@@ -118,33 +119,31 @@ if(WITH_TRACKING AND WITH_QUADTREE)
 	set(RGBD_RTK_TRACKING rgbd_rtk_tracking)
 	export(TARGETS rgbd_rtk_tracking APPEND
     FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
-else()
-	message(WARNING "Can't build Tracking without QuadTree" )
+endif()
+if(WITH_TRACKING AND (NOT WITH_QUADTREE))
+	message(SEND_ERROR "Can't build Tracking without QuadTree" )
 	SET(WITH_TRACKING OFF)
 endif()
 
 if(WITH_VISUALIZATION)
 	add_subdirectory(visualization)
 	set(RGBD_RTK_VISUALIZATION rgbd_rtk_visualization)
-	export(TARGETS rgbd_rtk_visualization APPEND
-    FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
+	export(TARGETS rgbd_rtk_visualization APPEND FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
 endif()
 
 if(WITH_MOTION_ESTIMATION)
 	add_subdirectory(motion_estimation)
 	set(RGBD_RTK_MOTION_ESTIMATION rgbd_rtk_motion_estimation)
-	export(TARGETS rgbd_rtk_motion_estimation APPEND
-    FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
+	export(TARGETS rgbd_rtk_motion_estimation APPEND FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
 endif()
 
 if(WITH_STEREO)
 	add_subdirectory(stereo)
 	set(RGBD_RTK_STEREO rgbd_rtk_stereo)
-	export(TARGETS rgbd_rtk_stereo APPEND
-    FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
+	export(TARGETS rgbd_rtk_stereo APPEND FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
 endif()
 
-##Motion estimation needed for icp_odometry and wide_baseline_visual_odometry
+#Motion estimation needed for icp_odometry and wide_baseline_visual_odometry
 ##Tracking needed for optical_flow_visual_odometry
 ##Stereo needed for stereo_optical_flow_visual_odometry
 if(WITH_VISUAL_ODOMETRY AND WITH_MOTION_ESTIMATION AND WITH_TRACKING AND WITH_STEREO)
@@ -152,11 +151,13 @@ if(WITH_VISUAL_ODOMETRY AND WITH_MOTION_ESTIMATION AND WITH_TRACKING AND WITH_ST
 	set(RGBD_RTK_VISUAL_ODOMETRY rgbd_rtk_visual_odometry)
 	export(TARGETS rgbd_rtk_visual_odometry APPEND
     FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
-else()
-	message(WARNING "Can't build Visual Odometry without motion_estimation, tracking and stereo modules" )
+endif()
+if(WITH_VISUAL_ODOMETRY AND ((NOT WITH_MOTION_ESTIMATION) OR (NOT WITH_TRACKING) OR (NOT WITH_STEREO)))
+	message(SEND_ERROR "Can't build Visual Odometry without motion_estimation, tracking and stereo modules" )
 	set(WITH_VISUAL_ODOMETRY OFF)
 endif()
 
+#
 # Build SLAM module only if ARUCO was found
 if(WITH_SLAM)
 	find_package(aruco QUIET)
@@ -184,12 +185,10 @@ export(PACKAGE rgbd_rtk)
 file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}" "${INSTALL_INCLUDE_DIR}")
 # For the build tree
 set(CONF_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}" "${PROJECT_BINARY_DIR}")
-configure_file(rgbd_rtkConfig.cmake.in
-  "${PROJECT_BINARY_DIR}/rgbd_rtkConfig.cmake" @ONLY)
+configure_file(rgbd_rtkConfig.cmake.in "${PROJECT_BINARY_DIR}/rgbd_rtkConfig.cmake" @ONLY)
 # For the install tree
 set(CONF_INCLUDE_DIRS "\${rgbd_rtk_CMAKE_DIR}/${REL_INCLUDE_DIR}")
-configure_file(rgbd_rtkConfig.cmake.in
-  "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/rgbd_rtkConfig.cmake" @ONLY)
+configure_file(rgbd_rtkConfig.cmake.in "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/rgbd_rtkConfig.cmake" @ONLY)
 
 
 # Install the rgbd_rtkConfig.cmake
