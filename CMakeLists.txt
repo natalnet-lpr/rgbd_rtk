@@ -12,11 +12,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3") # WITH -march=native: seg_fault. on Mac OS
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}" )
 
 # Offer the user the choice of overriding the installation directories
-<<<<<<< HEAD
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-=======
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
->>>>>>> master
 set(INSTALL_LIB_DIR lib CACHE PATH "Installation directory for libraries")
 set(INSTALL_BIN_DIR bin CACHE PATH "Installation directory for executables")
 set(INSTALL_INCLUDE_DIR include CACHE PATH "Installation directory for header files")

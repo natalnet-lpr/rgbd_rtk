@@ -60,10 +60,10 @@ using namespace cv;
  * This program shows the use of camera pose estimation using optical flow visual odometry.
  * @param .yml config. file (from which index_file is used)
  */
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
-    EventLogger &logger = EventLogger::getInstance();
-    logger.setVerbosityLevel(EventLogger::L_DEBUG);
+    EventLogger& logger = EventLogger::getInstance();
+    logger.setVerbosityLevel(EventLogger::L_ERROR);
 
     RGBDLoader loader;
     Intrinsics intr(0);
@@ -112,8 +112,9 @@ int main(int argc, char **argv)
 
         visualizer.viewReferenceFrame(vo.pose_);
         visualizer.viewPointCloud(vo.curr_dense_cloud_, vo.pose_);
-        // visualizer.viewQuantizedPointCloud(vo.curr_dense_cloud_, 0.05, vo.pose_);
-        // visualizer.addCameraPath(vo.pose_);
+        visualizer.addQuantizedPointCloud(vo.curr_dense_cloud_, 0.05, vo.pose_);
+        visualizer.viewQuantizedPointCloud(vo.curr_dense_cloud_, 0.05, vo.pose_);
+        visualizer.addCameraPath(vo.pose_);
 
         if (is_kf)
         {
@@ -130,8 +131,7 @@ int main(int argc, char **argv)
         char key = waitKey(1);
         if (key == 27 || key == 'q' || key == 'Q')
         {
-            logger.print(EventLogger::L_INFO, "[optical_flow_visual_odometry_test.cpp] Exiting\n",
-                         argv[0]);
+            logger.print(EventLogger::L_INFO, "[optical_flow_visual_odometry_test.cpp] Exiting\n", argv[0]);
             break;
         }
     }
