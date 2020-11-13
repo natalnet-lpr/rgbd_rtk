@@ -1,6 +1,6 @@
 %YAML:1.0
 camera_calibration_file: "/home/bruno/Research/Datasets/kinect_default.yaml"
-index_file: "/home/bruno/Research/Datasets/rgbd_dataset_freiburg1_xyz/index"
+index_file: "/home/marcos_henrique/Downloads/graffiti_dataset/rgb.txt"
 
 #motion estimation ransac parameters
 ransac_distance_threshold: 0.008 #8mm

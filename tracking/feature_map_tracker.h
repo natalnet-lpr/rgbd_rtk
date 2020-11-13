@@ -55,7 +55,10 @@ protected:
     cv::flann::Index* index_;
 
     //Boolean vector that indicates if the keypoint i have a match
-    std::vector<bool> keypoints_with_matches;
+    std::vector<bool> keypoints_with_matches_;
+
+    //The number of followed frames without matches to keypoint i on the map
+    std::vector<int> keypoints_life_on_the_map_;
 
     //Detect KeyPoints and extract descriptors using this function
     void detect_keypoints();
@@ -113,8 +116,17 @@ public:
     //Store all the matches beetween features
     cv::Mat matches_;
 
+    //Define if the matche i is a good a match
+    std::vector<bool> good_matches_;
+
     //Store the distances beetween the matches 
     cv::Mat dists_;
+
+    // Distance Ratio to compare the two closest matches
+    const float DIST_RATIO = 0.8;
+
+    // Max number of falowed frames withou matches for a keypoint.
+    const int K = 4;
 
     //Default constructor: create a ORB feature detector and descriptor extractor. 
     FeatureMapTracker();
@@ -124,6 +136,9 @@ public:
     
     //Constructor with the minimum number of tracked points, maximum number of tracked points and flag to log statistics
     FeatureMapTracker(const std::string& feature_detector, const std::string& descriptor_extractor, const int& min_pts, const int& max_pts, const bool& log_stats);
+
+    //Default Destructor
+    ~FeatureMapTracker();
 
     //Tracks keypoints between the current frame and the previous.
     bool track(const cv::Mat& img);

@@ -78,6 +78,8 @@ void FeatureMapTracker::update_buffers()
 {
     std::swap(curr_kpts_, map_kpts_);
     std::swap(curr_descriptors_, map_descriptors_);
+    keypoints_life_on_the_map_.resize(map_kpts_.size());
+
 }
 
 int FeatureMapTracker::searchMatches(const int &keypoint_index)
@@ -87,7 +89,7 @@ int FeatureMapTracker::searchMatches(const int &keypoint_index)
     for (int query_index = 0; query_index < matches_.rows; query_index++)
     {
         train_index = matches_.at<int>(query_index, 0);
-        if (keypoint_index == train_index)
+        if (keypoint_index == train_index && good_matches_[i])
         {
             return query_index;
         }
@@ -230,16 +232,100 @@ bool FeatureMapTracker::track(const cv::Mat &img)
         initialized_ = true;
         update_buffers();
         add_keypoints();
+        index_ = new cv::flann::Index();
     }
     else
     {
         //Descriptor matcher: FLANN Index Object
-        index_ = new cv::flann::Index(map_descriptors_, cv::flann::KDTreeIndexParams(), cvflann::FLANN_DIST_EUCLIDEAN);
+        //index_ = new cv::flann::Index(map_descriptors_, cv::flann::KDTreeIndexParams(), cvflann::FLANN_DIST_EUCLIDEAN);
+        index_->build(map_descriptors_,cv::flann::KDTreeIndexParams(),cvflann::FLANN_DIST_EUCLIDEAN);
 
         //Searches similar descriptors in the current frame for each descriptor in the map
-        index_->knnSearch(curr_descriptors_, matches_, dists_, 1, cv::flann::SearchParams());
+        index_->knnSearch(curr_descriptors_, matches_, dists_, 2, cv::flann::SearchParams());
+        // The matches_ object is a Nx2 Matrix, where N is the size of the curr_descriptors_ object    
 
-        delete index_;
+        good_matches_.clear();
+        good_matches_.resize(matches_.rows);
+
+        for (size_t i = 0; i < matches_.rows; i++){
+            int idx1 = i; // matches has the same number of query points (current points)
+            int idx2 = matches_.at<int>(i,0); // Index of the first match
+
+            // The distances to the first and the second matches
+            float dist_first = dists_.at<float>(i,0), dist_second = dists_.at<float>(i,1);
+
+            // Selecting the good matches
+            if (dist_first < DIST_RATIO*dist_second)
+            {
+                good_matches_[i] = true;
+            }
+            else
+            {
+                good_matches_[i] = false;
+            }
+        }
+
+
+        keypoints_with_matches_.clear();
+        keypoints_with_matches_.resize(curr_kpts_.size());
+        // Searching for the matches
+        for (size_t i = 0; i < map_kpts_.size();i++){
+
+            int train_index = i;
+            int query_index = searchMatches(i);
+
+            // Successful match
+            if (query_index != -1)
+            {
+                // Update the map
+                map_kpts_[train_index] = curr_kpts_[query_index];
+                map_descriptors_[train_index] = curr_descriptors_[query_index];
+                keypoints_with_matches_[query_index] = true;
+                keypoints_life_on_the_map_[train_index] = 0;
+
+            }
+            else
+            {
+                keypoints_life_on_the_map_[train_index]++;
+            }
+            
+        }
+
+        int ok_keypoints = 0;
+        //Verify if a keypoint exceed the max number of frames without matches
+        for (size_t i = 0; i < keypoints_life_on_the_map_.size(); i++)
+        {
+            if(keypoints_life_on_the_map_[i] > K)
+            {
+                continue;
+            }
+            else
+            {
+                map_kpts_[ok_keypoints] = map_kpts_[i];
+                map_descriptors_[ok_keypoints] = map_descriptors_[i];
+                keypoints_life_on_the_map_[ok_keypoints] = keypoints_life_on_the_map_[i];
+                ok_keypoints++;
+
+            }
+        }
+
+        map_kpts_.resize(ok_keypoints);
+        map_descriptors_.resize(ok_keypoints);
+        keypoints_life_on_the_map_.resize(ok_keypoints);
+
+        // Include at the end of the map the features of the current frame without matches 
+        for (size_t i = 0; i < curr_kpts_.size(); i++)
+        {
+            if (keypoints_with_matches_[i] == false)
+            {
+                map_kpts_.push_back(curr_kpts_[i]);
+                map_descriptors_.push_back(curr_descriptors_[i]);
+                keypoints_life_on_the_map_.push_back(0);
+            }
+        }
+
+
+        //delete index_;
     }
 
     return is_keyframe;
@@ -254,4 +340,10 @@ void FeatureMapTracker::clear()
     curr_pts_.clear();
     prev_pts_.clear();
     initialized_ = false;
+}
+
+FeatureMapTracker::~FeatureMapTracker(){
+    if (index_ != nullptr){
+        delete index_;
+    }
 }

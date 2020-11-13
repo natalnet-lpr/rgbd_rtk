@@ -87,7 +87,7 @@ int main(int argc, char **argv)
 		double el_time = (double) cvGetTickCount();
 		bool is_kf = wide_baseline_tracker.track(frame);
 		el_time = ((double) cvGetTickCount() - el_time)/(cvGetTickFrequency()*1000.0);
-		logger.print(EventLogger::L_INFO,"[klt_tracker_test.cpp] INFO: Tracking time: %f ms\n", el_time);
+		logger.print(EventLogger::L_INFO,"[wide_baseline_tracker_test.cpp] INFO: Tracking time: %f ms\n", el_time);
 		
 		frame.copyTo(current_frame);
 
