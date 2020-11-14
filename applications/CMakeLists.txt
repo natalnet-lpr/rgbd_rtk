@@ -30,7 +30,6 @@ endif()
 if(WITH_VISUALIZATION)
     ##Install applications that only needs visualization
     add_executable(kinect_grabber kinect_grabber.cpp)
-
     find_library(RGBD_RTK_VISUALIZATION NAMES rgbd_rtk_visualization)
     target_link_libraries(kinect_grabber ${OpenCV_LIBRARIES} ${PCL_LIBRARIES} ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUALIZATION})
     install(TARGETS kinect_grabber
@@ -84,7 +83,6 @@ if(WITH_IO AND WITH_TRACKING)
     if(WITH_QUADTREE)
         ##Install applications that needs IO, Tracking and Quadtree
         add_executable(kltqt_tracker_test kltqt_tracker_test.cpp)
-
         target_link_libraries(kltqt_tracker_test ${RGBD_RTK_COMMON} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING} ${RGBD_RTK_QUADTREE})
         install(TARGETS kltqt_tracker_test
                 EXPORT rgbd_rtkTargets
@@ -94,7 +92,6 @@ if(WITH_IO AND WITH_TRACKING)
     if(WITH_VISUALIZATION AND WITH_MOTION_ESTIMATION)
         ##Install applications that needs IO, Tracking, Visualization and Motion Estimation
         add_executable(motion_estimator_test motion_estimator_test.cpp)
-
         target_link_libraries(motion_estimator_test  ${PCL_LIBRARIES} ${RGBD_RTK_COMMON} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING} 
                                                      ${RGBD_RTK_VISUALIZATION}
                                                      ${RGBD_RTK_MOTION_ESTIMATION})
@@ -136,7 +133,6 @@ if(WITH_IO AND WITH_TRACKING)
                             reconstruction_visualizer_test
                 EXPORT rgbd_rtkTargets
                 RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin)
-
         endif()
     endif()
 endif()
@@ -144,9 +140,7 @@ endif()
 if(WITH_IO AND WITH_VISUALIZATION)
     ##Install applications that needs IO and Visualization
     add_executable(kitti_velodyne_loader_test kitti_velodyne_loader_test.cpp)
-
     target_link_libraries(kitti_velodyne_loader_test ${PCL_LIBRARIES} ${RGBD_RTK_IO} ${RGBD_RTK_VISUALIZATION})
-    
     install(TARGETS kitti_velodyne_loader_test
                 EXPORT rgbd_rtkTargets
                 RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin)
@@ -154,7 +148,6 @@ if(WITH_IO AND WITH_VISUALIZATION)
     if(WITH_STEREO)
         ##Install applications that needs IO, Visualization and Stereo
         add_executable(stereo_cloud_generator_test stereo_cloud_generator_test.cpp)
-
         target_link_libraries(stereo_cloud_generator_test ${PCL_LIBRARIES} ${RGBD_RTK_IO} ${RGBD_RTK_VISUALIZATION}
                                                   ${RGBD_RTK_STEREO})
         install(TARGETS stereo_cloud_generator_test
@@ -164,7 +157,6 @@ if(WITH_IO AND WITH_VISUALIZATION)
         if(WITH_VISUAL_ODOMETRY AND WITH_MOTION_ESTIMATION)
             ##Install applications that needs IO, Visualization, Stereo, Visual Odometry and Motion Estimation
             add_executable(stereo_optical_flow_visual_odometry_test stereo_optical_flow_visual_odometry_test.cpp)
-
             target_link_libraries(stereo_optical_flow_visual_odometry_test ${PCL_LIBRARIES} ${RGBD_RTK_IO} ${RGBD_RTK_VISUALIZATION} ${RGBD_RTK_STEREO}                                   
                                                                 ${RGBD_RTK_VISUAL_ODOMETRY}
                                                                 ${RGBD_RTK_MOTION_ESTIMATION})
@@ -179,13 +171,20 @@ endif()
 # Build SLAM related applications only if ARUCO was found
 if(aruco_FOUND AND WITH_IO AND WITH_TRACKING AND WITH_VISUALIZATION AND WITH_MOTION_ESTIMATION AND WITH_VISUAL_ODOMETRY)
     add_executable(marker_finder_test marker_finder_test.cpp)
+    add_executable(slam_solver_test slam_solver_test.cpp)
     find_library(RGBD_RTK_SLAM NAMES rgbd_rtk_slam)
     target_link_libraries(marker_finder_test ${PCL_LIBRARIES} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING}
                                          ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUALIZATION}
                                          ${RGBD_RTK_MOTION_ESTIMATION}
                                          ${RGBD_RTK_VISUAL_ODOMETRY}
                                          ${RGBD_RTK_SLAM})
+    target_link_libraries(slam_solver_test ${PCL_LIBRARIES} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING}
+                                         ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUALIZATION}
+                                         ${RGBD_RTK_MOTION_ESTIMATION}
+                                         ${RGBD_RTK_VISUAL_ODOMETRY}
+                                         ${RGBD_RTK_SLAM})                                         
     install(TARGETS marker_finder_test 
+                    slam_solver_test
         EXPORT rgbd_rtkTargets
         RUNTIME DESTINATION bin)
 endif()

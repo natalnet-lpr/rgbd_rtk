@@ -44,6 +44,7 @@
 
 #include <Eigen/Geometry>
 #include <Eigen/StdVector>
+#include <string>
 #include <vector>
 
 #include <opencv2/core/core.hpp>
@@ -59,7 +60,7 @@ class MarkerFinder
 {
 
 protected:
-    // (ARUCO) Marker detector
+    //(ARUCO) Marker detector
     aruco::MarkerDetector marker_detector_;
 
     // Size of each artificial marker
@@ -70,7 +71,7 @@ protected:
      * @param camera pose as affine3f
      * @param aruco_max_distance minimum distance to aruco be considered valid
      */
-    void setMarkerPoses(const Eigen::Affine3f &cam_pose, const float &aruco_max_distance);
+    void setMarkerPoses(const Eigen::Affine3f& cam_pose, const float& aruco_max_distance);
 
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -91,7 +92,7 @@ public:
      * @param camera intrinsic params @param size marker size
      * @param aruco_dic aruco dictionary
      */
-    void markerParam(const string &params, const float &size, const string &aruco_dic);
+    void markerParam(const std::string& params, const float& size, const std::string& aruco_dic);
     /**
      * Detect the marker related to the cam_pose, just pass a identity matrix to cam_pose if you
      * want to detect the pose of the marker related to the camera, just pass a identity matrix
@@ -99,7 +100,6 @@ public:
      * @param rgb image @param cam_pose camera pose
      * @param aruco_max_distance max distance aruco will be saved
      */
-    void detectMarkersPoses(const cv::Mat &img, const Eigen::Affine3f &cam_pose,
-                            const float &aruco_max_distance);
+    void detectMarkersPoses(const cv::Mat& img, const Eigen::Affine3f& cam_pose, const float& aruco_max_distance);
 };
 #endif /* INCLUDE_MARKER_FINDER_H_ */
