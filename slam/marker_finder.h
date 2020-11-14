@@ -44,6 +44,7 @@
 
 #include <Eigen/Geometry>
 #include <Eigen/StdVector>
+#include <string>
 #include <vector>
 
 #include <opencv2/core/core.hpp>
@@ -91,7 +92,7 @@ public:
      * @param camera intrinsic params @param size marker size
      * @param aruco_dic aruco dictionary
      */
-    void markerParam(const string& params, const float& size, const string& aruco_dic);
+    void markerParam(const std::string& params, const float& size, const std::string& aruco_dic);
     /**
      * Detect the marker related to the cam_pose, just pass a identity matrix to cam_pose if you
      * want to detect the pose of the marker related to the camera, just pass a identity matrix
