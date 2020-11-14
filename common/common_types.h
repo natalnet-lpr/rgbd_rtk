@@ -136,7 +136,16 @@ struct Intrinsics
      * Default constructor: zero for all parameters
      */
     Intrinsics()
-        : fx_(0.0), fy_(0.0), cx_(0.0), cy_(0.0), scale_(0.0), baseline_(0.0), k1_(0.0), k2_(0.0), p1_(0.0), p2_(0.0),
+        : fx_(0.0),
+          fy_(0.0),
+          cx_(0.0),
+          cy_(0.0),
+          scale_(0.0),
+          baseline_(0.0),
+          k1_(0.0),
+          k2_(0.0),
+          p1_(0.0),
+          p2_(0.0),
           k3_(0.0)
     {
     }
@@ -147,72 +156,72 @@ struct Intrinsics
      * @param set with parameter will be used, 1 2 and 3
      * for Freiburg1 Freiburg2 and Freiburg3
      */
-    Intrinsics(const int& set)
+    Intrinsics(const int &set)
     {
         switch (set)
         {
-            case 1:
-                fx_ = 517.3;
-                fy_ = 516.5;
-                cx_ = 318.6;
-                cy_ = 255.3;
-                scale_ = 5000;
-                baseline_ = 0.0; // not used by Kinect
-                // k1_ = 0.2624;
-                // k2_ = -0.9531;
-                // p1_ = -0.0054;
-                // p2_ = 0.0026;
-                // k3_ = 1.1633;
-                k1_ = 0.0;
-                k2_ = 0.0;
-                p1_ = 0.0;
-                p2_ = 0.0;
-                k3_ = 0.0;
-                break;
-            case 2:
-                fx_ = 520.9;
-                fy_ = 521.0;
-                cx_ = 325.1;
-                cy_ = 249.7;
-                scale_ = 5000;
-                baseline_ = 0.0; // not used by Kinect
-                // k1_ = 0.2312;
-                // k2_ = -0.7849;
-                // p1_ = -0.0033;
-                // p2_ = -0.0001;
-                // k3_ = 0.9172;
-                k1_ = 0.0;
-                k2_ = 0.0;
-                p1_ = 0.0;
-                p2_ = 0.0;
-                k3_ = 0.0;
-                break;
-            case 3:
-                fx_ = 535.4;
-                fy_ = 539.2;
-                cx_ = 320.1;
-                cy_ = 247.6;
-                scale_ = 5000;
-                baseline_ = 0.0; // not used by Kinect
-                k1_ = 0.0;
-                k2_ = 0.0;
-                p1_ = 0.0;
-                p2_ = 0.0;
-                k3_ = 0.0;
-                break;
-            default:
-                fx_ = 525.0;
-                fy_ = 525.0;
-                cx_ = 319.5;
-                cy_ = 239.5;
-                scale_ = 5000;
-                baseline_ = 0.0; // not used by Kinect
-                k1_ = 0.0;
-                k2_ = 0.0;
-                p1_ = 0.0;
-                p2_ = 0.0;
-                k3_ = 0.0;
-                break;
+        case 1:
+            fx_ = 517.3;
+            fy_ = 516.5;
+            cx_ = 318.6;
+            cy_ = 255.3;
+            scale_ = 5000;
+            baseline_ = 0.0; // not used by Kinect
+            // k1_ = 0.2624;
+            // k2_ = -0.9531;
+            // p1_ = -0.0054;
+            // p2_ = 0.0026;
+            // k3_ = 1.1633;
+            k1_ = 0.0;
+            k2_ = 0.0;
+            p1_ = 0.0;
+            p2_ = 0.0;
+            k3_ = 0.0;
+            break;
+        case 2:
+            fx_ = 520.9;
+            fy_ = 521.0;
+            cx_ = 325.1;
+            cy_ = 249.7;
+            scale_ = 5000;
+            baseline_ = 0.0; // not used by Kinect
+            // k1_ = 0.2312;
+            // k2_ = -0.7849;
+            // p1_ = -0.0033;
+            // p2_ = -0.0001;
+            // k3_ = 0.9172;
+            k1_ = 0.0;
+            k2_ = 0.0;
+            p1_ = 0.0;
+            p2_ = 0.0;
+            k3_ = 0.0;
+            break;
+        case 3:
+            fx_ = 535.4;
+            fy_ = 539.2;
+            cx_ = 320.1;
+            cy_ = 247.6;
+            scale_ = 5000;
+            baseline_ = 0.0; // not used by Kinect
+            k1_ = 0.0;
+            k2_ = 0.0;
+            p1_ = 0.0;
+            p2_ = 0.0;
+            k3_ = 0.0;
+            break;
+        default:
+            fx_ = 525.0;
+            fy_ = 525.0;
+            cx_ = 319.5;
+            cy_ = 239.5;
+            scale_ = 5000;
+            baseline_ = 0.0; // not used by Kinect
+            k1_ = 0.0;
+            k2_ = 0.0;
+            p1_ = 0.0;
+            p2_ = 0.0;
+            k3_ = 0.0;
+            break;
         }
     }
     /**
@@ -220,8 +229,18 @@ struct Intrinsics
      * and center of projection (scale is 1.0).
      * @param fx @param fy @param cx @param cy @param baseline
      */
-    Intrinsics(const double& fx, const double& fy, const double& cx, const double& cy, const double& baseline)
-        : fx_(fx), fy_(fy), cx_(cx), cy_(cy), scale_(1.0), baseline_(baseline), k1_(0.0), k2_(0.0), p1_(0.0), p2_(0.0),
+    Intrinsics(const double &fx, const double &fy, const double &cx, const double &cy,
+               const double &baseline)
+        : fx_(fx),
+          fy_(fy),
+          cx_(cx),
+          cy_(cy),
+          scale_(1.0),
+          baseline_(baseline),
+          k1_(0.0),
+          k2_(0.0),
+          p1_(0.0),
+          p2_(0.0),
           k3_(0.0)
     {
     }
@@ -233,7 +252,7 @@ struct Intrinsics
  */
 struct Keyframe
 {
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     // Index of the keyframe
     int idx_;
@@ -253,7 +272,10 @@ struct Keyframe
     // Keypoints detected in the keyframe
     std::vector<cv::Point2f> keypoints_;
 
-    Keyframe() : idx_(0), pose_(Eigen::Affine3f::Identity()), local_cloud_(new pcl::PointCloud<PointT>) {}
+    Keyframe()
+        : idx_(0), pose_(Eigen::Affine3f::Identity()), local_cloud_(new pcl::PointCloud<PointT>)
+    {
+    }
 };
 
 /**
@@ -262,7 +284,7 @@ struct Keyframe
  */
 struct Edge
 {
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     // Id of vertex "from"
     int id_from_;
@@ -289,12 +311,8 @@ struct Edge
      * @param to pose of vertex to
      * @param name Edge name(optional)
      */
-    Edge(
-        const int& from_id,
-        const int& to_id,
-        const Eigen::Vector3d& from,
-        const Eigen::Vector3d& to,
-        const std::string& name = "")
+    Edge(const int &from_id, const int &to_id, const Eigen::Vector3d &from,
+         const Eigen::Vector3d &to, const std::string &name = "")
     {
         id_from_ = from_id;
         id_to_ = to_id;
