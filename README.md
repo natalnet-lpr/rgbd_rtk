@@ -15,6 +15,7 @@ Requirements
 - PCL: www.pointclouds.org (version 1.8)
 - G2O: https://github.com/RainerKuemmerle/g2o/releases (version 20200410)
 - ARUCO: https://sourceforge.net/projects/aruco/files/ (Version = 3.X)
+- Eigen: http://eigen.tuxfamily.org/index.php?title=Main_Page (Version = 3.X)
 
 It is recommended to install both dependencies from source. The following two links will redirect you to their official tutorials to do so.
 
