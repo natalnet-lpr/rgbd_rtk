@@ -1,9 +1,9 @@
 %YAML:1.0
-camera_calibration_file: "kinect_default.yaml" #default: "kinect_default.yaml"
+camera_calibration_file: "../../config_files/kinect_default.yaml" #default: "kinect_default.yaml"
 index_file: "/home/sarmento/LIB/Dataset/ar_mm_lab1/index" #default: "path/index.txt"
 aruco_dic: "ARUCO_MIP_36h12" #default: "ARUCO" or ARUCO MIP 36h12
 aruco_max_distance: 4 #default: 4
-aruco_marker_size: 0.09 #default: 0.1778 (size of marker in ROS Gazebo)
+aruco_marker_size: 0.07 #default: 0.1778 (size of marker in ROS Gazebo and ~= 0.07 for our dataset)
 
 #Parameter below are not used
 #motion estimation ransac parameters

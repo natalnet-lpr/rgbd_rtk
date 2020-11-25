@@ -78,11 +78,11 @@ void MarkerFinder::setMarkerPoses(const Eigen::Affine3f& cam_pose, const float& 
         // way aruco uses orientation.
         */
         // Infinite
-        if (aruco_max_distance == -1) marker_poses_.push_back(cam_pose.inverse() * P);
+        if (aruco_max_distance == -1) marker_poses_.push_back(cam_pose * P);
 
         // Marker is closer than the max distance
         else if (sqrt(x + y + z) < aruco_max_distance)
-            marker_poses_.push_back(cam_pose.inverse() * P);
+            marker_poses_.push_back(cam_pose * P);
 
         else // Marker is further than the max distance
         {
