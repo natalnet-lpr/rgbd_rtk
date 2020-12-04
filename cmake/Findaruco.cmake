@@ -20,15 +20,17 @@
 #
 # ===================================================================================
 INCLUDE_DIRECTORIES("/usr/local/include")
+INCLUDE_DIRECTORIES("/usr/local/include/aruco")
 SET(aruco_INCLUDE_DIRS "/usr/local/include")
 
 LINK_DIRECTORIES("/usr/local/lib")
 SET(aruco_LIB_DIR "/usr/local/lib")
 
-SET(aruco_LIBS opencv_imgproc;opencv_videostab;opencv_ml;opencv_photo;opencv_stitching;opencv_features2d;opencv_calib3d;opencv_objdetect;opencv_shape;opencv_superres;opencv_viz;opencv_highgui;opencv_imgcodecs;opencv_dnn;opencv_flann;opencv_core;opencv_video;opencv_videoio aruco)
+SET(aruco_LIBS opencv_imgproc;opencv_videostab;opencv_ml;opencv_photo;opencv_stitching;opencv_features2d;opencv_calib3d;opencv_objdetect;opencv_shape;opencv_superres;opencv_viz;opencv_highgui;opencv_imgcodecs;opencv_dnn;opencv_flann;opencv_core;opencv_video;opencv_videoio;opencv_dpm;opencv_bgsegm;opencv_aruco;opencv_hfs;opencv_optflow;opencv_bioinspired;opencv_xfeatures2d;opencv_phase_unwrapping;opencv_ximgproc;opencv_surface_matching;opencv_plot;opencv_xobjdetect;opencv_saliency;opencv_dnn_objdetect;opencv_datasets;opencv_hdf;opencv_fuzzy;opencv_reg;opencv_img_hash;opencv_tracking;opencv_rgbd;opencv_text;opencv_freetype;opencv_ccalib;opencv_line_descriptor;opencv_xphoto;opencv_face;opencv_structured_light;opencv_stereo aruco) 
 
-SET(aruco_FOUND 1)
-SET(aruco_VERSION        2.0.14)
-SET(aruco_VERSION_MAJOR  2)
-SET(aruco_VERSION_MINOR  0)
-SET(aruco_VERSION_PATCH  1)
+SET(aruco_FOUND YES)
+SET(aruco_FOUND "YES")
+SET(aruco_VERSION        3.1.12)
+SET(aruco_VERSION_MAJOR  3)
+SET(aruco_VERSION_MINOR  1)
+SET(aruco_VERSION_PATCH  12)
