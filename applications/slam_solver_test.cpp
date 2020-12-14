@@ -63,7 +63,7 @@ using namespace cv;
 int main(int argc, char** argv)
 {
     EventLogger& logger = EventLogger::getInstance();
-    logger.setVerbosityLevel(EventLogger::L_ERROR);
+    logger.setVerbosityLevel(EventLogger::L_INFO);
 
     RGBDLoader loader;
     Intrinsics intr(0);
@@ -73,12 +73,11 @@ int main(int argc, char** argv)
     Mat frame, depth;
     SLAM_Solver slam_solver;
     int num_keyframes = 0;
-    if (argc != 2)
+    if(argc != 2)
     {
-        logger.print(
-            EventLogger::L_INFO,
-            "[optical_flow_visual_odometry_test.cpp] Usage: %s <path/to/config_file.yaml>\n",
-            argv[0]);
+        logger.print(EventLogger::L_INFO,
+        "[slam_solver_test.cpp] Usage: %s <path/to/config_file.yaml>\n",
+        argv[0]);
         exit(0);
     }
     ConfigLoader param_loader(argv[1]);
@@ -88,7 +87,7 @@ int main(int argc, char** argv)
     visualizer.addReferenceFrame(vo.pose_, "origin");
 
     // Compute visual odometry on each image
-    for (int i = 0; i < loader.num_images_; i++)
+    for(int i = 0; i < loader.num_images_; i++)
     {
         // Load RGB-D image
         loader.getNextImage(frame, depth);
@@ -97,7 +96,7 @@ int main(int argc, char** argv)
         bool is_kf = vo.computeCameraPose(frame, depth);
 
         // View tracked points
-        for (size_t k = 0; k < vo.tracker_.curr_pts_.size(); k++)
+        for(size_t k = 0; k < vo.tracker_.curr_pts_.size(); k++)
         {
             Point2i pt1 = vo.tracker_.prev_pts_[k];
             Point2i pt2 = vo.tracker_.curr_pts_[k];
@@ -110,13 +109,14 @@ int main(int argc, char** argv)
             line(frame, pt1, pt2, color);
         }
 
+
         visualizer.viewReferenceFrame(vo.pose_);
-        visualizer.viewPointCloud(vo.curr_dense_cloud_, vo.pose_);
-        visualizer.addQuantizedPointCloud(vo.curr_dense_cloud_, 0.05, vo.pose_);
+        //visualizer.viewPointCloud(vo.curr_dense_cloud_, vo.pose_); //use either this function or the one below (don't use them simultaneously)
         visualizer.viewQuantizedPointCloud(vo.curr_dense_cloud_, 0.05, vo.pose_);
+        //visualizer.addQuantizedPointCloud(vo.curr_dense_cloud_, 0.05, vo.pose_);
         visualizer.addCameraPath(vo.pose_);
 
-        if (is_kf)
+        if(is_kf)
         {
             slam_solver.addVertexAndEdge(vo.getLastKeyframe().pose_, num_keyframes);
             visualizer.addReferenceFrame(vo.getLastKeyframe().pose_, to_string(num_keyframes));
@@ -129,9 +129,9 @@ int main(int argc, char** argv)
         imshow("Image view", frame);
         imshow("Depth view", depth);
         char key = waitKey(1);
-        if (key == 27 || key == 'q' || key == 'Q')
+        if(key == 27 || key == 'q' || key == 'Q')
         {
-            logger.print(EventLogger::L_INFO, "[optical_flow_visual_odometry_test.cpp] Exiting\n", argv[0]);
+            logger.print(EventLogger::L_INFO, "[slam_solver_test.cpp] Exiting\n", argv[0]);
             break;
         }
     }
