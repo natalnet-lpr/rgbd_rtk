@@ -31,7 +31,6 @@ using namespace g2o;
 
 void SLAM_Solver::addEdgeToList(const int& from_id, const int& to_id)
 {
-    printf(">>> positions_ has size %lu\n", positions_.size());
     Edge ep(from_id, to_id, positions_[from_id], positions_[to_id]);
     stringstream edge_name;
     edge_name << "edge_" << from_id << "_" << to_id;
@@ -41,7 +40,8 @@ void SLAM_Solver::addEdgeToList(const int& from_id, const int& to_id)
     // Check if the edge is "odometry" (from i to i+1) or "loop closing" (from i to j)
     (to_id - from_id == 1) ? odometry_edges_.push_back(ep) : loop_edges_.push_back(ep);
     logger.print(EventLogger::L_INFO, "[SLAM_Solver::addEdgeToList] DEBUG: odom. edges: %lu\n", odometry_edges_.size());
-    logger.print(EventLogger::L_INFO, "[SLAM_Solver::addEdgeToList] DEBUG: loop closing edges: %lu\n", loop_edges_.size());
+    logger.print(
+        EventLogger::L_INFO, "[SLAM_Solver::addEdgeToList] DEBUG: loop closing edges: %lu\n", loop_edges_.size());
 }
 
 void SLAM_Solver::updateState()
@@ -115,7 +115,8 @@ void SLAM_Solver::updateState()
         loop_edges_[i].pose_from_ = positions_[id_from];
         loop_edges_[i].pose_to_ = positions_[id_to];
     }
-    logger.print(EventLogger::L_INFO, "[SLAM_Solver::updateState] DEBUG: Loop closing edges: %lu\n", loop_edges_.size());
+    logger.print(
+        EventLogger::L_INFO, "[SLAM_Solver::updateState] DEBUG: Loop closing edges: %lu\n", loop_edges_.size());
 }
 
 /* #####################################################
@@ -157,9 +158,12 @@ void SLAM_Solver::addVertexAndEdge(const Eigen::Affine3f& pose, const int& id)
         Eigen::Vector3d pos = est.translation();
         positions_.push_back(pos);
 
-        logger.print(EventLogger::L_INFO,
-                     "[SLAM_Solver::addVertexAndEdge] DEBUG: position (%f, %f, %f)\n", 
-                     pos[0], pos[1], pos[2]);
+        logger.print(
+            EventLogger::L_INFO,
+            "[SLAM_Solver::addVertexAndEdge] DEBUG: position (%f, %f, %f)\n",
+            pos[0],
+            pos[1],
+            pos[2]);
     }
     // When adding any nodes other than the first, add an edge connecting
     // to the previous one
@@ -185,10 +189,18 @@ void SLAM_Solver::addVertexAndEdge(const Eigen::Affine3f& pose, const int& id)
 
         addEdgeToList(v0->id(), v1->id());
 
-        logger.print(EventLogger::L_INFO,
-                     "[SLAM_Solver::addVertexAndEdge] DEBUG: position (%f, %f, %f)\n", 
-                     pos[0], pos[1], pos[2]);
-        logger.print(EventLogger::L_INFO, "[SLAM_Solver::addVertexAndEdge] DEBUG: Adding edge(%lu -> %lu)\n", v0->id(), v1->id());
+        logger.print(
+            EventLogger::L_INFO,
+            "[SLAM_Solver::addVertexAndEdge] DEBUG: position (%f, %f, %f)\n",
+            pos[0],
+            pos[1],
+            pos[2]);
+
+        logger.print(
+            EventLogger::L_INFO,
+            "[SLAM_Solver::addVertexAndEdge] DEBUG: Adding edge(%lu -> %lu)\n",
+            v0->id(),
+            v1->id());
     }
 
     last_added_id_ = id;
@@ -202,21 +214,23 @@ void SLAM_Solver::addLoopClosingEdge(const Eigen::Affine3f& vertex_to_origin_tra
     VertexSE3* v = dynamic_cast<g2o::VertexSE3*>(optimizer_.vertex(id));
 
     printf(">>> trying to access position %i\n", id);
-/*
-    Eigen::Isometry3d measurement(vertex_to_origin_transf.matrix().cast<double>());
+    /*
+        Eigen::Isometry3d measurement(vertex_to_origin_transf.matrix().cast<double>());
 
-    EdgeSE3* e = new EdgeSE3;
-    e->vertices()[0] = v;
-    e->vertices()[1] = origin;
-    e->setMeasurement(measurement);
-    optimizer_.addEdge(e);
-    printf("Add edge ok\n");
-*/
+        EdgeSE3* e = new EdgeSE3;
+        e->vertices()[0] = v;
+        e->vertices()[1] = origin;
+        e->setMeasurement(measurement);
+        optimizer_.addEdge(e);
+        printf("Add edge ok\n");
+    */
     addEdgeToList(v->id(), origin->id());
 
-    logger.print(EventLogger::L_INFO,
-                 "[SLAM_Solver::addLoopClosingEdge] DEBUG: Add loop closing edge: %lu -> %lu\n",\
-                 v->id(), origin->id());
+    logger.print(
+        EventLogger::L_INFO,
+        "[SLAM_Solver::addLoopClosingEdge] DEBUG: Add loop closing edge: %lu -> %lu\n",
+        v->id(),
+        origin->id());
 }
 
 void SLAM_Solver::optimizeGraph(const int& k)
