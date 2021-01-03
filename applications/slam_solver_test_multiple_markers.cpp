@@ -75,33 +75,37 @@ struct Pose
     float w_rotation;
 };
 
+vector<Pose> all_markers; // List of marker struct
+MarkerFinder marker_finder;
+SLAM_Solver slam_solver;
+int num_keyframes = 0;
+ReconstructionVisualizer visualizer;
+
+/**
+ * Check if the aruco is already found, if it is we do nothing, if it was not we add
+ * in the aruco vector
+ */
+void isArucoFound(int i);
+
 /**
  * This program shows the use of camera pose estimation using optical flow visual odometry.
  * @param .yml config. file (from which index_file is used)
  */
 int main(int argc, char** argv)
 {
-    int num_keyframes = 0;
-    bool slam_solver_started = false;
-    float marker_size, aruco_max_distance;
-
-    string camera_calibration_file, aruco_dic, index_file;
     EventLogger& logger = EventLogger::getInstance();
-    logger.setVerbosityLevel(EventLogger::L_ERROR);
-
-    Pose marker; // aruco marker
-    SLAM_Solver slam_solver;
-    ReconstructionVisualizer visualizer;
+    logger.setVerbosityLevel(EventLogger::L_INFO);
+    RGBDLoader loader;
     Intrinsics intr(0);
     OpticalFlowVisualOdometry vo(intr);
-    MarkerFinder marker_finder;
-    RGBDLoader loader;
+    string camera_calibration_file, aruco_dic, index_file;
     Mat frame, depth;
-    Eigen::Affine3f last_keyframe;
+    float marker_size, aruco_max_distance;
     // Slam solver will start when the marker is found for the first time
+    bool slamSolveStarted = false;
     if (argc != 2)
     {
-        logger.print(EventLogger::L_ERROR, "[slam_solver_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
+        logger.print(EventLogger::L_INFO, "[slam_solver_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
         exit(0);
     }
 
@@ -122,53 +126,12 @@ int main(int argc, char** argv)
         // Load RGB-D image
         loader.getNextImage(frame, depth);
 
-        // Try to find the aruco marker, if found sets the aruco pose as initial and gets the cam_pose
+        // Try to find the aruco marker, if found sets the aruco pose as initial and gets the
+        // cam_pose
         marker_finder.detectMarkersPoses(frame, vo.pose_, aruco_max_distance);
-        for (size_t i = 0; i < marker_finder.markers_.size(); i++)
-        {
-            // If we found the mark for the first time, we will add the marker as the origin of the system
-            // Then we add the first camera pose related to the marker pose.
-            if (slam_solver_started == false)
-            {
-                // Getting Camera Pose
-                vo.pose_ = marker_finder.marker_poses_[i];
-                // Adding first pose to slam_solver and visualizer
-                slam_solver.addVertexAndEdge(marker_finder.marker_poses_[i], num_keyframes);
-                visualizer.addReferenceFrame(marker_finder.marker_poses_[i], to_string(num_keyframes));
-                num_keyframes++; // Increment the number of keyframes found
+        for (size_t i = 0; i < marker_finder.markers_.size(); i++) { isArucoFound(i); }
 
-                // Set slam solver started to true since we found the marker for the first time
-                slam_solver_started = true;
-                // THIS SHOULD NOT BE HERE, THE ONLY REASON IS HERE IS BECAUSE I'M TESTING
-                // A PROGRAM THAT SHOULD USE ONLY ONE MARKER IN A DATASET WITH MULTIPLE MARKERS
-                marker.id = marker_finder.markers_[i].id;
-            }
-
-            // If we found the marker again
-            // THIS SHOULD BE JUST AN ELSE, NEED TO REMOVE AFTER TESTING WITH A DATASET WITH ONLY ONE MARKER
-            else if (marker.id == i)
-            {
-                // Add the pose given by marker and creating an edge to the last vertex
-                slam_solver.addVertexAndEdge(marker_finder.marker_poses_[i], num_keyframes);
-                // Adding the loop closing edge that is an edge from this pose to the initial pose
-                slam_solver.addLoopClosingEdge(marker_finder.marker_poses_[i], num_keyframes);
-                visualizer.addReferenceFrame(marker_finder.marker_poses_[i], "c_" + to_string(num_keyframes));
-                Edge ed(
-                    0,
-                    num_keyframes - 1,
-                    Eigen::Vector3d(0, 0, 0),
-                    Eigen::Vector3d(
-                        marker_finder.marker_poses_[i](0, 3),
-                        marker_finder.marker_poses_[i](1, 3),
-                        marker_finder.marker_poses_[i](2, 3)),
-                    to_string(num_keyframes) + " to 0");
-                visualizer.addEdge(ed);
-                num_keyframes++; // Increment the number of keyframes found
-            }
-        }
-
-        // If we have already found the marker we start the keyframe process
-        if (slam_solver_started == true)
+        if (slamSolveStarted == true)
         {
             // Estimate current camera pose
             bool is_kf = vo.computeCameraPose(frame, depth);
@@ -188,31 +151,17 @@ int main(int argc, char** argv)
             }
 
             visualizer.viewReferenceFrame(vo.pose_);
+            // visualizer.viewPointCloud(vo.curr_dense_cloud_, vo.pose_);
+            // Use either ViewPointCloud or ViewQuantizedPointCloud
             visualizer.viewQuantizedPointCloud(vo.curr_dense_cloud_, 0.05, vo.pose_);
-            visualizer.addQuantizedPointCloud(vo.curr_dense_cloud_, 0.05, vo.pose_);
+            // visualizer.addQuantizedPointCloud(vo.curr_dense_cloud_, 0.05, vo.pose_);
+            visualizer.addCameraPath(vo.pose_);
 
-            // If we found a keyframe we will added to slam solver and visualizer
             if (is_kf)
             {
-                // If we have more than one keyframe we will add and edge from the actual keyframe
-                // To the last one
-                if (num_keyframes > 1)
-                {
-                    Edge ed(
-                        num_keyframes,
-                        num_keyframes - 1,
-                        Eigen::Vector3d(last_keyframe(0, 3), last_keyframe(1, 3), last_keyframe(2, 3)),
-                        Eigen::Vector3d(
-                            vo.getLastKeyframe().pose_(0, 3),
-                            vo.getLastKeyframe().pose_(1, 3),
-                            vo.getLastKeyframe().pose_(2, 3)),
-                        to_string(num_keyframes) + " to " + to_string(num_keyframes - 1));
-                    visualizer.addEdge(ed);
-                }
                 slam_solver.addVertexAndEdge(vo.getLastKeyframe().pose_, num_keyframes);
                 visualizer.addReferenceFrame(vo.getLastKeyframe().pose_, to_string(num_keyframes));
                 num_keyframes++; // Increment the number of keyframes found
-                last_keyframe = vo.getLastKeyframe().pose_;
             }
         }
 
@@ -229,4 +178,75 @@ int main(int argc, char** argv)
     }
     slam_solver.optimizeGraph(10);
     return 0;
+}
+
+void isArucoFound(int i)
+{
+    Pose aruco_pose;
+    bool marker_found = false;
+    Eigen::Quaternionf q_aruco; // Quaternion of aruco pose
+
+    if (all_markers.size() == 0)
+    {
+        vo.pose_ = marker_finder.marker_poses_[i];
+        visualizer.addReferenceFrame();
+        slamSolveStarted = true;
+        aruco_pose.id = marker_finder.markers_[i].id;
+        aruco_pose.x = 0;
+        aruco_pose.y = 0;
+        aruco_pose.z = 0;
+        aruco_pose.x_rotation = 0;
+        aruco_pose.y_rotation = 0;
+        aruco_pose.z_rotation = 0;
+        aruco_pose.w_rotation = 0;
+        all_markers.push_back(aruco_pose);
+        /*
+        aruco_pose.id = marker_finder.markers_[i].id;
+        aruco_pose.x = marker_finder.marker_poses_[i](0, 3);
+        aruco_pose.y = marker_finder.marker_poses_[i](1, 3);
+        aruco_pose.z = marker_finder.marker_poses_[i](2, 3);
+        q_aruco = marker_finder.marker_poses_[i].rotation();
+        aruco_pose.x_rotation = q_aruco.x();
+        aruco_pose.y_rotation = q_aruco.y();
+        aruco_pose.z_rotation = q_aruco.z();
+        aruco_pose.w_rotation = q_aruco.w();
+        all_markers.push_back(aruco_pose);
+        slam_solver.addVertexAndEdge(marker_finder.marker_poses_[i], num_keyframes);
+        slam_solver.addLoopClosingEdge(marker_finder.marker_poses_[i], num_keyframes);
+        visualizer.addReferenceFrame(marker_finder.marker_poses_[i], to_string(num_keyframes));
+        Edge ed(
+            0,
+            num_keyframes - 1,
+            Eigen::Vector3d(0, 0, 0),
+            Eigen::Vector3d(aruco_pose.x, aruco_pose.y, aruco_pose.z));
+        visualizer.addEdge(ed);
+        num_keyframes++; // Increment the number of keyframes found
+        */
+    }
+    else if (all_markers[0].id == i)
+    {
+
+        /*
+        aruco_pose.id = marker_finder.markers_[i].id;
+        aruco_pose.x = marker_finder.marker_poses_[i](0, 3);
+        aruco_pose.y = marker_finder.marker_poses_[i](1, 3);
+        aruco_pose.z = marker_finder.marker_poses_[i](2, 3);
+        q_aruco = marker_finder.marker_poses_[i].rotation();
+        aruco_pose.x_rotation = q_aruco.x();
+        aruco_pose.y_rotation = q_aruco.y();
+        aruco_pose.z_rotation = q_aruco.z();
+        aruco_pose.w_rotation = q_aruco.w();
+        all_markers.push_back(aruco_pose);
+        slam_solver.addVertexAndEdge(marker_finder.marker_poses_[i], num_keyframes);
+        slam_solver.addLoopClosingEdge(marker_finder.marker_poses_[i], num_keyframes);
+        visualizer.addReferenceFrame(marker_finder.marker_poses_[i], to_string(num_keyframes));
+        Edge ed(
+            0,
+            num_keyframes - 1,
+            Eigen::Vector3d(0, 0, 0),
+            Eigen::Vector3d(aruco_pose.x, aruco_pose.y, aruco_pose.z));
+        visualizer.addEdge(ed);
+        num_keyframes++; // Increment the number of keyframes found
+        */
+    }
 }
