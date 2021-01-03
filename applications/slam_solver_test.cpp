@@ -102,12 +102,14 @@ int main(int argc, char** argv)
     string camera_calibration_file, aruco_dic, index_file;
     Mat frame, depth;
     float marker_size, aruco_max_distance;
-    
+    // Slam solver will start when the marker is found for the first time
+    bool slamSolveStarted = false;
     if (argc != 2)
     {
-        logger.print(EventLogger::L_INFO,
-        "[slam_solver_test.cpp] Usage: %s <path/to/config_file.yaml>\n",
-        argv[0]);
+        logger.print(
+            EventLogger::L_INFO,
+            "[slam_solver_test.cpp] Usage: %s <path/to/config_file.yaml>\n",
+            argv[0]);
         exit(0);
     }
 
@@ -121,43 +123,49 @@ int main(int argc, char** argv)
 
     marker_finder.markerParam(camera_calibration_file, marker_size, aruco_dic);
     loader.processFile(index_file);
-    visualizer.addReferenceFrame(vo.pose_, "origin");
 
     // Compute visual odometry on each image
-    for(int i = 0; i < loader.num_images_; i++)
+    for (int i = 0; i < loader.num_images_; i++)
     {
         // Load RGB-D image
         loader.getNextImage(frame, depth);
 
-        // Estimate current camera pose
-        bool is_kf = vo.computeCameraPose(frame, depth);
+        // Find ARUCO markers and compute their poses
+        marker_finder.detectMarkersPoses(frame, vo.pose_, aruco_max_distance);
+        for (size_t i = 0; i < marker_finder.markers_.size(); i++) { isArucoFound(i); }
 
-        // View tracked points
-        for(size_t k = 0; k < vo.tracker_.curr_pts_.size(); k++)
+        if (slamSolveStarted == true)
         {
-            Point2i pt1 = vo.tracker_.prev_pts_[k];
-            Point2i pt2 = vo.tracker_.curr_pts_[k];
-            Scalar color;
+            // Estimate current camera pose
+            bool is_kf = vo.computeCameraPose(frame, depth);
 
-            is_kf ? color = CV_RGB(255, 0, 0) : color = CV_RGB(0, 0, 255);
+            // View tracked points
+            for (size_t k = 0; k < vo.tracker_.curr_pts_.size(); k++)
+            {
+                Point2i pt1 = vo.tracker_.prev_pts_[k];
+                Point2i pt2 = vo.tracker_.curr_pts_[k];
+                Scalar color;
 
-            circle(frame, pt1, 1, color, -1);
-            circle(frame, pt2, 3, color, -1);
-            line(frame, pt1, pt2, color);
-        }
+                is_kf ? color = CV_RGB(255, 0, 0) : color = CV_RGB(0, 0, 255);
 
+                circle(frame, pt1, 1, color, -1);
+                circle(frame, pt2, 3, color, -1);
+                line(frame, pt1, pt2, color);
+            }
 
-        visualizer.viewReferenceFrame(vo.pose_);
-        //visualizer.viewPointCloud(vo.curr_dense_cloud_, vo.pose_); //use either this function or the one below (don't use them simultaneously)
-        visualizer.viewQuantizedPointCloud(vo.curr_dense_cloud_, 0.05, vo.pose_);
-        //visualizer.addQuantizedPointCloud(vo.curr_dense_cloud_, 0.05, vo.pose_);
-        visualizer.addCameraPath(vo.pose_);
+            visualizer.viewReferenceFrame(vo.pose_);
+            // visualizer.viewPointCloud(vo.curr_dense_cloud_, vo.pose_); //use either this function
+            // or the one below (don't use them simultaneously)
+            visualizer.viewQuantizedPointCloud(vo.curr_dense_cloud_, 0.05, vo.pose_);
+            // visualizer.addQuantizedPointCloud(vo.curr_dense_cloud_, 0.05, vo.pose_);
+            visualizer.addCameraPath(vo.pose_);
 
-        if(is_kf)
-        {
-            slam_solver.addVertexAndEdge(vo.getLastKeyframe().pose_, num_keyframes);
-            visualizer.addReferenceFrame(vo.getLastKeyframe().pose_, to_string(num_keyframes));
-            num_keyframes++; // Increment the number of keyframes found
+            if (is_kf)
+            {
+                slam_solver.addVertexAndEdge(vo.getLastKeyframe().pose_, num_keyframes);
+                visualizer.addReferenceFrame(vo.getLastKeyframe().pose_, to_string(num_keyframes));
+                num_keyframes++; // Increment the number of keyframes found
+            }
         }
 
         visualizer.spinOnce();
@@ -165,17 +173,10 @@ int main(int argc, char** argv)
         imshow("Image view", frame);
         // imshow("Depth view", depth);
         char key = waitKey(1);
-        if(key == 27 || key == 'q' || key == 'Q')
+        if (key == 27 || key == 'q' || key == 'Q')
         {
             logger.print(EventLogger::L_INFO, "[slam_solver_test.cpp] Exiting\n", argv[0]);
             break;
-        }
-
-        // Find ARUCO markers and compute their poses
-        marker_finder.detectMarkersPoses(frame, vo.pose_, aruco_max_distance);
-        for (size_t i = 0; i < marker_finder.markers_.size(); i++)
-        {
-            isArucoFound(i); 
         }
     }
     slam_solver.optimizeGraph(10);
@@ -189,10 +190,13 @@ void isArucoFound(int i)
     Eigen::Quaternionf q_aruco; // Quaternion of aruco pose
 
     // I'm pushing the pose in a vector because we can use tha position to create a threashold
-    // when we see a marker already seen, something like "if I'm closer to the marker I'll update the position"
+    // when we see a marker already seen, something like "if I'm closer to the marker I'll update
+    // the position"
 
     if (all_markers.size() == 0)
     {
+
+        /*
         aruco_pose.id = marker_finder.markers_[i].id;
         aruco_pose.x = marker_finder.marker_poses_[i](0, 3);
         aruco_pose.y = marker_finder.marker_poses_[i](1, 3);
@@ -203,38 +207,16 @@ void isArucoFound(int i)
         aruco_pose.z_rotation = q_aruco.z();
         aruco_pose.w_rotation = q_aruco.w();
         all_markers.push_back(aruco_pose);
+        slam_solver.addVertexAndEdge(marker_finder.marker_poses_[i], num_keyframes);
         slam_solver.addLoopClosingEdge(marker_finder.marker_poses_[i], num_keyframes);
         visualizer.addReferenceFrame(marker_finder.marker_poses_[i], to_string(num_keyframes));
+        Edge ed(
+            0,
+            num_keyframes - 1,
+            Eigen::Vector3d(0, 0, 0),
+            Eigen::Vector3d(aruco_pose.x, aruco_pose.y, aruco_pose.z));
+        visualizer.addEdge(ed);
         num_keyframes++; // Increment the number of keyframes found
-    }
-    else
-    {
-        // If it is not empty, we need to be sure that the marker we have already exists
-        for (auto pose : all_markers)
-        {
-            if (marker_finder.markers_[i].id == pose.id)
-            {
-                marker_found = true;
-                break;
-            }
-            // If exists we do nothing
-        }
-        // If do not exists we add
-        if (marker_found == false)
-        {
-            aruco_pose.id = marker_finder.markers_[i].id;
-            aruco_pose.x = marker_finder.marker_poses_[i](0, 3);
-            aruco_pose.y = marker_finder.marker_poses_[i](1, 3);
-            aruco_pose.z = marker_finder.marker_poses_[i](2, 3);
-            q_aruco = marker_finder.marker_poses_[i].rotation();
-            aruco_pose.x_rotation = q_aruco.x();
-            aruco_pose.y_rotation = q_aruco.y();
-            aruco_pose.z_rotation = q_aruco.z();
-            aruco_pose.w_rotation = q_aruco.w();
-            all_markers.push_back(aruco_pose);
-            slam_solver.addLoopClosingEdge(marker_finder.marker_poses_[i], num_keyframes);
-            visualizer.addReferenceFrame(marker_finder.marker_poses_[i], to_string(num_keyframes));
-            num_keyframes++; // Increment the number of keyframes found
-        }
+        */
     }
 }
