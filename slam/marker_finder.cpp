@@ -38,7 +38,10 @@ using namespace std;
 using namespace cv;
 using namespace aruco;
 
-void MarkerFinder::setMarkerPoses(const Eigen::Affine3f& cam_pose, const float& aruco_max_distance)
+void MarkerFinder::setMarkerPoses(
+    const Eigen::Affine3f& cam_pose,
+    const float& aruco_max_distance,
+    const bool& is_cam_reference_frame)
 { /* This function save the marker pose related to the cam_pose, of course, you can always use a identity matrix
  in order to get the pose of the aruco marker assuming that the camera is the initial pose.
  there is an max distance that a marker can be related to the camera in order to be a valid marker
@@ -78,16 +81,33 @@ void MarkerFinder::setMarkerPoses(const Eigen::Affine3f& cam_pose, const float& 
         // way aruco uses orientation.
         */
         // Infinite
-        if (aruco_max_distance == -1) marker_poses_.push_back(cam_pose * P);
-
-        // Marker is closer than the max distance
-        else if (sqrt(x + y + z) < aruco_max_distance)
-            marker_poses_.push_back(cam_pose * P);
-
-        else // Marker is further than the max distance
+        if (is_cam_reference_frame == true)
         {
-            markers_.clear();
-            continue;
+            if (aruco_max_distance == -1) marker_poses_.push_back(cam_pose * P);
+
+            // Marker is closer than the max distance
+            else if (sqrt(x + y + z) < aruco_max_distance)
+                marker_poses_.push_back(cam_pose * P);
+
+            else // Marker is further than the max distance
+            {
+                markers_.clear();
+                continue;
+            }
+        }
+        else
+        {
+            if (aruco_max_distance == -1) marker_poses_.push_back(P);
+
+            // Marker is closer than the max distance
+            else if (sqrt(x + y + z) < aruco_max_distance)
+                marker_poses_.push_back(P);
+
+            else // Marker is further than the max distance
+            {
+                markers_.clear();
+                continue;
+            }
         }
     }
 }
@@ -102,10 +122,11 @@ void MarkerFinder::markerParam(const string& params, const float& size, const st
 void MarkerFinder::detectMarkersPoses(
     const cv::Mat& img,
     const Eigen::Affine3f& cam_pose,
-    const float& aruco_max_distance)
+    const float& aruco_max_distance,
+    const bool& is_cam_reference_frame)
 {
     markers_.clear();
-    marker_detector_.detect(img, markers_, camera_params_, marker_size_); // detec markers
+    marker_detector_.detect(img, markers_, camera_params_, marker_size_); // detect markers
 
-    setMarkerPoses(cam_pose, aruco_max_distance); // set the pose
+    setMarkerPoses(cam_pose, aruco_max_distance, is_cam_reference_frame); // set the pose
 }

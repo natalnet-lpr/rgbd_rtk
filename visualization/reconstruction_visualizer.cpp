@@ -63,12 +63,19 @@ ReconstructionVisualizer::ReconstructionVisualizer()
     viewer_->setBackgroundColor(0.6, 0.6, 0.6);
     viewer_->initCameraParameters();
     viewer_->setSize(640, 480);
-    viewer_->setCameraPosition(0.5, 0.5, -1.5,  // pos
-                               0.5, 0.5, 0.0,   // view
-                               0.0, -1.0, 0.0); // up;
+    viewer_->setCameraPosition(
+        0.5,
+        0.5,
+        -1.5, // pos
+        0.5,
+        0.5,
+        0.0, // view
+        0.0,
+        -1.0,
+        0.0); // up;
 }
 
-ReconstructionVisualizer::ReconstructionVisualizer(const std::string &title)
+ReconstructionVisualizer::ReconstructionVisualizer(const std::string& title)
 {
     // Initialize attributs
     num_clouds_ = 0, num_lines_ = 0, num_ref_frames_ = 0, num_keyframes_ = 0, num_edges_ = 0;
@@ -78,12 +85,19 @@ ReconstructionVisualizer::ReconstructionVisualizer(const std::string &title)
     viewer_->setBackgroundColor(0.6, 0.6, 0.6);
     viewer_->initCameraParameters();
     viewer_->setSize(640, 480);
-    viewer_->setCameraPosition(0.5, 0.5, -1.5,  // pos
-                               0.5, 0.5, 0.0,   // view
-                               0.0, -1.0, 0.0); // up;
+    viewer_->setCameraPosition(
+        0.5,
+        0.5,
+        -1.5, // pos
+        0.5,
+        0.5,
+        0.0, // view
+        0.0,
+        -1.0,
+        0.0); // up;
 }
 
-void ReconstructionVisualizer::addCameraPath(const Eigen::Affine3f &pose)
+void ReconstructionVisualizer::addCameraPath(const Eigen::Affine3f& pose)
 {
     // Set camera pose
     curr_pos_.x = pose(0, 3);
@@ -93,19 +107,17 @@ void ReconstructionVisualizer::addCameraPath(const Eigen::Affine3f &pose)
     stringstream line_name;
     line_name << "line" << num_lines_++;
     viewer_->addLine(prev_pos_, curr_pos_, 1.0, 0.0, 0.0, line_name.str());
-    viewer_->setShapeRenderingProperties(pcl::visualization::PCL_VISUALIZER_LINE_WIDTH, 5,
-                                         line_name.str());
+    viewer_->setShapeRenderingProperties(pcl::visualization::PCL_VISUALIZER_LINE_WIDTH, 5, line_name.str());
 
     prev_pos_ = curr_pos_;
 }
 
-void ReconstructionVisualizer::addReferenceFrame(const Eigen::Affine3f &pose,
-                                                 const std::string &text)
+void ReconstructionVisualizer::addReferenceFrame(const Eigen::Affine3f& pose, const std::string& text)
 {
     // Add frame
     stringstream frame_name;
     frame_name << "ref" << num_ref_frames_;
-    viewer_->addCoordinateSystem(0.3, pose, frame_name.str());
+    viewer_->addCoordinateSystem(0.1, pose, frame_name.str());
     num_ref_frames_++;
     // Add text
     PointT text_pose;
@@ -116,7 +128,7 @@ void ReconstructionVisualizer::addReferenceFrame(const Eigen::Affine3f &pose,
     viewer_->addText3D(text, text_pose, 0.025, 1, 1, 1, frame_name.str());
 }
 
-void ReconstructionVisualizer::addKeyFrame(const Keyframe kf, const std::string &text)
+void ReconstructionVisualizer::addKeyFrame(const Keyframe kf, const std::string& text)
 {
     stringstream frame_name;
     frame_name << "key" << num_keyframes_;
@@ -133,8 +145,7 @@ void ReconstructionVisualizer::addKeyFrame(const Keyframe kf, const std::string 
     viewer_->addText3D(text, text_pose, 0.015, 1, 0, 0, frame_name.str());
 }
 
-void ReconstructionVisualizer::addPointCloud(const pcl::PointCloud<PointT>::Ptr &cloud,
-                                             const Eigen::Affine3f &pose)
+void ReconstructionVisualizer::addPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud, const Eigen::Affine3f& pose)
 {
     // Create a new point cloud
     pcl::PointCloud<PointT>::Ptr transf_cloud(new pcl::PointCloud<PointT>);
@@ -152,9 +163,10 @@ void ReconstructionVisualizer::addPointCloud(const pcl::PointCloud<PointT>::Ptr 
     // pcl::visualization::PointCloudColorHandlerCustom<PointT> blue(curr_cloud, 0, 0, 255);
 }
 
-void ReconstructionVisualizer::addQuantizedPointCloud(const pcl::PointCloud<PointT>::Ptr &cloud,
-                                                      const float &radius,
-                                                      const Eigen::Affine3f &pose)
+void ReconstructionVisualizer::addQuantizedPointCloud(
+    const pcl::PointCloud<PointT>::Ptr& cloud,
+    const float& radius,
+    const Eigen::Affine3f& pose)
 {
     // Create a new point cloud
     pcl::PointCloud<PointT>::Ptr quant_cloud(new pcl::PointCloud<PointT>);
@@ -167,7 +179,7 @@ void ReconstructionVisualizer::addQuantizedPointCloud(const pcl::PointCloud<Poin
     addPointCloud(quant_cloud, pose);
 }
 
-void ReconstructionVisualizer::addEdge(const Edge &edge, const Eigen::Vector3f &color)
+void ReconstructionVisualizer::addEdge(const Edge& edge, const Eigen::Vector3f& color)
 {
     // Create the "from" and "to" pcl points
     pcl::PointXYZ from_pt(edge.pose_from_(0, 0), edge.pose_from_(1, 0), edge.pose_from_(2, 0));
@@ -180,18 +192,13 @@ void ReconstructionVisualizer::addEdge(const Edge &edge, const Eigen::Vector3f &
     num_edges_++;
 }
 
-void ReconstructionVisualizer::addEdges(const std::vector<Edge> &edges,
-                                        const Eigen::Vector3f &color)
+void ReconstructionVisualizer::addEdges(const std::vector<Edge>& edges, const Eigen::Vector3f& color)
 {
     // Iterate over vector edges and add them to the visualizer
-    for (size_t i = 0; i < edges.size(); i++)
-    {
-        addEdge(edges[i], color);
-    }
+    for (size_t i = 0; i < edges.size(); i++) { addEdge(edges[i], color); }
 }
 
-void ReconstructionVisualizer::addOptimizedEdges(const std::vector<Edge> &edges,
-                                                 const Eigen::Vector3f &color)
+void ReconstructionVisualizer::addOptimizedEdges(const std::vector<Edge>& edges, const Eigen::Vector3f& color)
 {
     // Iterate over vector edges, optimizing them and adding them to the visualizer
     for (size_t i = 0; i < edges.size(); i++)
@@ -210,8 +217,7 @@ void ReconstructionVisualizer::addOptimizedEdges(const std::vector<Edge> &edges,
     }
 }
 
-void ReconstructionVisualizer::viewReferenceFrame(const Eigen::Affine3f &pose,
-                                                  const std::string &text)
+void ReconstructionVisualizer::viewReferenceFrame(const Eigen::Affine3f& pose, const std::string& text)
 {
     viewer_->removeCoordinateSystem(text);
     viewer_->addCoordinateSystem(0.3, pose, text);
@@ -225,8 +231,7 @@ void ReconstructionVisualizer::viewReferenceFrame(const Eigen::Affine3f &pose,
     viewer_->addText3D(text, pose_txt, 0.025, 1, 1, 1, ss.str());
 }
 
-void ReconstructionVisualizer::viewPointCloud(const pcl::PointCloud<PointT>::Ptr &cloud,
-                                              const Eigen::Affine3f &pose)
+void ReconstructionVisualizer::viewPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud, const Eigen::Affine3f& pose)
 {
     // Create a new point cloud
     pcl::PointCloud<PointT>::Ptr transf_cloud(new pcl::PointCloud<PointT>);
@@ -240,9 +245,10 @@ void ReconstructionVisualizer::viewPointCloud(const pcl::PointCloud<PointT>::Ptr
         viewer_->addPointCloud<PointT>(transf_cloud, rgb, "cloud");
 }
 
-void ReconstructionVisualizer::viewQuantizedPointCloud(const pcl::PointCloud<PointT>::Ptr &cloud,
-                                                       const float &radius,
-                                                       const Eigen::Affine3f &pose)
+void ReconstructionVisualizer::viewQuantizedPointCloud(
+    const pcl::PointCloud<PointT>::Ptr& cloud,
+    const float& radius,
+    const Eigen::Affine3f& pose)
 {
     // Create a new point cloud
     pcl::PointCloud<PointT>::Ptr quant_cloud(new pcl::PointCloud<PointT>);
@@ -255,17 +261,16 @@ void ReconstructionVisualizer::viewQuantizedPointCloud(const pcl::PointCloud<Poi
     viewPointCloud(quant_cloud, pose);
 }
 
-void ReconstructionVisualizer::updateKeyframes(const std::vector<Keyframe> &keyframes)
+void ReconstructionVisualizer::updateKeyframes(const std::vector<Keyframe>& keyframes)
 {
     // Set verbosity level to debug
-    EventLogger &logger = EventLogger::getInstance();
+    EventLogger& logger = EventLogger::getInstance();
     logger.setVerbosityLevel(EventLogger::L_DEBUG);
     logger.setLogFileName("log_reconstruction_visualizer.txt");
 
     viewer_->removePointCloud("cloud");
 
-    logger.print(EventLogger::L_INFO,
-                 "[Visualizer::updateKeyframes] INFO: Updating keyframe visualization\n");
+    logger.print(EventLogger::L_INFO, "[Visualizer::updateKeyframes] INFO: Updating keyframe visualization\n");
 
     // Iterate over keyframes and add their clouds to visualization
     for (size_t i = 0; i < keyframes.size(); i++)
@@ -312,28 +317,30 @@ void ReconstructionVisualizer::updateKeyframes(const std::vector<Keyframe> &keyf
         pos.z = camera(2, 3);
         // viewer_->addText3D(coord_sys_name, pos, 0.025);
     }
-    logger.print(EventLogger::L_INFO,
-                 "[Visualizer::updateKeyframes] INFO: keyframe visualization UPDATED\n");
+    logger.print(EventLogger::L_INFO, "[Visualizer::updateKeyframes] INFO: keyframe visualization UPDATED\n");
 }
 
-void ReconstructionVisualizer::removeEdge(const Edge &edge) { viewer_->removeShape(edge.name_); }
+void ReconstructionVisualizer::removeEdge(const Edge& edge) { viewer_->removeShape(edge.name_); }
 
-void ReconstructionVisualizer::removeEdges(const std::vector<Edge> &edges)
+void ReconstructionVisualizer::removeEdges(const std::vector<Edge>& edges)
 {
     // Iterate over the edges vector and remove all of them
-    for (size_t i = 0; i < edges.size(); i++)
-    {
-        removeEdge(edges[i]);
-    }
+    for (size_t i = 0; i < edges.size(); i++) { removeEdge(edges[i]); }
 }
 
-void ReconstructionVisualizer::setCameraPosition(const float &pos_x, const float &pos_y,
-                                                 const float &pos_z)
+void ReconstructionVisualizer::setCameraPosition(const float& pos_x, const float& pos_y, const float& pos_z)
 {
     // Given the x y and z, set the camera position
-    viewer_->setCameraPosition(pos_x, pos_y, pos_z, // eye
-                               0.0, 0.0, 50.0,      // center
-                               0.0, -1.0, 0.0);     // up
+    viewer_->setCameraPosition(
+        pos_x,
+        pos_y,
+        pos_z, // eye
+        0.0,
+        0.0,
+        50.0, // center
+        0.0,
+        -1.0,
+        0.0); // up
 }
 
 void ReconstructionVisualizer::spin() { viewer_->spin(); }

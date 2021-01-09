@@ -70,8 +70,13 @@ protected:
      * Set the pose of all detected markers w.r.t. the global ref. frame
      * @param camera pose as affine3f
      * @param aruco_max_distance minimum distance to aruco be considered valid
+     * @param is_cam_reference_frame If set to true the function will return the marker pose in camera reference,
+     * if sets to false it will return the camera pose in marker reference
      */
-    void setMarkerPoses(const Eigen::Affine3f& cam_pose, const float& aruco_max_distance);
+    void setMarkerPoses(
+        const Eigen::Affine3f& cam_pose,
+        const float& aruco_max_distance,
+        const bool& is_cam_reference_frame);
 
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -100,6 +105,10 @@ public:
      * @param rgb image @param cam_pose camera pose
      * @param aruco_max_distance max distance aruco will be saved
      */
-    void detectMarkersPoses(const cv::Mat& img, const Eigen::Affine3f& cam_pose, const float& aruco_max_distance);
+    void detectMarkersPoses(
+        const cv::Mat& img,
+        const Eigen::Affine3f& cam_pose,
+        const float& aruco_max_distance,
+        const bool& is_cam_reference_frame = true);
 };
 #endif /* INCLUDE_MARKER_FINDER_H_ */
