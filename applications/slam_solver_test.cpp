@@ -75,6 +75,15 @@ struct Pose
     float w_rotation;
 };
 
+void addVertixAndEdge(
+    Eigen::Affine3f new_keyframe_pose,
+    Eigen::Affine3f& last_keyframe_pose,
+    Eigen::Affine3f& first_keyframe_pose,
+    int& num_keyframes,
+    SLAM_Solver& slam_solver,
+    ReconstructionVisualizer& visualizer,
+    bool isLoopClosure);
+
 /**
  * This program shows the use of camera pose estimation using optical flow visual odometry.
  * @param .yml config. file (from which index_file is used)
@@ -101,7 +110,10 @@ int main(int argc, char** argv)
     // Slam solver will start when the marker is found for the first time
     if (argc != 2)
     {
-        logger.print(EventLogger::L_ERROR, "[slam_solver_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
+        logger.print(
+            EventLogger::L_ERROR,
+            "[slam_solver_test.cpp] Usage: %s <path/to/config_file.yaml>\n",
+            argv[0]);
         exit(0);
     }
 
@@ -124,13 +136,16 @@ int main(int argc, char** argv)
         // If aruco is not found yet
         if (slam_solver_started == false)
         {
-            marker_finder.detectMarkersPoses(frame, Eigen::Affine3f::Identity(), aruco_max_distance);
+            marker_finder.detectMarkersPoses(
+                frame, Eigen::Affine3f::Identity(), aruco_max_distance);
             for (size_t i = 0; i < marker_finder.markers_.size(); i++)
             {
+                // THIS SHOULD NOT BE HERE, THE ONLY REASON IS HERE IS BECAUSE I'M TESTING
+                // A PROGRAM THAT SHOULD USE ONLY ONE MARKER IN A DATASET WITH MULTIPLE MARKERS
                 if (147 == marker_finder.markers_[i].id)
                 {
-                    // If we found the mark for the first time, we will add the marker as the origin of the system
-                    // Then we add the first camera pose related to the marker pose.
+                    // If we found the mark for the first time, we will add the marker as the origin
+                    // of the system Then we add the first camera pose related to the marker pose.
                     // Getting Camera Pose
                     vo.pose_ = marker_finder.marker_poses_[i];
                     // Adding first pose to slam_solver and visualizer
@@ -139,8 +154,7 @@ int main(int argc, char** argv)
                     num_keyframes++; // Increment the number of keyframes found
                     // Set slam solver started to true since we found the marker for the first time
                     slam_solver_started = true;
-                    // THIS SHOULD NOT BE HERE, THE ONLY REASON IS HERE IS BECAUSE I'M TESTING
-                    // A PROGRAM THAT SHOULD USE ONLY ONE MARKER IN A DATASET WITH MULTIPLE MARKERS
+
                     first_keyframe = vo.pose_;
                     last_keyframe = vo.pose_;
                 }
@@ -156,36 +170,14 @@ int main(int argc, char** argv)
             {
                 if (147 == marker_finder.markers_[i].id)
                 {
-
-                    visualizer.addReferenceFrame(marker_finder.marker_poses_[i], "mpose_" + to_string(num_keyframes));
-                    // Add the pose given by marker and creating an edge to the last vertex
-                    slam_solver.addVertexAndEdge(marker_finder.marker_poses_[i], num_keyframes);
-                    Edge ed_last_vertex(
-                        num_keyframes - 2,
-                        num_keyframes - 1,
-                        Eigen::Vector3d(last_keyframe(0, 3), last_keyframe(1, 3), last_keyframe(2, 3)),
-                        Eigen::Vector3d(
-                            marker_finder.marker_poses_[i](0, 3),
-                            marker_finder.marker_poses_[i](1, 3),
-                            marker_finder.marker_poses_[i](2, 3)),
-                        to_string(num_keyframes - 2) + " to " + to_string(num_keyframes - 1));
-                    visualizer.addEdge(ed_last_vertex);
-
-                    // Adding the loop closing edge that is an edge from this pose to the initial pose
-                    slam_solver.addLoopClosingEdge(marker_finder.marker_poses_[i], num_keyframes);
-                    Edge ed_loop_closure(
-                        0,
-                        num_keyframes - 1,
-                        Eigen::Vector3d(first_keyframe(0, 3), first_keyframe(1, 3), first_keyframe(2, 3)),
-                        Eigen::Vector3d(
-                            marker_finder.marker_poses_[i](0, 3),
-                            marker_finder.marker_poses_[i](1, 3),
-                            marker_finder.marker_poses_[i](2, 3)),
-                        "loop_" + to_string(num_keyframes));
-                    visualizer.addEdge(ed_loop_closure, Eigen::Vector3f(1.0, 0.0, 0.0));
-
-                    num_keyframes++; // Increment the number of keyframes found
-                    last_keyframe = vo.pose_;
+                    addVertixAndEdge(
+                        marker_finder.marker_poses_[i],
+                        last_keyframe,
+                        first_keyframe,
+                        num_keyframes,
+                        slam_solver,
+                        visualizer,
+                        true);
                 }
             }
             // Estimate current camera pose
@@ -212,33 +204,81 @@ int main(int argc, char** argv)
             // If we found a keyframe we will added to slam solver and visualizer
             if (is_kf)
             {
-                visualizer.addReferenceFrame(vo.pose_, to_string(num_keyframes));
-                slam_solver.addVertexAndEdge(vo.pose_, num_keyframes);
+                addVertixAndEdge(
+                    vo.pose_,
+                    last_keyframe,
+                    first_keyframe,
+                    num_keyframes,
+                    slam_solver,
+                    visualizer,
+                    false);
+            }
 
-                Edge ed(
-                    num_keyframes - 2,
-                    num_keyframes - 1,
-                    Eigen::Vector3d(last_keyframe(0, 3), last_keyframe(1, 3), last_keyframe(2, 3)),
-                    Eigen::Vector3d(vo.pose_(0, 3), vo.pose_(1, 3), vo.pose_(2, 3)),
-                    to_string(num_keyframes - 2) + " to " + to_string(num_keyframes - 1));
-                visualizer.addEdge(ed);
+            visualizer.spinOnce();
 
-                num_keyframes++; // Increment the number of keyframes found
-                last_keyframe = vo.pose_;
+            imshow("Image view", frame);
+            // imshow("Depth view", depth);
+            char key = waitKey(1);
+            if (key == 27 || key == 'q' || key == 'Q')
+            {
+                logger.print(EventLogger::L_INFO, "[slam_solver_test.cpp] Exiting\n", argv[0]);
+                break;
             }
         }
-
-        visualizer.spinOnce();
-
-        imshow("Image view", frame);
-        // imshow("Depth view", depth);
-        char key = waitKey(1);
-        if (key == 27 || key == 'q' || key == 'Q')
-        {
-            logger.print(EventLogger::L_INFO, "[slam_solver_test.cpp] Exiting\n", argv[0]);
-            break;
-        }
     }
+    visualizer.spin();
     slam_solver.optimizeGraph(10);
     return 0;
+}
+
+void addVertixAndEdge(
+    Eigen::Affine3f new_keyframe_pose,
+    Eigen::Affine3f& last_keyframe_pose,
+    Eigen::Affine3f& first_keyframe_pose,
+    int& num_keyframes,
+    SLAM_Solver& slam_solver,
+    ReconstructionVisualizer& visualizer,
+    bool isLoopClosure)
+{
+    double x = pow(new_keyframe_pose(0, 3) - last_keyframe_pose(0, 3), 2);
+    double y = pow(new_keyframe_pose(1, 3) - last_keyframe_pose(1, 3), 2);
+    double z = pow(new_keyframe_pose(2, 3) - last_keyframe_pose(2, 3), 2);
+
+    cout << sqrt(x + y + z) << endl;
+    if (sqrt(x + y + z) >= 0.2)
+    {
+        visualizer.addReferenceFrame(new_keyframe_pose, to_string(num_keyframes));
+        // Add the pose given by marker and creating an edge to the last vertex
+        slam_solver.addVertexAndEdge(new_keyframe_pose, num_keyframes);
+
+        Edge ed(
+            num_keyframes - 2,
+            num_keyframes - 1,
+            Eigen::Vector3d(
+                last_keyframe_pose(0, 3), last_keyframe_pose(1, 3), last_keyframe_pose(2, 3)),
+            Eigen::Vector3d(
+                new_keyframe_pose(0, 3), new_keyframe_pose(1, 3), new_keyframe_pose(2, 3)),
+            to_string(num_keyframes - 2) + " to " + to_string(num_keyframes - 1));
+        visualizer.addEdge(ed);
+
+        if (isLoopClosure == true)
+        {
+            // Adding the loop closing edge that is an edge from this vertex to the initial
+            slam_solver.addLoopClosingEdge(new_keyframe_pose, num_keyframes);
+            Edge ed_loop_closure(
+                0,
+                num_keyframes - 1,
+                Eigen::Vector3d(
+                    first_keyframe_pose(0, 3),
+                    first_keyframe_pose(1, 3),
+                    first_keyframe_pose(2, 3)),
+                Eigen::Vector3d(
+                    new_keyframe_pose(0, 3), new_keyframe_pose(1, 3), new_keyframe_pose(2, 3)),
+                "loop_" + to_string(num_keyframes));
+            visualizer.addEdge(ed_loop_closure, Eigen::Vector3f(1.0, 0.0, 0.0));
+        }
+
+        num_keyframes++; // Increment the number of keyframes found
+        last_keyframe_pose = new_keyframe_pose;
+    }
 }
