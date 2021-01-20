@@ -35,13 +35,21 @@ void SLAM_Solver::addEdgeToList(const int& from_id, const int& to_id)
     stringstream edge_name;
     edge_name << "edge_" << from_id << "_" << to_id;
     ep.name_ = edge_name.str();
-    logger.print(EventLogger::L_INFO, "[SLAM_Solver::addEdgeToList] DEBUG: built edge %s\n", ep.name_.c_str());
+    logger.print(
+        EventLogger::L_INFO,
+        "[SLAM_Solver::addEdgeToList] DEBUG: built edge %s\n",
+        ep.name_.c_str());
 
     // Check if the edge is "odometry" (from i to i+1) or "loop closing" (from i to j)
     (to_id - from_id == 1) ? odometry_edges_.push_back(ep) : loop_edges_.push_back(ep);
-    logger.print(EventLogger::L_INFO, "[SLAM_Solver::addEdgeToList] DEBUG: odom. edges: %lu\n", odometry_edges_.size());
     logger.print(
-        EventLogger::L_INFO, "[SLAM_Solver::addEdgeToList] DEBUG: loop closing edges: %lu\n", loop_edges_.size());
+        EventLogger::L_INFO,
+        "[SLAM_Solver::addEdgeToList] DEBUG: odom. edges: %lu\n",
+        odometry_edges_.size());
+    logger.print(
+        EventLogger::L_INFO,
+        "[SLAM_Solver::addEdgeToList] DEBUG: loop closing edges: %lu\n",
+        loop_edges_.size());
 }
 
 void SLAM_Solver::updateState()
@@ -49,7 +57,10 @@ void SLAM_Solver::updateState()
     optimized_estimates_.clear();
     optimized_estimates_.resize(positions_.size());
 
-    logger.print(EventLogger::L_INFO, "[SLAM_Solver::updateState] DEBUG: Updating %lu vertices\n", positions_.size());
+    logger.print(
+        EventLogger::L_INFO,
+        "[SLAM_Solver::updateState] DEBUG: Updating %lu vertices\n",
+        positions_.size());
 
     // Update estimates of all vertices and positions
     for (OptimizableGraph::VertexIDMap::const_iterator it = optimizer_.vertices().begin();
@@ -79,7 +90,8 @@ void SLAM_Solver::updateState()
 
         optimized_estimates_[v_id] = new_estimate;
 
-        logger.print(EventLogger::L_INFO, "[SLAM_Solver::updateState] DEBUG: Updating node %i \n", v_id);
+        logger.print(
+            EventLogger::L_INFO, "[SLAM_Solver::updateState] DEBUG: Updating node %i \n", v_id);
         logger.print(
             EventLogger::L_INFO,
             "[SLAM_Solver::updateState] DEBUG: ### from %f %f %f to %f %f %f\n",
@@ -116,7 +128,9 @@ void SLAM_Solver::updateState()
         loop_edges_[i].pose_to_ = positions_[id_to];
     }
     logger.print(
-        EventLogger::L_INFO, "[SLAM_Solver::updateState] DEBUG: Loop closing edges: %lu\n", loop_edges_.size());
+        EventLogger::L_INFO,
+        "[SLAM_Solver::updateState] DEBUG: Loop closing edges: %lu\n",
+        loop_edges_.size());
 }
 
 /* #####################################################
@@ -133,8 +147,8 @@ SLAM_Solver::SLAM_Solver()
 
     std::unique_ptr<g2o::BlockSolverX::LinearSolverType> linearSolver =
         g2o::make_unique<g2o::LinearSolverCholmod<g2o::BlockSolverX::PoseMatrixType>>();
-    g2o::OptimizationAlgorithmLevenberg* solver =
-        new g2o::OptimizationAlgorithmLevenberg(g2o::make_unique<g2o::BlockSolverX>(std::move(linearSolver)));
+    g2o::OptimizationAlgorithmLevenberg* solver = new g2o::OptimizationAlgorithmLevenberg(
+        g2o::make_unique<g2o::BlockSolverX>(std::move(linearSolver)));
 
     optimizer_.setAlgorithm(solver);
     optimizer_.setVerbose(true);
@@ -142,7 +156,8 @@ SLAM_Solver::SLAM_Solver()
 
 void SLAM_Solver::addVertexAndEdge(const Eigen::Affine3f& pose, const int& id)
 {
-    logger.print(EventLogger::L_INFO, "[SLAM_Solver::addVertexAndEdge] DEBUG: Adding node %i\n", id);
+    logger.print(
+        EventLogger::L_INFO, "[SLAM_Solver::addVertexAndEdge] DEBUG: Adding node %i\n", id);
 
     // Add the first node and fix it.
     if (num_vertices_ == 0)
@@ -213,17 +228,14 @@ void SLAM_Solver::addLoopClosingEdge(const Eigen::Affine3f& vertex_to_origin_tra
     VertexSE3* origin = dynamic_cast<g2o::VertexSE3*>(optimizer_.vertex(0));
     VertexSE3* v = dynamic_cast<g2o::VertexSE3*>(optimizer_.vertex(id));
 
-    printf(">>> trying to access position %i\n", id);
-    /*
-        Eigen::Isometry3d measurement(vertex_to_origin_transf.matrix().cast<double>());
+    Eigen::Isometry3d measurement(vertex_to_origin_transf.matrix().cast<double>());
 
-        EdgeSE3* e = new EdgeSE3;
-        e->vertices()[0] = v;
-        e->vertices()[1] = origin;
-        e->setMeasurement(measurement);
-        optimizer_.addEdge(e);
-        printf("Add edge ok\n");
-    */
+    EdgeSE3* e = new EdgeSE3;
+    e->vertices()[0] = v;
+    e->vertices()[1] = origin;
+    e->setMeasurement(measurement);
+    optimizer_.addEdge(e);
+
     addEdgeToList(v->id(), origin->id());
 
     logger.print(
