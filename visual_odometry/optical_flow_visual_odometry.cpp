@@ -46,7 +46,7 @@
 using namespace std;
 using namespace cv;
 
-void OpticalFlowVisualOdometry::addKeyFrame(const Mat &rgb)
+void OpticalFlowVisualOdometry::addKeyFrame(const Mat& rgb)
 {
     Keyframe kf;
     kf.idx_ = frame_idx_;
@@ -56,32 +56,31 @@ void OpticalFlowVisualOdometry::addKeyFrame(const Mat &rgb)
     kf.keypoints_.resize(tracker_.curr_pts_.size());
     copy(tracker_.curr_pts_.begin(), tracker_.curr_pts_.end(), kf.keypoints_.begin());
 
-    logger.print(EventLogger::L_DEBUG,
-                 "[OpticalFlowVisualOdometry::addKeyFrame] DEBUG: adding %lu as keyframe\n",
-                 frame_idx_);
+    logger.print(
+        EventLogger::L_DEBUG, "[OpticalFlowVisualOdometry::addKeyFrame] DEBUG: adding %lu as keyframe\n", frame_idx_);
     keyframes_.insert(pair<size_t, Keyframe>(kf.idx_, kf));
 }
 
-OpticalFlowVisualOdometry::OpticalFlowVisualOdometry()
+OpticalFlowVisualOdometry::OpticalFlowVisualOdometry(const Eigen::Affine3f& initialPose)
 {
     frame_idx_ = 0;
-    pose_ = Eigen::Affine3f::Identity();
+    pose_ = initialPose;
 
     prev_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
     curr_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
 }
 
-OpticalFlowVisualOdometry::OpticalFlowVisualOdometry(const Intrinsics &intr)
+OpticalFlowVisualOdometry::OpticalFlowVisualOdometry(const Intrinsics& intr, const Eigen::Affine3f& initialPose)
 {
     frame_idx_ = 0;
-    pose_ = Eigen::Affine3f::Identity();
+    pose_ = initialPose;
     motion_estimator_.intr_ = intr;
 
     prev_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
     curr_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
 }
 
-bool OpticalFlowVisualOdometry::computeCameraPose(const cv::Mat &rgb, const cv::Mat &depth)
+bool OpticalFlowVisualOdometry::computeCameraPose(const cv::Mat& rgb, const cv::Mat& depth)
 {
     bool is_kf;
 
@@ -99,8 +98,8 @@ bool OpticalFlowVisualOdometry::computeCameraPose(const cv::Mat &rgb, const cv::
     // Estimate motion between the current and the previous point clouds
     if (frame_idx_ > 0)
     {
-        trans = motion_estimator_.estimate(tracker_.prev_pts_, prev_dense_cloud_,
-                                           tracker_.curr_pts_, curr_dense_cloud_);
+        trans =
+            motion_estimator_.estimate(tracker_.prev_pts_, prev_dense_cloud_, tracker_.curr_pts_, curr_dense_cloud_);
         pose_ = pose_ * trans;
     }
 
@@ -118,8 +117,9 @@ Keyframe OpticalFlowVisualOdometry::getLastKeyframe()
     map<size_t, Keyframe>::iterator it;
 
     it = keyframes_.end();
-    logger.print(EventLogger::L_DEBUG,
-                 "[OpticalFlowVisualOdometry::getLastKeyframe] DEBUG: last keyframe has id %lu\n",
-                 it->first);
+    logger.print(
+        EventLogger::L_DEBUG,
+        "[OpticalFlowVisualOdometry::getLastKeyframe] DEBUG: last keyframe has id %lu\n",
+        it->first);
     return prev(it)->second; // prev from std
 }

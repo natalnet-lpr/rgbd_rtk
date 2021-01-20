@@ -57,7 +57,7 @@ private:
     unsigned long int frame_idx_;
 
     // Adds a new keyframe to the internal container of keyframes
-    void addKeyFrame(const cv::Mat &rgb);
+    void addKeyFrame(const cv::Mat& rgb);
 
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -80,14 +80,18 @@ public:
     // Container with pairs idx <-> keyframe
     std::map<size_t, Keyframe> keyframes_;
 
-    // Default constructor
-    OpticalFlowVisualOdometry();
+    /**
+     * Default constructor
+     * @param initialPose start pose of the camera, identity if nothing is passed
+     */
+    OpticalFlowVisualOdometry(const Eigen::Affine3f& initialPose = Eigen::Affine3f::Identity());
 
     /**
      * Constructor with the matrix of intrinsic parameters
      * @param intr camera parameters
+     * @param initialPose start pose of the camera, identity if nothing is passed
      */
-    OpticalFlowVisualOdometry(const Intrinsics &intr);
+    OpticalFlowVisualOdometry(const Intrinsics& intr, const Eigen::Affine3f& initialPose = Eigen::Affine3f::Identity());
 
     /**
      * Main member function: computes the current camera pose.
@@ -95,7 +99,7 @@ public:
      * @param rgb image @param depth image
      * @param return a boolean
      */
-    bool computeCameraPose(const cv::Mat &rgb, const cv::Mat &depth);
+    bool computeCameraPose(const cv::Mat& rgb, const cv::Mat& depth);
 
     /**
      * @param Keyframe return the last detected keyframe.

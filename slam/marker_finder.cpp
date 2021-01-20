@@ -3,25 +3,27 @@
  *
  *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
- *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
- *  that the following conditions are met:
+ *  Redistribution and use in source and binary forms, with or without modification, are permitted
+ * provided that the following conditions are met:
  *
- *  1. Redistributions of source code must retain the above copyright notice, this list of conditions and
- *     the following disclaimer.
+ *  1. Redistributions of source code must retain the above copyright notice, this list of
+ * conditions and the following disclaimer.
  *
- *  2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and
- *     the following disclaimer in the documentation and/or other materials provided with the distribution.
+ *  2. Redistributions in binary form must reproduce the above copyright notice, this list of
+ * conditions and the following disclaimer in the documentation and/or other materials provided with
+ * the distribution.
  *
- *  3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or
- *     promote products derived from this software without specific prior written permission.
+ *  3. Neither the name of the copyright holder nor the names of its contributors may be used to
+ * endorse or promote products derived from this software without specific prior written permission.
  *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, *
- * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
- *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
+ * IMPLIED WARRANTIES, * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *  Authors:
  *
@@ -39,10 +41,11 @@ using namespace cv;
 using namespace aruco;
 
 void MarkerFinder::setMarkerPoses(const Eigen::Affine3f& cam_pose, const float& aruco_max_distance)
-{ /* This function save the marker pose related to the cam_pose, of course, you can always use a identity matrix
- in order to get the pose of the aruco marker assuming that the camera is the initial pose.
- there is an max distance that a marker can be related to the camera in order to be a valid marker
- this is helpfull when you want to decrease error due to detect a marker that is too far away.
+{ /* This function save the marker pose related to the cam_pose, of course, you can always use a
+ identity matrix in order to get the pose of the aruco marker assuming that the camera is the
+ initial pose. there is an max distance that a marker can be related to the camera in order to be a
+ valid marker this is helpfull when you want to decrease error due to detect a marker that is too
+ far away.
  */
 
     double x = 0, y = 0, z = 0;
@@ -78,6 +81,7 @@ void MarkerFinder::setMarkerPoses(const Eigen::Affine3f& cam_pose, const float& 
         // way aruco uses orientation.
         */
         // Infinite
+
         if (aruco_max_distance == -1) marker_poses_.push_back(cam_pose * P);
 
         // Marker is closer than the max distance
@@ -105,7 +109,7 @@ void MarkerFinder::detectMarkersPoses(
     const float& aruco_max_distance)
 {
     markers_.clear();
-    marker_detector_.detect(img, markers_, camera_params_, marker_size_); // detec markers
+    marker_detector_.detect(img, markers_, camera_params_, marker_size_); // detect markers
 
     setMarkerPoses(cam_pose, aruco_max_distance); // set the pose
 }
