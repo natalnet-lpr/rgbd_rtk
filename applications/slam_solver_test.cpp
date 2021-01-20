@@ -75,15 +75,24 @@ struct Pose
     float w_rotation;
 };
 
+/**
+ * Adds vertix and edges in slam_solver and visualizer
+ * @param new_keyframe_pose new keyframe that should be added
+ * @param last_keyframe_pose the last keyframe added in graph, this is update this in this function
+ * @param first_keyframe_pose the first keyframe
+ * @param num_keyframes number of keyframes in graph, this is update in this function
+ * @param slam_solver slam_solver reference
+ * @param visualizer visualizer reference
+ * @param is_loop_closure if the vertex added is a loop_closure as well
+ */
 void addVertixAndEdge(
-    Eigen::Affine3f new_keyframe_pose,
+    Eigen::Affine3f cam_pose,
     Eigen::Affine3f& last_keyframe_pose,
-    Eigen::Affine3f& first_keyframe_pose,
+    Eigen::Affine3f aruco_pose,
     int& num_keyframes,
     SLAM_Solver& slam_solver,
     ReconstructionVisualizer& visualizer,
-    bool isLoopClosure);
-
+    bool is_loop_closure);
 /**
  * This program shows the use of camera pose estimation using optical flow visual odometry.
  * @param .yml config. file (from which index_file is used)
@@ -105,8 +114,8 @@ int main(int argc, char** argv)
     MarkerFinder marker_finder;
     RGBDLoader loader;
     Mat frame, depth;
-    Eigen::Affine3f last_keyframe;
-    Eigen::Affine3f first_keyframe;
+    Eigen::Affine3f last_keyframe_pose;
+    Eigen::Affine3f first_keyframe_pose;
     // Slam solver will start when the marker is found for the first time
     if (argc != 2)
     {
@@ -142,7 +151,7 @@ int main(int argc, char** argv)
             {
                 // THIS SHOULD NOT BE HERE, THE ONLY REASON IS HERE IS BECAUSE I'M TESTING
                 // A PROGRAM THAT SHOULD USE ONLY ONE MARKER IN A DATASET WITH MULTIPLE MARKERS
-                if (147 == marker_finder.markers_[i].id)
+                if (250 == marker_finder.markers_[i].id)
                 {
                     // If we found the mark for the first time, we will add the marker as the origin
                     // of the system Then we add the first camera pose related to the marker pose.
@@ -155,8 +164,8 @@ int main(int argc, char** argv)
                     // Set slam solver started to true since we found the marker for the first time
                     slam_solver_started = true;
 
-                    first_keyframe = vo.pose_;
-                    last_keyframe = vo.pose_;
+                    first_keyframe_pose = vo.pose_;
+                    last_keyframe_pose = vo.pose_;
                 }
             }
             continue;
@@ -165,15 +174,15 @@ int main(int argc, char** argv)
         // If we have already found the marker we start the keyframe process
         else
         {
-            marker_finder.detectMarkersPoses(frame, vo.pose_, aruco_max_distance, false);
+            marker_finder.detectMarkersPoses(frame, vo.pose_, aruco_max_distance);
             for (size_t i = 0; i < marker_finder.markers_.size(); i++)
             {
-                if (147 == marker_finder.markers_[i].id)
+                if (250 == marker_finder.markers_[i].id)
                 {
                     addVertixAndEdge(
+                        vo.pose_,
                         marker_finder.marker_poses_[i],
-                        last_keyframe,
-                        first_keyframe,
+                        last_keyframe_pose,
                         num_keyframes,
                         slam_solver,
                         visualizer,
@@ -206,79 +215,61 @@ int main(int argc, char** argv)
             {
                 addVertixAndEdge(
                     vo.pose_,
-                    last_keyframe,
-                    first_keyframe,
+                    last_keyframe_pose,
+                    Eigen::Affine3f::Identity(),
                     num_keyframes,
                     slam_solver,
                     visualizer,
                     false);
             }
-
-            visualizer.spinOnce();
-
-            imshow("Image view", frame);
-            // imshow("Depth view", depth);
-            char key = waitKey(1);
-            if (key == 27 || key == 'q' || key == 'Q')
-            {
-                logger.print(EventLogger::L_INFO, "[slam_solver_test.cpp] Exiting\n", argv[0]);
-                break;
-            }
+        }
+        visualizer.spinOnce();
+        imshow("Image view", frame);
+        // imshow("Depth view", depth);
+        char key = waitKey(1);
+        if (key == 27 || key == 'q' || key == 'Q')
+        {
+            logger.print(EventLogger::L_INFO, "[slam_solver_test.cpp] Exiting\n", argv[0]);
+            break;
         }
     }
-    visualizer.spin();
     slam_solver.optimizeGraph(10);
+    // visualizer.spin();
     return 0;
 }
 
 void addVertixAndEdge(
-    Eigen::Affine3f new_keyframe_pose,
+    Eigen::Affine3f cam_pose,
     Eigen::Affine3f& last_keyframe_pose,
-    Eigen::Affine3f& first_keyframe_pose,
+    Eigen::Affine3f aruco_pose,
     int& num_keyframes,
     SLAM_Solver& slam_solver,
     ReconstructionVisualizer& visualizer,
-    bool isLoopClosure)
-{
-    double x = pow(new_keyframe_pose(0, 3) - last_keyframe_pose(0, 3), 2);
-    double y = pow(new_keyframe_pose(1, 3) - last_keyframe_pose(1, 3), 2);
-    double z = pow(new_keyframe_pose(2, 3) - last_keyframe_pose(2, 3), 2);
+    bool is_loop_closure)
 
-    cout << sqrt(x + y + z) << endl;
+{
+    double x = pow(cam_pose(0, 3) - last_keyframe_pose(0, 3), 2);
+    double y = pow(cam_pose(1, 3) - last_keyframe_pose(1, 3), 2);
+    double z = pow(cam_pose(2, 3) - last_keyframe_pose(2, 3), 2);
+    // We will only add a new keyframe if they have at least 20cm of distance between each other
     if (sqrt(x + y + z) >= 0.2)
     {
-        visualizer.addReferenceFrame(new_keyframe_pose, to_string(num_keyframes));
-        // Add the pose given by marker and creating an edge to the last vertex
-        slam_solver.addVertexAndEdge(new_keyframe_pose, num_keyframes);
+        // Adding keyframe in visualizer
+        visualizer.addReferenceFrame(cam_pose, to_string(num_keyframes));
+        // Add the keyframe and creating an edge to the last vertex
+        slam_solver.addVertexAndEdge(cam_pose, num_keyframes);
+        visualizer.addEdge(slam_solver.odometry_edges_.back());
 
-        Edge ed(
-            num_keyframes - 2,
-            num_keyframes - 1,
-            Eigen::Vector3d(
-                last_keyframe_pose(0, 3), last_keyframe_pose(1, 3), last_keyframe_pose(2, 3)),
-            Eigen::Vector3d(
-                new_keyframe_pose(0, 3), new_keyframe_pose(1, 3), new_keyframe_pose(2, 3)),
-            to_string(num_keyframes - 2) + " to " + to_string(num_keyframes - 1));
-        visualizer.addEdge(ed);
-
-        if (isLoopClosure == true)
+        // If the keyframe is a loop closure we will create a loop closing edge
+        if (is_loop_closure == true)
         {
             // Adding the loop closing edge that is an edge from this vertex to the initial
-            slam_solver.addLoopClosingEdge(new_keyframe_pose, num_keyframes);
-            Edge ed_loop_closure(
-                0,
-                num_keyframes - 1,
-                Eigen::Vector3d(
-                    first_keyframe_pose(0, 3),
-                    first_keyframe_pose(1, 3),
-                    first_keyframe_pose(2, 3)),
-                Eigen::Vector3d(
-                    new_keyframe_pose(0, 3), new_keyframe_pose(1, 3), new_keyframe_pose(2, 3)),
-                "loop_" + to_string(num_keyframes));
-            visualizer.addEdge(ed_loop_closure, Eigen::Vector3f(1.0, 0.0, 0.0));
+            // If we want to change the system coord from A to B -> A.inverse * B
+            slam_solver.addLoopClosingEdge(cam_pose.inverse() * aruco_pose, num_keyframes);
+            visualizer.addEdge(slam_solver.loop_edges_.back(), Eigen::Vector3f(1.0, 0.0, 0.0));
         }
 
-        num_keyframes++; // Increment the number of keyframes found
-        last_keyframe_pose = new_keyframe_pose;
+        num_keyframes++;               // Increment the number of keyframes found
+        last_keyframe_pose = cam_pose; // Updating the pose of last keyframe
     }
 }
