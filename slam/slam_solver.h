@@ -22,14 +22,13 @@
 class SLAM_Solver
 {
 private:
-
     // Number of vertices in the graph
     int num_vertices_;
 
     // Id of the last added vertex (used when adding edges)
     int last_added_id_;
 
-    //G2O nonlinear optimizer
+    // G2O nonlinear optimizer
     g2o::SparseOptimizer optimizer_;
 
     /**
@@ -37,7 +36,7 @@ private:
      * @param from_edge_id id edge from
      * @param to_edge_id id edge to
      */
-    void addEdgeToList(const int &from_id, const int &to_id);
+    void addEdgeToList(const int& from_id, const int& to_id);
 
     /**
      * Update internal state after optimization
@@ -45,7 +44,6 @@ private:
     void updateState();
 
 public:
-
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     // 3D position in the global ref. frame of each node (for visualization)
@@ -70,7 +68,7 @@ public:
      * @param pose pose to be added
      * @param id pose id
      */
-    void addVertexAndEdge(const Eigen::Affine3f &pose, const int &id);
+    void addVertexAndEdge(const Eigen::Affine3f& pose, const int& id);
 
     /**
      * Adds a "loop closing" edge connecting the vertex with given id to the
@@ -78,18 +76,13 @@ public:
      * @param vertex_to_origin_transformation A transformation vertex to origin
      * @param id vertex id
      */
-    void addLoopClosingEdge(const Eigen::Affine3f &vertex_to_origin_transf, const int &id);
+    void addLoopClosingEdge(const Eigen::Affine3f& vertex_to_origin_transf, const int& id);
 
     /**
      * Optimizes the graph with Levenberg-Marquardt for the given n. of iterations
      * @param k number of iterations type int
      */
-    void optimizeGraph(const int &k);
-
-    /**
-     * @return the number of vertices
-     */
-    int getNumVertices();
+    void optimizeGraph(const int& k);
 };
 
 #endif /* INCLUDE_SLAM_H_ */
