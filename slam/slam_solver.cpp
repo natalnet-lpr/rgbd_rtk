@@ -254,4 +254,3 @@ void SLAM_Solver::optimizeGraph(const int& k)
 
     updateState();
 }
-int SLAM_Solver::getNumVertices() { return num_vertices_; }
