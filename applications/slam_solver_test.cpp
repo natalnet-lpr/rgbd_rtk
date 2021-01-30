@@ -147,7 +147,7 @@ int main(int argc, char** argv)
         {
             marker_finder.detectMarkersPoses(
                 frame, Eigen::Affine3f::Identity(), aruco_max_distance);
-            for (size_t i = 0; i < marker_finder.markers_.size(); i++)
+            if (marker_finder.markers_.size() > 0)
             {
                 if (250 == marker_finder.markers_[i].id)
                 {
