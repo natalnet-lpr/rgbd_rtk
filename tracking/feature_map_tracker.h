@@ -35,8 +35,12 @@
 #include "opencv2/xfeatures2d.hpp"
 #include <opencv2/core/core.hpp>
 #include <opencv2/flann/miniflann.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
 
 #include <vector>
+#include <iterator>
 
 #include <feature_tracker.h>
 #include <common_types.h>
@@ -54,11 +58,11 @@ protected:
     //FLANN Index object pointer
     cv::flann::Index* index_;
 
-    //Boolean vector that indicates if the keypoint i have a match
-    std::vector<bool> keypoints_with_matches_;
+    //Boolean vector that indicates if the current keypoint i have a match
+    std::vector<bool> curr_kpts_with_matches_;
 
     //The number of followed frames without matches to keypoint i on the map
-    std::vector<int> keypoints_life_on_the_map_;
+    std::vector<int> life_of_keypoints_on_the_map_;
 
     //Detect KeyPoints and extract descriptors using this function
     void detect_keypoints();
@@ -69,17 +73,26 @@ protected:
     //Update internal buffers (updates the previous points (in the current frame) with the current points (from the previous frame))
     void update_buffers();
 
+    //Define whether a match is a good match based on the distance between the two closest matches
+    void getGoodMatches(const float& dist_ratio);
+
+    // Update the map features that have been successfully matched
+    void updateTheMap();
+
+    // Remove invalid keypoints from the map, i.e, the keypoints with an expired life
+    void removeInvalidKeypointsFromTheMap();
+
+    // Add new keypoints to the map, i.e, the current keypoints without a good match
+    void addNewKeypointsToTheMap();
+
     //Searches if a keypoint have a match
     int searchMatches(const int& keypoint_index);
 
     //Set the coordinates of the current keypoints to curr_pts_.
-    //void setCurrentPoints();
-
-    //Set the coordinates of the previous keypoints to prev_pts_.
-    //void setPreviousPoints();
+    void setCurrentPoints();
 
     //Set the coordinates of the map keypoints to map_pts_.
-    //void setMapPoints();
+    void setMapPoints();
 
     //Set the feature_detector_ attribute from a string
     void setFeatureDetector(const std::string& feature_detector);
@@ -94,12 +107,6 @@ public:
 
     //Store all the current descriptors founded in the current frame
     cv::Mat curr_descriptors_;
-
-    //Store all the previous keypoints founded in the previous frame
-    std::vector<cv::KeyPoint> prev_kpts_;
-
-    //Store all the previous descriptors founded in the previous frame
-    cv::Mat prev_descriptors_;
 
     //Feature Map Positions
     std::vector<cv::Point2f> map_pts_;
@@ -122,20 +129,23 @@ public:
     //Store the distances beetween the matches 
     cv::Mat dists_;
 
+    //Number of keypoints tracked in each frame
+    int tracked_pts_;
+
     // Distance Ratio to compare the two closest matches
-    const float DIST_RATIO = 0.8;
+    const float DIST_RATIO_ = 0.8;
 
-    // Max number of falowed frames withou matches for a keypoint.
-    const int K = 4;
+    // Max number of allowed frames without matches for a keypoint.
+    int lifespan_of_a_feature_;
 
-    //Default constructor: create a ORB feature detector and descriptor extractor. 
+    //Default constructor: create a ORB feature detector and descriptor extractor and  lifespan_of_a_feature_= 3. 
     FeatureMapTracker();
 
-    //Constructor with flexible feature detector and descriptor extractor and flag to log statistics
-    FeatureMapTracker(const std::string& feature_detector, const std::string& descriptor_extractor, const bool& log_stats);
+    //Constructor with flexible feature detector and descriptor extractor, lifespan of a feature and flag to log statistics
+    FeatureMapTracker(const std::string& feature_detector, const std::string& descriptor_extractor, const int& lifespan_of_a_feature, const bool& log_stats);
     
-    //Constructor with the minimum number of tracked points, maximum number of tracked points and flag to log statistics
-    FeatureMapTracker(const std::string& feature_detector, const std::string& descriptor_extractor, const int& min_pts, const int& max_pts, const bool& log_stats);
+    //Constructor with the feature life (K), minimum number of tracked points, maximum number of tracked points and flag to log statistics
+    FeatureMapTracker(const std::string& feature_detector, const std::string& descriptor_extractor, const int& lifespan_of_a_feature, const int& min_pts, const int& max_pts, const bool& log_stats);
 
     //Default Destructor
     ~FeatureMapTracker();

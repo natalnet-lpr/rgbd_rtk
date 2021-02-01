@@ -43,6 +43,7 @@
 
 using namespace std;
 using namespace cv;
+using namespace cv::xfeatures2d;
 
 void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts, bool is_kf);
 void draw_tracks(Mat &img, const vector<Tracklet> tracklets);

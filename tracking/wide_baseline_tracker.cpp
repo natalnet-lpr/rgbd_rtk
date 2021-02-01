@@ -317,7 +317,7 @@ bool WideBaselineTracker::track(const cv::Mat &img)
     {
 
         matcher_->match(curr_descriptors_, prev_descriptors_, matches_);
-        logger.print(EventLogger::L_DEBUG, "[WideBaselineTracker::track] DEBUG: matching descriptos...\n");
+        logger.print(EventLogger::L_DEBUG, "[WideBaselineTracker::track] DEBUG: matching descriptors...\n");
 
         setPreviousPoints();
         setCurrentPoints();
