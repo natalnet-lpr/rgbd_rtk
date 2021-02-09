@@ -205,3 +205,15 @@ string EventLogger::currentDateTime()
 
     return buf;
 }
+
+void EventLogger::activateLoggingOnlyFor(EventLogger::MODULE module)
+{
+	set<EventLogger::MODULE>::const_iterator it;
+    for(it = active_modules_.begin(); it != active_modules_.end(); it++)
+    {
+        if(*it != module)
+        {
+        	active_modules_.erase(it);
+        }
+    }
+}
