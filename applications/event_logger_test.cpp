@@ -22,6 +22,10 @@
  *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
+ *  Authors:
+ *
+ *  Bruno Silva
+ *  Rodrigo Xavier
  */
 
 #include <rgbd_loader.h>
@@ -36,7 +40,21 @@ int main()
 	EventLogger& logger = EventLogger::getInstance();
 	logger.setVerbosityLevel(EventLogger::L_DEBUG);
 	logger.setLogFileName("log_event_logger_test.txt");
+
+	printf("first\n");
+	logger.printActiveModules();
+	logger.deactivateLoggingFor(EventLogger::M_IO);
+	logger.deactivateLoggingFor(EventLogger::M_IO);
+	logger.deactivateLoggingFor(EventLogger::M_VISUALIZATION);
+	printf("second\n");
+	logger.printActiveModules();
 	logger.activateLoggingOnlyFor(EventLogger::M_SLAM);
+	printf("third\n");
+	logger.printActiveModules();
+	logger.activateLoggingFor(EventLogger::M_IO);
+	logger.activateLoggingFor(EventLogger::M_TRACKING);
+	printf("fourth\n");
+	logger.printActiveModules();
 
 	//These messages are shown on stdout/logged to file according to verbosity level
 	logger.print(EventLogger::L_DEBUG, "[event_logger_test.cpp] DEBUG: calling print from main\n");

@@ -57,14 +57,14 @@ public:
 
     enum MODULE
     {
-        M_IO,
-        M_COMMON,
-        M_TRACKING,
-        M_MOTION_ESTIMATION,
-        M_STEREO,
-        M_VISUALIZATION,
-        M_VISUAL_ODOMETRY,
-        M_SLAM
+        M_IO, //0
+        M_COMMON, //1
+        M_TRACKING, //2
+        M_MOTION_ESTIMATION, //3
+        M_STEREO, //4
+        M_VISUALIZATION, //5
+        M_VISUAL_ODOMETRY, //6
+        M_SLAM //7
     };
 
     /**
@@ -184,10 +184,28 @@ public:
     std::string currentDateTime();
 
     /**
-     * Activates logging only for the specified module.
+     * Activates logging for the specified module.
+     * Does nothing if already activated for the specified module.
+     * @param desired module: M_IO, M_TRACKING, etc.
+     */
+    void activateLoggingFor(EventLogger::MODULE module);
+
+    /**
+     * deactivates logging for the specified module.
+     * Does nothing if logging was already excluded for the specified module.
+     * @param desired module: M_IO, M_TRACKING, etc.
+     */
+    void deactivateLoggingFor(EventLogger::MODULE module);
+
+    /**
+     * Activates logging only for the specified module,
+     * excluding all others.
      * @param desired module: M_IO, M_TRACKING, etc.
      */
     void activateLoggingOnlyFor(EventLogger::MODULE module);
+
+    //DEBUG ONLY
+    void printActiveModules();
 
 private:
     enum TT_ATTIBUTES

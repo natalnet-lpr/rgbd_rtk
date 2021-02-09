@@ -206,6 +206,23 @@ string EventLogger::currentDateTime()
     return buf;
 }
 
+void EventLogger::activateLoggingFor(EventLogger::MODULE module)
+{
+	active_modules_.insert(module);
+}
+
+void EventLogger::deactivateLoggingFor(EventLogger::MODULE module)
+{
+	set<EventLogger::MODULE>::const_iterator it;
+    for(it = active_modules_.begin(); it != active_modules_.end(); it++)
+    {
+        if(*it == module)
+        {
+        	active_modules_.erase(it);
+        }
+    }
+}
+
 void EventLogger::activateLoggingOnlyFor(EventLogger::MODULE module)
 {
 	set<EventLogger::MODULE>::const_iterator it;
@@ -215,5 +232,14 @@ void EventLogger::activateLoggingOnlyFor(EventLogger::MODULE module)
         {
         	active_modules_.erase(it);
         }
+    }
+}
+
+void EventLogger::printActiveModules()
+{
+	set<EventLogger::MODULE>::const_iterator it;
+    for(it = active_modules_.begin(); it != active_modules_.end(); it++)
+    {
+        printf("Module %i is active\n", *it);
     }
 }
