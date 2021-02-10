@@ -166,6 +166,9 @@ void EventLogger::printDebug(EventLogger::MODULE module, const char* msg)
 	if(!isVerbosityLevelEnabled(EventLogger::L_DEBUG))
 		return;
 
+	if(!isLoggingActiveFor(module))
+		return;
+
 	if(!is_initialized_)
 		initialize();
 
@@ -175,6 +178,9 @@ void EventLogger::printDebug(EventLogger::MODULE module, const char* msg)
 void EventLogger::printInfo(EventLogger::MODULE module, const char* msg)
 {
 	if(!isVerbosityLevelEnabled(EventLogger::L_INFO))
+		return;
+
+	if(!isLoggingActiveFor(module))
 		return;
 
 	if(!is_initialized_)
@@ -188,6 +194,9 @@ void EventLogger::printWarning(EventLogger::MODULE module, const char* msg)
 	if(!isVerbosityLevelEnabled(EventLogger::L_WARN))
 		return;
 
+	if(!isLoggingActiveFor(module))
+		return;
+
 	if(!is_initialized_)
 		initialize();
 
@@ -197,6 +206,9 @@ void EventLogger::printWarning(EventLogger::MODULE module, const char* msg)
 void EventLogger::printError(EventLogger::MODULE module, const char* msg)
 {
 	if (!isVerbosityLevelEnabled(EventLogger::L_ERROR))
+		return;
+
+	if(!isLoggingActiveFor(module))
 		return;
 
 	if(!is_initialized_)

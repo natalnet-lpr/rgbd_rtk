@@ -66,10 +66,17 @@ int main()
     logger.print(EventLogger::L_WARN, "[event_logger_test.cpp] WARN: calling print from main: %s\n", "another string");
     logger.print(EventLogger::L_ERROR, "[event_logger_test.cpp] ERROR: calling print from main: %f\n", 3.14);
 
+    //Alternative styles
 	logger.printDebug(EventLogger::M_IO, "Testing DEBUG"); //goes to file if verb. level >= DEBUG
 	logger.printInfo(EventLogger::M_IO, "Testing INFO"); //goes to file if verb. level >= INFO
 	logger.printWarning(EventLogger::M_IO, "Testing WARN"); //goes to file if verb. level >= WARN
 	logger.printError(EventLogger::M_IO, "Testing ERROR"); //goes to file if verb. level >= ERROR
+
+	//Messages below should not be printed because the modules are not active
+	logger.printDebug(EventLogger::M_COMMON, "Should not be printed");
+	logger.printInfo(EventLogger::M_VISUALIZATION, "Should not be printed");
+	logger.printWarning(EventLogger::M_VISUAL_ODOMETRY, "Should not be printed");
+	logger.printError(EventLogger::M_STEREO, "Should not be printed");
 
 	//Instantiate a loader to test logging
 	RGBDLoader loader;
