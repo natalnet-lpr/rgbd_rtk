@@ -45,7 +45,7 @@ void EventLogger::initialize()
 	log_file_ = fopen(file_name_.c_str(), "w");
 	if(log_file_ == NULL)
 	{
-		printError("common::EventLogger", "Could not open the specified log file.");
+		printError(EventLogger::M_COMMON, "Could not open the specified log file.");
 		exit(0);
 	}
 	is_initialized_ = true;
@@ -152,17 +152,18 @@ void EventLogger::print(EventLogger::VERBOSITY_LEVEL level, const char *format, 
 	resetTextColor(stdout);
 }
 
-void EventLogger::printDebug(const char* module_class, const char* msg)
+void EventLogger::printDebug(EventLogger::MODULE module, const char* msg)
 {
 	if(!isVerbosityLevelEnabled(EventLogger::L_DEBUG))
 		return;
 
 	if(!is_initialized_)
 		initialize();
-	print(EventLogger::L_DEBUG, "[%s] DEBUG: %s\n", module_class, msg);
+
+	print(EventLogger::L_DEBUG, "[%s] DEBUG: %s\n", modules_names_[module].c_str(), msg);
 }
 
-void EventLogger::printInfo(const char* module_class, const char* msg)
+void EventLogger::printInfo(EventLogger::MODULE module, const char* msg)
 {
 	if(!isVerbosityLevelEnabled(EventLogger::L_INFO))
 		return;
@@ -170,10 +171,10 @@ void EventLogger::printInfo(const char* module_class, const char* msg)
 	if(!is_initialized_)
 		initialize();
 
-	print(EventLogger::L_INFO, "[%s] INFO: %s\n", module_class, msg);
+	print(EventLogger::L_INFO, "[%s] INFO: %s\n", modules_names_[module].c_str(), msg);
 }
 
-void EventLogger::printWarning(const char* module_class, const char* msg)
+void EventLogger::printWarning(EventLogger::MODULE module, const char* msg)
 {
 	if(!isVerbosityLevelEnabled(EventLogger::L_WARN))
 		return;
@@ -181,10 +182,10 @@ void EventLogger::printWarning(const char* module_class, const char* msg)
 	if(!is_initialized_)
 		initialize();
 
-	print(EventLogger::L_WARN, "[%s] WARNING: %s\n", module_class, msg);
+	print(EventLogger::L_WARN, "[%s] WARNING: %s\n", modules_names_[module].c_str(), msg);
 }
 
-void EventLogger::printError(const char* module_class, const char* msg)
+void EventLogger::printError(EventLogger::MODULE module, const char* msg)
 {
 	if (!isVerbosityLevelEnabled(EventLogger::L_ERROR))
 		return;
@@ -192,7 +193,7 @@ void EventLogger::printError(const char* module_class, const char* msg)
 	if(!is_initialized_)
 		initialize();
 
-	print(EventLogger::L_ERROR, "[%s] ERROR: %s\n", module_class, msg);
+	print(EventLogger::L_ERROR, "[%s] ERROR: %s\n", modules_names_[module].c_str(), msg);
 }
 
 string EventLogger::currentDateTime()

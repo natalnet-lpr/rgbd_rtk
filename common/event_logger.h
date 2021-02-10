@@ -36,6 +36,7 @@
 #include <cstdio>
 #include <string>
 #include <set>
+#include <map>
 
 #define LOG_ERROR(...) logger.print(EventLogger::L_ERROR, __VA_ARGS__)
 #define LOG_WARN(...) logger.print(EventLogger::L_WARN, __VA_ARGS__)
@@ -57,14 +58,14 @@ public:
 
     enum MODULE
     {
-        M_IO, //0
-        M_COMMON, //1
-        M_TRACKING, //2
-        M_MOTION_ESTIMATION, //3
-        M_STEREO, //4
-        M_VISUALIZATION, //5
-        M_VISUAL_ODOMETRY, //6
-        M_SLAM //7
+        M_IO = 0,
+        M_COMMON = 1,
+        M_TRACKING = 2,
+        M_MOTION_ESTIMATION = 3,
+        M_STEREO = 4,
+        M_VISUALIZATION = 5,
+        M_VISUAL_ODOMETRY = 6,
+        M_SLAM = 7
     };
 
     /**
@@ -129,8 +130,8 @@ public:
      * Example use:
      *
      * print(EventLogger::L_DEBUG, "Formatted message: %i, %f\n", var1, var2);
-     * L_DEBUG, L_INFO, L_WARN or L_ERROR can be used as verbosity levels.
-     * @param level @param format
+     * @param level: verbosity levels (L_DEBUG, L_INFO, L_WARN or L_ERROR).
+     * @param format: formatted string and its list of variables
      */
     void print(EventLogger::VERBOSITY_LEVEL level, const char *format, ...);
 
@@ -140,10 +141,11 @@ public:
      * (note that this function receives only two parameters).
      * Example use:
      *
-     * printDebug("my_module::MyClass", "Debug message");
-     * @param module_class @param msg
+     * printDebug(EventLogger::M_TRACKING, "Debug message for the tracking module\n");
+     * @param module: M_IO, M_COMMON, M_TRACKING, etc.
+     * @param msg: string with a message
      */
-    void printDebug(const char *module_class, const char *msg);
+    void printDebug(EventLogger::MODULE module, const char *msg);
 
     /**
      * Prints a message to stdout/file to denote general program information.
@@ -151,10 +153,11 @@ public:
      * (note that this function receives only two parameters).
      * Example use:
      *
-     * printInfo("my_module::MyClass", "Information message");
-     * @param module_class @param msg
+     * printInfo(EventLogger::M_TRACKING, "Information message for the tracking module\n");
+     * @param module: M_IO, M_COMMON, M_TRACKING, etc.
+     * @param msg: string with a message
      */
-    void printInfo(const char *module_class, const char *msg);
+    void printInfo(EventLogger::MODULE module, const char *msg);
 
     /**
      * Prints a message to stdout/file to denote a program warning.
@@ -162,10 +165,11 @@ public:
      * (note that this function receives only two parameters).
      * Example use:
      *
-     * printWarning("my_module::MyClass", "Warning message");
-     * @param module_class @param msg
+     * printWarning(EventLogger::M_TRACKING, "Warning message for the tracking module\n");
+     * @param module: M_IO, M_COMMON, M_TRACKING, etc.
+     * @param msg: string with a message
      */
-    void printWarning(const char *module_class, const char *msg);
+    void printWarning(EventLogger::MODULE module, const char *msg);
 
     /**
      * Prints a message to stdout/file to denote an error situation.
@@ -173,10 +177,11 @@ public:
      * (note that this function receives only two parameters).
      * Example use:
      *
-     * printError("my_module::MyClass", "Error message");
-     * @param module_class @param msg
+     * printError(EventLogger::M_TRACKING, "Error message for the tracking module\n");
+     * @param module: M_IO, M_COMMON, M_TRACKING, etc.
+     * @param msg: string with a message
      */
-    void printError(const char *module_class, const char *msg);
+    void printError(EventLogger::MODULE module, const char *msg);
 
     /**
      * @return a string with the current local data and time, Format YYYY-MM-DD HH:mm:ss
@@ -261,7 +266,7 @@ private:
         is_initialized_ = false;
         verb_level_ = EventLogger::L_ERROR;
 
-        //All modules are active by default
+        // All modules are active by default
         active_modules_.insert(M_IO);
         active_modules_.insert(M_COMMON);
         active_modules_.insert(M_TRACKING);
@@ -270,10 +275,23 @@ private:
         active_modules_.insert(M_VISUALIZATION);
         active_modules_.insert(M_VISUAL_ODOMETRY);
         active_modules_.insert(M_SLAM);
+
+        // Initialize map with the name of each module
+        modules_names_[M_IO] = "IO";
+        modules_names_[M_COMMON] = "Common";
+        modules_names_[M_TRACKING] = "Tracking";
+        modules_names_[M_MOTION_ESTIMATION] = "MotionEstimation";
+        modules_names_[M_STEREO] = "Stereo";
+        modules_names_[M_VISUALIZATION] = "Visualization";
+        modules_names_[M_VISUAL_ODOMETRY] = "VisualOdometry";
+        modules_names_[M_SLAM] = "SLAM";
     }
 
     // Set of active modules
     std::set<EventLogger::MODULE> active_modules_;
+
+    // Maps a module constant into its descriptive string
+    std::map<EventLogger::MODULE, std::string> modules_names_;
 
     EventLogger(EventLogger const &);    // don't implement copy constructor
     void operator=(EventLogger const &); // don't implement assignment operator

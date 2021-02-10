@@ -62,10 +62,10 @@ int main()
     logger.print(EventLogger::L_WARN, "[event_logger_test.cpp] WARN: calling print from main: %s\n", "another string");
     logger.print(EventLogger::L_ERROR, "[event_logger_test.cpp] ERROR: calling print from main: %f\n", 3.14);
 
-	logger.printDebug("event_logger_test.cpp", "Testing DEBUG"); //goes to file if verb. level >= DEBUG
-	logger.printInfo("event_logger_test.cpp", "Testing INFO"); //goes to file if verb. level >= INFO
-	logger.printWarning("event_logger_test.cpp", "Testing WARN"); //goes to file if verb. level >= WARN
-	logger.printError("event_logger_test.cpp", "Testing ERROR"); //goes to file if verb. level >= ERROR
+	logger.printDebug(EventLogger::M_IO, "Testing DEBUG"); //goes to file if verb. level >= DEBUG
+	logger.printInfo(EventLogger::M_IO, "Testing INFO"); //goes to file if verb. level >= INFO
+	logger.printWarning(EventLogger::M_IO, "Testing WARN"); //goes to file if verb. level >= WARN
+	logger.printError(EventLogger::M_IO, "Testing ERROR"); //goes to file if verb. level >= ERROR
 
 	//Instantiate a loader to test logging
 	RGBDLoader loader;
