@@ -125,6 +125,12 @@ public:
     bool isVerbosityLevelEnabled(EventLogger::VERBOSITY_LEVEL level);
 
     /**
+     * @param module: M_IO, M_COMMON, M_TRACKING, etc.
+     * @return true if logging is active for the given module.
+     */
+    bool isLoggingActiveFor(EventLogger::MODULE module);
+
+    /**
      * Prints a formatted message to stdout/file.
      * It works just like printf.
      * Example use:

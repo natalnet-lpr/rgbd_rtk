@@ -43,18 +43,22 @@ int main()
 
 	printf("first\n");
 	logger.printActiveModules();
+	printf("active for tracking? %i\n", logger.isLoggingActiveFor(EventLogger::M_TRACKING));
 	logger.deactivateLoggingFor(EventLogger::M_IO);
 	logger.deactivateLoggingFor(EventLogger::M_IO);
 	logger.deactivateLoggingFor(EventLogger::M_VISUALIZATION);
 	printf("second\n");
 	logger.printActiveModules();
+	printf("active for tracking? %i\n", logger.isLoggingActiveFor(EventLogger::M_TRACKING));
 	logger.activateLoggingOnlyFor(EventLogger::M_SLAM);
 	printf("third\n");
 	logger.printActiveModules();
+	printf("active for tracking? %i\n", logger.isLoggingActiveFor(EventLogger::M_TRACKING));
 	logger.activateLoggingFor(EventLogger::M_IO);
 	logger.activateLoggingFor(EventLogger::M_TRACKING);
 	printf("fourth\n");
 	logger.printActiveModules();
+	printf("active for tracking? %i\n", logger.isLoggingActiveFor(EventLogger::M_TRACKING));
 
 	//These messages are shown on stdout/logged to file according to verbosity level
 	logger.print(EventLogger::L_DEBUG, "[event_logger_test.cpp] DEBUG: calling print from main\n");

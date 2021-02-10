@@ -89,6 +89,15 @@ bool EventLogger::isVerbosityLevelEnabled(EventLogger::VERBOSITY_LEVEL level)
 	return level <= verb_level_;
 }
 
+bool EventLogger::isLoggingActiveFor(EventLogger::MODULE module)
+{
+	set<EventLogger::MODULE>::const_iterator it;
+
+	it = active_modules_.find(module);
+
+	return it != active_modules_.end();
+}
+
 void EventLogger::changeTextColor(FILE *stream, int attribute, int fg)
 {
 	char command[17];
