@@ -131,7 +131,8 @@ public:
     bool isLoggingActiveFor(EventLogger::MODULE module);
 
     /**
-     * Prints a formatted message to stdout/file.
+     * Prints a formatted message to stdout/file with informed
+     * verbosity level.
      * It works just like printf.
      * Example use:
      *
@@ -140,6 +141,20 @@ public:
      * @param format: formatted string and its list of variables
      */
     void print(EventLogger::VERBOSITY_LEVEL level, const char *format, ...);
+
+    /**
+     * Prints a formatted message to stdout/file with informed
+     * verbosity level and library module.
+     * It works just like printf.
+     * Example use:
+     *
+     * print(EventLogger::L_DEBUG, EventLogger::M_IO, "Formatted message: %i, %f\n", var1, var2);
+     * @param level: verbosity levels (L_DEBUG, L_INFO, L_WARN or L_ERROR).
+     * @param module: M_IO, M_COMMON, M_TRACKING, etc.
+     * @param format: formatted string and its list of variables
+     */
+    void print(EventLogger::VERBOSITY_LEVEL level,
+               EventLogger::MODULE module, const char *format, ...);
 
     /**
      * Prints a message to stdout/file to denote debug information.

@@ -113,7 +113,7 @@ void EventLogger::resetTextColor(FILE *stream)
 }
 
 /*
- * All functions below are copy/paste from the PCL counterparts
+ * Some functions below are copy/paste from the PCL counterparts
  * because variadic functions don't allow redirecting calls to another
  * variadic function.
  */
@@ -155,6 +155,55 @@ void EventLogger::print(EventLogger::VERBOSITY_LEVEL level, const char *format, 
 
 	//Write message to file
 	fprintf(log_file_, "[%s] ", currentDateTime().c_str());
+	vfprintf(log_file_, format, file_args);
+	va_end(file_args);
+
+	resetTextColor(stdout);
+}
+
+void EventLogger::print(EventLogger::VERBOSITY_LEVEL level,
+                        EventLogger::MODULE module, const char *format, ...)
+{
+	if(!isVerbosityLevelEnabled(level))
+		return;
+
+	if(!isLoggingActiveFor(module))
+		return;
+
+	//Change color according to verb. level
+	switch(level)
+	{
+		case EventLogger::L_ERROR:
+			changeTextColor(stdout, EventLogger::TT_BRIGHT, EventLogger::TT_RED);
+			break;
+		case EventLogger::L_WARN:
+			changeTextColor(stdout, EventLogger::TT_BRIGHT, EventLogger::TT_YELLOW);
+			break;
+		case EventLogger::L_DEBUG:
+			changeTextColor(stdout, EventLogger::TT_RESET, EventLogger::TT_GREEN);
+			break;
+		case EventLogger::L_INFO:
+		default:
+			resetTextColor(stdout);
+	}
+
+	va_list stdout_args, file_args;
+
+	//Write message to stdout
+	va_start(stdout_args, format);
+	va_copy(file_args, stdout_args);
+	fprintf(stdout, "[%s] ", currentDateTime().c_str());
+	fprintf(stdout, "[%s] ", modules_names_[module].c_str());
+	vfprintf(stdout, format, stdout_args);
+	va_end(stdout_args);
+
+	//Initialize logger if it was not initialized yet
+	if(!is_initialized_)
+		initialize();
+
+	//Write message to file
+	fprintf(log_file_, "[%s] ", currentDateTime().c_str());
+	fprintf(log_file_, "[%s] ", modules_names_[module].c_str());
 	vfprintf(log_file_, format, file_args);
 	va_end(file_args);
 
