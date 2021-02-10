@@ -43,6 +43,11 @@
 #define LOG_INFO(...) logger.print(EventLogger::L_INFO, __VA_ARGS__)
 #define LOG_DEBUG(...) logger.print(EventLogger::L_DEBUG, __VA_ARGS__)
 
+#define MLOG_ERROR(MOD, ...) logger.print(EventLogger::L_ERROR, MOD, __VA_ARGS__)
+#define MLOG_WARN(MOD, ...) logger.print(EventLogger::L_WARN, MOD, __VA_ARGS__)
+#define MLOG_INFO(MOD, ...) logger.print(EventLogger::L_INFO, MOD, __VA_ARGS__)
+#define MLOG_DEBUG(MOD, ...) logger.print(EventLogger::L_DEBUG, MOD, __VA_ARGS__)
+
 class EventLogger
 {
 public:

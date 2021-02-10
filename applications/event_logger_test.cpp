@@ -84,6 +84,11 @@ int main()
 	logger.print(EventLogger::L_WARN, EventLogger::M_STEREO,
 		         "[event_logger_test.cpp] WARN: will not be printed\n"); //module is not active
 
+	//Using macros
+	LOG_ERROR("[event_logger_test.cpp] ERROR: %f, %s, %i\n", 2.8, "yes", 50);
+	MLOG_ERROR(EventLogger::M_IO, "[event_logger_test.cpp] ERROR message for an activated module: %f %f\n", 0.5, 4.5);
+	//the others are LOG_DEBUG/MLOG_DEBUG, LOG_INFO/MLOG_INFO and LOG_WARN/MLOG_WARN
+
 	//Instantiate a loader to test logging
 	RGBDLoader loader;
 	loader.processFile("DOESNOT EXIST"); //this will cause an error
