@@ -61,10 +61,10 @@ int main()
 	printf("active for tracking? %i\n", logger.isLoggingActiveFor(EventLogger::M_TRACKING));
 
 	//These messages are shown on stdout/logged to file according to verbosity level
-	logger.print(EventLogger::L_DEBUG, "[event_logger_test.cpp] DEBUG: calling print from main\n");
-	logger.print(EventLogger::L_INFO, "[event_logger_test.cpp] INFO: calling print from main >>> %i, %s, %f\n", 1, "test string", 5.0);
-    logger.print(EventLogger::L_WARN, "[event_logger_test.cpp] WARN: calling print from main: %s\n", "another string");
-    logger.print(EventLogger::L_ERROR, "[event_logger_test.cpp] ERROR: calling print from main: %f\n", 3.14);
+	logger.print(EventLogger::L_DEBUG, "@event_logger_test.cpp: calling print from main\n");
+	logger.print(EventLogger::L_INFO, "@event_logger_test.cpp: calling print from main >>> %i, %s, %f\n", 1, "test string", 5.0);
+    logger.print(EventLogger::L_WARN, "@event_logger_test.cpp: calling print from main: %s\n", "another string");
+    logger.print(EventLogger::L_ERROR, "@event_logger_test.cpp: calling print from main: %f\n", 3.14);
 
     //Alternative style (does not support formatting)
 	logger.printDebug(EventLogger::M_IO, "Testing DEBUG"); //goes to file if verb. level >= DEBUG
@@ -80,13 +80,13 @@ int main()
 
 	//New style (support module and formatting)
 	logger.print(EventLogger::L_ERROR, EventLogger::M_IO,
-		         "[event_logger_test.cpp] ERROR: new style call: (%s, %f)\n",  "test", 1.0);
+		         "new style call: (%s, %f)\n",  "test", 1.0);
 	logger.print(EventLogger::L_WARN, EventLogger::M_STEREO,
-		         "[event_logger_test.cpp] WARN: will not be printed\n"); //module is not active
+		         "will not be printed\n"); //module is not active
 
 	//Using macros
-	LOG_ERROR("[event_logger_test.cpp] ERROR: %f, %s, %i\n", 2.8, "yes", 50);
-	MLOG_ERROR(EventLogger::M_IO, "[event_logger_test.cpp] ERROR message for an activated module: %f %f\n", 0.5, 4.5);
+	LOG_ERROR("@event_logger_test.cpp: %f, %s, %i\n", 2.8, "yes", 50);
+	MLOG_ERROR(EventLogger::M_IO, "@event_logger_test.cpp: message for an activated module: %f %f\n", 0.5, 4.5);
 	//the others are LOG_DEBUG/MLOG_DEBUG, LOG_INFO/MLOG_INFO and LOG_WARN/MLOG_WARN
 
 	//Instantiate a loader to test logging

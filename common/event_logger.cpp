@@ -49,7 +49,7 @@ void EventLogger::initialize()
 		exit(0);
 	}
 	is_initialized_ = true;
-	print(EventLogger::L_INFO, "[common::EventLogger] INFO: opening file %s\n", EventLogger::file_name_.c_str());
+	MLOG_INFO(EventLogger::M_COMMON, "INFO: opening file %s\n", EventLogger::file_name_.c_str());
 }
 
 EventLogger& EventLogger::getInstance()
@@ -120,23 +120,33 @@ void EventLogger::resetTextColor(FILE *stream)
 
 void EventLogger::print(EventLogger::VERBOSITY_LEVEL level, const char *format, ...)
 {
+	string log_type;
+
 	if(!isVerbosityLevelEnabled(level))
 		return;
+
+	//Initialize logger if it was not initialized yet
+	if(!is_initialized_)
+		initialize();
 
 	//Change color according to verb. level
 	switch(level)
 	{
 		case EventLogger::L_ERROR:
 			changeTextColor(stdout, EventLogger::TT_BRIGHT, EventLogger::TT_RED);
+			log_type = "ERROR:";
 			break;
 		case EventLogger::L_WARN:
 			changeTextColor(stdout, EventLogger::TT_BRIGHT, EventLogger::TT_YELLOW);
+			log_type = "WARN:";
 			break;
 		case EventLogger::L_DEBUG:
 			changeTextColor(stdout, EventLogger::TT_RESET, EventLogger::TT_GREEN);
+			log_type = "DEBUG:";
 			break;
 		case EventLogger::L_INFO:
 		default:
+			log_type = "INFO:";
 			resetTextColor(stdout);
 	}
 
@@ -146,15 +156,13 @@ void EventLogger::print(EventLogger::VERBOSITY_LEVEL level, const char *format, 
 	va_start(stdout_args, format);
 	va_copy(file_args, stdout_args);
 	fprintf(stdout, "[%s] ", currentDateTime().c_str());
+	fprintf(stdout, "%s ", log_type.c_str());
 	vfprintf(stdout, format, stdout_args);
 	va_end(stdout_args);
 
-	//Initialize logger if it was not initialized yet
-	if(!is_initialized_)
-		initialize();
-
 	//Write message to file
 	fprintf(log_file_, "[%s] ", currentDateTime().c_str());
+	fprintf(log_file_, "%s ", log_type.c_str());
 	vfprintf(log_file_, format, file_args);
 	va_end(file_args);
 
@@ -164,26 +172,36 @@ void EventLogger::print(EventLogger::VERBOSITY_LEVEL level, const char *format, 
 void EventLogger::print(EventLogger::VERBOSITY_LEVEL level,
                         EventLogger::MODULE module, const char *format, ...)
 {
+	string log_type;
+
 	if(!isVerbosityLevelEnabled(level))
 		return;
 
 	if(!isLoggingActiveFor(module))
 		return;
 
+	//Initialize logger if it was not initialized yet
+	if(!is_initialized_)
+		initialize();
+
 	//Change color according to verb. level
 	switch(level)
 	{
 		case EventLogger::L_ERROR:
 			changeTextColor(stdout, EventLogger::TT_BRIGHT, EventLogger::TT_RED);
+			log_type = "ERROR:";
 			break;
 		case EventLogger::L_WARN:
 			changeTextColor(stdout, EventLogger::TT_BRIGHT, EventLogger::TT_YELLOW);
+			log_type = "WARN:";
 			break;
 		case EventLogger::L_DEBUG:
 			changeTextColor(stdout, EventLogger::TT_RESET, EventLogger::TT_GREEN);
+			log_type = "DEBUG:";
 			break;
 		case EventLogger::L_INFO:
 		default:
+			log_type = "INFO:";
 			resetTextColor(stdout);
 	}
 
@@ -193,16 +211,14 @@ void EventLogger::print(EventLogger::VERBOSITY_LEVEL level,
 	va_start(stdout_args, format);
 	va_copy(file_args, stdout_args);
 	fprintf(stdout, "[%s] ", currentDateTime().c_str());
+	fprintf(stdout, "%s ", log_type.c_str());
 	fprintf(stdout, "[%s] ", modules_names_[module].c_str());
 	vfprintf(stdout, format, stdout_args);
 	va_end(stdout_args);
 
-	//Initialize logger if it was not initialized yet
-	if(!is_initialized_)
-		initialize();
-
 	//Write message to file
 	fprintf(log_file_, "[%s] ", currentDateTime().c_str());
+	fprintf(log_file_, "%s ", log_type.c_str());
 	fprintf(log_file_, "[%s] ", modules_names_[module].c_str());
 	vfprintf(log_file_, format, file_args);
 	va_end(file_args);
@@ -221,7 +237,7 @@ void EventLogger::printDebug(EventLogger::MODULE module, const char* msg)
 	if(!is_initialized_)
 		initialize();
 
-	print(EventLogger::L_DEBUG, "[%s] DEBUG: %s\n", modules_names_[module].c_str(), msg);
+	print(EventLogger::L_DEBUG, "[%s] %s\n", modules_names_[module].c_str(), msg);
 }
 
 void EventLogger::printInfo(EventLogger::MODULE module, const char* msg)
@@ -235,7 +251,7 @@ void EventLogger::printInfo(EventLogger::MODULE module, const char* msg)
 	if(!is_initialized_)
 		initialize();
 
-	print(EventLogger::L_INFO, "[%s] INFO: %s\n", modules_names_[module].c_str(), msg);
+	print(EventLogger::L_INFO, "[%s] %s\n", modules_names_[module].c_str(), msg);
 }
 
 void EventLogger::printWarning(EventLogger::MODULE module, const char* msg)
@@ -249,7 +265,7 @@ void EventLogger::printWarning(EventLogger::MODULE module, const char* msg)
 	if(!is_initialized_)
 		initialize();
 
-	print(EventLogger::L_WARN, "[%s] WARNING: %s\n", modules_names_[module].c_str(), msg);
+	print(EventLogger::L_WARN, "[%s] %s\n", modules_names_[module].c_str(), msg);
 }
 
 void EventLogger::printError(EventLogger::MODULE module, const char* msg)
@@ -263,7 +279,7 @@ void EventLogger::printError(EventLogger::MODULE module, const char* msg)
 	if(!is_initialized_)
 		initialize();
 
-	print(EventLogger::L_ERROR, "[%s] ERROR: %s\n", modules_names_[module].c_str(), msg);
+	print(EventLogger::L_ERROR, "[%s] %s\n", modules_names_[module].c_str(), msg);
 }
 
 string EventLogger::currentDateTime()
@@ -311,6 +327,6 @@ void EventLogger::printActiveModules()
 	set<EventLogger::MODULE>::const_iterator it;
     for(it = active_modules_.begin(); it != active_modules_.end(); it++)
     {
-        printf("Module %i is active\n", *it);
+    	MLOG_INFO(EventLogger::M_COMMON, "Module %i is active\n", *it);
     }
 }
