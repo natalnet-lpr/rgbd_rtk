@@ -47,6 +47,9 @@ using namespace cv;
 
 int main(int argc, char **argv)
 {
+    EventLogger& logger = EventLogger::getInstance();
+    logger.setVerbosityLevel(EventLogger::L_DEBUG);
+
 	string root_path;
 	KITTIStereoLoader loader;
 	Intrinsics intr(718.856, 718.856, 607.1928, 185.2157, 0.54);
@@ -64,11 +67,6 @@ int main(int argc, char **argv)
         fprintf(stderr, "(the 'sequences' part of the path is added automatically and must be omitted).\n");
         exit(0);
     }
-
-	Mat Q = (cv::Mat_<float>(4,4) <<1, 0, 0,       -607.1928, 
-                                    0, 1, 0,       -185.2157,
-                                    0, 0, 0,         718.856,
-                                    0, 0, 1/0.54, 0); //54cm of baseline
 
 	root_path = argv[1];
     loader.loadStereoSequence(root_path, atoi(argv[2]), atoi(argv[3]));
@@ -91,6 +89,11 @@ int main(int argc, char **argv)
 			circle(left, pt2, 3, CV_RGB(0,0,255), -1);
 			line(left, pt1, pt2, CV_RGB(0,0,255));
 		}
+
+        printf("Pose %i:\n", i);
+        printf("%f %f %f %f\n", vo.pose_(0,0), vo.pose_(0,1), vo.pose_(0,2), vo.pose_(0,3));
+        printf("%f %f %f %f\n", vo.pose_(1,0), vo.pose_(1,1), vo.pose_(1,2), vo.pose_(1,3));
+        printf("%f %f %f %f\n", vo.pose_(2,0), vo.pose_(2,1), vo.pose_(2,2), vo.pose_(2,3));
 
 		if(i == 0) visualizer.addReferenceFrame(vo.pose_, "origin");
 		//visualizer.addQuantizedPointCloud(vo.curr_dense_cloud_, 0.1, vo.pose_);

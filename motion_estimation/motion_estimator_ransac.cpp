@@ -59,8 +59,6 @@ void MotionEstimatorRANSAC::setDataFromCorrespondences(
     // tgt_cloud_->height = 1;
     // tgt_cloud_->points.resize(tgt_cloud_->width*tgt_cloud_->height);
 
-    MLOG_DEBUG(EventLogger::M_MOTION_ESTIMATION, "@MotionEstimatorRANSAC::setDataFromCorrespondences: setting 3D correspondences\n");
-
     // For each correspondence, get both points and their corresponding 3D points in the dense 3D
     // clouds
     // A correspondence is removed if any of the 3D points is invalid
@@ -163,6 +161,9 @@ Eigen::Matrix4f MotionEstimatorRANSAC::estimate(const vector<cv::Point2f> &tgt_p
     num_inliers_ = inl.size();
 
     float inl_ratio = float(inl.size()) / N;
+    MLOG_DEBUG(EventLogger::M_MOTION_ESTIMATION, "@MotionEstimatorRANSAC::estimate: \
+                                                  inlier ratio is %f\n",
+                                                  inl_ratio);
 
     // Optimize registration transformation using all inlier correspondences
     sac_model->optimizeModelCoefficients(inl, coeffs, opt_coeffs);

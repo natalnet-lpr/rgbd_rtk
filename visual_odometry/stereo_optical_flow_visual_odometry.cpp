@@ -36,10 +36,9 @@ using namespace std;
 using namespace cv;
 
 StereoOpticalFlowVisualOdometry::StereoOpticalFlowVisualOdometry(const Intrinsics& intr):
-frame_idx_(0), cloud_generator_(intr, 1)
+frame_idx_(0), cloud_generator_(intr, 1), motion_estimator_(intr, 0.3, 0)
 {
-	pose_ = Eigen::Affine3f::Identity(); 
-	motion_estimator_.intr_ = intr;
+	pose_ = Eigen::Affine3f::Identity();
 
 	prev_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
 	curr_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
@@ -52,6 +51,9 @@ void StereoOpticalFlowVisualOdometry::computeCameraPose(const cv::Mat& left, con
 	//Get dense point cloud from the stereo point cloud
 	cloud_generator_.generatePointCloud(left, right);
 	*curr_dense_cloud_ = *cloud_generator_.cloud_;
+
+	MLOG_DEBUG(EventLogger::M_STEREO, "Generated cloud has %lu points\n",
+		       curr_dense_cloud_->size());
 
 	//Track keypoints using KLT optical flow
 	tracker_.track(left);
