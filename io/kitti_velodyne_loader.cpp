@@ -67,6 +67,7 @@ void KITTIVelodyneLoader::loadLIDARSequence(const string& sequence_path, const i
 
     //set the prefix path
     prefix_path_ = root_path_ + "sequences/" + seq_number_str;
+    MLOG_INFO(EventLogger::M_IO, "Loading KITTI sequence: %s\n", prefix_path_.c_str());
 
     cmd = "ls " + prefix_path_ + "/velodyne >"
                 + prefix_path_ + "/velodyne/index.txt";
@@ -89,7 +90,7 @@ void KITTIVelodyneLoader::loadLIDARSequence(const string& sequence_path, const i
     }
     else
     {
-        logger.print(EventLogger::L_ERROR, "[kitti_velodyne_loader.cpp] ERROR: Could not create index file (error on system command).\nExiting\n");
+        MLOG_ERROR(EventLogger::M_IO, "@KITTIVelodyneLoader::loadLIDARSequence: Could not create index file (error on system command).\n");
         exit(0);
     }
 }

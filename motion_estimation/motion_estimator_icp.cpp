@@ -108,7 +108,7 @@ void MotionEstimatorICP::setRadius(const float& radius)
 	}
 	catch(int e)
 	{
-		logger.print(EventLogger::L_WARN, "[motion_estimator_icp.cpp] WARN: Radius can't be negative\nTrying to use default vallue: 0.05\n");
+		MLOG_WARN(EventLogger::M_MOTION_ESTIMATION, "Radius can't be negative. Using default value: 0.05.\n");
 		this->radius_ = 0.05;
 	}
 }
@@ -124,7 +124,7 @@ void MotionEstimatorICP::setMaxCorrespondenceDistance(const double& max_correspo
 	}
 	catch(int e)
 	{
-		logger.print(EventLogger::L_WARN, "[motion_estimator_icp.cpp] WARN: Max_correspondence_distance can't be negative\nTrying to use default value: 0.1\n");
+		MLOG_WARN(EventLogger::M_MOTION_ESTIMATION, "Max_correspondence_distance can't be negative. Using default value: 0.1.\n");
 		this->max_correspondence_distance_ = 0.1;
 	}
 }
@@ -140,7 +140,7 @@ void MotionEstimatorICP::setMaximumIterations(const int& maximum_iterations)
 	}
 	catch(int e)
 	{
-		logger.print(EventLogger::L_WARN, "[motion_estimator_icp.cpp] WARN: Maximum_iterations_ can't be negative\nTrying to use default value: 50\n");
+		MLOG_WARN(EventLogger::M_MOTION_ESTIMATION, "Maximum_iterations can't be negative. Using default value: 50.\n");
 		this->maximum_iterations_ = 50;
 	}
 }
@@ -156,7 +156,7 @@ void MotionEstimatorICP::setTransformationEpsilon(const double& transformation_e
 	}
 	catch(int e)
 	{
-		logger.print(EventLogger::L_WARN, "[motion_estimator_icp.cpp] WARN: Transformation_epsilon can't be negative\nTrying to use default value: 1e-9\n");
+		MLOG_WARN(EventLogger::M_MOTION_ESTIMATION, "Transformation_epsilon can't be negative. Using default value: 1e-9.\n");
 		this->transformation_epsilon_ = 1e-9;
 	}
 }
@@ -172,7 +172,7 @@ void MotionEstimatorICP::setEuclideanFitnessEpsilon(const double& euclidean_fitn
 	}
 	catch(int e)
 	{
-		logger.print(EventLogger::L_WARN, "[motion_estimator_icp.cpp] WARN: Euclidean_fitness_epsilon can't be negative\nTrying to use default value:0.001\n");
+		MLOG_WARN(EventLogger::M_MOTION_ESTIMATION, "Euclidean_fitness_epsilon can't be negative. Using default value: 0.001.\n");
 		this->euclidean_fitness_epsilon_ = 0.001;
 	}
 }

@@ -1,43 +1,32 @@
-/*
+/* 
  *  Software License Agreement (BSD License)
  *
  *  Copyright (c) 2016-2020, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
- *  Redistribution and use in source and binary forms, with or without modification, are permitted
- * provided
+ *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
  *
- *  1. Redistributions of source code must retain the above copyright notice, this list of
- * conditions and
+ *  1. Redistributions of source code must retain the above copyright notice, this list of conditions and
  *     the following disclaimer.
  *
- *  2. Redistributions in binary form must reproduce the above copyright notice, this list of
- * conditions and
- *     the following disclaimer in the documentation and/or other materials provided with the
- * distribution.
- *
- *  3. Neither the name of the copyright holder nor the names of its contributors may be used to
- * endorse or
+ *  2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and
+ *     the following disclaimer in the documentation and/or other materials provided with the distribution.
+ * 
+ *  3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or
  *     promote products derived from this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, *  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL,
- *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR
- *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY,
- *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE
+ * 
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, *  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  Author:
- *
- *  Bruno Silva
- *  Luiz Felipe Maciel Correia
+ *  Authors:
+ * 
  *  Marcos Henrique F. Marcone
+ *  Luiz Felipe Maciel Correia
+ *  Bruno Silva
  */
 
 #include <iostream>
@@ -66,11 +55,10 @@ void WideBaselineTracker::detect_keypoints()
     curr_kpts_.clear();
     feature_detector_->detect(curr_frame_gray_, curr_kpts_);
     descriptor_extractor_->compute(curr_frame_gray_, curr_kpts_, curr_descriptors_);
-    logger.print(EventLogger::L_DEBUG,
-                 "[WideBaselineTracker::detect_keypoints] DEBUG: detecting keyponts...\n");
-    logger.print(EventLogger::L_DEBUG,
-                 "[WideBaselineTracker::detect_keypoints] DEBUG: detected pts.: %lu\n",
-                 curr_kpts_.size());
+    
+    MLOG_DEBUG(EventLogger::M_TRACKING, "@WideBaselineTracker::detect_keypoints: detecting keypoints...\n");
+    MLOG_DEBUG(EventLogger::M_TRACKING, "@WideBaselineTracker::detect_keypoints: detected pts.: %lu\n",
+               added_pts_.size());
 }
 
 void WideBaselineTracker::add_keypoints()
@@ -85,10 +73,10 @@ void WideBaselineTracker::add_keypoints()
         tracklets_.push_back(tr);
     }
 
-    logger.print(EventLogger::L_DEBUG,
-                 "[WideBaselineTracker::add_keypoints DEBUG: adding keypoints...\n");
-    logger.print(EventLogger::L_DEBUG,
-                 "[WideBaselineTracker::add_keypoints DEBUG: added pts.: %lu\n", tracklets_.size());
+    MLOG_DEBUG(EventLogger::M_TRACKING, "@WideBaselineTracker::add_keypoints: added pts.: %lu\n",
+               added_pts_.size());
+    MLOG_DEBUG(EventLogger::M_TRACKING, "@WideBaselineTracker::add_keypoints: prev pts.: %lu\n",
+               prev_pts_.size());
 }
 
 void WideBaselineTracker::update_buffers()
@@ -149,17 +137,17 @@ void WideBaselineTracker::setFeatureDetector(const std::string &feature_detector
         feature_detector_ = cv::xfeatures2d::SIFT::create();
     else
     {
-        logger.print(EventLogger::L_ERROR, "[WideBaselinaTracker::setFeatureDetector] ERROR: "
-                                           "Attribute %s couldn't be loaded, insert a valid "
-                                           "feature detector\n",
-                     upper_feature_detector.c_str());
-        throw std::invalid_argument("Insert a valid feature detector");
+        MLOG_ERROR(EventLogger::M_TRACKING, "@WideBaselineTracker::setFeatureDetector:  \
+                                             attribute %s couldn't be loaded, insert a valid \
+                                             feature detector.\n",
+                                             upper_feature_detector.c_str());
+
+        throw std::invalid_argument("Insert a valid feature detector.");
     }
 
-    logger.print(
-        EventLogger::L_DEBUG,
-        "[WideBaselinaTracker::setFeatureDetector] DEBUG: Attribute feature_detector_ = %s\n",
-        upper_feature_detector.c_str());
+    MLOG_DEBUG(EventLogger::M_TRACKING, "@WideBaselineTracker::setFeatureDetector: \
+                                         feature_detector_ = %s\n",
+                                         upper_feature_detector.c_str());
 }
 
 void WideBaselineTracker::setDescriptorExtractor(const std::string &descriptor_extractor)
@@ -179,16 +167,17 @@ void WideBaselineTracker::setDescriptorExtractor(const std::string &descriptor_e
         descriptor_extractor_ = cv::xfeatures2d::SIFT::create();
     else
     {
-        logger.print(EventLogger::L_ERROR, "[WideBaselinaTracker::setDescriptorExtractor] ERROR: "
-                                           "Attribute %s couldn't be loaded, insert a valid "
-                                           "descriptor extractor\n",
-                     upper_descriptor_extractor.c_str());
-        throw std::invalid_argument("Insert a valid descriptor extractor");
+        MLOG_ERROR(EventLogger::M_TRACKING, "@WideBaselineTracker::setDescriptorExtractor:  \
+                                             attribute %s couldn't be loaded, insert a valid \
+                                             descriptor extractor.\n",
+                                             upper_descriptor_extractor.c_str());
+
+        throw std::invalid_argument("Insert a valid descriptor extractor.");
     }
 
-    logger.print(EventLogger::L_DEBUG, "[WideBaselinaTracker::setDescriptorExtractor] DEBUG: "
-                                       "Attribute descriptor_extractor_ = %s\n",
-                 upper_descriptor_extractor.c_str());
+    MLOG_DEBUG(EventLogger::M_TRACKING, "@WideBaselineTracker::setDescriptorExtractor: \
+                                         descriptor_extractor__ = %s\n",
+                                         upper_descriptor_extractor.c_str());
 }
 
 void WideBaselineTracker::setMatcher(const std::string &matcher)
@@ -202,15 +191,17 @@ void WideBaselineTracker::setMatcher(const std::string &matcher)
         matcher_ = cv::DescriptorMatcher::create("FlannBased");
     else
     {
-        logger.print(EventLogger::L_ERROR, "[WideBaselinaTracker::setMatcher] ERROR: Attribute %s "
-                                           "couldn't be loaded, insert a valid matcher\n",
-                     upper_matcher.c_str());
-        throw std::invalid_argument("Insert a valid matcher");
+        MLOG_ERROR(EventLogger::M_TRACKING, "@WideBaselineTracker::setMatcher:  \
+                                             attribute %s couldn't be loaded, insert a valid \
+                                             matcher.\n",
+                                             upper_matcher.c_str());
+
+        throw std::invalid_argument("Insert a valid matcher.");
     }
 
-    logger.print(EventLogger::L_DEBUG,
-                 "[WideBaselinaTracker::setMatcher] DEBUG: Attribute matcher_ = %s\n",
-                 upper_matcher.c_str());
+    MLOG_DEBUG(EventLogger::M_TRACKING, "@WideBaselineTracker::setMatcher: \
+                                         descriptor_extractor__ = %s\n",
+                                         upper_matcher.c_str());
 }
 
 /* #####################################################
@@ -291,8 +282,8 @@ bool WideBaselineTracker::track(const cv::Mat &img)
     else
         img.copyTo(curr_frame_gray_);
 
-    logger.print(EventLogger::L_DEBUG, "[WideBaselineTracker::track] DEBUG: tracking frame%i\n",
-                 frame_idx_);
+    MLOG_DEBUG(EventLogger::M_TRACKING, "@WideBaselineTracker::track: tracking frame %i\n",
+               frame_idx_);
 
     // Update the internal buffers
     update_buffers();
@@ -308,8 +299,6 @@ bool WideBaselineTracker::track(const cv::Mat &img)
     else
     {
         matcher_->match(curr_descriptors_, prev_descriptors_, matches_);
-        logger.print(EventLogger::L_DEBUG,
-                     "[WideBaselineTracker::track] DEBUG: matching descriptos...\n");
 
         setPreviousPoints();
         setCurrentPoints();
@@ -354,8 +343,10 @@ bool WideBaselineTracker::track(const cv::Mat &img)
             }
         }
 
-        logger.print(EventLogger::L_DEBUG,
-                     "[WideBaselineTracker::track] DEBUG: tracked points: %i\n", tracked_pts);
+        MLOG_DEBUG(EventLogger::M_TRACKING, "@WideBaselineTracker::track: \
+                                             tracked points:  %i\n",
+                                             tracked_pts);
+
         getGoodMatches(0.1);
 
         // Insufficient number of points being tracked

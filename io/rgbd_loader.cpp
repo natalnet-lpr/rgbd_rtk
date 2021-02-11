@@ -41,10 +41,10 @@ void RGBDLoader::processFile(const string& file_name)
     ifstream index_file(file_name.c_str());
     if (!index_file.is_open())
     {
-        LOG_ERROR("[RGBDLoader::processFile] ERROR: Index file %s was not found.\n", file_name.c_str());
+        MLOG_ERROR(EventLogger::M_IO, "@RGBDLoader::processFile: Index file %s was not found.\n", file_name.c_str());
         exit(0);
     }
-    LOG_INFO("[RGBDLoader::processFile] INFO: Opening index file: %s\n", file_name.c_str());
+    MLOG_INFO(EventLogger::M_IO, "@RGBDLoader::processFile: Opening index file: %s\n", file_name.c_str());
 
     // Extract path from the supplied argument
     int p = file_name.rfind('/');
@@ -84,19 +84,19 @@ void RGBDLoader::getNextImage(cv::Mat& rgb_img, cv::Mat& depth_img)
         depth_img = imread(depth_img_name, CV_LOAD_IMAGE_UNCHANGED);
         if (rgb_img.empty())
         {
-            LOG_ERROR("[RGBDLoader::getNextImage] ERROR: Image file %s not found.\n", rgb_img_name.c_str());
+            MLOG_ERROR(EventLogger::M_IO, "@RGBDLoader::getNextImage: Image file %s not found.\n.\n", rgb_img_name.c_str());
             exit(0);
         }
         if (depth_img.empty())
         {
-            LOG_ERROR("[RGBDLoader::getNextImage] ERROR: Image file %s not found.\n", depth_img_name.c_str());
+            MLOG_ERROR(EventLogger::M_IO, "@RGBDLoader::getNextImage: Image file %s not found.\n.\n", depth_img_name.c_str());
             exit(0);
         }
         curr_img_++;
     }
     else
     {
-        LOG_ERROR("RGBDLoader::getNextImage", "All images of the sequence were already loaded.");
+        MLOG_ERROR(EventLogger::M_IO, "@RGBDLoader::getNextImage: All images of the sequence were already loaded.\n");
         exit(0);
     }
 }
