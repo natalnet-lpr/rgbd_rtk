@@ -67,22 +67,22 @@ int main()
     logger.print(EventLogger::L_ERROR, "@event_logger_test.cpp: calling print from main: %f\n", 3.14);
 
     //Alternative style (does not support formatting)
-	logger.printDebug(EventLogger::M_IO, "Testing DEBUG"); //goes to file if verb. level >= DEBUG
-	logger.printInfo(EventLogger::M_IO, "Testing INFO"); //goes to file if verb. level >= INFO
-	logger.printWarning(EventLogger::M_IO, "Testing WARN"); //goes to file if verb. level >= WARN
-	logger.printError(EventLogger::M_IO, "Testing ERROR"); //goes to file if verb. level >= ERROR
+	logger.printDebug(EventLogger::M_IO, "Testing DEBUG\n"); //goes to file if verb. level >= DEBUG
+	logger.printInfo(EventLogger::M_IO, "Testing INFO\n"); //goes to file if verb. level >= INFO
+	logger.printWarning(EventLogger::M_IO, "Testing WARN\n"); //goes to file if verb. level >= WARN
+	logger.printError(EventLogger::M_IO, "Testing ERROR\n"); //goes to file if verb. level >= ERROR
 
-	//Messages below should not be printed because the modules are not active
-	logger.printDebug(EventLogger::M_COMMON, "Should not be printed");
-	logger.printInfo(EventLogger::M_VISUALIZATION, "Should not be printed");
-	logger.printWarning(EventLogger::M_VISUAL_ODOMETRY, "Should not be printed");
-	logger.printError(EventLogger::M_STEREO, "Should not be printed");
+	//These messages will be printed because they are not debug (even with not active modules)
+	logger.printInfo(EventLogger::M_VISUALIZATION, "Will be printed (info)\n");
+	logger.printWarning(EventLogger::M_VISUAL_ODOMETRY, "Will be printed (warn)\n");
+	logger.printError(EventLogger::M_STEREO, "Will be printed (error)\n");
+
+	//The message below should not be printed because the modules are not active
+	logger.printDebug(EventLogger::M_COMMON, "Should not be printed\n");
 
 	//New style (support module and formatting)
 	logger.print(EventLogger::L_ERROR, EventLogger::M_IO,
 		         "new style call: (%s, %f)\n",  "test", 1.0);
-	logger.print(EventLogger::L_WARN, EventLogger::M_STEREO,
-		         "will not be printed\n"); //module is not active
 
 	//Using macros
 	LOG_ERROR("@event_logger_test.cpp: %f, %s, %i\n", 2.8, "yes", 50);

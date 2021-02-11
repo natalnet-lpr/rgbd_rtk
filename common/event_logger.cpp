@@ -177,7 +177,7 @@ void EventLogger::print(EventLogger::VERBOSITY_LEVEL level,
 	if(!isVerbosityLevelEnabled(level))
 		return;
 
-	if(!isLoggingActiveFor(module))
+	if((level == EventLogger::L_DEBUG) and !isLoggingActiveFor(module))
 		return;
 
 	//Initialize logger if it was not initialized yet
@@ -237,7 +237,7 @@ void EventLogger::printDebug(EventLogger::MODULE module, const char* msg)
 	if(!is_initialized_)
 		initialize();
 
-	print(EventLogger::L_DEBUG, "[%s] %s\n", modules_names_[module].c_str(), msg);
+	print(EventLogger::L_DEBUG, "[%s] %s", modules_names_[module].c_str(), msg);
 }
 
 void EventLogger::printInfo(EventLogger::MODULE module, const char* msg)
@@ -245,13 +245,10 @@ void EventLogger::printInfo(EventLogger::MODULE module, const char* msg)
 	if(!isVerbosityLevelEnabled(EventLogger::L_INFO))
 		return;
 
-	if(!isLoggingActiveFor(module))
-		return;
-
 	if(!is_initialized_)
 		initialize();
 
-	print(EventLogger::L_INFO, "[%s] %s\n", modules_names_[module].c_str(), msg);
+	print(EventLogger::L_INFO, "[%s] %s", modules_names_[module].c_str(), msg);
 }
 
 void EventLogger::printWarning(EventLogger::MODULE module, const char* msg)
@@ -259,13 +256,10 @@ void EventLogger::printWarning(EventLogger::MODULE module, const char* msg)
 	if(!isVerbosityLevelEnabled(EventLogger::L_WARN))
 		return;
 
-	if(!isLoggingActiveFor(module))
-		return;
-
 	if(!is_initialized_)
 		initialize();
 
-	print(EventLogger::L_WARN, "[%s] %s\n", modules_names_[module].c_str(), msg);
+	print(EventLogger::L_WARN, "[%s] %s", modules_names_[module].c_str(), msg);
 }
 
 void EventLogger::printError(EventLogger::MODULE module, const char* msg)
@@ -273,13 +267,10 @@ void EventLogger::printError(EventLogger::MODULE module, const char* msg)
 	if (!isVerbosityLevelEnabled(EventLogger::L_ERROR))
 		return;
 
-	if(!isLoggingActiveFor(module))
-		return;
-
 	if(!is_initialized_)
 		initialize();
 
-	print(EventLogger::L_ERROR, "[%s] %s\n", modules_names_[module].c_str(), msg);
+	print(EventLogger::L_ERROR, "[%s] %s", modules_names_[module].c_str(), msg);
 }
 
 string EventLogger::currentDateTime()
