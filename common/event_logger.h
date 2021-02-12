@@ -1,26 +1,29 @@
-/* 
+/*
  *  Software License Agreement (BSD License)
  *
  *  Copyright (c) 2016-2021, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
- *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
- *  that the following conditions are met:
+ *  Redistribution and use in source and binary forms, with or without modification, are permitted
+ * provided that the following conditions are met:
  *
- *  1. Redistributions of source code must retain the above copyright notice, this list of conditions and
- *     the following disclaimer.
+ *  1. Redistributions of source code must retain the above copyright notice, this list of
+ * conditions and the following disclaimer.
  *
- *  2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and
- *     the following disclaimer in the documentation and/or other materials provided with the distribution.
- * 
- *  3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or
- *     promote products derived from this software without specific prior written permission.
- * 
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, *  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
- *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *  2. Redistributions in binary form must reproduce the above copyright notice, this list of
+ * conditions and the following disclaimer in the documentation and/or other materials provided with
+ * the distribution.
+ *
+ *  3. Neither the name of the copyright holder nor the names of its contributors may be used to
+ * endorse or promote products derived from this software without specific prior written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
+ * IMPLIED WARRANTIES, *  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *  Authors:
  *
@@ -34,9 +37,9 @@
 #define INCLUDE_EVENT_LOGGER_H_
 
 #include <cstdio>
-#include <string>
-#include <set>
 #include <map>
+#include <set>
+#include <string>
 
 #define LOG_ERROR(...) logger.print(EventLogger::L_ERROR, __VA_ARGS__)
 #define LOG_WARN(...) logger.print(EventLogger::L_WARN, __VA_ARGS__)
@@ -85,7 +88,7 @@ public:
      * @return the single instance of the class
      * currently in execution.
      */
-    static EventLogger &getInstance();
+    static EventLogger& getInstance();
 
     /**
      * Sets the verbosity level.
@@ -97,7 +100,7 @@ public:
      * Sets the log file name.
      * @param file_name: log file name (supports relative/absolute path)
      */
-    void setLogFileName(const std::string &file_name);
+    void setLogFileName(const std::string& file_name);
 
     /**
      * @return verbosity level.
@@ -115,13 +118,13 @@ public:
      * @param attribute the text attribute
      * @param fg the foreground color
      */
-    void changeTextColor(FILE *stream, int attribute, int fg);
+    void changeTextColor(FILE* stream, int attribute, int fg);
 
     /**
      * Reset the text color (on either stdout, stderr, etc) to its original state
      * @param stream the output stream
      */
-    void resetTextColor(FILE *stream);
+    void resetTextColor(FILE* stream);
 
     /**
      * @param level - the following are accepted: L_DEBUG, L_INFO, L_WARN, L_ERROR
@@ -145,7 +148,7 @@ public:
      * @param level: verbosity levels (L_DEBUG, L_INFO, L_WARN or L_ERROR).
      * @param format: formatted string and its list of variables
      */
-    void print(EventLogger::VERBOSITY_LEVEL level, const char *format, ...);
+    void print(EventLogger::VERBOSITY_LEVEL level, const char* format, ...);
 
     /**
      * Prints a formatted message to stdout/file with informed
@@ -158,8 +161,8 @@ public:
      * @param module: M_IO, M_COMMON, M_TRACKING, etc.
      * @param format: formatted string and its list of variables
      */
-    void print(EventLogger::VERBOSITY_LEVEL level,
-               EventLogger::MODULE module, const char *format, ...);
+    void
+    print(EventLogger::VERBOSITY_LEVEL level, EventLogger::MODULE module, const char* format, ...);
 
     /**
      * Prints a message to stdout/file to denote debug information.
@@ -171,7 +174,7 @@ public:
      * @param module: M_IO, M_COMMON, M_TRACKING, etc.
      * @param msg: string with a message
      */
-    void printDebug(EventLogger::MODULE module, const char *msg);
+    void printDebug(EventLogger::MODULE module, const char* msg);
 
     /**
      * Prints a message to stdout/file to denote general program information.
@@ -183,7 +186,7 @@ public:
      * @param module: M_IO, M_COMMON, M_TRACKING, etc.
      * @param msg: string with a message
      */
-    void printInfo(EventLogger::MODULE module, const char *msg);
+    void printInfo(EventLogger::MODULE module, const char* msg);
 
     /**
      * Prints a message to stdout/file to denote a program warning.
@@ -195,7 +198,7 @@ public:
      * @param module: M_IO, M_COMMON, M_TRACKING, etc.
      * @param msg: string with a message
      */
-    void printWarning(EventLogger::MODULE module, const char *msg);
+    void printWarning(EventLogger::MODULE module, const char* msg);
 
     /**
      * Prints a message to stdout/file to denote an error situation.
@@ -207,7 +210,7 @@ public:
      * @param module: M_IO, M_COMMON, M_TRACKING, etc.
      * @param msg: string with a message
      */
-    void printError(EventLogger::MODULE module, const char *msg);
+    void printError(EventLogger::MODULE module, const char* msg);
 
     /**
      * @return a string with the current local data and time, Format YYYY-MM-DD HH:mm:ss
@@ -217,14 +220,14 @@ public:
     /**
      * Activates logging for the specified module.
      * Does nothing if already activated for the specified module.
-     * @param desired module: M_IO, M_TRACKING, etc.
+     * @param module desire: M_IO, M_TRACKING, etc.
      */
     void activateLoggingFor(EventLogger::MODULE module);
 
     /**
-     * deactivates logging for the specified module.
+     * Deactivates logging for the specified module.
      * Does nothing if logging was already excluded for the specified module.
-     * @param desired module: M_IO, M_TRACKING, etc.
+     * @param module desire: M_IO, M_TRACKING, etc.
      */
     void deactivateLoggingFor(EventLogger::MODULE module);
 
@@ -235,11 +238,11 @@ public:
      */
     void activateLoggingOnlyFor(EventLogger::MODULE module);
 
-    //DEBUG ONLY
+    // DEBUG ONLY
     void printActiveModules();
 
 private:
-    enum TT_ATTIBUTES
+    enum TT_ATTRIBUTES
     {
         TT_RESET = 0,
         TT_BRIGHT = 1,
@@ -263,14 +266,14 @@ private:
     };
 
     // Informs if the logger has been initialized
-    //(whether it has correctly openned a file)
+    // (whether it has correctly openned a file)
     bool is_initialized_;
 
     // Name of the log file
     std::string file_name_;
 
     // Output file for the log file
-    FILE *log_file_;
+    FILE* log_file_;
 
     // Current verbosity level
     EventLogger::VERBOSITY_LEVEL verb_level_;
@@ -319,10 +322,10 @@ private:
     // Maps a module constant into its descriptive string
     std::map<EventLogger::MODULE, std::string> modules_names_;
 
-    EventLogger(EventLogger const &);    // don't implement copy constructor
-    void operator=(EventLogger const &); // don't implement assignment operator
+    EventLogger(EventLogger const&);    // don't implement copy constructor
+    void operator=(EventLogger const&); // don't implement assignment operator
 };
 
-extern EventLogger &logger;
+extern EventLogger& logger;
 
 #endif /* INCLUDE_EVENT_LOGGER_H_ */
