@@ -220,9 +220,9 @@ void ReconstructionVisualizer::addOptimizedEdges(
 
         // Check if the edge is "odometry" or "loop"
         if (idx1 - idx0 == 1)
-            addEdge(opt_edge, Eigen::Vector3f(1.0, 0.0, 1.0));
+            addEdge(opt_edge, color);
         else
-            addEdge(opt_edge, Eigen::Vector3f(0.0, 1.0, 1.0));
+            addEdge(opt_edge, color);
     }
 }
 
@@ -368,3 +368,9 @@ void ReconstructionVisualizer::spin() { viewer_->spin(); }
 void ReconstructionVisualizer::spinOnce() { viewer_->spinOnce(); }
 
 void ReconstructionVisualizer::close() { viewer_->close(); }
+
+void ReconstructionVisualizer::resetVisualizer()
+{
+    viewer_->removeAllShapes();
+    viewer_->removeAllCoordinateSystems();
+}

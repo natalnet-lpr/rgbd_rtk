@@ -254,3 +254,14 @@ void SLAM_Solver::optimizeGraph(const int& k)
 
     updateState();
 }
+
+void SLAM_Solver::resetGraph()
+{
+    num_vertices_ = 0;
+    last_added_id_ = -1;
+    positions_.clear();
+    odometry_edges_.clear();
+    loop_edges_.clear();
+    optimized_estimates_.clear();
+    optimizer_.clear();
+}

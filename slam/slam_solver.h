@@ -83,6 +83,11 @@ public:
      * @param k number of iterations type int
      */
     void optimizeGraph(const int& k);
+
+    /**
+     * Reset graph
+     */
+    void resetGraph();
 };
 
 #endif /* INCLUDE_SLAM_H_ */

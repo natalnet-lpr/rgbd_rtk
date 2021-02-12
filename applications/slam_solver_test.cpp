@@ -272,9 +272,12 @@ void addVertixAndEdge(
             {
                 // visualizer.removeEdges(slam_solver.odometry_edges_);
                 // visualizer.removeEdges(slam_solver.loop_edges_);
+
                 slam_solver.optimizeGraph(10);
-                visualizer.addOptimizedEdges(slam_solver.odometry_edges_);
-                visualizer.addOptimizedEdges(slam_solver.loop_edges_);
+                visualizer.addOptimizedEdges(
+                    slam_solver.odometry_edges_, Eigen::Vector3f(1.0, 0.0, 1.0));
+                visualizer.addOptimizedEdges(
+                    slam_solver.loop_edges_, Eigen::Vector3f(0.0, 1.0, 1.0));
             }
         }
 

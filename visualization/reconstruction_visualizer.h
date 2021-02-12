@@ -91,56 +91,58 @@ public:
      * Constructor with the window title as a string
      * @param title Title as String
      */
-    ReconstructionVisualizer(const std::string &title);
+    ReconstructionVisualizer(const std::string& title);
 
     /**
-       * Adds a line between the previous and the current camera position
-       * @param pose current camera pose
-       */
-    void addCameraPath(const Eigen::Affine3f &pose);
+     * Adds a line between the previous and the current camera position
+     * @param pose current camera pose
+     */
+    void addCameraPath(const Eigen::Affine3f& pose);
 
     /** Adds an edge from the graph to the PCLVisualizer as an arrow.
      * @param edge as Edge(common_types.h)
      * @param color of the arrow(blue as default)
      */
-    void addEdge(const Edge &edge, const Eigen::Vector3f &color = Eigen::Vector3f(0.0, 0.0, 1.0));
+    void addEdge(const Edge& edge, const Eigen::Vector3f& color = Eigen::Vector3f(0.0, 0.0, 1.0));
 
     /**
      * Adds all given edges to the PCLVisualizer.
      * @param edges as a vector of Edge(common_types.h)
      * @param color of the arrow(blue as default)
      */
-    void addEdges(const std::vector<Edge> &edges,
-                  const Eigen::Vector3f &color = Eigen::Vector3f(0.0, 0.0, 1.0));
+    void addEdges(
+        const std::vector<Edge>& edges,
+        const Eigen::Vector3f& color = Eigen::Vector3f(0.0, 0.0, 1.0));
 
     /**
      * Adds the optimized version of the given edges to the PCLVisualizer.
      * @param edges as a vector of Edge(common_types.h)
      * @param color of the arrow(blue as default)
      */
-    void addOptimizedEdges(const std::vector<Edge> &edges,
-                           const Eigen::Vector3f &color = Eigen::Vector3f(0.0, 0.0, 1.0));
+    void addOptimizedEdges(
+        const std::vector<Edge>& edges,
+        const Eigen::Vector3f& color = Eigen::Vector3f(0.0, 0.0, 1.0));
 
     /**
      * Adds a ref. frame with the given pose to the 3D reconstruction
      * @param pose Pose to be added
      * @param text text of the pose in visualization
      */
-    void addReferenceFrame(const Eigen::Affine3f &pose, const std::string &text);
+    void addReferenceFrame(const Eigen::Affine3f& pose, const std::string& text);
 
     /**
      * Adds a keyFrame with the given pose to the 3D reconstruction
      * @param kf Keyframe to be added
      * @param text text of the pose in visualization
      */
-    void addKeyFrame(const Keyframe kf, const std::string &text);
+    void addKeyFrame(const Keyframe kf, const std::string& text);
 
     /**
      * Adds a point cloud with the given pose to the 3D reconstruction
      * @param cloud PointCloud to be added
      * @param pose pose of the 3d Reconstruction
      */
-    void addPointCloud(const pcl::PointCloud<PointT>::Ptr &cloud, const Eigen::Affine3f &pose);
+    void addPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud, const Eigen::Affine3f& pose);
 
     /**
      * Receives a point cloud and quantize it (uniform sampling) with the given pose to the 3D
@@ -149,34 +151,36 @@ public:
      * @param radius radius search of uniform sampling
      * @param pose of the point cloud
      */
-    void addQuantizedPointCloud(const pcl::PointCloud<PointT>::Ptr &cloud, const float &radius,
-                                const Eigen::Affine3f &pose);
+    void addQuantizedPointCloud(
+        const pcl::PointCloud<PointT>::Ptr& cloud,
+        const float& radius,
+        const Eigen::Affine3f& pose);
 
     /**
      * Removes an edge from the PCLVisualizer.
      * @param edge to be removed as a Edge(common_types.h)
      */
-    void removeEdge(const Edge &edge);
+    void removeEdge(const Edge& edge);
 
     /**
      * Removes all given edges from the PCLVisualizer.
      * @param edges to be removed as a Vector of Edge(common_types.h)
-    */
-    void removeEdges(const std::vector<Edge> &edges);
+     */
+    void removeEdges(const std::vector<Edge>& edges);
 
     /**
      * Views a ref. frame with the given pose in the 3D reconstruction
      * @param pose pose of the frame
      * @param text pose text in visualization ("cam" as default)
      */
-    void viewReferenceFrame(const Eigen::Affine3f &pose, const std::string &text = "cam");
+    void viewReferenceFrame(const Eigen::Affine3f& pose, const std::string& text = "cam");
 
     /**
      * Views a point cloud in the 3D reconstruction
      * @param cloud PointCloud
      * @param pose pose of the 3d Reconstruction
      */
-    void viewPointCloud(const pcl::PointCloud<PointT>::Ptr &cloud, const Eigen::Affine3f &pose);
+    void viewPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud, const Eigen::Affine3f& pose);
 
     /**
      * Views a point cloud after quantization (uniform sampling) with the given pose to the 3D
@@ -185,20 +189,22 @@ public:
      * @param radius radius search of uniform sampling
      * @param pose of the point cloud
      */
-    void viewQuantizedPointCloud(const pcl::PointCloud<PointT>::Ptr &cloud, const float &radius,
-                                 const Eigen::Affine3f &pose);
+    void viewQuantizedPointCloud(
+        const pcl::PointCloud<PointT>::Ptr& cloud,
+        const float& radius,
+        const Eigen::Affine3f& pose);
 
     /**
      * Updates all given edges in the PCLVisualizer.
      * @param edges to be removed as a Vector of Edge(common_types.h)
      */
-    void updateEdges(const std::vector<Edge> &edges);
+    void updateEdges(const std::vector<Edge>& edges);
 
     /**
      * Updates all keyframes (ref. frames and point clouds).
      * @param keyframes vector of keyframes
      */
-    void updateKeyframes(const std::vector<Keyframe> &keyframes);
+    void updateKeyframes(const std::vector<Keyframe>& keyframes);
 
     /**
      *Sets the virtual camera position in the virtual world
@@ -206,7 +212,7 @@ public:
      * @param pos_y y camera position
      * @param pos_z z camera position
      */
-    void setCameraPosition(const float &pos_x, const float &pos_y, const float &pos_z);
+    void setCameraPosition(const float& pos_x, const float& pos_y, const float& pos_z);
 
     /**
      * Wrapper to the interactor function of pcl::visualizer
@@ -222,6 +228,8 @@ public:
      * Closes the visualizer
      */
     void close();
+
+    void resetVisualizer();
 };
 
 #endif /* INCLUDE_RECONSTRUCTION_VISUALIZER_H_ */
