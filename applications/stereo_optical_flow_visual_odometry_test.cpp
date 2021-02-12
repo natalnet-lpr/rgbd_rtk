@@ -49,6 +49,7 @@ int main(int argc, char **argv)
 {
     EventLogger& logger = EventLogger::getInstance();
     logger.setVerbosityLevel(EventLogger::L_DEBUG);
+    logger.activateLoggingOnlyFor(EventLogger::M_MOTION_ESTIMATION);
 
 	string root_path;
 	KITTIStereoLoader loader;
@@ -89,11 +90,6 @@ int main(int argc, char **argv)
 			circle(left, pt2, 3, CV_RGB(0,0,255), -1);
 			line(left, pt1, pt2, CV_RGB(0,0,255));
 		}
-
-        printf("Pose %i:\n", i);
-        printf("%f %f %f %f\n", vo.pose_(0,0), vo.pose_(0,1), vo.pose_(0,2), vo.pose_(0,3));
-        printf("%f %f %f %f\n", vo.pose_(1,0), vo.pose_(1,1), vo.pose_(1,2), vo.pose_(1,3));
-        printf("%f %f %f %f\n", vo.pose_(2,0), vo.pose_(2,1), vo.pose_(2,2), vo.pose_(2,3));
 
 		if(i == 0) visualizer.addReferenceFrame(vo.pose_, "origin");
 		//visualizer.addQuantizedPointCloud(vo.curr_dense_cloud_, 0.1, vo.pose_);

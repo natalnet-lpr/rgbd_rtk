@@ -35,25 +35,41 @@
 using namespace std;
 using namespace cv;
 
+void StereoOpticalFlowVisualOdometry::writePosesToFile()
+{
+	poses_file_ << pose_(0,0) << " " << pose_(0,1) << " " << pose_(0,2) << " " << pose_(0,3) << " "
+	            << pose_(1,0) << " " << pose_(1,1) << " " << pose_(1,2) << " " << pose_(1,3) << " "
+	            << pose_(2,0) << " " << pose_(2,1) << " " << pose_(2,2) << " " << pose_(2,3) << "\n"; 
+}
+
 StereoOpticalFlowVisualOdometry::StereoOpticalFlowVisualOdometry(const Intrinsics& intr):
-frame_idx_(0), cloud_generator_(intr, 1), motion_estimator_(intr, 0.3, 0)
+motion_estimator_(intr, 0.3, 0), cloud_generator_(intr, 1), frame_idx_(0)
 {
 	pose_ = Eigen::Affine3f::Identity();
 
 	prev_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
 	curr_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
+
+	poses_file_.open("stereo_optical_flow_visual_odometry_poses.txt");
+	if(!poses_file_.is_open())
+	{
+		MLOG_ERROR(EventLogger::M_VISUAL_ODOMETRY, "@StereoOpticalFlowVisualOdometry: \
+			                                        there is a problem opening \
+			                                        the file with the computed poses.\n");
+		exit(-1);
+	}
 }
 
 void StereoOpticalFlowVisualOdometry::computeCameraPose(const cv::Mat& left, const cv::Mat& right)
 {
 	Eigen::Affine3f trans = Eigen::Affine3f::Identity();
 
+	MLOG_INFO(EventLogger::M_VISUAL_ODOMETRY, "Processing frame %lu\n",
+		      frame_idx_);
+
 	//Get dense point cloud from the stereo point cloud
 	cloud_generator_.generatePointCloud(left, right);
 	*curr_dense_cloud_ = *cloud_generator_.cloud_;
-
-	MLOG_DEBUG(EventLogger::M_STEREO, "Generated cloud has %lu points\n",
-		       curr_dense_cloud_->size());
 
 	//Track keypoints using KLT optical flow
 	tracker_.track(left);
@@ -66,6 +82,9 @@ void StereoOpticalFlowVisualOdometry::computeCameraPose(const cv::Mat& left, con
 
 		pose_ = pose_*trans;
 	}
+
+	// Write computed odometry pose to file
+	writePosesToFile();
 
 	//Let the prev. cloud in the next frame be the current cloud
 	*prev_dense_cloud_ = *curr_dense_cloud_;

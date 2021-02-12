@@ -43,6 +43,8 @@
 #ifndef INCLUDE_STEREO_OPTICAL_FLOW_VISUAL_ODOMETRY_H_
 #define INCLUDE_STEREO_OPTICAL_FLOW_VISUAL_ODOMETRY_H_
 
+#include <fstream>
+
 #include <Eigen/Geometry>
 #include <opencv2/core/core.hpp>
 #include <pcl/point_cloud.h>
@@ -54,10 +56,6 @@
 
 class StereoOpticalFlowVisualOdometry
 {
-private:
-    // Current frame index
-    unsigned long int frame_idx_;
-
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -84,11 +82,28 @@ public:
      */
     StereoOpticalFlowVisualOdometry(const Intrinsics &intr);
 
+    ~StereoOpticalFlowVisualOdometry()
+    {
+        poses_file_.close();
+    }
+
     /**
      * Main member function: computes the current camera pose
      * @param left left image of stereo camera @param right right image of stereo camera
      */
     void computeCameraPose(const cv::Mat &left, const cv::Mat &right);
+
+private:
+    // Current frame index
+    unsigned long int frame_idx_;
+
+    // Output file computed poses
+    std::ofstream poses_file_;
+
+    /**
+     * Writes computed visual odometry poses to file.
+     */
+    void writePosesToFile();
 };
 
 #endif /* INCLUDE_STEREO_OPTICAL_FLOW_VISUAL_ODOMETRY_H_ */
