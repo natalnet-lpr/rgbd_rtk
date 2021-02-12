@@ -1,42 +1,32 @@
-/*
+/* 
  *  Software License Agreement (BSD License)
  *
  *  Copyright (c) 2016-2020, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
- *  Redistribution and use in source and binary forms, with or without modification, are permitted
- * provided
+ *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
  *
- *  1. Redistributions of source code must retain the above copyright notice, this list of
- * conditions and
+ *  1. Redistributions of source code must retain the above copyright notice, this list of conditions and
  *     the following disclaimer.
  *
- *  2. Redistributions in binary form must reproduce the above copyright notice, this list of
- * conditions and
- *     the following disclaimer in the documentation and/or other materials provided with the
- * distribution.
- *
- *  3. Neither the name of the copyright holder nor the names of its contributors may be used to
- * endorse or
+ *  2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and
+ *     the following disclaimer in the documentation and/or other materials provided with the distribution.
+ * 
+ *  3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or
  *     promote products derived from this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, *  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL,
- *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR
- *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY,
- *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE
+ * 
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, *  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  Author:
+ *  Authors:
  *
  *  Bruno Silva
  */
+
 #include <Eigen/Geometry>
 #include <cstdio>
 #include <cstdlib>
@@ -69,7 +59,7 @@ void MotionEstimatorRANSAC::setDataFromCorrespondences(
     // tgt_cloud_->height = 1;
     // tgt_cloud_->points.resize(tgt_cloud_->width*tgt_cloud_->height);
 
-    LOG_DEBUG("[MotionEstimatorRANSAC] DEBUG: setting 3D correspondences:\n");
+    MLOG_DEBUG(EventLogger::M_MOTION_ESTIMATION, "@MotionEstimatorRANSAC::setDataFromCorrespondences: setting 3D correspondences\n");
 
     // For each correspondence, get both points and their corresponding 3D points in the dense 3D
     // clouds
@@ -102,9 +92,9 @@ void MotionEstimatorRANSAC::setDataFromCorrespondences(
     }
     // tgt_cloud_->points.resize(valid_points);
     // src_cloud_->points.resize(valid_points);
-    logger.print(EventLogger::L_DEBUG,
-                 "[MotionEstimatorRANSAC] DEBUG: valid points (with depth)/total points: %lu/%lu\n",
-                 valid_points, src_points.size());
+    MLOG_DEBUG(EventLogger::M_MOTION_ESTIMATION, "@MotionEstimatorRANSAC::setDataFromCorrespondences: \
+                                                  valid points (with depth)/total points: %lu/%lu\n",
+                                                  valid_points, src_points.size());
 }
 MotionEstimatorRANSAC::MotionEstimatorRANSAC()
 {
@@ -130,9 +120,9 @@ MotionEstimatorRANSAC::MotionEstimatorRANSAC(const Intrinsics &intr,
 
     // Initialize intrinsics with the given values
     intr_ = intr;
-    logger.print(EventLogger::L_INFO, "[MotionEstimatorRANSAC] INFO: loading intrinsics...\n");
-    logger.print(EventLogger::L_INFO, "[MotionEstimatorRANSAC] INFO: %f %f %f %f %f\n", intr.fx_,
-                 intr.fy_, intr.cx_, intr.cy_, intr.scale_);
+    MLOG_INFO(EventLogger::M_MOTION_ESTIMATION, "@MotionEstimatorRANSAC: loading intrinsics...\n");
+    MLOG_INFO(EventLogger::M_MOTION_ESTIMATION, "@MotionEstimatorRANSAC: %f %f %f %f %f\n",
+              intr.fx_, intr.fy_, intr.cx_, intr.cy_, intr.scale_);
 }
 
 Eigen::Matrix4f MotionEstimatorRANSAC::estimate(const vector<cv::Point2f> &tgt_points,
@@ -145,9 +135,8 @@ Eigen::Matrix4f MotionEstimatorRANSAC::estimate(const vector<cv::Point2f> &tgt_p
 
     long unsigned N = src_cloud_->points.size();
 
-    logger.print(EventLogger::L_DEBUG,
-                 "[MotionEstimatorRANSAC] DEBUG: RANSAC motion estimation: %lu <-> %lu\n",
-                 tgt_cloud_->size(), src_cloud_->size());
+    MLOG_DEBUG(EventLogger::M_MOTION_ESTIMATION, "@MotionEstimatorRANSAC::estimate: RANSAC motion estimation: %lu <-> %lu\n",
+               tgt_cloud_->size(), src_cloud_->size());
     // Build a RANSAC registration model to estimate the rigid transformation
     pcl::SampleConsensusModelRegistration<PointT>::Ptr sac_model(
         new pcl::SampleConsensusModelRegistration<PointT>(src_cloud_));

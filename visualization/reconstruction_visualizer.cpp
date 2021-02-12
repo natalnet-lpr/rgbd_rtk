@@ -3,40 +3,30 @@
  *
  *  Copyright (c) 2016-2020, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
- *  Redistribution and use in source and binary forms, with or without modification, are permitted
- * provided
+ *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
  *
- *  1. Redistributions of source code must retain the above copyright notice, this list of
- * conditions and
+ *  1. Redistributions of source code must retain the above copyright notice, this list of conditions and
  *     the following disclaimer.
  *
- *  2. Redistributions in binary form must reproduce the above copyright notice, this list of
- * conditions and
- *     the following disclaimer in the documentation and/or other materials provided with the
- * distribution.
+ *  2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and
+ *     the following disclaimer in the documentation and/or other materials provided with the distribution.
  *
- *  3. Neither the name of the copyright holder nor the names of its contributors may be used to
- * endorse or
+ *  3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or
  *     promote products derived from this software without specific prior written permission.
  *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, *  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL,
- *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR
- *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY,
- *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, *
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *  Authors:
  *
  *  Bruno Silva
- *  Rodrigo Sarmento
+ *  Rodrigo Xavier
  */
 
 #include <cstdio>
@@ -107,15 +97,12 @@ void ReconstructionVisualizer::addCameraPath(const Eigen::Affine3f& pose)
     stringstream line_name;
     line_name << "line" << num_lines_++;
     viewer_->addLine(prev_pos_, curr_pos_, 1.0, 0.0, 0.0, line_name.str());
-    viewer_->setShapeRenderingProperties(
-        pcl::visualization::PCL_VISUALIZER_LINE_WIDTH, 5, line_name.str());
+    viewer_->setShapeRenderingProperties(pcl::visualization::PCL_VISUALIZER_LINE_WIDTH, 5, line_name.str());
 
     prev_pos_ = curr_pos_;
 }
 
-void ReconstructionVisualizer::addReferenceFrame(
-    const Eigen::Affine3f& pose,
-    const std::string& text)
+void ReconstructionVisualizer::addReferenceFrame(const Eigen::Affine3f& pose, const std::string& text)
 {
     // Add frame
     stringstream frame_name;
@@ -148,9 +135,7 @@ void ReconstructionVisualizer::addKeyFrame(const Keyframe kf, const std::string&
     viewer_->addText3D(text, text_pose, 0.015, 1, 0, 0, frame_name.str());
 }
 
-void ReconstructionVisualizer::addPointCloud(
-    const pcl::PointCloud<PointT>::Ptr& cloud,
-    const Eigen::Affine3f& pose)
+void ReconstructionVisualizer::addPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud, const Eigen::Affine3f& pose)
 {
     // Create a new point cloud
     pcl::PointCloud<PointT>::Ptr transf_cloud(new pcl::PointCloud<PointT>);
@@ -197,17 +182,13 @@ void ReconstructionVisualizer::addEdge(const Edge& edge, const Eigen::Vector3f& 
     num_edges_++;
 }
 
-void ReconstructionVisualizer::addEdges(
-    const std::vector<Edge>& edges,
-    const Eigen::Vector3f& color)
+void ReconstructionVisualizer::addEdges(const std::vector<Edge>& edges, const Eigen::Vector3f& color)
 {
     // Iterate over vector edges and add them to the visualizer
     for (size_t i = 0; i < edges.size(); i++) { addEdge(edges[i], color); }
 }
 
-void ReconstructionVisualizer::addOptimizedEdges(
-    const std::vector<Edge>& edges,
-    const Eigen::Vector3f& color)
+void ReconstructionVisualizer::addOptimizedEdges(const std::vector<Edge>& edges, const Eigen::Vector3f& color)
 {
     // Iterate over vector edges, optimizing them and adding them to the visualizer
     for (size_t i = 0; i < edges.size(); i++)
@@ -226,9 +207,7 @@ void ReconstructionVisualizer::addOptimizedEdges(
     }
 }
 
-void ReconstructionVisualizer::viewReferenceFrame(
-    const Eigen::Affine3f& pose,
-    const std::string& text)
+void ReconstructionVisualizer::viewReferenceFrame(const Eigen::Affine3f& pose, const std::string& text)
 {
     viewer_->removeCoordinateSystem(text);
     viewer_->addCoordinateSystem(0.3, pose, text);
@@ -242,9 +221,7 @@ void ReconstructionVisualizer::viewReferenceFrame(
     viewer_->addText3D(text, pose_txt, 0.025, 1, 1, 1, ss.str());
 }
 
-void ReconstructionVisualizer::viewPointCloud(
-    const pcl::PointCloud<PointT>::Ptr& cloud,
-    const Eigen::Affine3f& pose)
+void ReconstructionVisualizer::viewPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud, const Eigen::Affine3f& pose)
 {
     // Create a new point cloud
     pcl::PointCloud<PointT>::Ptr transf_cloud(new pcl::PointCloud<PointT>);
@@ -276,16 +253,10 @@ void ReconstructionVisualizer::viewQuantizedPointCloud(
 
 void ReconstructionVisualizer::updateKeyframes(const std::vector<Keyframe>& keyframes)
 {
-    // Set verbosity level to debug
-    EventLogger& logger = EventLogger::getInstance();
-    logger.setVerbosityLevel(EventLogger::L_DEBUG);
-    logger.setLogFileName("log_reconstruction_visualizer.txt");
-
     viewer_->removePointCloud("cloud");
 
-    logger.print(
-        EventLogger::L_INFO,
-        "[Visualizer::updateKeyframes] INFO: Updating keyframe visualization\n");
+    MLOG_INFO(EventLogger::M_VISUALIZATION, "@ReconstructionVisualizer::updateKeyframes: \
+                                              Updating keyframe visualization\n");
 
     // Iterate over keyframes and add their clouds to visualization
     for (size_t i = 0; i < keyframes.size(); i++)
@@ -332,9 +303,8 @@ void ReconstructionVisualizer::updateKeyframes(const std::vector<Keyframe>& keyf
         pos.z = camera(2, 3);
         // viewer_->addText3D(coord_sys_name, pos, 0.025);
     }
-    logger.print(
-        EventLogger::L_INFO,
-        "[Visualizer::updateKeyframes] INFO: keyframe visualization UPDATED\n");
+    MLOG_INFO(EventLogger::M_VISUALIZATION, "@ReconstructionVisualizer::updateKeyframes: \
+                                              keyframe visualization updated\n");
 }
 
 void ReconstructionVisualizer::removeEdge(const Edge& edge) { viewer_->removeShape(edge.name_); }
@@ -345,10 +315,7 @@ void ReconstructionVisualizer::removeEdges(const std::vector<Edge>& edges)
     for (size_t i = 0; i < edges.size(); i++) { removeEdge(edges[i]); }
 }
 
-void ReconstructionVisualizer::setCameraPosition(
-    const float& pos_x,
-    const float& pos_y,
-    const float& pos_z)
+void ReconstructionVisualizer::setCameraPosition(const float& pos_x, const float& pos_y, const float& pos_z)
 {
     // Given the x y and z, set the camera position
     viewer_->setCameraPosition(
