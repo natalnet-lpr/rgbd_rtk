@@ -52,17 +52,26 @@ using namespace cv;
 
 void FeatureMapTracker::add_keypoints()
 {
+    logger.print(EventLogger::L_DEBUG, "[FeatureMapTracker::add_keypoints DEBUG]: Teste...\n");
+    
+    //Tracklet tr(frame_idx_);
     for (size_t i = 0; i < curr_kpts_.size(); i++)
     {
         //Create and add tracklet
         Tracklet tr(frame_idx_);
         tr.pts2D_.push_back(curr_kpts_[i].pt);
         tr.keypoint_indices_.push_back(i);
+        //tr.inverted_indices_.push_back(frame_idx_);
+        
         map_tracklets_.push_back(tr);
+
+        std::vector<int> v{frame_idx_};
+        inverted_indices_.push_back(v);
     }
 
     logger.print(EventLogger::L_DEBUG, "[FeatureMapTracker::add_keypoints DEBUG]: adding keypoints...\n");
     logger.print(EventLogger::L_DEBUG, "[FeatureMapTracker::add_keypoints DEBUG]: added pts.: %lu\n", map_tracklets_.size());
+    logger.print(EventLogger::L_DEBUG, "[FeatureMapTracker::add_keypoints DEBUG]: Inverted Index.: %lu\n", inverted_indices_.size());
 }
 
 void FeatureMapTracker::detect_keypoints()
@@ -76,8 +85,6 @@ void FeatureMapTracker::detect_keypoints()
 
 void FeatureMapTracker::update_buffers()
 {
-    //std::swap(curr_kpts_, map_kpts_);
-    //std::swap(curr_descriptors_, map_descriptors_);
     std::copy(curr_kpts_.begin(), curr_kpts_.end(), std::back_inserter(map_kpts_));
     curr_descriptors_.copyTo(map_descriptors_);
     life_of_keypoints_on_the_map_.resize(map_kpts_.size());
@@ -94,8 +101,6 @@ void FeatureMapTracker::getGoodMatches(const float& dist_ratio)
     int number_of_good_matches = 0;
 
     for (int i = 0; i < matches_.rows; i++){
-        //int idx1 = i; // matches has the same number of query points (current points)
-        //int idx2 = matches_.at<int>(i,0); // Index of the first match
 
         // The distances to the first and the second matches
         float dist_first = dists_.at<float>(i,0), dist_second = dists_.at<float>(i,1);
@@ -138,6 +143,8 @@ void FeatureMapTracker::updateTheMap()
             // Update the tracklets
             map_tracklets_[train_index].pts2D_.push_back(curr_kpts_[query_index].pt);
             map_tracklets_[train_index].keypoint_indices_.push_back(query_index);
+            inverted_indices_[train_index].push_back(frame_idx_);
+            //map_tracklets_[train_index].inverted_indices_.push_back(frame_idx_);
             tracked_pts_++;
 
         }
@@ -168,6 +175,7 @@ void FeatureMapTracker::removeInvalidKeypointsFromTheMap()
             map_descriptors_.row(i).copyTo(map_descriptors_.row(ok_keypoints));
             life_of_keypoints_on_the_map_[ok_keypoints] = life_of_keypoints_on_the_map_[i];
             map_tracklets_[ok_keypoints] = map_tracklets_[i];
+            inverted_indices_[ok_keypoints] = inverted_indices_[i];
             ok_keypoints++;
 
         }
@@ -178,6 +186,7 @@ void FeatureMapTracker::removeInvalidKeypointsFromTheMap()
     map_descriptors_.resize(ok_keypoints);
     life_of_keypoints_on_the_map_.resize(ok_keypoints);
     map_tracklets_.resize(ok_keypoints);
+    inverted_indices_.resize(ok_keypoints);
 }
 
 void FeatureMapTracker::addNewKeypointsToTheMap()
@@ -196,7 +205,12 @@ void FeatureMapTracker::addNewKeypointsToTheMap()
             Tracklet tr(frame_idx_);
             tr.pts2D_.push_back(curr_kpts_[i].pt);
             tr.keypoint_indices_.push_back(i);
+            //tr.inverted_indices_.push_back(frame_idx_);
             map_tracklets_.push_back(tr);
+
+            std::vector<int> v{frame_idx_};
+            inverted_indices_.push_back(v);
+
             tracked_pts_++;
             added_kpts++;
         }
@@ -222,17 +236,55 @@ int FeatureMapTracker::searchMatches(const int &keypoint_index)
 
 void FeatureMapTracker::setCurrentPoints()
 {
-    for (int i = 0; i < matches_.rows; i++)
+    curr_pts_.clear();
+
+    for (size_t i = 0; i < inverted_indices_.size(); i++)
     {
-        if (good_matches_[i])
+        int number_of_points = inverted_indices_[i].size();
+
+        if (number_of_points > 1)
         {
-            curr_pts_.push_back(curr_kpts_[i].pt);
+            if ((inverted_indices_[i][number_of_points - 1] == frame_idx_) && (inverted_indices_[i][number_of_points - 2] == frame_idx_ -1))
+            {
+                curr_pts_.push_back(map_tracklets_[i].pts2D_[number_of_points-1]);
+            }
+        }
+    }
+
+}
+
+void FeatureMapTracker::setPreviousPoints()
+{
+    /*for (size_t i = 0; i < map_tracklets_.size(); i++)
+    {
+        int number_of_points = map_tracklets_[i].pts2D_.size();
+
+        if (number_of_points > 1)
+        {
+            if ((map_tracklets_[i].inverted_indices_[number_of_points - 1] == frame_idx_) && (map_tracklets_[i].inverted_indices_[number_of_points - 2] == frame_idx_ -1))
+            {
+                prev_pts_.push_back(map_tracklets_[i].pts2D_[number_of_points-2]);
+            }
+        }
+    }*/
+
+    prev_pts_.clear();
+    
+    for (size_t i = 0; i < inverted_indices_.size(); i++)
+    {
+        int number_of_points = inverted_indices_[i].size();
+
+        if (number_of_points > 1)
+        {
+            if ((inverted_indices_[i][number_of_points - 1] == frame_idx_) && (inverted_indices_[i][number_of_points - 2] == frame_idx_ -1))
+            {
+                prev_pts_.push_back(map_tracklets_[i].pts2D_[number_of_points-2]);
+            }
         }
     }
 }
 
-// Trocar o nome do metodo
-// Nova versão
+/*// Stand by
 void FeatureMapTracker::setMapPoints()
 {
     for (int i = 0; i < matches_.rows; i++)
@@ -243,7 +295,7 @@ void FeatureMapTracker::setMapPoints()
             map_pts_.push_back(map_kpts_[map_index].pt);
         }
     }
-}
+}*/
 
 void FeatureMapTracker::setFeatureDetector(const std::string &feature_detector)
 {
@@ -415,10 +467,7 @@ bool FeatureMapTracker::track(const cv::Mat &img)
 
         logger.print(EventLogger::L_DEBUG, "[FeatuerMapTracker::track] DEBUG: calculating the good matches...\n");
         getGoodMatches(DIST_RATIO_);
-
-        logger.print(EventLogger::L_DEBUG, "[FeatuerMapTracker::track] DEBUG: defining the current and the previous points...\n");
-        setCurrentPoints();
-        setMapPoints();
+       
 
         logger.print(EventLogger::L_DEBUG, "[FeatuerMapTracker::track] DEBUG: updating the map...\n");
         updateTheMap();
@@ -432,7 +481,11 @@ bool FeatureMapTracker::track(const cv::Mat &img)
         logger.print(EventLogger::L_DEBUG, "[FeatureMapTracker::track] DEBUG: tracked points: %i\n", tracked_pts_);
         logger.print(EventLogger::L_DEBUG, "[FeatuerMapTracker::track] DEBUG: final map size: %i\n", map_kpts_.size());
 
-        ;
+        logger.print(EventLogger::L_DEBUG, "[FeatuerMapTracker::track] DEBUG: defining the current and the previous points...\n");
+        setCurrentPoints();
+        setPreviousPoints();
+
+        logger.print(EventLogger::L_DEBUG, "[FeatureMapTracker::track] DEBUG: number of current points: %i\n", curr_pts_.size());
     }
 
     frame_idx_++;
@@ -447,6 +500,7 @@ void FeatureMapTracker::clear()
     map_kpts_.clear();
     curr_pts_.clear();
     map_pts_.clear();
+    prev_pts_.clear();
     initialized_ = false;
 }
 

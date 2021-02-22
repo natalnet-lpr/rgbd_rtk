@@ -44,7 +44,8 @@
 using namespace std;
 using namespace cv;
 
-void draw_current_features(Mat &img, const vector<Point2f> curr_pts_);
+void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts, bool is_kf);
+Mat draw_last_matches(Mat& img1, Mat& img2, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts);
 
 /**
  * This program shows the use of tracking by detection algorithm.
@@ -60,8 +61,6 @@ int main(int argc, char **argv)
 	int log_stats, lifespan_of_a_feature;
 	Mat frame, depth, current_frame, previous_frame;
 	string feature_detector, descriptor_extractor;
-
-	
 	
 	if (argc != 2)
 	{
@@ -94,8 +93,8 @@ int main(int argc, char **argv)
 		el_time = ((double) cvGetTickCount() - el_time)/(cvGetTickFrequency()*1000.0);
 		logger.print(EventLogger::L_INFO,"[feature_map_tracker_test.cpp] INFO: Tracking time: %f ms\n", el_time);
 
-		
-		//draw_current_features(frame, feature_map_tracker.curr_pts_);
+		frame.copyTo(current_frame);
+
 		//logger.print(EventLogger::L_INFO, "[feature_map_tracker_test.cpp] INFO: Current Keypoints: \n");
 		file << "[feature_map_tracker_test.cpp] INFO: Current Keypoints: \n";
 
@@ -109,7 +108,7 @@ int main(int argc, char **argv)
 
 		if (i>0)
 		{
-			draw_current_features(frame,feature_map_tracker.curr_pts_);
+			
 			//logger.print(EventLogger::L_INFO, "[feature_map_tracker_test.cpp] INFO: Good Matches: \n");
 			file << "[feature_map_tracker_test.cpp] INFO: Good Matches: \n";
 			for (int i = 0; i < feature_map_tracker.matches_.rows; i++)
@@ -121,7 +120,6 @@ int main(int argc, char **argv)
 			}
 
 		}
-
 
 		file << "------------------------------------------------------------------" << endl;
 
@@ -148,10 +146,49 @@ int main(int argc, char **argv)
 				file << feature_map_tracker.map_tracklets_[i].keypoint_indices_[j] << " --> ";
 			}
 			file << endl;
+
+			for (size_t j = 0; j < feature_map_tracker.inverted_indices_[i].size(); j++)
+			{
+				file << feature_map_tracker.inverted_indices_[i][j] << " --> ";
+			}
+			file << endl;
 		}
 
 		file << "----------------------------------------------------------------------------------" << endl;
+		
+		if (i>0){
+			file << "[feature_map_tracker_test.cpp] INFO: Previous Points --> Current Points: \n";
+			for(size_t i = 0; i < feature_map_tracker.curr_pts_.size(); i++)
+			{
+				file << feature_map_tracker.prev_pts_[i] << " --> " << feature_map_tracker.curr_pts_[i] << endl;
+			}
+		}
+
+		file << "----------------------------------------------------------------------------------" << endl;
+
+
 		frame_number++;
+
+
+		if (i>0){
+			draw_last_track(frame, feature_map_tracker.prev_pts_, feature_map_tracker.curr_pts_, is_kf);
+			Mat matches_view = draw_last_matches(previous_frame, current_frame, feature_map_tracker.prev_pts_, feature_map_tracker.curr_pts_);
+			imshow("Matches view", matches_view);
+
+			imshow("Image view", frame);
+			imshow("Depth view", depth);
+		}
+
+
+		char key = waitKey(15);
+
+		if (key == 27 || key == 'q' || key == 'Q')
+		{
+			logger.print(EventLogger::L_INFO, "[feature_map_tracker_test.cpp] Exiting\n",argv[0]);
+			break;
+		}
+
+		current_frame.copyTo(previous_frame);
 	}
 
 	file.close();
@@ -160,18 +197,55 @@ int main(int argc, char **argv)
 }
 
 
-void draw_current_features(Mat &img, const vector<Point2f> curr_pts_)
+void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts, bool is_kf)
 {
-
 	Scalar color;
-	color = CV_RGB(0,255,0);
-	
-	for (size_t i = 0; i < curr_pts_.size(); i++)
+	if(is_kf)
 	{
-		Point2i pt;
-		pt.x = curr_pts_[i].x;
-		pt.y = curr_pts_[i].y;
-
-		circle(img,pt,2,color,2);
+		color = CV_RGB(255, 0, 0);
 	}
+	else
+	{
+		color = CV_RGB(0, 255, 0);
+	}
+	for(size_t k = 0; k < curr_pts.size(); k++)
+	{
+		Point2i pt1, pt2;
+		pt1.x = prev_pts[k].x;
+		pt1.y = prev_pts[k].y;
+		pt2.x = curr_pts[k].x;
+		pt2.y = curr_pts[k].y;
+
+		circle(img, pt1, 1, color, 2);
+		circle(img, pt2, 3, color, 2);
+		line(img, pt1, pt2, color);
+	}
+}
+
+Mat draw_last_matches(Mat& img1, Mat& img2, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts)
+{
+	Mat ROI;
+	Mat matches_view = Mat::ones(img1.rows, img1.cols + img2.cols, img1.type());
+	ROI = matches_view(Rect(0, 0, img1.cols, img1.rows));
+	img1.copyTo(ROI);
+	ROI = matches_view(Rect(img1.cols, 0, img2.cols, img2.rows));
+	img2.copyTo(ROI);
+
+	for (size_t i = 0; i < curr_pts.size(); i++)
+	{
+		Point2i pt1, pt2;
+
+		pt1.x = prev_pts[i].x;
+		pt1.y = prev_pts[i].y;
+		pt2.x = curr_pts[i].x + img1.cols;
+		pt2.y = curr_pts[i].y;
+
+		circle(matches_view, pt1, 3, CV_RGB(0, 255, 0), 1);
+		circle(matches_view, pt2, 3, CV_RGB(0, 0, 255), 1);
+		line(matches_view, pt1, pt2, CV_RGB(0, 255, 0));
+
+	}
+
+	return matches_view;
+	
 }

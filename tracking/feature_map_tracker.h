@@ -70,16 +70,16 @@ protected:
     //Adds keypoints detected in the first frame to the tracker
     void add_keypoints();
 
-    //Update internal buffers (updates the previous points (in the current frame) with the current points (from the previous frame))
+    //Update internal buffers (updates the map keypoints (in the first frame) with the current points)
     void update_buffers();
 
     //Define whether a match is a good match based on the distance between the two closest matches
     void getGoodMatches(const float& dist_ratio);
 
-    // Update the map features that have been successfully matched
+    //Update the map features that have been successfully matched
     void updateTheMap();
 
-    // Remove invalid keypoints from the map, i.e, the keypoints with an expired life
+    //Remove invalid keypoints from the map, i.e, the keypoints with an expired life
     void removeInvalidKeypointsFromTheMap();
 
     // Add new keypoints to the map, i.e, the current keypoints without a good match
@@ -88,11 +88,14 @@ protected:
     //Searches if a keypoint have a match
     int searchMatches(const int& keypoint_index);
 
-    //Set the coordinates of the current keypoints to curr_pts_.
+    //Set the current points that have some correspondence with some point in the previous frame that belong to the map to curr_pts_.
     void setCurrentPoints();
 
+    //Set the points on the map belonging to the previous frame that has a correspondence with some point on the current frame to prev_pts_.
+    void setPreviousPoints();
+    
     //Set the coordinates of the map keypoints to map_pts_.
-    void setMapPoints();
+    //void setMapPoints();
 
     //Set the feature_detector_ attribute from a string
     void setFeatureDetector(const std::string& feature_detector);
@@ -128,6 +131,9 @@ public:
 
     //Store the distances beetween the matches 
     cv::Mat dists_;
+
+    //History of the indices of the images that a keypoint of the map appeared.
+    std::vector<std::vector<int>> inverted_indices_;
 
     //Number of keypoints tracked in each frame
     int tracked_pts_;
