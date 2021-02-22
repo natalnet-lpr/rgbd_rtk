@@ -2,7 +2,7 @@ local
 Build
 build
 Release
-cmake
+cmake/Findaruco.cmake
 .vscode
 .cproject
 .project

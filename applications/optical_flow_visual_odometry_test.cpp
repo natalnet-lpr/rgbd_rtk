@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2020, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -69,6 +69,8 @@ int main(int argc, char **argv)
 	param_loader.checkAndGetString("index_file",index_file);
 	loader.processFile(index_file);
 
+	visualizer.addReferenceFrame(vo.pose_, "origin");
+
 	//Compute visual odometry on each image
 	for(int i = 0; i < loader.num_images_; i++)
 	{
@@ -76,25 +78,33 @@ int main(int argc, char **argv)
 		loader.getNextImage(frame, depth);
 
 		//Estimate current camera pose
-		vo.computeCameraPose(frame, depth);
+		bool is_kf = vo.computeCameraPose(frame, depth);
 
 		//View tracked points
 		for(size_t k = 0; k < vo.tracker_.curr_pts_.size(); k++)
 		{
 			Point2i pt1 = vo.tracker_.prev_pts_[k];
 			Point2i pt2 = vo.tracker_.curr_pts_[k];
-			circle(frame, pt1, 1, CV_RGB(255,0,0), -1);
-			circle(frame, pt2, 3, CV_RGB(0,0,255), -1);
-			line(frame, pt1, pt2, CV_RGB(0,0,255));
+			Scalar color;
+
+			is_kf ? color = CV_RGB(255,0,0) : color = CV_RGB(0,0,255);
+
+			circle(frame, pt1, 1, color, -1);
+			circle(frame, pt2, 3, color, -1);
+			line(frame, pt1, pt2, color);
 		}
 
-		if(i == 0) visualizer.addReferenceFrame(vo.pose_, "origin");
-		//visualizer.addQuantizedPointCloud(vo.curr_dense_cloud_, 0.1, vo.pose_);
-		//visualizer.addPointCloud(vo.curr_dense_cloud_, vo.pose_);
 		visualizer.viewReferenceFrame(vo.pose_);
-		//visualizer.viewPointCloud(vo.curr_dense_cloud_, vo.pose_);
-		visualizer.viewQuantizedPointCloud(vo.curr_dense_cloud_, 0.05, vo.pose_);
+		visualizer.viewPointCloud(vo.curr_dense_cloud_, vo.pose_);
+		//visualizer.viewQuantizedPointCloud(vo.curr_dense_cloud_, 0.05, vo.pose_);
 		//visualizer.addCameraPath(vo.pose_);
+
+		if(is_kf)
+		{
+			Keyframe kf = vo.getLastKeyframe();
+			visualizer.addQuantizedPointCloud(kf.local_cloud_, 0.02, kf.pose_);
+			//visualizer.addPointCloud(kf.local_cloud_, kf.pose_);
+		}
 
 		visualizer.spinOnce();
 
@@ -108,6 +118,8 @@ int main(int argc, char **argv)
 			break;
 		}
 	}
+
+	visualizer.close();
 
 	return 0;
 }

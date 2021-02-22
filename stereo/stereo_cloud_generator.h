@@ -38,6 +38,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/calib3d.hpp>
 #include <pcl/point_cloud.h>
+
 #include <common_types.h>
 
 class StereoCloudGenerator
@@ -45,13 +46,13 @@ class StereoCloudGenerator
 
 private:
 
-    //Stereo block matching algorithm
+    // Stereo block matching algorithm
     cv::Ptr<cv::StereoSGBM> stereo_bm_;
 
-    //Number of image channels (used for grayscale, color images)
+    // Number of image channels (used for grayscale, color images)
     int num_channels_;
 
-    //Parameters used in the point cloud generation
+    // Parameters used in the point cloud generation
     int min_disparity_;
     int block_size_;
     int disp12_max_diff_;
@@ -60,25 +61,27 @@ private:
     int speckle_window_size_;
     int speckle_range_;
 
-    //Perspective transform matrix
+    // Perspective transform matrix
     cv::Mat Q_;
 
 public:
 
-    //Disparity image
+    // Disparity image
     cv::Mat disparity_;
 
-    //Generated point cloud
+    // Generated point cloud
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_;
 
-    //Constructor with the matrix of intrinsic parameters and
-    //number of image channels (1 or 3)
+    /**
+     * @param intr matrix of intrinsic parameters
+     * @param num_channels numbers of image channels (1 or 3)
+     */
 	StereoCloudGenerator(const Intrinsics& intr, const int& num_channels)
     {
         cloud_ = pcl::PointCloud<pcl::PointXYZRGB>::Ptr(new pcl::PointCloud<pcl::PointXYZRGB>);
         num_channels_ = num_channels;
 
-        //Stereo configuration (default values: used in KITTI visual odometry)
+        // Stereo configuration (default values: used in KITTI visual odometry)
         min_disparity_ = 0;
         block_size_ = 11;
         disp12_max_diff_ = 1;
@@ -104,22 +107,36 @@ public:
                                       0, 0, 1/intr.baseline_, 0);
     }
 
-    //Set parameters used in disparity map generation
+    /**
+     * Set parameters used in disparity map generation
+     * @param min_disparity @param block_size
+     * @param disp12_max_diff @param pre_filter_cap
+     * @param uniqueness_ratio @param speckle_window_size
+     * @param speckle_range
+     */
     void setParameters(const int& min_disparity, const int& block_size,
                        const int& disp12_max_diff, const int& pre_filter_cap,
                        const int& uniqueness_ratio, const int& speckle_window_size,
                        const int& speckle_range);
 
-    //Generate disparity map from calibrated image pair
-    //(the result is stored in the disparity_ attribute)
+    /**
+     * Generate disparity map from calibrated image pair
+     * (the result is stored in the disparity_ attribute)
+     * @param left_img @param right_img 
+     */
 	void generateDisparityMap(const cv::Mat& left_img, const cv::Mat& right_img);
                                
 
-    //Generate 3D point cloud from calibrated image pair
-    //(the result is stored in the cloud_ attribute)
+    /**
+     * Generate 3D point cloud from calibrated image pair
+     * (the result is stored in the cloud_ attribute)
+     * @param left_img @param right_img 
+     */
 	void generatePointCloud(const cv::Mat& left_img, const cv::Mat& right_img); 
 	
-    //Default destructor
+    /**
+     * Default destructor
+     */
     ~StereoCloudGenerator()
     {
         cloud_->clear();

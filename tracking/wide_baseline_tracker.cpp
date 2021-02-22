@@ -22,18 +22,18 @@
  *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  Author:
- *
+ *  Authors:
+ * 
+ *  Marcos Henrique F. Marcone
+ *  Luiz Felipe Maciel Correia
  *  Bruno Silva
- *  Luiz Felipe Maciel Correia 
- *  Marcos Henrique F. Marcone 
  */
 
 #include <iostream>
 
-#include "opencv2/imgproc.hpp"
-#include "opencv2/highgui.hpp"
 #include "opencv2/features2d.hpp"
+#include "opencv2/highgui.hpp"
+#include "opencv2/imgproc.hpp"
 #include "opencv2/xfeatures2d.hpp"
 
 #include <boost/algorithm/string.hpp>
@@ -55,8 +55,10 @@ void WideBaselineTracker::detect_keypoints()
     curr_kpts_.clear();
     feature_detector_->detect(curr_frame_gray_, curr_kpts_);
     descriptor_extractor_->compute(curr_frame_gray_, curr_kpts_, curr_descriptors_);
-    logger.print(EventLogger::L_DEBUG, "[WideBaselineTracker::detect_keypoints] DEBUG: detecting keyponts...\n");
-    logger.print(EventLogger::L_DEBUG, "[WideBaselineTracker::detect_keypoints] DEBUG: detected pts.: %lu\n", curr_kpts_.size());
+    
+    MLOG_DEBUG(EventLogger::M_TRACKING, "@WideBaselineTracker::detect_keypoints: detecting keypoints...\n");
+    MLOG_DEBUG(EventLogger::M_TRACKING, "@WideBaselineTracker::detect_keypoints: detected pts.: %lu\n",
+               added_pts_.size());
 }
 
 void WideBaselineTracker::add_keypoints()
@@ -64,15 +66,17 @@ void WideBaselineTracker::add_keypoints()
     for (size_t i = 0; i < curr_kpts_.size(); i++)
     {
 
-        //Create and add tracklet
+        // Create and add tracklet
         Tracklet tr(frame_idx_);
         tr.pts2D_.push_back(curr_kpts_[i].pt);
         tr.keypoint_indices_.push_back(i);
         tracklets_.push_back(tr);
     }
 
-    logger.print(EventLogger::L_DEBUG, "[WideBaselineTracker::add_keypoints DEBUG: adding keypoints...\n");
-    logger.print(EventLogger::L_DEBUG, "[WideBaselineTracker::add_keypoints DEBUG: added pts.: %lu\n", tracklets_.size());
+    MLOG_DEBUG(EventLogger::M_TRACKING, "@WideBaselineTracker::add_keypoints: added pts.: %lu\n",
+               added_pts_.size());
+    MLOG_DEBUG(EventLogger::M_TRACKING, "@WideBaselineTracker::add_keypoints: prev pts.: %lu\n",
+               prev_pts_.size());
 }
 
 void WideBaselineTracker::update_buffers()
@@ -81,14 +85,11 @@ void WideBaselineTracker::update_buffers()
     std::swap(curr_descriptors_, prev_descriptors_);
 }
 
-int WideBaselineTracker::searchMatches(const int& keypoint_index)
+int WideBaselineTracker::searchMatches(const int &keypoint_index)
 {
     for (size_t i = 0; i < matches_.size(); i++)
     {
-        if (keypoint_index == matches_[i].trainIdx)
-        {
-            return matches_[i].queryIdx;
-        }
+        if (keypoint_index == matches_[i].trainIdx) return matches_[i].queryIdx;
     }
     return -1;
 }
@@ -113,106 +114,94 @@ void WideBaselineTracker::setPreviousPoints()
     }
 }
 
-void WideBaselineTracker::setFeatureDetector(const std::string& feature_detector)
+void WideBaselineTracker::setFeatureDetector(const std::string &feature_detector)
 {
     std::string upper_feature_detector = feature_detector;
     boost::to_upper(upper_feature_detector);
 
     if (upper_feature_detector == "ORB")
-    {
         feature_detector_ = cv::ORB::create();
-    }
     else if (upper_feature_detector == "AKAZE")
-    {
         feature_detector_ = cv::AKAZE::create();
-    }
     else if (upper_feature_detector == "GFTT")
-    {
         feature_detector_ = cv::GFTTDetector::create();
-    }
     else if (upper_feature_detector == "FAST")
-    {
         feature_detector_ = cv::FastFeatureDetector::create();
-    }
     else if (upper_feature_detector == "AGAST")
-    {
         feature_detector_ = cv::AgastFeatureDetector::create();
-    }
     else if (upper_feature_detector == "BRISK")
-    {
         feature_detector_ = cv::BRISK::create();
-    }
     else if (upper_feature_detector == "SURF")
-    {
         feature_detector_ = cv::xfeatures2d::SURF::create();
-    }
-    else if (upper_feature_detector== "SIFT")
-    {
+    else if (upper_feature_detector == "SIFT")
         feature_detector_ = cv::xfeatures2d::SIFT::create();
-    }
     else
     {
-        logger.print(EventLogger::L_ERROR, "[WideBaselineTracker::setFeatureDetector] ERROR: Attribute %s couldn't be loaded, insert a valid feature detector\n", upper_feature_detector.c_str());
-        throw std::invalid_argument("Insert a valid feature detector");
+        MLOG_ERROR(EventLogger::M_TRACKING, "@WideBaselineTracker::setFeatureDetector:  \
+                                             attribute %s couldn't be loaded, insert a valid \
+                                             feature detector.\n",
+                                             upper_feature_detector.c_str());
+
+        throw std::invalid_argument("Insert a valid feature detector.");
     }
 
-    logger.print(EventLogger::L_DEBUG, "[WideBaselineTracker::setFeatureDetector] DEBUG: Attribute feature_detector_ = %s\n", upper_feature_detector.c_str());
+    MLOG_DEBUG(EventLogger::M_TRACKING, "@WideBaselineTracker::setFeatureDetector: \
+                                         feature_detector_ = %s\n",
+                                         upper_feature_detector.c_str());
 }
 
-void WideBaselineTracker::setDescriptorExtractor(const std::string& descriptor_extractor)
+void WideBaselineTracker::setDescriptorExtractor(const std::string &descriptor_extractor)
 {
     std::string upper_descriptor_extractor = descriptor_extractor;
     boost::to_upper(upper_descriptor_extractor);
 
     if (upper_descriptor_extractor == "ORB")
-    {
         descriptor_extractor_ = cv::ORB::create();
-    }
     else if (upper_descriptor_extractor == "AKAZE")
-    {
         descriptor_extractor_ = cv::AKAZE::create();
-    }
     else if (upper_descriptor_extractor == "BRISK")
-    {
         descriptor_extractor_ = cv::BRISK::create();
-    }
     else if (upper_descriptor_extractor == "SURF")
-    {
         descriptor_extractor_ = cv::xfeatures2d::SURF::create();
-    }
     else if (upper_descriptor_extractor == "SIFT")
-    {
         descriptor_extractor_ = cv::xfeatures2d::SIFT::create();
-    }
     else
     {
-        logger.print(EventLogger::L_ERROR, "[WideBaselineTracker::setDescriptorExtractor] ERROR: Attribute %s couldn't be loaded, insert a valid descriptor extractor\n", upper_descriptor_extractor.c_str());
-        throw std::invalid_argument("Insert a valid descriptor extractor");
+        MLOG_ERROR(EventLogger::M_TRACKING, "@WideBaselineTracker::setDescriptorExtractor:  \
+                                             attribute %s couldn't be loaded, insert a valid \
+                                             descriptor extractor.\n",
+                                             upper_descriptor_extractor.c_str());
+
+        throw std::invalid_argument("Insert a valid descriptor extractor.");
     }
 
-    logger.print(EventLogger::L_DEBUG, "[WideBaselineTracker::setDescriptorExtractor] DEBUG: Attribute descriptor_extractor_ = %s\n", upper_descriptor_extractor.c_str());
+    MLOG_DEBUG(EventLogger::M_TRACKING, "@WideBaselineTracker::setDescriptorExtractor: \
+                                         descriptor_extractor__ = %s\n",
+                                         upper_descriptor_extractor.c_str());
 }
 
-void WideBaselineTracker::setMatcher(const std::string& matcher)
+void WideBaselineTracker::setMatcher(const std::string &matcher)
 {
     std::string upper_matcher = matcher;
     boost::to_upper(upper_matcher);
 
     if (upper_matcher == "BRUTEFORCE")
-    {
         matcher_ = cv::DescriptorMatcher::create("BruteForce");
-    }
     else if (upper_matcher == "FLANNBASED")
-    {
         matcher_ = cv::DescriptorMatcher::create("FlannBased");
-    }
     else
     {
-        logger.print(EventLogger::L_ERROR, "[WideBaselineTracker::setMatcher] ERROR: Attribute %s couldn't be loaded, insert a valid matcher\n", upper_matcher.c_str());
-        throw std::invalid_argument("Insert a valid matcher");
+        MLOG_ERROR(EventLogger::M_TRACKING, "@WideBaselineTracker::setMatcher:  \
+                                             attribute %s couldn't be loaded, insert a valid \
+                                             matcher.\n",
+                                             upper_matcher.c_str());
+
+        throw std::invalid_argument("Insert a valid matcher.");
     }
 
-    logger.print(EventLogger::L_DEBUG, "[WideBaselineTracker::setMatcher] DEBUG: Attribute matcher_ = %s\n", upper_matcher.c_str());
+    MLOG_DEBUG(EventLogger::M_TRACKING, "@WideBaselineTracker::setMatcher: \
+                                         descriptor_extractor__ = %s\n",
+                                         upper_matcher.c_str());
 }
 
 /* #####################################################
@@ -222,36 +211,37 @@ void WideBaselineTracker::setMatcher(const std::string& matcher)
  * #####################################################
  */
 
-WideBaselineTracker::WideBaselineTracker():
-    FeatureTracker()
+WideBaselineTracker::WideBaselineTracker() : FeatureTracker()
 {
     setFeatureDetector("ORB");
     setDescriptorExtractor("ORB");
     setMatcher("BRUTEFORCE");
 }
 
-WideBaselineTracker::WideBaselineTracker(const std::string& feature_detector, const std::string& descriptor_extractor, const std::string& matcher, const bool& log_stats):
-    FeatureTracker()
+WideBaselineTracker::WideBaselineTracker(const std::string &feature_detector,
+                                         const std::string &descriptor_extractor,
+                                         const std::string &matcher, const bool &log_stats)
+    : FeatureTracker()
 {
     setFeatureDetector(feature_detector);
     setDescriptorExtractor(descriptor_extractor);
     setMatcher(matcher);
 
-    if (log_stats)
-    {
-        initialize_logger("timing_stats.txt", "tracking_stats.txt", "heatmap_stats.txt");
-    }
+    if (log_stats) initialize_logger("timing_stats.txt", "tracking_stats.txt", "heatmap_stats.txt");
 }
 
-WideBaselineTracker::WideBaselineTracker(const std::string& feature_detector, const std::string& descriptor_extractor, const std::string& matcher, const int& min_pts, const int& max_pts, const bool& log_stats):
-    FeatureTracker(min_pts, max_pts, log_stats)
+WideBaselineTracker::WideBaselineTracker(const std::string &feature_detector,
+                                         const std::string &descriptor_extractor,
+                                         const std::string &matcher, const int &min_pts,
+                                         const int &max_pts, const bool &log_stats)
+    : FeatureTracker(min_pts, max_pts, log_stats)
 {
     setFeatureDetector(feature_detector);
     setDescriptorExtractor(descriptor_extractor);
     setMatcher(matcher);
 }
 
-void WideBaselineTracker::getGoodMatches(const double& threshold)
+void WideBaselineTracker::getGoodMatches(const double &threshold)
 {
     good_matches_.clear();
 
@@ -262,18 +252,14 @@ void WideBaselineTracker::getGoodMatches(const double& threshold)
     for (int i = 0; i < prev_descriptors_.rows; i++)
     {
         double dist = matches_[i].distance;
-        if (dist < min_dist)
-            min_dist = dist;
-        if (dist > max_dist)
-            max_dist = dist;
+        if (dist < min_dist) min_dist = dist;
+        if (dist > max_dist) max_dist = dist;
     }
 
     for (size_t i = 0; i < matches_.size(); i++)
     {
         if (matches_[i].distance <= max(2 * min_dist, threshold))
-        {
             good_matches_.push_back(matches_[i]);
-        }
     }
 
     prev_good_pts_.clear();
@@ -290,22 +276,19 @@ bool WideBaselineTracker::track(const cv::Mat &img)
 {
     bool is_keyframe = false;
 
-    //Make a grayscale copy of the current frame if it is in color
+    // Make a grayscale copy of the current frame if it is in color
     if (img.channels() > 1)
-    {
         cvtColor(img, curr_frame_gray_, CV_BGR2GRAY);
-    }
     else
-    {
         img.copyTo(curr_frame_gray_);
-    }
 
-    logger.print(EventLogger::L_DEBUG, "[WideBaselineTracker::track] DEBUG: tracking frame%i\n", frame_idx_);
+    MLOG_DEBUG(EventLogger::M_TRACKING, "@WideBaselineTracker::track: tracking frame %i\n",
+               frame_idx_);
 
-    //Update the internal buffers
+    // Update the internal buffers
     update_buffers();
 
-    //Detect KeyPoints and extract descriptors on the current frame
+    // Detect KeyPoints and extract descriptors on the current frame
     detect_keypoints();
 
     if (!initialized_)
@@ -315,9 +298,7 @@ bool WideBaselineTracker::track(const cv::Mat &img)
     }
     else
     {
-
         matcher_->match(curr_descriptors_, prev_descriptors_, matches_);
-        logger.print(EventLogger::L_DEBUG, "[WideBaselineTracker::track] DEBUG: matching descriptors...\n");
 
         setPreviousPoints();
         setCurrentPoints();
@@ -353,7 +334,7 @@ bool WideBaselineTracker::track(const cv::Mat &img)
         {
             if (keypoints_with_matches[i] == false)
             {
-                //Create and add tracklet
+                // Create and add tracklet
                 Tracklet tr(frame_idx_);
                 tr.pts2D_.push_back(curr_kpts_[i].pt);
                 tr.keypoint_indices_.push_back(i);
@@ -362,13 +343,16 @@ bool WideBaselineTracker::track(const cv::Mat &img)
             }
         }
 
-        logger.print(EventLogger::L_DEBUG, "[WideBaselineTracker::track] DEBUG: tracked points: %i\n", tracked_pts);
+        MLOG_DEBUG(EventLogger::M_TRACKING, "@WideBaselineTracker::track: \
+                                             tracked points:  %i\n",
+                                             tracked_pts);
+
         getGoodMatches(0.1);
 
-        //Insufficient number of points being tracked
+        // Insufficient number of points being tracked
         if (tracked_pts < min_pts_)
         {
-            //Make the current frame a new keyframe
+            // Make the current frame a new keyframe
             is_keyframe = true;
         }
     }
