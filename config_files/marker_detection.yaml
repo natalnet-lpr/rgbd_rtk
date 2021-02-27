@@ -4,7 +4,7 @@ index_file: "/home/sarmento/LIB/Dataset/ar_sm_coffeemaker_only/index" #default: 
 aruco_dic: "ARUCO" #default: "ARUCO" or ARUCO MIP 36h12
 aruco_max_distance: 4 #default: 4
 aruco_marker_size: 0.07 #default: 0.1778 (size of marker in ROS Gazebo and ~= 0.07 for our dataset)
-
+aruco_poses_file: "../../config_files/aruco_poses.txt"
 #Parameter below are not used
 #motion estimation ransac parameters
 ransac_distance_threshold: 0.008 #8mm
