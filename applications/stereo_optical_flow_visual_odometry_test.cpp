@@ -37,6 +37,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 
 #include <geometry.h>
+#include <config_loader.h>
 #include <kitti_stereo_loader.h>
 #include <stereo_cloud_generator.h>
 #include <reconstruction_visualizer.h>
@@ -47,31 +48,42 @@ using namespace cv;
 
 int main(int argc, char **argv)
 {
-	string root_path;
-	KITTIStereoLoader loader;
-	Intrinsics intr(718.856, 718.856, 607.1928, 185.2157, 0.54);
-	StereoOpticalFlowVisualOdometry vo(intr);
-	ReconstructionVisualizer visualizer;
-	Mat left, right;
+    EventLogger& logger = EventLogger::getInstance();
+    logger.setVerbosityLevel(EventLogger::L_DEBUG);
+    logger.activateLoggingOnlyFor(EventLogger::M_MOTION_ESTIMATION);
 
-	if(argc != 4)
+	KITTIStereoLoader loader;
+	ReconstructionVisualizer visualizer;
+
+    if (argc != 2)
     {
-        fprintf(stderr, "Usage: %s <kitti datasets root dir.> <sequence_number> <use_color_camera>\n", argv[0]);
-        fprintf(stderr, "Example: /path/to/parent/directory/of/sequences 11 0 - loads the KITTI grayscale sequence number 11.\n\n");
-        fprintf(stderr, "That is, if the 00, 01, 02, ... folders are within /Datasets/KITTI_Datasets_Gray/sequences,\n");
-        fprintf(stderr, "the grayscale sequence 11 is loaded with:\n");
-        fprintf(stderr, "%s /Datasets/KITTI_Datasets_Gray/ 11 0\n", argv[0]);
-        fprintf(stderr, "(the 'sequences' part of the path is added automatically and must be omitted).\n");
+        logger.print(EventLogger::L_ERROR,
+                     "[stereo_optical_flow_visual_odometry.cpp] ERROR: "
+                     "Usage: %s <path/to/config_file.yaml>\n", argv[0]);
         exit(0);
     }
 
-	Mat Q = (cv::Mat_<float>(4,4) <<1, 0, 0,       -607.1928, 
-                                    0, 1, 0,       -185.2157,
-                                    0, 0, 0,         718.856,
-                                    0, 0, 1/0.54, 0); //54cm of baseline
+    Mat left, right;
+    float fx, fy, cx, cy, baseline, ransac_thr;
+    string root_path;
+    int kitti_seq;
+    bool use_color_camera;
 
-	root_path = argv[1];
-    loader.loadStereoSequence(root_path, atoi(argv[2]), atoi(argv[3]));
+    ConfigLoader param_loader(argv[1]);
+    param_loader.checkAndGetFloat("fx", fx);
+    param_loader.checkAndGetFloat("fy", fy);
+    param_loader.checkAndGetFloat("cx", cx);
+    param_loader.checkAndGetFloat("cy", cy);
+    param_loader.checkAndGetFloat("baseline", baseline);
+    param_loader.checkAndGetString("kitti_root_dir", root_path);
+    param_loader.checkAndGetInt("kitti_seq", kitti_seq);
+    param_loader.checkAndGetBool("use_color_camera", use_color_camera);
+    param_loader.checkAndGetFloat("ransac_thr", ransac_thr);
+    
+    Intrinsics intr(fx, fy, cx, cy, baseline);
+    StereoOpticalFlowVisualOdometry vo(intr, ransac_thr);
+
+    loader.loadStereoSequence(root_path, kitti_seq, use_color_camera);
 
     for(size_t i = 0; i < loader.num_pairs_; i++)
     {
