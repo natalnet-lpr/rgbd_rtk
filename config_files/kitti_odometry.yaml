@@ -1,0 +1,28 @@
+%YAML:1.0
+kitti_root_dir: "/media/bruno/NS2_DATA/Datasets/KITTI/KITTI_Datasets_Gray/sequences/" # /path/to/parent/directory/of/sequence_X
+kitti_seq: 11
+use_color_camera: false
+# That is, if the 00, 01, 02, ... folders are within .../sequences directory,
+# the configuration above loads the grayscale camera sequence 11
+# located on /media/bruno/NS2_DATA/Datasets/KITTI/KITTI_Datasets_Gray/sequences/11
+
+# stereo calibration parameters
+fx: 718.856
+fy: 718.856
+cx: 607.1928
+cy: 185.2157
+baseline: 0.54
+#extrinsic_calibration_file: ""
+
+# motion estimation parameters
+ransac_thr: 0.3 #30cm
+ransac_inlier_ratio: 0.8 # hould be between 0 and 1
+
+# klt_tracker
+min_pts: 600 #default 600
+max_pts: 5000 #default kltatcw : 5000, kltqt : 1000
+min_r: 10 #default 10
+max_r: 50 #default 50
+radius: 30 #default 30
+log_stats: 0 #false
+windows_size: 20 #square of size 20

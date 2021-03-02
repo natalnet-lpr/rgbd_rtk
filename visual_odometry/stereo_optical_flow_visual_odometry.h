@@ -78,9 +78,11 @@ public:
     Eigen::Affine3f pose_;
 
     /**
-     * @param intr camera parameters
+     * @param intr: camera parameters
+     * @param ransac_thr: ransac threshold for motion estimation
      */
-    StereoOpticalFlowVisualOdometry(const Intrinsics &intr);
+    StereoOpticalFlowVisualOdometry(const Intrinsics &intr,
+                                    const float &ransac_thr);
 
     ~StereoOpticalFlowVisualOdometry()
     {
@@ -101,9 +103,9 @@ private:
     std::ofstream poses_file_;
 
     /**
-     * Writes computed visual odometry poses to file.
+     * Writes the last computed visual odometry pose to file.
      */
-    void writePosesToFile();
+    void writePoseToFile();
 };
 
 #endif /* INCLUDE_STEREO_OPTICAL_FLOW_VISUAL_ODOMETRY_H_ */
