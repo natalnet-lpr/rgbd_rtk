@@ -95,6 +95,7 @@ void loadMarkersFound(string aruco_poses_file);
  * @param visualizer visualizer reference
  * @param is_loop_closure if the vertex added is a loop_closure as well
  */
+
 void addVertixAndEdge(
     Eigen::Affine3f cam_pose,
     Eigen::Affine3f& last_keyframe_pose,
@@ -129,7 +130,8 @@ int main(int argc, char** argv)
     RGBDLoader loader;
     Mat frame, depth;
     Eigen::Affine3f last_keyframe_pose;
-    Aruco first_keyframe_pose;
+    Eigen::Affine3f first_keyframe_pose;
+    Aruco aruco_origin_pose_uco_reference;
     // Slam solver will start when the marker is found for the first time
     if (argc != 2)
     {
@@ -164,7 +166,7 @@ int main(int argc, char** argv)
                 // If we found the mark for the first time, we will add the marker as the origin
                 // of the system Then we add the first camera pose related to the marker pose.
                 // Getting Camera Pose
-                vo.pose_ = marker_finder.marker_poses_[i];
+                vo.pose_ = vo.pose_ * marker_finder.marker_poses_[i].inverse();
                 // Adding first pose to slam_solver and visualizer
                 slam_solver.addVertexAndEdge(vo.pose_, num_keyframes);
                 visualizer.addReferenceFrame(vo.pose_, to_string(num_keyframes));
@@ -172,9 +174,22 @@ int main(int argc, char** argv)
                 // Set slam solver started to true since we found the marker for the first time
                 slam_solver_started = true;
 
-                first_keyframe_pose.pose = vo.pose_;
-                first_keyframe_pose.id = marker_finder.markers_[i].id;
+                first_keyframe_pose = vo.pose_;
                 last_keyframe_pose = vo.pose_;
+
+                // TODO Need to change this
+                for (auto marker : markers_found)
+                {
+                    if (marker.id == marker_finder.markers_[i].id)
+                    {
+                        aruco_origin_pose_uco_reference.id = marker.id;
+                        aruco_origin_pose_uco_reference.pose = Eigen::Affine3f::Identity();
+                        aruco_origin_pose_uco_reference.pose(0, 3) = marker.x;
+                        aruco_origin_pose_uco_reference.pose(1, 3) = marker.y;
+                        aruco_origin_pose_uco_reference.pose(2, 3) = marker.z;
+                        break;
+                    }
+                }
             }
             continue;
         }
@@ -192,7 +207,7 @@ int main(int argc, char** argv)
             for (size_t i = 0; i < marker_finder.markers_.size(); i++)
             {
                 // If the origin marker has been found again add a edge from cam to origin
-                if (first_keyframe_pose.id == marker_finder.markers_[i].id)
+                if (aruco_origin_pose_uco_reference.id == marker_finder.markers_[i].id)
                 {
                     addVertixAndEdge(
                         vo.pose_,
@@ -206,41 +221,87 @@ int main(int argc, char** argv)
                 // If is another marker, create a subgraph to optimize the cam pose
                 else
                 {
-
                     // Only create a subgraph if there is more than two markers
                     if (marker_finder.markers_.size() > 2)
                     {
-
-                        if (!pose_has_been_added) // Add cam pose to subgraph
+                        for (auto marker : markers_found)
                         {
-                            visualizer_local.addReferenceFrame(vo.pose_, to_string(num_keyframes_local));
-                            slam_solver_local.addVertexAndEdge(vo.pose_, num_keyframes_local);
-                            pose_has_been_added = true;
-                            num_keyframes_local++;
-                        }
-                        else
-                        {
-                            // Adding markers to subgraph
-                            visualizer_local.addReferenceFrame(
-                                vo.pose_ * marker_finder.marker_poses_[i], to_string(num_keyframes_local));
-
-                            slam_solver_local.addVertexAndEdge(
-                                vo.pose_ * marker_finder.marker_poses_[i], num_keyframes_local);
-
-                            visualizer_local.addEdge(slam_solver_local.odometry_edges_.back());
-                            num_keyframes_local++;
-                            // If we are in the last iteration optimize the subgraph
-                            // TODO If the origin marker is the last one found this will not be
-                            // called
-                            if (i == marker_finder.markers_.size() - 1)
+                            if (marker.id == marker_finder.markers_[i].id)
                             {
-                                slam_solver_local.optimizeGraph(10);
-                                visualizer_local.addOptimizedEdges(
-                                    slam_solver_local.odometry_edges_, Eigen::Vector3f(1.0, 0.0, 1.0));
-                                visualizer_local.addOptimizedEdges(
-                                    slam_solver_local.loop_edges_, Eigen::Vector3f(0.0, 1.0, 1.0));
-                                visualizer_local.addReferenceFrame(
-                                    slam_solver_local.optimized_estimates_[0], "NOVA POSE");
+
+                                if (!pose_has_been_added) // Add cam pose to subgraph
+                                {
+                                    visualizer_local.addReferenceFrame(vo.pose_, to_string(num_keyframes_local));
+                                    slam_solver_local.addVertexAndEdge(vo.pose_, num_keyframes_local);
+                                    pose_has_been_added = true;
+                                    num_keyframes_local++;
+                                }
+                                else
+                                {
+                                    Aruco pose_to_add;
+                                    pose_to_add.id = marker.id;
+                                    pose_to_add.pose = marker_finder.marker_poses_[i];
+                                    pose_to_add.pose(0, 3) = marker.x;
+                                    pose_to_add.pose(1, 3) = marker.y;
+                                    pose_to_add.pose(2, 3) = marker.z;
+                                    pose_to_add.pose = pose_to_add.pose;
+
+                                    Eigen::Affine3f tmp = pose_to_add.pose;
+
+                                    printf(
+                                        "pose antiga id %i: %f %f %f\n",
+                                        marker_finder.markers_[i].id,
+                                        marker_finder.marker_poses_[i](0, 3),
+                                        marker_finder.marker_poses_[i](1, 3),
+                                        marker_finder.marker_poses_[i](2, 3));
+                                    printf(
+                                        "pose nova id %i: %f %f %f\n", pose_to_add.id, tmp(0, 3), tmp(1, 3), tmp(2, 3));
+
+                                    // Adding markers to subgraph
+                                    visualizer_local.addReferenceFrame(
+                                        vo.pose_ * marker_finder.marker_poses_[i], to_string(marker.id));
+                                    /*
+                                    slam_solver_local.addVertexAndEdge(
+                                        vo.pose_ * marker_finder.marker_poses_[i], num_keyframes_local);
+                                    slam_solver_local.addLoopClosingEdge(
+                                        vo.pose_.inverse() * marker_finder.marker_poses_[i], num_keyframes_local);
+                                    visualizer_local.addEdge(
+                                        slam_solver_local.loop_edges_.back(), Eigen::Vector3f(1.0, 0.0, 0.0));
+                                    visualizer_local.addEdge(slam_solver_local.odometry_edges_.back());
+                                    */
+                                    num_keyframes_local++;
+
+                                    // Adding previously marker to subgraph
+                                    visualizer_local.viewReferenceFrame(tmp, to_string(marker.id) + "_FFFFF");
+                                    /*
+                                slam_solver_local.addVertexAndEdge(
+                                    vo.pose_ * pose_to_add.pose, num_keyframes_local);
+                                slam_solver_local.addLoopClosingEdge(
+                                    vo.pose_.inverse() * pose_to_add.pose, num_keyframes_local);
+                                visualizer_local.addEdge(
+                                    slam_solver_local.loop_edges_.back(), Eigen::Vector3f(1.0, 0.0, 0.0));
+                                visualizer_local.addEdge(slam_solver_local.odometry_edges_.back());
+                                */
+                                    num_keyframes_local++;
+
+                                    // If we are in the last iteration optimize the subgraph
+                                    // TODO If the origin mnum_keyframesarker is the last one found this will not be
+                                    // called
+                                    if (i == marker_finder.markers_.size() - 1)
+                                    { /*
+                                         printf(
+                                             "pose antiga %f %f %f\n", vo.pose_(0, 3), vo.pose_(1, 3), vo.pose_(2, 3));
+                                         slam_solver_local.optimizeGraph(10);
+                                         visualizer_local.addOptimizedEdges(
+                                             slam_solver_local.odometry_edges_, Eigen::Vector3f(1.0, 0.0, 1.0));
+                                         visualizer_local.addOptimizedEdges(
+                                             slam_solver_local.loop_edges_, Eigen::Vector3f(0.0, 1.0, 1.0));
+                                         visualizer_local.addReferenceFrame(
+                                             slam_solver_local.optimized_estimates_[0], "NOVA POSE");
+                                         vo.pose_ = slam_solver_local.optimized_estimates_[0];
+                                         */
+                                    }
+                                }
                             }
                         }
                     }
@@ -320,7 +381,7 @@ void addVertixAndEdge(
     if (sqrt(x + y + z) >= 0.05)
     {
         // Adding keyframe in visualizer
-        visualizer.addReferenceFrame(cam_pose, to_string(num_keyframes));
+        visualizer.viewReferenceFrame(cam_pose, to_string(num_keyframes));
         // Add the keyframe and creating an edge to the last vertex
         slam_solver.addVertexAndEdge(cam_pose, num_keyframes);
         visualizer.addEdge(slam_solver.odometry_edges_.back());
@@ -339,7 +400,7 @@ void addVertixAndEdge(
                 // visualizer.removeEdges(slam_solver.loop_edges_);
                 // for (int i = 0; i < slam_solver.optimized_estimates_.size(); i++)
                 // {
-                //  visualizer.addReferenceFrame(
+                //  visualizer.viewReferenceFrame(
                 //        slam_solver.optimized_estimates_[i], "optimized " + i);
                 //}
                 slam_solver.optimizeGraph(10);

@@ -23,6 +23,7 @@ if(WITH_IO)
             RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin)
 endif()
 
+
 if(WITH_TRACKING)
     find_library(RGBD_RTK_TRACKING NAMES rgbd_rtk_tracking)
 endif()

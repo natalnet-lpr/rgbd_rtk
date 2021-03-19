@@ -121,5 +121,6 @@ Keyframe OpticalFlowVisualOdometry::getLastKeyframe()
         EventLogger::L_DEBUG,
         "[OpticalFlowVisualOdometry::getLastKeyframe] DEBUG: last keyframe has id %lu\n",
         it->first);
+
     return prev(it)->second; // prev from std
 }
