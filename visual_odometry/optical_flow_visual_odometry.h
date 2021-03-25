@@ -47,7 +47,6 @@
 #include <pcl/point_cloud.h>
 
 #include <common_types.h>
-#include <klt_tracker.h>
 #include <motion_estimator_ransac.h>
 #include <wide_baseline_tracker.h>
 

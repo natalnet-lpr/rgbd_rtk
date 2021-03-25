@@ -119,6 +119,7 @@ int main(int argc, char** argv)
     Eigen::Affine3f last_keyframe_pose_odometry;
     Eigen::Affine3f last_keyframe_pose_aruco;
     Eigen::Affine3f first_keyframe_pose;
+    bool marker_found;
     // Slam solver will start when the marker is found for the first time
     if (argc != 2)
     {
@@ -172,6 +173,9 @@ int main(int argc, char** argv)
         // If we have already found the marker we start the keyframe process
         else
         {
+            // Reset marker finding boolean
+            marker_found = false;
+
             marker_finder.detectMarkersPoses(frame, vo.pose_, aruco_max_distance);
             for (size_t i = 0; i < marker_finder.markers_.size(); i++)
             {
@@ -190,6 +194,7 @@ int main(int argc, char** argv)
                         slam_solver,
                         visualizer,
                         true);
+                    marker_found = true;
                 }
             }
             // Estimate current camera pose
@@ -214,7 +219,7 @@ int main(int argc, char** argv)
             visualizer.addQuantizedPointCloud(vo.curr_dense_cloud_, 0.05, vo.pose_);
 
             // If we found a keyframe we will added to slam solver and visualizer
-            if (is_kf)
+            if (is_kf and !marker_found)
             {
                 addVertixAndEdge(
                     vo.pose_,
@@ -293,6 +298,7 @@ void addVertixAndEdge(
         {
             visualizer.removeEdges(slam_solver.odometry_edges_);
             visualizer.removeEdges(slam_solver.loop_edges_);
+            visualizer.resetVisualizer();
 
             slam_solver.optimizeGraph(10);
             visualizer.addOptimizedEdges(slam_solver.odometry_edges_, Eigen::Vector3f(1.0, 0.0, 1.0));
