@@ -104,6 +104,7 @@ int main(int argc, char** argv)
     int num_keyframes = 0;
     bool slam_solver_started = false;
     float marker_size, aruco_max_distance;
+    bool marker_found;
 
     string camera_calibration_file, aruco_dic, index_file;
     EventLogger& logger = EventLogger::getInstance();
@@ -119,7 +120,7 @@ int main(int argc, char** argv)
     Eigen::Affine3f last_keyframe_pose_odometry;
     Eigen::Affine3f last_keyframe_pose_aruco;
     Eigen::Affine3f first_keyframe_pose;
-    bool marker_found;
+
     // Slam solver will start when the marker is found for the first time
     if (argc != 2)
     {
@@ -133,8 +134,8 @@ int main(int argc, char** argv)
     param_loader.checkAndGetFloat("aruco_max_distance", aruco_max_distance);
     param_loader.checkAndGetString("camera_calibration_file", camera_calibration_file);
     param_loader.checkAndGetString("aruco_dic", aruco_dic);
-
     marker_finder.markerParam(camera_calibration_file, marker_size, aruco_dic);
+
     loader.processFile(index_file);
 
     // Compute visual odometry on each image
@@ -176,7 +177,7 @@ int main(int argc, char** argv)
             // Reset marker finding boolean
             marker_found = false;
 
-            marker_finder.detectMarkersPoses(frame, vo.pose_, aruco_max_distance);
+            marker_finder.detectMarkersPoses(frame, Eigen::Affine3f::Identity(), aruco_max_distance);
             for (size_t i = 0; i < marker_finder.markers_.size(); i++)
             {
 
@@ -291,10 +292,13 @@ void addVertixAndEdge(
         visualizer.addEdge(slam_solver.odometry_edges_.back());
         // Adding the loop closing edge that is an edge from this vertex to the initial
         // If we want to change the system coord from A to B -> A.inverse * B
-        slam_solver.addLoopClosingEdge(cam_pose.inverse() * aruco_pose, num_keyframes);
+        //  A = cam pose no sistema de coordenadas do Aruco = P
+        // B = origem
+        slam_solver.addLoopClosingEdge(aruco_pose * aruco_pose * aruco_pose * cam_pose, num_keyframes);
         visualizer.addEdge(slam_solver.loop_edges_.back(), Eigen::Vector3f(1.0, 0.0, 0.0));
         // Make a optimization in the graph from every 20 loop edges
-        if (slam_solver.loop_edges_.size() % 20 == 0)
+        /*
+        if (slam_solver.loop_edges_.size() % 5 == 0)
         {
             visualizer.removeEdges(slam_solver.odometry_edges_);
             visualizer.removeEdges(slam_solver.loop_edges_);
@@ -304,6 +308,7 @@ void addVertixAndEdge(
             visualizer.addOptimizedEdges(slam_solver.odometry_edges_, Eigen::Vector3f(1.0, 0.0, 1.0));
             visualizer.addOptimizedEdges(slam_solver.loop_edges_, Eigen::Vector3f(0.0, 1.0, 1.0));
         }
+        */
         last_keyframe_pose_aruco = cam_pose;
         num_keyframes++; // Increment the number of keyframes found
     }
