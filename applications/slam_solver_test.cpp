@@ -41,6 +41,7 @@
 // C++
 #include <cstdio>
 #include <cstdlib>
+#include <math.h>
 #include <vector>
 
 // C++ Third Party
@@ -74,6 +75,8 @@ struct Pose
     float z_rotation;
     float w_rotation;
 };
+
+bool isOrientationCorrect(Eigen::Affine3f first, Eigen::Affine3f newone);
 
 /**
  * Adds vertix and edges in slam_solver and visualizer
@@ -147,7 +150,7 @@ int main(int argc, char** argv)
         // If aruco is not found yet
         if (slam_solver_started == false)
         {
-            marker_finder.detectMarkersPoses(frame, vo.pose_, aruco_max_distance);
+            marker_finder.detectMarkersPoses(frame, Eigen::Affine3f::Identity(), aruco_max_distance);
             if (marker_finder.markers_.size() > 0)
             {
                 if (250 == marker_finder.markers_[i].id)
@@ -155,6 +158,7 @@ int main(int argc, char** argv)
                     // If we found the mark for the first time, we will add the marker as the origin
                     // of the system Then we add the first camera pose related to the marker pose.
                     // Getting Camera Pose
+
                     vo.pose_ = marker_finder.marker_poses_[i].inverse();
                     // Adding first pose to slam_solver and visualizer
                     slam_solver.addVertexAndEdge(vo.pose_, num_keyframes);
@@ -178,24 +182,28 @@ int main(int argc, char** argv)
             marker_found = false;
 
             marker_finder.detectMarkersPoses(frame, Eigen::Affine3f::Identity(), aruco_max_distance);
-            for (size_t i = 0; i < marker_finder.markers_.size(); i++)
+            for (size_t j = 0; j < marker_finder.markers_.size(); j++)
             {
 
-                marker_finder.markers_[i].draw(frame, Scalar(0, 0, 255), 1.5);
-                CvDrawingUtils::draw3dAxis(frame, marker_finder.markers_[i], marker_finder.camera_params_, 2);
+                marker_finder.markers_[j].draw(frame, Scalar(0, 0, 255), 1.5);
+                CvDrawingUtils::draw3dAxis(frame, marker_finder.markers_[j], marker_finder.camera_params_, 2);
 
-                if (250 == marker_finder.markers_[i].id)
+                if (250 == marker_finder.markers_[j].id)
                 {
-                    addVertixAndEdge(
-                        vo.pose_,
-                        last_keyframe_pose_odometry,
-                        last_keyframe_pose_aruco,
-                        marker_finder.marker_poses_[i],
-                        num_keyframes,
-                        slam_solver,
-                        visualizer,
-                        true);
-                    marker_found = true;
+                    if (isOrientationCorrect(vo.pose_, marker_finder.marker_poses_[j].inverse()))
+                    {
+                        addVertixAndEdge(
+                            vo.pose_,
+                            last_keyframe_pose_odometry,
+                            last_keyframe_pose_aruco,
+                            marker_finder.marker_poses_[j],
+                            num_keyframes,
+                            slam_solver,
+                            visualizer,
+                            true);
+                        marker_found = true;
+                        visualizer.viewReferenceFrame(marker_finder.marker_poses_[j].inverse(), "posegiven");
+                    }
                 }
             }
             // Estimate current camera pose
@@ -237,7 +245,7 @@ int main(int argc, char** argv)
         visualizer.spinOnce();
         imshow("Image view", frame);
         // imshow("Depth view", depth);
-        char key = waitKey(1);
+        char key = waitKey(100);
         if (key == 27 || key == 'q' || key == 'Q')
         {
             logger.print(EventLogger::L_INFO, "[slam_solver_test.cpp] Exiting\n", argv[0]);
@@ -294,10 +302,10 @@ void addVertixAndEdge(
         // If we want to change the system coord from A to B -> A.inverse * B
         //  A = cam pose no sistema de coordenadas do Aruco = P
         // B = origem
-        slam_solver.addLoopClosingEdge(aruco_pose * aruco_pose * aruco_pose * cam_pose, num_keyframes);
+        slam_solver.addLoopClosingEdge(cam_pose.inverse() * aruco_pose, num_keyframes);
         visualizer.addEdge(slam_solver.loop_edges_.back(), Eigen::Vector3f(1.0, 0.0, 0.0));
         // Make a optimization in the graph from every 20 loop edges
-        /*
+
         if (slam_solver.loop_edges_.size() % 5 == 0)
         {
             visualizer.removeEdges(slam_solver.odometry_edges_);
@@ -308,8 +316,51 @@ void addVertixAndEdge(
             visualizer.addOptimizedEdges(slam_solver.odometry_edges_, Eigen::Vector3f(1.0, 0.0, 1.0));
             visualizer.addOptimizedEdges(slam_solver.loop_edges_, Eigen::Vector3f(0.0, 1.0, 1.0));
         }
-        */
+
         last_keyframe_pose_aruco = cam_pose;
         num_keyframes++; // Increment the number of keyframes found
     }
+}
+
+bool isOrientationCorrect(Eigen::Affine3f first, Eigen::Affine3f newone)
+{
+    int count = 0;
+    double error;
+    double anglex = 0, angley = 0, anglez = 0;
+    Eigen::Affine3f rotation;
+
+    // cout << first.matrix() << endl << newone.matrix() << endl;
+    for (int j = 0; j < 3; j++)
+    {
+        error = abs((first(j, 3) - newone(j, 3))) / abs(first(j, 3));
+        cout << error << " ";
+        if (error > 1) count++;
+    }
+
+    /*
+
+rotation = newone.rotation() * first.rotation().transpose();
+
+anglex = atan2(rotation(2, 1), rotation(2, 2));
+angley = atan2(-rotation(2, 0), sqrt(pow(rotation(2, 1), 2) + pow(rotation(2, 2), 2)));
+anglez = atan2(rotation(1, 0), rotation(0, 0));
+printf("anglex: %f angley: %f anglez: %f\n", anglex, angley, anglez);
+if (abs(anglex) > 1) count++;
+if (abs(angley) > 1) count++;
+if (abs(anglez) > 1) count++;
+for (int i = 0; i < 3; i++)
+{
+    for (int j = 0; j < 3; j++)
+    {
+        error = abs((first(i, j) - newone(i, j))) / abs(first(i, j));
+        cout << error << " ";
+        if (error > 1) count++;
+    }
+    cout << endl;
+}*/
+    cout << "error count :" << count << endl;
+    if (count >= 1)
+        return false;
+    else
+        return true;
 }
