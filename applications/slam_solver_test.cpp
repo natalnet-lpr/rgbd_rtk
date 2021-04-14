@@ -76,7 +76,7 @@ struct Pose
     float w_rotation;
 };
 
-bool isOrientationCorrect(Eigen::Affine3f first, Eigen::Affine3f newone);
+bool isOrientationCorrect(Eigen::Affine3f& first, Eigen::Affine3f newone);
 
 /**
  * Adds vertix and edges in slam_solver and visualizer
@@ -113,16 +113,16 @@ int main(int argc, char** argv)
     EventLogger& logger = EventLogger::getInstance();
     logger.setVerbosityLevel(EventLogger::L_ERROR);
 
-    SLAM_Solver slam_solver;
     ReconstructionVisualizer visualizer;
+    SLAM_Solver slam_solver;
     Intrinsics intr(0);
     OpticalFlowVisualOdometry vo(intr);
     MarkerFinder marker_finder;
     RGBDLoader loader;
     Mat frame, depth;
-    Eigen::Affine3f last_keyframe_pose_odometry;
-    Eigen::Affine3f last_keyframe_pose_aruco;
-    Eigen::Affine3f first_keyframe_pose;
+    Eigen::Affine3f last_keyframe_pose_odometry; // Last odometry keyframe
+    Eigen::Affine3f last_keyframe_pose_aruco;    // Last Aruco Keyframe
+    Eigen::Affine3f first_aruco_pose;            // First Keyframe
 
     // Slam solver will start when the marker is found for the first time
     if (argc != 2)
@@ -160,16 +160,16 @@ int main(int argc, char** argv)
                     // Getting Camera Pose
 
                     vo.pose_ = marker_finder.marker_poses_[i].inverse();
+                    first_aruco_pose = marker_finder.marker_poses_[i];
+                    last_keyframe_pose_odometry = vo.pose_;
+                    last_keyframe_pose_aruco = vo.pose_;
+
                     // Adding first pose to slam_solver and visualizer
                     slam_solver.addVertexAndEdge(vo.pose_, num_keyframes);
                     visualizer.addReferenceFrame(vo.pose_, to_string(num_keyframes));
                     num_keyframes++; // Increment the number of keyframes found
                     // Set slam solver started to true since we found the marker for the first time
                     slam_solver_started = true;
-
-                    first_keyframe_pose = vo.pose_;
-                    last_keyframe_pose_odometry = vo.pose_;
-                    last_keyframe_pose_aruco = vo.pose_;
                 }
             }
             continue;
@@ -190,7 +190,7 @@ int main(int argc, char** argv)
 
                 if (250 == marker_finder.markers_[j].id)
                 {
-                    if (isOrientationCorrect(vo.pose_, marker_finder.marker_poses_[j].inverse()))
+                    if (isOrientationCorrect(first_aruco_pose, marker_finder.marker_poses_[j]))
                     {
                         addVertixAndEdge(
                             vo.pose_,
@@ -202,7 +202,6 @@ int main(int argc, char** argv)
                             visualizer,
                             true);
                         marker_found = true;
-                        visualizer.viewReferenceFrame(marker_finder.marker_poses_[j].inverse(), "posegiven");
                     }
                 }
             }
@@ -245,7 +244,7 @@ int main(int argc, char** argv)
         visualizer.spinOnce();
         imshow("Image view", frame);
         // imshow("Depth view", depth);
-        char key = waitKey(100);
+        char key = waitKey(10);
         if (key == 27 || key == 'q' || key == 'Q')
         {
             logger.print(EventLogger::L_INFO, "[slam_solver_test.cpp] Exiting\n", argv[0]);
@@ -276,7 +275,7 @@ void addVertixAndEdge(
     double z = pow(cam_pose(2, 3) - last_keyframe_pose_odometry(2, 3), 2);
 
     // We will only add a new keyframe if they have at least 5cm of distance between each other
-    if (sqrt(x + y + z) >= 0.1 and is_loop_closure == false)
+    if (sqrt(x + y + z) >= 0.05 and is_loop_closure == false)
     {
         // Adding keyframe in visualizer
         visualizer.viewReferenceFrame(cam_pose, to_string(num_keyframes));
@@ -291,7 +290,7 @@ void addVertixAndEdge(
     x = pow(cam_pose(0, 3) - last_keyframe_pose_aruco(0, 3), 2);
     y = pow(cam_pose(1, 3) - last_keyframe_pose_aruco(1, 3), 2);
     z = pow(cam_pose(2, 3) - last_keyframe_pose_aruco(2, 3), 2);
-    if (sqrt(x + y + z) >= 0.1 and is_loop_closure == true)
+    if (sqrt(x + y + z) >= 0.05 and is_loop_closure == true)
     {
         // Adding keyframe in visualizer
         visualizer.viewReferenceFrame(cam_pose, to_string(num_keyframes));
@@ -300,13 +299,12 @@ void addVertixAndEdge(
         visualizer.addEdge(slam_solver.odometry_edges_.back());
         // Adding the loop closing edge that is an edge from this vertex to the initial
         // If we want to change the system coord from A to B -> A.inverse * B
-        //  A = cam pose no sistema de coordenadas do Aruco = P
+        // A = cam pose no sistema de coordenadas do Aruco = P
         // B = origem
         slam_solver.addLoopClosingEdge(cam_pose.inverse() * aruco_pose, num_keyframes);
         visualizer.addEdge(slam_solver.loop_edges_.back(), Eigen::Vector3f(1.0, 0.0, 0.0));
         // Make a optimization in the graph from every 20 loop edges
-
-        if (slam_solver.loop_edges_.size() % 5 == 0)
+        if (slam_solver.loop_edges_.size() % 20 == 0)
         {
             visualizer.removeEdges(slam_solver.odometry_edges_);
             visualizer.removeEdges(slam_solver.loop_edges_);
@@ -322,45 +320,10 @@ void addVertixAndEdge(
     }
 }
 
-bool isOrientationCorrect(Eigen::Affine3f first, Eigen::Affine3f newone)
+bool isOrientationCorrect(Eigen::Affine3f& first, Eigen::Affine3f newone)
 {
-    int count = 0;
-    double error;
-    double anglex = 0, angley = 0, anglez = 0;
-    Eigen::Affine3f rotation;
+    double angle = acos((first(0, 2) * newone(0, 2)) + (first(1, 2) * newone(1, 2)) + (first(2, 2) * newone(2, 2))) *
+                   180.0 / 3.1315;
 
-    // cout << first.matrix() << endl << newone.matrix() << endl;
-    for (int j = 0; j < 3; j++)
-    {
-        error = abs((first(j, 3) - newone(j, 3))) / abs(first(j, 3));
-        cout << error << " ";
-        if (error > 1) count++;
-    }
-
-    /*
-
-rotation = newone.rotation() * first.rotation().transpose();
-
-anglex = atan2(rotation(2, 1), rotation(2, 2));
-angley = atan2(-rotation(2, 0), sqrt(pow(rotation(2, 1), 2) + pow(rotation(2, 2), 2)));
-anglez = atan2(rotation(1, 0), rotation(0, 0));
-printf("anglex: %f angley: %f anglez: %f\n", anglex, angley, anglez);
-if (abs(anglex) > 1) count++;
-if (abs(angley) > 1) count++;
-if (abs(anglez) > 1) count++;
-for (int i = 0; i < 3; i++)
-{
-    for (int j = 0; j < 3; j++)
-    {
-        error = abs((first(i, j) - newone(i, j))) / abs(first(i, j));
-        cout << error << " ";
-        if (error > 1) count++;
-    }
-    cout << endl;
-}*/
-    cout << "error count :" << count << endl;
-    if (count >= 1)
-        return false;
-    else
-        return true;
+    return angle > 10 ? false : true;
 }

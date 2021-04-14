@@ -90,7 +90,7 @@ void loadMarkersFound(string aruco_poses_file);
  * @param new_keyframe_pose new keyframe that should be added
  * @param last_keyframe_pose_odometry the last keyframe added in graph, this is update this in this function
  * @param last_keyframe_pose_aruco the last keyframe added in graph, this is update this in this function
- * @param first_keyframe_pose the first keyframe
+ * @param aruco_pose aruco_pose
  * @param num_keyframes number of keyframes in graph, this is update in this function
  * @param slam_solver slam_solver reference
  * @param visualizer visualizer reference
@@ -133,7 +133,7 @@ int main(int argc, char** argv)
     Mat frame, depth;
     Eigen::Affine3f last_keyframe_pose_odometry;
     Eigen::Affine3f last_keyframe_pose_aruco;
-    Eigen::Affine3f first_keyframe_pose;
+    Eigen::Affine3f first_aruco_pose;
     Aruco aruco_origin_pose_uco_reference;
     // Slam solver will start when the marker is found for the first time
     if (argc != 2)
@@ -178,7 +178,7 @@ int main(int argc, char** argv)
                 // Set slam solver started to true since we found the marker for the first time
                 slam_solver_started = true;
 
-                first_keyframe_pose = vo.pose_;
+                first_aruco_pose = vo.pose_;
                 last_keyframe_pose_odometry = vo.pose_;
                 last_keyframe_pose_aruco = vo.pose_;
 
@@ -209,7 +209,7 @@ int main(int argc, char** argv)
             // Reset marker finding boolean
             marker_found = false;
 
-            marker_finder.detectMarkersPoses(frame, vo.pose_, aruco_max_distance);
+            marker_finder.detectMarkersPoses(frame, Eigen::Affine3f::Identity(), aruco_max_distance);
             // Iterate over all markers that has been found
             for (size_t i = 0; i < marker_finder.markers_.size(); i++)
             {
@@ -419,7 +419,6 @@ void addVertixAndEdge(
         visualizer.addEdge(slam_solver.odometry_edges_.back());
         // Adding the loop closing edge that is an edge from this vertex to the initial
         // If we want to change the system coord from A to B -> A.inverse * B
-        visualizer.viewReferenceFrame(cam_pose.inverse() * aruco_pose, "TENTANDO ADICIONAR");
         slam_solver.addLoopClosingEdge(cam_pose.inverse() * aruco_pose, num_keyframes);
         visualizer.addEdge(slam_solver.loop_edges_.back(), Eigen::Vector3f(1.0, 0.0, 0.0));
         // Make a optimization in the graph from every 20 loop edges
