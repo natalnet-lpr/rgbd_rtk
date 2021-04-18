@@ -103,17 +103,21 @@ protected:
     /**
      * Set the feature_detector_ attribute from a string
      * @param feature_detector name of feature_detector the list of options are:
+     * ORB, AKAZE, GFTT, FAST, AGAST, BRISK, SURF, SIFT
      */
     void setFeatureDetector(const std::string &feature_detector);
 
     /**
      * Set the descriptor_extractor_ attribute from a string
-     * @param descriptor_extractor
+     * @param descriptor_extractor name of descriptor_extractor the list of options are:
+     * ORB, AKAZE, BRISK, SURF, SIFT 
      */
     void setDescriptorExtractor(const std::string &descriptor_extractor);
 
     /**
      * Set the matcher_ attribute from a string
+     * @param matcher name of matcher the list of options are:
+     * BRUTEFORCE AND FLANNBASED
      */
     void setMatcher(const std::string &matcher);
 
@@ -154,7 +158,7 @@ public:
      * Constructor with flexible feature detector, descriptor extractor and matcher and flag to log
      * statistics
      * @param feature_detector ORB, AKAZE, GFTT, FAST, AGAST, BRISK, SURF, SIFT
-     * @param descriptor_extractor ORB, AKAZE, GFTT, FAST, AGAST, BRISK, SURF, SIFT
+     * @param descriptor_extractor ORB, AKAZE, BRISK, SURF, SIFT
      * @param matcher BRUTEFORCE AND FLANNBASED
      * @param log_stats if log statistics should be displayed
      */
@@ -164,9 +168,9 @@ public:
 
     /**
       * Constructor with flexible feature detector, descriptor extractor and matcher and flag to log
-      * statistics
+      * statistics and the minimum and maximum number of points to detect
       * @param feature_detector ORB, AKAZE, GFTT, FAST, AGAST, BRISK, SURF, SIFT
-      * @param descriptor_extractor ORB, AKAZE, GFTT, FAST, AGAST, BRISK, SURF, SIFT
+      * @param descriptor_extractor ORB, AKAZE, BRISK, SURF, SIFT
       * @param matcher BRUTEFORCE AND FLANNBASED
       * @param min_pts to detect @param max_pts to detect
       * @param log_stats if log statistics should be displayed

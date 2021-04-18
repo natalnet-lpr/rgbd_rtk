@@ -44,163 +44,88 @@
 using namespace std;
 using namespace cv;
 
-void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts, bool is_kf);
-Mat draw_last_matches(Mat& img1, Mat& img2, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts);
+void draw_last_track(Mat &img, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts, bool is_kf);
+Mat draw_last_matches(Mat &img1, Mat &img2, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts);
 
 /**
  * This program shows the use of tracking by detection algorithm.
+ * A map is built along the trace, and the features of the current 
+ * frame are compared to the features present in the map using the FLANN library
  * @param .yml config. file (from which index_file is used)
  */
 int main(int argc, char **argv)
 {
-	EventLogger& logger = EventLogger::getInstance();
+	EventLogger &logger = EventLogger::getInstance();
 	logger.setVerbosityLevel(EventLogger::L_DEBUG);
-	
+
 	RGBDLoader loader;
 	string index_file;
 	int log_stats, lifespan_of_a_feature;
 	Mat frame, depth, current_frame, previous_frame;
 	string feature_detector, descriptor_extractor;
-	
+
 	if (argc != 2)
 	{
-		logger.print(EventLogger::L_INFO, "[feature_map_tracker_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
+		logger.print(EventLogger::L_INFO,
+					 "[feature_map_tracker_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
-
-	ofstream file;
-	file.open("log-feature_map_tracker_test.txt");
 
 	ConfigLoader param_loader(argv[1]);
 	param_loader.checkAndGetString("index_file", index_file);
 	param_loader.checkAndGetInt("log_stats", log_stats);
 	param_loader.checkAndGetString("feature_detector", feature_detector);
 	param_loader.checkAndGetString("descriptor_extractor", descriptor_extractor);
-	param_loader.checkAndGetInt("lifespan_of_a_feature",lifespan_of_a_feature);
-	
-	
-	FeatureMapTracker feature_map_tracker(feature_detector, descriptor_extractor,lifespan_of_a_feature,log_stats);
+	param_loader.checkAndGetInt("lifespan_of_a_feature", lifespan_of_a_feature);
+
+	FeatureMapTracker feature_map_tracker(feature_detector, descriptor_extractor, lifespan_of_a_feature, log_stats);
 
 	loader.processFile(index_file);
-	int frame_number = 0;
+
 	// Track points on each image
 	for (int i = 0; i < loader.num_images_; i++)
 	{
 		loader.getNextImage(frame, depth);
 
-		double el_time = (double) cvGetTickCount();
+		double el_time = (double)cvGetTickCount();
 		bool is_kf = feature_map_tracker.track(frame);
-		el_time = ((double) cvGetTickCount() - el_time)/(cvGetTickFrequency()*1000.0);
-		logger.print(EventLogger::L_INFO,"[feature_map_tracker_test.cpp] INFO: Tracking time: %f ms\n", el_time);
+		el_time = ((double)cvGetTickCount() - el_time) / (cvGetTickFrequency() * 1000.0);
+		logger.print(EventLogger::L_INFO,
+					 "[feature_map_tracker_test.cpp] INFO: Tracking time: %f ms\n", el_time);
 
 		frame.copyTo(current_frame);
 
-		//logger.print(EventLogger::L_INFO, "[feature_map_tracker_test.cpp] INFO: Current Keypoints: \n");
-		file << "[feature_map_tracker_test.cpp] INFO: Current Keypoints: \n";
-
-		for (size_t i = 0; i < feature_map_tracker.curr_kpts_.size(); i++)
+		if (i > 0)
 		{
-			file << frame_number << " - Current Keypoint [" << i << "]" << endl;
-			file << "Coordinate: X = " << feature_map_tracker.curr_kpts_[i].pt.x << " -- Y = " << feature_map_tracker.curr_kpts_[i].pt.y << endl;
-			file << "Descriptor: " << feature_map_tracker.curr_descriptors_.row(i) << endl;
-			file << "------------------------------------------------------------------" << endl;
-		}
-
-		if (i>0)
-		{
-			
-			//logger.print(EventLogger::L_INFO, "[feature_map_tracker_test.cpp] INFO: Good Matches: \n");
-			file << "[feature_map_tracker_test.cpp] INFO: Good Matches: \n";
-			for (int i = 0; i < feature_map_tracker.matches_.rows; i++)
-			{
-				if (feature_map_tracker.good_matches_[i])
-				{
-					file << frame_number <<": " <<feature_map_tracker.matches_.at<int>(i,0) << " --> " << i << endl;
-				}
-			}
-
-		}
-
-		file << "------------------------------------------------------------------" << endl;
-
-		//logger.print(EventLogger::L_INFO,"[feature_map_tracker_test.cpp] INFO: Map Keypoints: \n");
-		file << "[feature_map_tracker_test.cpp] INFO: Map Keypoints: \n";
-		for (size_t i = 0; i < feature_map_tracker.map_kpts_.size(); i++)
-		{
-
-			// Feature Life
-			file << frame_number << " - Map Keypoint [" << i << "]" << endl;
-			file << "Coordinate: X = " << feature_map_tracker.map_kpts_[i].pt.x << " -- Y = " << feature_map_tracker.map_kpts_[i].pt.y << endl;
-			file << "Descriptor: " << feature_map_tracker.map_descriptors_.row(i) << endl;
-			file << "------------------------------------------------------------------" << endl;
-		}
-
-		// Tracklets
-		//logger.print(EventLogger::L_INFO,"[feature_map_tracker_test.cpp] INFO: Tracklets: \n");
-		file << "[feature_map_tracker_test.cpp] INFO: Tracklets: \n";
-		for (size_t i = 0; i < feature_map_tracker.map_tracklets_.size(); i++)
-		{
-			file << frame_number << " - Tracklet [" << i <<"]" << endl;
-			for (size_t j = 0; j < feature_map_tracker.map_tracklets_[i].keypoint_indices_.size(); j++)
-			{
-				file << feature_map_tracker.map_tracklets_[i].keypoint_indices_[j] << " --> ";
-			}
-			file << endl;
-
-			for (size_t j = 0; j < feature_map_tracker.inverted_indices_[i].size(); j++)
-			{
-				file << feature_map_tracker.inverted_indices_[i][j] << " --> ";
-			}
-			file << endl;
-		}
-
-		file << "----------------------------------------------------------------------------------" << endl;
-		
-		if (i>0){
-			file << "[feature_map_tracker_test.cpp] INFO: Previous Points --> Current Points: \n";
-			for(size_t i = 0; i < feature_map_tracker.curr_pts_.size(); i++)
-			{
-				file << feature_map_tracker.prev_pts_[i] << " --> " << feature_map_tracker.curr_pts_[i] << endl;
-			}
-		}
-
-		file << "----------------------------------------------------------------------------------" << endl;
-
-
-		frame_number++;
-
-
-		if (i>0){
 			draw_last_track(frame, feature_map_tracker.prev_pts_, feature_map_tracker.curr_pts_, is_kf);
-			Mat matches_view = draw_last_matches(previous_frame, current_frame, feature_map_tracker.prev_pts_, feature_map_tracker.curr_pts_);
+			Mat matches_view = draw_last_matches(previous_frame, current_frame, feature_map_tracker.prev_pts_, 										feature_map_tracker.curr_pts_);
 			imshow("Matches view", matches_view);
 
 			imshow("Image view", frame);
 			imshow("Depth view", depth);
 		}
 
-
 		char key = waitKey(15);
 
 		if (key == 27 || key == 'q' || key == 'Q')
 		{
-			logger.print(EventLogger::L_INFO, "[feature_map_tracker_test.cpp] Exiting\n",argv[0]);
+			logger.print(EventLogger::L_INFO,
+						 "[feature_map_tracker_test.cpp] Exiting\n", argv[0]);
 			break;
 		}
 
 		current_frame.copyTo(previous_frame);
 	}
 
-	file.close();
+	destroyAllWindows();
 
 	return 0;
 }
 
-
-void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts, bool is_kf)
+void draw_last_track(Mat &img, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts, bool is_kf)
 {
 	Scalar color;
-	if(is_kf)
+	if (is_kf)
 	{
 		color = CV_RGB(255, 0, 0);
 	}
@@ -208,7 +133,7 @@ void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Poin
 	{
 		color = CV_RGB(0, 255, 0);
 	}
-	for(size_t k = 0; k < curr_pts.size(); k++)
+	for (size_t k = 0; k < curr_pts.size(); k++)
 	{
 		Point2i pt1, pt2;
 		pt1.x = prev_pts[k].x;
@@ -222,7 +147,7 @@ void draw_last_track(Mat& img, const vector<Point2f> prev_pts, const vector<Poin
 	}
 }
 
-Mat draw_last_matches(Mat& img1, Mat& img2, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts)
+Mat draw_last_matches(Mat &img1, Mat &img2, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts)
 {
 	Mat ROI;
 	Mat matches_view = Mat::ones(img1.rows, img1.cols + img2.cols, img1.type());
@@ -243,9 +168,7 @@ Mat draw_last_matches(Mat& img1, Mat& img2, const vector<Point2f> prev_pts, cons
 		circle(matches_view, pt1, 3, CV_RGB(0, 255, 0), 1);
 		circle(matches_view, pt2, 3, CV_RGB(0, 0, 255), 1);
 		line(matches_view, pt1, pt2, CV_RGB(0, 255, 0));
-
 	}
 
 	return matches_view;
-	
 }

@@ -176,7 +176,7 @@ void WideBaselineTracker::setDescriptorExtractor(const std::string &descriptor_e
     }
 
     MLOG_DEBUG(EventLogger::M_TRACKING, "@WideBaselineTracker::setDescriptorExtractor: \
-                                         descriptor_extractor__ = %s\n",
+                                         descriptor_extractor_ = %s\n",
                                          upper_descriptor_extractor.c_str());
 }
 

@@ -74,7 +74,7 @@ struct Tracklet
 	 * At position i, the vector stores the index of the 3D point
 	 * at the 3D point cloud start_ + i.
 	 */
-	std::vector<int> cloud_indices_;
+	//std::vector<int> cloud_indices_;
 
 
 	/*
@@ -86,7 +86,7 @@ struct Tracklet
 	/*
 	 * History of the indices of the images that a keypoint of the map appeared.
 	 */
-	//std::vector<int> inverted_indices_;
+	std::vector<int> inverted_indices_;
 
 	/* Initializes a tracklet with start_ = 0 */
 	Tracklet() : start_(0) {}

@@ -56,7 +56,7 @@ protected:
     cv::Ptr<cv::DescriptorExtractor> descriptor_extractor_;
 
     //FLANN Index object pointer
-    cv::flann::Index* index_;
+    cv::flann::Index* index_ = nullptr;
 
     //Boolean vector that indicates if the current keypoint i have a match
     std::vector<bool> curr_kpts_with_matches_;
@@ -64,48 +64,87 @@ protected:
     //The number of followed frames without matches to keypoint i on the map
     std::vector<int> life_of_keypoints_on_the_map_;
 
-    //Detect KeyPoints and extract descriptors using this function
+    /**
+     * Detect KeyPoints and extract descriptors using this function
+     */
     void detect_keypoints();
     
-    //Adds keypoints detected in the first frame to the tracker
+    /**
+     * Adds keypoints detected in the first frame to the tracker
+     */
     void add_keypoints();
 
-    //Update internal buffers (updates the map keypoints (in the first frame) with the current points)
+    /**
+     * Update internal buffers (updates the map keypoints (in the first frame) 
+     * with the current points)
+     */
     void update_buffers();
 
-    //Define whether a match is a good match based on the distance between the two closest matches
+    /**
+     * Define whether a match is a good match 
+     * based on the distance between the two closest matches
+     * @param dist_ratio distance ratio between the two closest matches
+     */
     void getGoodMatches(const float& dist_ratio);
 
-    //Update the map features that have been successfully matched
+    /**
+     * Update the map features that have been successfully matched
+     */ 
     void updateTheMap();
 
-    //Remove invalid keypoints from the map, i.e, the keypoints with an expired life
+    /**
+     * Remove invalid keypoints from the map, i.e, 
+     * the keypoints with an expired life
+     */
     void removeInvalidKeypointsFromTheMap();
 
-    // Add new keypoints to the map, i.e, the current keypoints without a good match
+    /**
+     * Add new keypoints to the map, i.e,
+     * the current keypoints without a good match
+     */ 
     void addNewKeypointsToTheMap();
 
-    //Searches if a keypoint have a match
+     /**
+     * Searches if a keypoint have a match
+     * @param keypoint_index id of keypoint
+     * @return match id
+     */
     int searchMatches(const int& keypoint_index);
 
-    //Set the current points that have some correspondence with some point in the previous frame that belong to the map to curr_pts_.
+    /**
+     * Set the current points that have some correspondence 
+     * with some point in the previous frame that belong to the map to curr_pts_.
+     */
     void setCurrentPoints();
 
-    //Set the points on the map belonging to the previous frame that has a correspondence with some point on the current frame to prev_pts_.
+    /**
+     * Set the points on the map belonging to the previous frame 
+     * that has a correspondence with some point on the current frame to prev_pts_.
+     */ 
     void setPreviousPoints();
     
-    //Set the coordinates of the map keypoints to map_pts_.
+    /**
+     * Set the coordinates of the map keypoints to map_pts_.
+     */ 
     //void setMapPoints();
 
-    //Set the feature_detector_ attribute from a string
+    /**
+     * Set the feature_detector_ attribute from a string
+     * @param feature_detector name of feature_detector the list of options are:
+     * ORB, AKAZE, GFTT, FAST, AGAST, BRISK, SURF, SIFT
+     */
     void setFeatureDetector(const std::string& feature_detector);
 
-    //Set the descriptor_extractor_ attribute from a string
+    /**
+     * Set the descriptor_extractor_ attribute from a string
+     * @param descriptor_extractor name of descriptor_extractor the list of options are:
+     * ORB, AKAZE, BRISK, SURF, SIFT
+     */
     void setDescriptorExtractor(const std::string& descriptor_extractor);
 
 public:
 
-     //Store all the current keypoints founded in the current frame
+    //Store all the current keypoints founded in the current frame
     std::vector<cv::KeyPoint> curr_kpts_;
 
     //Store all the current descriptors founded in the current frame
@@ -133,7 +172,7 @@ public:
     cv::Mat dists_;
 
     //History of the indices of the images that a keypoint of the map appeared.
-    std::vector<std::vector<int>> inverted_indices_;
+    //std::vector<std::vector<int>> inverted_indices_;
 
     //Number of keypoints tracked in each frame
     int tracked_pts_;
@@ -144,22 +183,54 @@ public:
     // Max number of allowed frames without matches for a keypoint.
     int lifespan_of_a_feature_;
 
-    //Default constructor: create a ORB feature detector and descriptor extractor and  lifespan_of_a_feature_= 3. 
+    /**
+     * Default constructor: create a ORB feature detector and descriptor extractor 
+     * and  lifespan_of_a_feature_= 3. 
+     */
     FeatureMapTracker();
 
-    //Constructor with flexible feature detector and descriptor extractor, lifespan of a feature and flag to log statistics
-    FeatureMapTracker(const std::string& feature_detector, const std::string& descriptor_extractor, const int& lifespan_of_a_feature, const bool& log_stats);
+    /**
+     * Constructor with flexible feature detector and descriptor extractor, lifespan of a feature and flag to 
+     * log statistics
+     * @param feature_detector ORB, AKAZE, GFTT, FAST, AGAST, BRISK, SURF, SIFT
+     * @param descriptor_extractor ORB, AKAZE, BRISK, SURF, SIFT
+     * @param lifespan_of_a_feature  Max number of allowed frames without matches for a keypoint.
+     * @param log_stats if log statistics should be displayed 
+     */ 
+    FeatureMapTracker(const std::string& feature_detector, 
+                      const std::string& descriptor_extractor, 
+                      const int& lifespan_of_a_feature, const bool& log_stats);
     
-    //Constructor with the feature life (K), minimum number of tracked points, maximum number of tracked points and flag to log statistics
-    FeatureMapTracker(const std::string& feature_detector, const std::string& descriptor_extractor, const int& lifespan_of_a_feature, const int& min_pts, const int& max_pts, const bool& log_stats);
+    /**
+     * Constructor with flexible feature detector and descriptor extractor, 
+     * the feature life (K), minimum number of tracked points, 
+     * maximum number of tracked points and flag to log statistics
+     * @param feature_detector ORB, AKAZE, GFTT, FAST, AGAST, BRISK, SURF, SIFT
+     * @param descriptor_extractor ORB, AKAZE, BRISK, SURF, SIFT
+     * @param lifespan_of_a_feature  Max number of allowed frames without matches for a keypoint.
+     * @param min_pts to detect @param max_pts to detect
+     * @param log_stats if log statistics should be displayed 
+     */ 
+    FeatureMapTracker(const std::string& feature_detector, 
+                      const std::string& descriptor_extractor, 
+                      const int& lifespan_of_a_feature, const int& min_pts,
+                      const int& max_pts, const bool& log_stats);
 
-    //Default Destructor
+    /**
+     * Default Destructor
+     */ 
     ~FeatureMapTracker();
 
-    //Tracks keypoints between the current frame and the previous.
+     /**
+     * Tracks keypoints between the current frame and the map.
+     * @param img rgb image
+     * @return boolean
+     */
     bool track(const cv::Mat& img);
 
-    //Clear all data about tracked points
+    /**
+     * Clear all data about tracked points
+     */
     void clear();
 };
 

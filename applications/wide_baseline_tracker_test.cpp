@@ -57,7 +57,7 @@ using namespace cv;
 using namespace cv::xfeatures2d;
 
 void draw_last_track(Mat &img, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts,
-                     bool is_kf);
+					 bool is_kf);
 void draw_tracks(Mat &img, const vector<Tracklet> tracklets);
 
 /**
@@ -66,18 +66,19 @@ void draw_tracks(Mat &img, const vector<Tracklet> tracklets);
  */
 int main(int argc, char **argv)
 {
-	EventLogger& logger = EventLogger::getInstance();
+	EventLogger &logger = EventLogger::getInstance();
 	logger.setVerbosityLevel(EventLogger::L_INFO);
-	
+
 	RGBDLoader loader;
 	string index_file;
 	int log_stats;
 	Mat frame, depth, current_frame, previous_frame;
 	string feature_detector, descriptor_extractor, descriptor_matcher;
-	
+
 	if (argc != 2)
 	{
-		logger.print(EventLogger::L_INFO, "[wide_baseline_tracker_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
+		logger.print(EventLogger::L_INFO, 
+					 "[wide_baseline_tracker_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
 
@@ -87,21 +88,22 @@ int main(int argc, char **argv)
 	param_loader.checkAndGetString("feature_detector", feature_detector);
 	param_loader.checkAndGetString("descriptor_extractor", descriptor_extractor);
 	param_loader.checkAndGetString("descriptor_matcher", descriptor_matcher);
-	
+
 	WideBaselineTracker wide_baseline_tracker(feature_detector, descriptor_extractor, descriptor_matcher, log_stats);
 
 	loader.processFile(index_file);
-	
+
 	//Track points on each image
 	for (int i = 0; i < loader.num_images_; i++)
 	{
 		loader.getNextImage(frame, depth);
 
-		double el_time = (double) cvGetTickCount();
+		double el_time = (double)cvGetTickCount();
 		bool is_kf = wide_baseline_tracker.track(frame);
-		el_time = ((double) cvGetTickCount() - el_time)/(cvGetTickFrequency()*1000.0);
-		logger.print(EventLogger::L_INFO,"[wide_baseline_tracker_test.cpp] INFO: Tracking time: %f ms\n", el_time);
-		
+		el_time = ((double)cvGetTickCount() - el_time) / (cvGetTickFrequency() * 1000.0);
+		logger.print(EventLogger::L_INFO, 
+		             "[wide_baseline_tracker_test.cpp] INFO: Tracking time: %f ms\n", el_time);
+
 		frame.copyTo(current_frame);
 
 		draw_last_track(frame, wide_baseline_tracker.prev_pts_, wide_baseline_tracker.curr_pts_, is_kf);
@@ -110,7 +112,10 @@ int main(int argc, char **argv)
 		if (i > 0)
 		{
 			Mat img_matches;
-			drawMatches(current_frame, wide_baseline_tracker.curr_kpts_, previous_frame, wide_baseline_tracker.prev_kpts_, wide_baseline_tracker.matches_, img_matches, Scalar::all(-1),Scalar::all(-1), std::vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
+			drawMatches(current_frame, wide_baseline_tracker.curr_kpts_, previous_frame, 
+						wide_baseline_tracker.prev_kpts_, wide_baseline_tracker.matches_, 
+						img_matches, Scalar::all(-1), Scalar::all(-1), std::vector<char>(), 
+						DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
 
 			//-- Show detected matches
 			imshow("Matches", img_matches);
@@ -123,7 +128,8 @@ int main(int argc, char **argv)
 
 		if (key == 27 || key == 'q' || key == 'Q')
 		{
-			logger.print(EventLogger::L_INFO, "[wide_baseline_tracker_test.cpp] Exiting\n",argv[0]);
+			logger.print(EventLogger::L_INFO, 
+						 "[wide_baseline_tracker_test.cpp] Exiting\n", argv[0]);
 			break;
 		}
 
@@ -134,27 +140,28 @@ int main(int argc, char **argv)
 }
 
 void draw_last_track(Mat &img, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts,
-                     bool is_kf)
+					 bool is_kf)
 {
-    Scalar color;
-    if (is_kf)
-        color = CV_RGB(255, 0, 0);
-    else
-        color = CV_RGB(0, 255, 0);
+	Scalar color;
+	if (is_kf)
+		color = CV_RGB(255, 0, 0);
+	else
+		color = CV_RGB(0, 255, 0);
 
-    for (size_t k = 0; k < curr_pts.size(); k++)
-    {
-        Point2i pt1, pt2;
-        pt1.x = prev_pts[k].x;
-        pt1.y = prev_pts[k].y;
-        pt2.x = curr_pts[k].x;
-        pt2.y = curr_pts[k].y;
+	for (size_t k = 0; k < curr_pts.size(); k++)
+	{
+		Point2i pt1, pt2;
+		pt1.x = prev_pts[k].x;
+		pt1.y = prev_pts[k].y;
+		pt2.x = curr_pts[k].x;
+		pt2.y = curr_pts[k].y;
 
-        circle(img, pt1, 1, color, 2);
-        circle(img, pt2, 3, color, 2);
-        line(img, pt1, pt2, color);
-    }
+		circle(img, pt1, 1, color, 2);
+		circle(img, pt2, 3, color, 2);
+		line(img, pt1, pt2, color);
+	}
 }
+
 void draw_tracks(Mat &img, const vector<Tracklet> tracklets)
 {
 	for (size_t i = 0; i < tracklets.size(); i++)
