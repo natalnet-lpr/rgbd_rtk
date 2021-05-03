@@ -76,7 +76,6 @@ void FeatureMapTracker::add_keypoints()
 void FeatureMapTracker::detect_keypoints()
 {
     curr_kpts_.clear();
-    curr_descriptors_.release();
     
     feature_detector_->detect(curr_frame_gray_, curr_kpts_);
     descriptor_extractor_->compute(curr_frame_gray_, curr_kpts_, curr_descriptors_);
@@ -273,45 +272,27 @@ void FeatureMapTracker::setPreviousPoints()
 
 }
 
-
-
 void FeatureMapTracker::setFeatureDetector(const std::string &feature_detector)
 {
     std::string upper_feature_detector = feature_detector;
     boost::to_upper(upper_feature_detector);
 
     if (upper_feature_detector == "ORB")
-    {
         feature_detector_ = cv::ORB::create();
-    }
     else if (upper_feature_detector == "AKAZE")
-    {
         feature_detector_ = cv::AKAZE::create();
-    }
     else if (upper_feature_detector == "GFTT")
-    {
         feature_detector_ = cv::GFTTDetector::create();
-    }
     else if (upper_feature_detector == "FAST")
-    {
         feature_detector_ = cv::FastFeatureDetector::create();
-    }
     else if (upper_feature_detector == "AGAST")
-    {
         feature_detector_ = cv::AgastFeatureDetector::create();
-    }
     else if (upper_feature_detector == "BRISK")
-    {
         feature_detector_ = cv::BRISK::create();
-    }
     else if (upper_feature_detector == "SURF")
-    {
         feature_detector_ = cv::xfeatures2d::SURF::create();
-    }
     else if (upper_feature_detector == "SIFT")
-    {
         feature_detector_ = cv::xfeatures2d::SIFT::create();
-    }
     else
     {
         MLOG_ERROR(EventLogger::M_TRACKING, "@FeatureMapTracker::setFeatureDetector:  \
@@ -332,25 +313,15 @@ void FeatureMapTracker::setDescriptorExtractor(const std::string &descriptor_ext
     boost::to_upper(upper_descriptor_extractor);
 
     if (upper_descriptor_extractor == "ORB")
-    {
         descriptor_extractor_ = cv::ORB::create();
-    }
     else if (upper_descriptor_extractor == "AKAZE")
-    {
         descriptor_extractor_ = cv::AKAZE::create();
-    }
     else if (upper_descriptor_extractor == "BRISK")
-    {
         descriptor_extractor_ = cv::BRISK::create();
-    }
     else if (upper_descriptor_extractor == "SURF")
-    {
         descriptor_extractor_ = cv::xfeatures2d::SURF::create();
-    }
     else if (upper_descriptor_extractor == "SIFT")
-    {
         descriptor_extractor_ = cv::xfeatures2d::SIFT::create();
-    }
     else
     {
         MLOG_ERROR(EventLogger::M_TRACKING, "@FeatureMapTracker::setDescriptorExtractor:  \
@@ -363,6 +334,41 @@ void FeatureMapTracker::setDescriptorExtractor(const std::string &descriptor_ext
     MLOG_DEBUG(EventLogger::M_TRACKING, "@FeatureMapTracker::setDescriptorExtractor: \
                                          descriptor_extractor_ = %s\n",
                upper_descriptor_extractor.c_str());
+}
+
+bool FeatureMapTracker::checkCombination(const std::string& feature_detector, 
+                                         const std::string& descriptor_extractor)
+{
+    
+    std::string upper_feature_detector = feature_detector;
+    boost::to_upper(upper_feature_detector);
+    
+    std::string upper_descriptor_extractor = descriptor_extractor;
+    boost::to_upper(upper_descriptor_extractor);
+
+    bool valid_combination = true;
+
+    if (upper_descriptor_extractor == "AKAZE" && upper_feature_detector != "AKAZE")
+    {
+        valid_combination = false;
+    }
+    else if (upper_feature_detector == "SIFT" && upper_descriptor_extractor == "ORB")
+    {
+        valid_combination = false;
+    }
+
+    if (!valid_combination)
+    {
+        MLOG_ERROR(EventLogger::M_TRACKING, "@FeatureMapTracker::checkCombination:  \
+                                             the combination FD: %s and DE: %s is not valid.\n",
+                   upper_feature_detector.c_str(), 
+                   upper_descriptor_extractor.c_str());
+
+        throw std::invalid_argument(
+              "Insert a valid combination of feature detector and descriptor extractor.");
+    }
+
+    return valid_combination; 
 }
 
 /* #####################################################
@@ -385,8 +391,11 @@ FeatureMapTracker::FeatureMapTracker(const std::string &feature_detector,
                                      const int &lifespan_of_a_feature, const bool &log_stats)
     : FeatureTracker()
 {
-    setFeatureDetector(feature_detector);
-    setDescriptorExtractor(descriptor_extractor);
+    if (checkCombination(feature_detector, descriptor_extractor))
+    {
+        setFeatureDetector(feature_detector);
+        setDescriptorExtractor(descriptor_extractor);
+    }
 
     lifespan_of_a_feature_ = lifespan_of_a_feature;
 
@@ -400,8 +409,11 @@ FeatureMapTracker::FeatureMapTracker(const std::string &feature_detector,
                                      const int &max_pts, const bool &log_stats)
     : FeatureTracker(min_pts, max_pts, log_stats)
 {
-    setFeatureDetector(feature_detector);
-    setDescriptorExtractor(descriptor_extractor);
+    if (checkCombination(feature_detector, descriptor_extractor))
+    {
+        setFeatureDetector(feature_detector);
+        setDescriptorExtractor(descriptor_extractor);
+    }
 
     lifespan_of_a_feature_ = lifespan_of_a_feature;
 }
@@ -444,7 +456,7 @@ bool FeatureMapTracker::track(const cv::Mat &img)
         MLOG_DEBUG(EventLogger::M_TRACKING, "@FeatureMapTracker::track: inicial map size: %i\n",
                    map_descriptors_.rows);
 
-        //cv::flann::Index index(map_descriptors_, cv::flann::KDTreeIndexParams(), cvflann::FLANN_DIST_EUCLIDEAN);
+        
         MLOG_DEBUG(EventLogger::M_TRACKING, "@FeatureMapTracker::track: building the Index object...\n");
 
         double el_time = (double)cvGetTickCount();
@@ -479,7 +491,8 @@ bool FeatureMapTracker::track(const cv::Mat &img)
                    "@FeatureMapTracker::track: final map size: %i\n",
                    map_kpts_.size());
 
-        MLOG_DEBUG(EventLogger::M_TRACKING, "@FeatureMapTracker::track: defining the current and the previous points...\n");
+        MLOG_DEBUG(EventLogger::M_TRACKING, 
+                   "@FeatureMapTracker::track: defining the current and the previous points...\n");
         setCurrentPoints();
         setPreviousPoints();
 

@@ -102,25 +102,34 @@ protected:
 
     /**
      * Set the feature_detector_ attribute from a string
-     * @param feature_detector name of feature_detector the list of options are:
+     * @param feature_detector name of feature_detector, the list of options are:
      * ORB, AKAZE, GFTT, FAST, AGAST, BRISK, SURF, SIFT
      */
     void setFeatureDetector(const std::string &feature_detector);
 
     /**
      * Set the descriptor_extractor_ attribute from a string
-     * @param descriptor_extractor name of descriptor_extractor the list of options are:
+     * @param descriptor_extractor name of descriptor_extractor, the list of options are:
      * ORB, AKAZE, BRISK, SURF, SIFT 
      */
     void setDescriptorExtractor(const std::string &descriptor_extractor);
 
     /**
      * Set the matcher_ attribute from a string
-     * @param matcher name of matcher the list of options are:
+     * @param matcher name of matcher, the list of options are:
      * BRUTEFORCE AND FLANNBASED
      */
     void setMatcher(const std::string &matcher);
 
+    /**
+     * Checks if a valid combination of feature detector and descriptor extractor has been made
+     * @param feature_detector name of feature_detector 
+     * @param descriptor_extractor name of descriptor_extractor
+     * @return boolean
+    */
+    bool checkCombination(const std::string& feature_detector, 
+                          const std::string& descriptor_extractor);
+                          
 public:
     // Store all the current keypoints founded in the current frame
     std::vector<cv::KeyPoint> curr_kpts_;
@@ -157,6 +166,9 @@ public:
     /**
      * Constructor with flexible feature detector, descriptor extractor and matcher and flag to log
      * statistics
+     * The following combinations of (Feature Detector, Descriptor Extractor) are invalid:
+     * (ORB, AKAZE); (GFTT, AKAZE); (FAST, AKAZE); (AGAST, AKAZE); (BRISK, AKAZE); (SURF, AKAZE); 
+     * (SIFT, AKAZE); (SIFT, ORB);
      * @param feature_detector ORB, AKAZE, GFTT, FAST, AGAST, BRISK, SURF, SIFT
      * @param descriptor_extractor ORB, AKAZE, BRISK, SURF, SIFT
      * @param matcher BRUTEFORCE AND FLANNBASED
@@ -169,6 +181,9 @@ public:
     /**
       * Constructor with flexible feature detector, descriptor extractor and matcher and flag to log
       * statistics and the minimum and maximum number of points to detect
+      * The following combinations of (Feature Detector, Descriptor Extractor) are invalid:
+      * (ORB, AKAZE); (GFTT, AKAZE); (FAST, AKAZE); (AGAST, AKAZE); (BRISK, AKAZE); (SURF, AKAZE); 
+      * (SIFT, AKAZE); (SIFT, ORB);
       * @param feature_detector ORB, AKAZE, GFTT, FAST, AGAST, BRISK, SURF, SIFT
       * @param descriptor_extractor ORB, AKAZE, BRISK, SURF, SIFT
       * @param matcher BRUTEFORCE AND FLANNBASED

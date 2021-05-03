@@ -59,6 +59,7 @@ using namespace cv::xfeatures2d;
 void draw_last_track(Mat &img, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts,
 					 bool is_kf);
 void draw_tracks(Mat &img, const vector<Tracklet> tracklets);
+Mat draw_last_matches(Mat &img1, Mat &img2, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts);
 
 /**
  * This program shows the use of tracking by detection algorithm.
@@ -111,14 +112,13 @@ int main(int argc, char **argv)
 
 		if (i > 0)
 		{
-			Mat img_matches;
-			drawMatches(current_frame, wide_baseline_tracker.curr_kpts_, previous_frame, 
-						wide_baseline_tracker.prev_kpts_, wide_baseline_tracker.matches_, 
-						img_matches, Scalar::all(-1), Scalar::all(-1), std::vector<char>(), 
-						DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
-
+			
+			Mat matches_view = draw_last_matches(previous_frame, current_frame, 
+												 wide_baseline_tracker.prev_pts_, 
+												 wide_baseline_tracker.curr_pts_);
 			//-- Show detected matches
-			imshow("Matches", img_matches);
+			imshow("Matches view", matches_view);
+
 		}
 
 		imshow("Image view", frame);
@@ -181,4 +181,30 @@ void draw_tracks(Mat &img, const vector<Tracklet> tracklets)
 			}
 		}
 	}
+}
+
+Mat draw_last_matches(Mat &img1, Mat &img2, const vector<Point2f> prev_pts, const vector<Point2f> curr_pts)
+{
+	Mat ROI;
+	Mat matches_view = Mat::ones(img1.rows, img1.cols + img2.cols, img1.type());
+	ROI = matches_view(Rect(0, 0, img1.cols, img1.rows));
+	img1.copyTo(ROI);
+	ROI = matches_view(Rect(img1.cols, 0, img2.cols, img2.rows));
+	img2.copyTo(ROI);
+
+	for (size_t i = 0; i < curr_pts.size(); i++)
+	{
+		Point2i pt1, pt2;
+
+		pt1.x = prev_pts[i].x;
+		pt1.y = prev_pts[i].y;
+		pt2.x = curr_pts[i].x + img1.cols;
+		pt2.y = curr_pts[i].y;
+
+		circle(matches_view, pt1, 3, CV_RGB(0, 255, 0), 1);
+		circle(matches_view, pt2, 3, CV_RGB(0, 0, 255), 1);
+		line(matches_view, pt1, pt2, CV_RGB(0, 255, 0));
+	}
+
+	return matches_view;
 }

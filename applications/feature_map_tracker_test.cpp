@@ -98,7 +98,9 @@ int main(int argc, char **argv)
 		if (i > 0)
 		{
 			draw_last_track(frame, feature_map_tracker.prev_pts_, feature_map_tracker.curr_pts_, is_kf);
+			
 			Mat matches_view = draw_last_matches(previous_frame, current_frame, feature_map_tracker.prev_pts_, 										feature_map_tracker.curr_pts_);
+			//-- Show detected matches
 			imshow("Matches view", matches_view);
 
 			imshow("Image view", frame);

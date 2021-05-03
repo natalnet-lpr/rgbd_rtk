@@ -204,6 +204,41 @@ void WideBaselineTracker::setMatcher(const std::string &matcher)
                                          upper_matcher.c_str());
 }
 
+bool WideBaselineTracker::checkCombination(const std::string& feature_detector, 
+                                         const std::string& descriptor_extractor)
+{
+    
+    std::string upper_feature_detector = feature_detector;
+    boost::to_upper(upper_feature_detector);
+    
+    std::string upper_descriptor_extractor = descriptor_extractor;
+    boost::to_upper(upper_descriptor_extractor);
+
+    bool valid_combination = true;
+
+    if (upper_descriptor_extractor == "AKAZE" && upper_feature_detector != "AKAZE")
+    {
+        valid_combination = false;
+    }
+    else if (upper_feature_detector == "SIFT" && upper_descriptor_extractor == "ORB")
+    {
+        valid_combination = false;
+    }
+
+    if (!valid_combination)
+    {
+        MLOG_ERROR(EventLogger::M_TRACKING, "@FeatureMapTracker::checkCombination: \
+                                             the combination FD: %s and DE: %s is not valid.\n",
+                   upper_feature_detector.c_str(), 
+                   upper_descriptor_extractor.c_str());
+
+        throw std::invalid_argument(
+              "Insert a valid combination of feature detector and descriptor extractor.");
+    }
+
+    return valid_combination; 
+}
+
 /* #####################################################
  * #####                                           #####
  * #####               Public Impl.                #####
@@ -223,9 +258,13 @@ WideBaselineTracker::WideBaselineTracker(const std::string &feature_detector,
                                          const std::string &matcher, const bool &log_stats)
     : FeatureTracker()
 {
-    setFeatureDetector(feature_detector);
-    setDescriptorExtractor(descriptor_extractor);
-    setMatcher(matcher);
+    if (checkCombination(feature_detector, descriptor_extractor))
+    {
+        setFeatureDetector(feature_detector);
+        setDescriptorExtractor(descriptor_extractor);
+        setMatcher(matcher);
+    }
+    
 
     if (log_stats) initialize_logger("timing_stats.txt", "tracking_stats.txt", "heatmap_stats.txt");
 }
@@ -236,9 +275,13 @@ WideBaselineTracker::WideBaselineTracker(const std::string &feature_detector,
                                          const int &max_pts, const bool &log_stats)
     : FeatureTracker(min_pts, max_pts, log_stats)
 {
-    setFeatureDetector(feature_detector);
-    setDescriptorExtractor(descriptor_extractor);
-    setMatcher(matcher);
+    if (checkCombination(feature_detector, descriptor_extractor))
+    {
+        setFeatureDetector(feature_detector);
+        setDescriptorExtractor(descriptor_extractor);
+        setMatcher(matcher);
+    }
+    
 }
 
 void WideBaselineTracker::getGoodMatches(const double &threshold)
@@ -347,7 +390,7 @@ bool WideBaselineTracker::track(const cv::Mat &img)
                                              tracked points:  %i\n",
                                              tracked_pts);
 
-        getGoodMatches(0.1);
+        //getGoodMatches(0.1);
 
         // Insufficient number of points being tracked
         if (tracked_pts < min_pts_)
