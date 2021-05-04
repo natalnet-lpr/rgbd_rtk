@@ -76,6 +76,17 @@ struct Pose
     float w_rotation;
 };
 
+struct ConfigParams
+{
+    string index_file;
+    string camera_calibration_file;
+    string aruco_dic;
+    float aruco_marker_size;
+    float aruco_max_distance = 4;
+    float minimum_distance_between_keyframes = 0.05;
+    int local_optimization_threshold = 20; // How many loop edges to make a optimization
+};
+
 bool isOrientationCorrect(Eigen::Affine3f& first, Eigen::Affine3f newone);
 
 /**
@@ -97,7 +108,8 @@ void addVertixAndEdge(
     int& num_keyframes,
     SLAM_Solver& slam_solver,
     ReconstructionVisualizer& visualizer,
-    bool is_loop_closure);
+    bool is_loop_closure,
+    ConfigParams config_params);
 /**
  * This program shows the use of camera pose estimation using optical flow visual odometry.
  * @param .yml config. file (from which index_file is used)
@@ -106,10 +118,8 @@ int main(int argc, char** argv)
 {
     int num_keyframes = 0;
     bool slam_solver_started = false;
-    float marker_size, aruco_max_distance;
     bool marker_found;
-
-    string camera_calibration_file, aruco_dic, index_file;
+    ConfigParams config_params;
     EventLogger& logger = EventLogger::getInstance();
     logger.setVerbosityLevel(EventLogger::L_ERROR);
 
@@ -132,14 +142,19 @@ int main(int argc, char** argv)
     }
 
     ConfigLoader param_loader(argv[1]);
-    param_loader.checkAndGetString("index_file", index_file);
-    param_loader.checkAndGetFloat("aruco_marker_size", marker_size);
-    param_loader.checkAndGetFloat("aruco_max_distance", aruco_max_distance);
-    param_loader.checkAndGetString("camera_calibration_file", camera_calibration_file);
-    param_loader.checkAndGetString("aruco_dic", aruco_dic);
-    marker_finder.markerParam(camera_calibration_file, marker_size, aruco_dic);
+    param_loader.checkAndGetFloat("aruco_marker_size", config_params.aruco_marker_size);
+    param_loader.checkAndGetFloat("aruco_max_distance", config_params.aruco_max_distance);
+    param_loader.checkAndGetInt("local_optimization_threshold", config_params.local_optimization_threshold);
+    param_loader.checkAndGetString("index_file", config_params.index_file);
+    param_loader.checkAndGetFloat(
+        "minimum_distance_between_keyframes", config_params.minimum_distance_between_keyframes);
+    param_loader.checkAndGetString("camera_calibration_file", config_params.camera_calibration_file);
+    param_loader.checkAndGetString("aruco_dic", config_params.aruco_dic);
 
-    loader.processFile(index_file);
+    marker_finder.markerParam(
+        config_params.camera_calibration_file, config_params.aruco_marker_size, config_params.aruco_dic);
+
+    loader.processFile(config_params.index_file);
 
     // Compute visual odometry on each image
     for (int i = 0; i < loader.num_images_; i++)
@@ -150,7 +165,7 @@ int main(int argc, char** argv)
         // If aruco is not found yet
         if (slam_solver_started == false)
         {
-            marker_finder.detectMarkersPoses(frame, Eigen::Affine3f::Identity(), aruco_max_distance);
+            marker_finder.detectMarkersPoses(frame, Eigen::Affine3f::Identity(), config_params.aruco_max_distance);
             if (marker_finder.markers_.size() > 0)
             {
                 if (250 == marker_finder.markers_[i].id)
@@ -181,7 +196,7 @@ int main(int argc, char** argv)
             // Reset marker finding boolean
             marker_found = false;
 
-            marker_finder.detectMarkersPoses(frame, Eigen::Affine3f::Identity(), aruco_max_distance);
+            marker_finder.detectMarkersPoses(frame, Eigen::Affine3f::Identity(), config_params.aruco_max_distance);
             for (size_t j = 0; j < marker_finder.markers_.size(); j++)
             {
 
@@ -200,7 +215,8 @@ int main(int argc, char** argv)
                             num_keyframes,
                             slam_solver,
                             visualizer,
-                            true);
+                            true,
+                            config_params);
                         marker_found = true;
                     }
                 }
@@ -237,7 +253,8 @@ int main(int argc, char** argv)
                     num_keyframes,
                     slam_solver,
                     visualizer,
-                    false);
+                    false,
+                    config_params);
             }
         }
 
@@ -253,8 +270,8 @@ int main(int argc, char** argv)
     }
 
     slam_solver.optimizeGraph(10);
-    visualizer.addOptimizedEdges(slam_solver.odometry_edges_, Eigen::Vector3f(1.0, 0.0, 1.0));
-    visualizer.addOptimizedEdges(slam_solver.loop_edges_, Eigen::Vector3f(0.0, 1.0, 1.0));
+    // visualizer.addOptimizedEdges(slam_solver.odometry_edges_, Eigen::Vector3f(1.0, 0.0, 1.0));
+    //  visualizer.addOptimizedEdges(slam_solver.loop_edges_, Eigen::Vector3f(0.0, 1.0, 1.0));
     visualizer.spin();
     return 0;
 }
@@ -267,7 +284,8 @@ void addVertixAndEdge(
     int& num_keyframes,
     SLAM_Solver& slam_solver,
     ReconstructionVisualizer& visualizer,
-    bool is_loop_closure)
+    bool is_loop_closure,
+    ConfigParams config_params)
 
 {
     double x = pow(cam_pose(0, 3) - last_keyframe_pose_odometry(0, 3), 2);
@@ -275,13 +293,13 @@ void addVertixAndEdge(
     double z = pow(cam_pose(2, 3) - last_keyframe_pose_odometry(2, 3), 2);
 
     // We will only add a new keyframe if they have at least 5cm of distance between each other
-    if (sqrt(x + y + z) >= 0.05 and is_loop_closure == false)
+    if (sqrt(x + y + z) >= config_params.minimum_distance_between_keyframes and is_loop_closure == false)
     {
         // Adding keyframe in visualizer
         visualizer.viewReferenceFrame(cam_pose, to_string(num_keyframes));
         // Add the keyframe and creating an edge to the last vertex
         slam_solver.addVertexAndEdge(cam_pose, num_keyframes);
-        visualizer.addEdge(slam_solver.odometry_edges_.back());
+        visualizer.addEdge(slam_solver.getLastEdge("odometry"));
 
         last_keyframe_pose_odometry = cam_pose;
         num_keyframes++; // Increment the number of keyframes found
@@ -290,29 +308,32 @@ void addVertixAndEdge(
     x = pow(cam_pose(0, 3) - last_keyframe_pose_aruco(0, 3), 2);
     y = pow(cam_pose(1, 3) - last_keyframe_pose_aruco(1, 3), 2);
     z = pow(cam_pose(2, 3) - last_keyframe_pose_aruco(2, 3), 2);
-    if (sqrt(x + y + z) >= 0.05 and is_loop_closure == true)
+    if (sqrt(x + y + z) >= config_params.minimum_distance_between_keyframes and is_loop_closure == true)
     {
         // Adding keyframe in visualizer
         visualizer.viewReferenceFrame(cam_pose, to_string(num_keyframes));
         // Add the keyframe and creating an edge to the last vertex
         slam_solver.addVertexAndEdge(cam_pose, num_keyframes);
-        visualizer.addEdge(slam_solver.odometry_edges_.back());
+        visualizer.addEdge(slam_solver.getLastEdge("odometry"));
         // Adding the loop closing edge that is an edge from this vertex to the initial
         // If we want to change the system coord from A to B -> A.inverse * B
         // A = cam pose no sistema de coordenadas do Aruco = P
         // B = origem
         slam_solver.addLoopClosingEdge(cam_pose.inverse() * aruco_pose, num_keyframes);
-        visualizer.addEdge(slam_solver.loop_edges_.back(), Eigen::Vector3f(1.0, 0.0, 0.0));
+        visualizer.addEdge(slam_solver.getLastEdge("loop"), Eigen::Vector3f(1.0, 0.0, 0.0));
+        cout << slam_solver.num_loop_edges_ << endl;
         // Make a optimization in the graph from every 20 loop edges
-        if (slam_solver.loop_edges_.size() % 20 == 0)
+        if (slam_solver.num_loop_edges_ % config_params.local_optimization_threshold == 0)
         {
-            visualizer.removeEdges(slam_solver.odometry_edges_);
-            visualizer.removeEdges(slam_solver.loop_edges_);
-            visualizer.resetVisualizer();
+            // visualizer.removeEdges(slam_solver.odometry_edges_);
+            // visualizer.removeEdges(slam_solver.loop_edges_);
+            // visualizer.resetVisualizer();
+            // visualizer.removeEdges(slam_solver.optimized_estimates_);  slam_solver.optimized_estimates is not
+            // Edge but affine3f
 
             slam_solver.optimizeGraph(10);
-            visualizer.addOptimizedEdges(slam_solver.odometry_edges_, Eigen::Vector3f(1.0, 0.0, 1.0));
-            visualizer.addOptimizedEdges(slam_solver.loop_edges_, Eigen::Vector3f(0.0, 1.0, 1.0));
+            // visualizer.addOptimizedEdges(slam_solver.odometry_edges_, Eigen::Vector3f(1.0, 0.0, 1.0));
+            // visualizer.addOptimizedEdges(slam_solver.loop_edges_, Eigen::Vector3f(0.0, 1.0, 1.0));
         }
 
         last_keyframe_pose_aruco = cam_pose;

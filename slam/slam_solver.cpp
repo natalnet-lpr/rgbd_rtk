@@ -29,38 +29,12 @@ using namespace g2o;
  * #####################################################
  */
 
-void SLAM_Solver::addEdgeToList(const int& from_id, const int& to_id)
-{
-    Edge ep(from_id, to_id, positions_[from_id], positions_[to_id]);
-    stringstream edge_name;
-    edge_name << "edge_" << from_id << "_" << to_id;
-    ep.name_ = edge_name.str();
-    logger.print(
-        EventLogger::L_INFO,
-        "[SLAM_Solver::addEdgeToList] DEBUG: built edge %s\n",
-        ep.name_.c_str());
-
-    // Check if the edge is "odometry" (from i to i+1) or "loop closing" (from i to j)
-    (to_id - from_id == 1) ? odometry_edges_.push_back(ep) : loop_edges_.push_back(ep);
-    logger.print(
-        EventLogger::L_INFO,
-        "[SLAM_Solver::addEdgeToList] DEBUG: odom. edges: %lu\n",
-        odometry_edges_.size());
-    logger.print(
-        EventLogger::L_INFO,
-        "[SLAM_Solver::addEdgeToList] DEBUG: loop closing edges: %lu\n",
-        loop_edges_.size());
-}
-
 void SLAM_Solver::updateState()
 {
     optimized_estimates_.clear();
     optimized_estimates_.resize(positions_.size());
 
-    logger.print(
-        EventLogger::L_INFO,
-        "[SLAM_Solver::updateState] DEBUG: Updating %lu vertices\n",
-        positions_.size());
+    logger.print(EventLogger::L_INFO, "[SLAM_Solver::updateState] DEBUG: Updating %lu vertices\n", positions_.size());
 
     // Update estimates of all vertices and positions
     for (OptimizableGraph::VertexIDMap::const_iterator it = optimizer_.vertices().begin();
@@ -90,8 +64,7 @@ void SLAM_Solver::updateState()
 
         optimized_estimates_[v_id] = new_estimate;
 
-        logger.print(
-            EventLogger::L_INFO, "[SLAM_Solver::updateState] DEBUG: Updating node %i \n", v_id);
+        logger.print(EventLogger::L_INFO, "[SLAM_Solver::updateState] DEBUG: Updating node %i \n", v_id);
         logger.print(
             EventLogger::L_INFO,
             "[SLAM_Solver::updateState] DEBUG: ### from %f %f %f to %f %f %f\n",
@@ -107,30 +80,6 @@ void SLAM_Solver::updateState()
         positions_[v_id](1, 0) = new_estimate(1, 3);
         positions_[v_id](2, 0) = new_estimate(2, 3);
     }
-
-    // Update all odometry edges
-    for (unsigned int i = 0; i < odometry_edges_.size(); i++)
-    {
-        const int id_from = odometry_edges_[i].id_from_;
-        const int id_to = odometry_edges_[i].id_to_;
-
-        odometry_edges_[i].pose_from_ = positions_[id_from];
-        odometry_edges_[i].pose_to_ = positions_[id_to];
-    }
-
-    // Update all loop closing edges
-    for (unsigned int i = 0; i < loop_edges_.size(); i++)
-    {
-        const int id_from = loop_edges_[i].id_from_;
-        const int id_to = loop_edges_[i].id_to_;
-
-        loop_edges_[i].pose_from_ = positions_[id_from];
-        loop_edges_[i].pose_to_ = positions_[id_to];
-    }
-    logger.print(
-        EventLogger::L_INFO,
-        "[SLAM_Solver::updateState] DEBUG: Loop closing edges: %lu\n",
-        loop_edges_.size());
 }
 
 /* #####################################################
@@ -144,11 +93,12 @@ SLAM_Solver::SLAM_Solver()
 {
     num_vertices_ = 0;
     last_added_id_ = -1;
+    num_loop_edges_ = 0;
 
     std::unique_ptr<g2o::BlockSolverX::LinearSolverType> linearSolver =
         g2o::make_unique<g2o::LinearSolverCholmod<g2o::BlockSolverX::PoseMatrixType>>();
-    g2o::OptimizationAlgorithmLevenberg* solver = new g2o::OptimizationAlgorithmLevenberg(
-        g2o::make_unique<g2o::BlockSolverX>(std::move(linearSolver)));
+    g2o::OptimizationAlgorithmLevenberg* solver =
+        new g2o::OptimizationAlgorithmLevenberg(g2o::make_unique<g2o::BlockSolverX>(std::move(linearSolver)));
 
     optimizer_.setAlgorithm(solver);
     optimizer_.setVerbose(true);
@@ -156,8 +106,7 @@ SLAM_Solver::SLAM_Solver()
 
 void SLAM_Solver::addVertexAndEdge(const Eigen::Affine3f& pose, const int& id)
 {
-    logger.print(
-        EventLogger::L_INFO, "[SLAM_Solver::addVertexAndEdge] DEBUG: Adding node %i\n", id);
+    logger.print(EventLogger::L_INFO, "[SLAM_Solver::addVertexAndEdge] DEBUG: Adding node %i\n", id);
 
     // Add the first node and fix it.
     if (num_vertices_ == 0)
@@ -202,8 +151,6 @@ void SLAM_Solver::addVertexAndEdge(const Eigen::Affine3f& pose, const int& id)
         e->setMeasurementFromState();
         optimizer_.addEdge(e);
 
-        addEdgeToList(v0->id(), v1->id());
-
         logger.print(
             EventLogger::L_INFO,
             "[SLAM_Solver::addVertexAndEdge] DEBUG: position (%f, %f, %f)\n",
@@ -236,7 +183,7 @@ void SLAM_Solver::addLoopClosingEdge(const Eigen::Affine3f& vertex_to_origin_tra
     e->setMeasurement(measurement);
     optimizer_.addEdge(e);
 
-    addEdgeToList(v->id(), origin->id());
+    num_loop_edges_++;
 
     logger.print(
         EventLogger::L_INFO,
@@ -245,11 +192,35 @@ void SLAM_Solver::addLoopClosingEdge(const Eigen::Affine3f& vertex_to_origin_tra
         origin->id());
 }
 
+Edge SLAM_Solver::getEdge(const int& from_id, const int& to_id)
+{
+    Edge ep(from_id, to_id, positions_[from_id], positions_[to_id]);
+    return ep;
+}
+
+Edge SLAM_Solver::getLastEdge(const string& type)
+{
+    int last_id = positions_.size() - 1;
+    if (type == "odometry")
+    {
+        string name = to_string(positions_.size() - 2) + "_" + to_string(last_id);
+        Edge ep(positions_.size() - 2, last_id, positions_[positions_.size() - 2], positions_[last_id], name);
+        return ep;
+    }
+    else
+    {
+        string name = to_string(0) + "_" + to_string(last_id);
+        Edge ep(0, last_id, positions_[0], positions_[last_id], name);
+        return ep;
+    }
+}
+
 void SLAM_Solver::optimizeGraph(const int& k)
 {
     // optimizer_.save("graph.g2o"); // Save file
 
-    optimizer_.initializeOptimization();
+    // Only initializeOptimization if the graph is not already initialized.
+    if (optimized_estimates_.size() == 0) optimizer_.initializeOptimization();
     optimizer_.optimize(k);
 
     updateState();
@@ -260,8 +231,6 @@ void SLAM_Solver::resetGraph()
     num_vertices_ = 0;
     last_added_id_ = -1;
     positions_.clear();
-    odometry_edges_.clear();
-    loop_edges_.clear();
     optimized_estimates_.clear();
     optimizer_.clear();
 }

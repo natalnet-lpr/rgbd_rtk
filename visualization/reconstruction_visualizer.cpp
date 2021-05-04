@@ -107,15 +107,12 @@ void ReconstructionVisualizer::addCameraPath(const Eigen::Affine3f& pose)
     stringstream line_name;
     line_name << "line" << num_lines_++;
     viewer_->addLine(prev_pos_, curr_pos_, 1.0, 0.0, 0.0, line_name.str());
-    viewer_->setShapeRenderingProperties(
-        pcl::visualization::PCL_VISUALIZER_LINE_WIDTH, 5, line_name.str());
+    viewer_->setShapeRenderingProperties(pcl::visualization::PCL_VISUALIZER_LINE_WIDTH, 5, line_name.str());
 
     prev_pos_ = curr_pos_;
 }
 
-void ReconstructionVisualizer::addReferenceFrame(
-    const Eigen::Affine3f& pose,
-    const std::string& text)
+void ReconstructionVisualizer::addReferenceFrame(const Eigen::Affine3f& pose, const std::string& text)
 {
     // Add frame
     stringstream frame_name;
@@ -148,9 +145,7 @@ void ReconstructionVisualizer::addKeyFrame(const Keyframe kf, const std::string&
     viewer_->addText3D(text, text_pose, 0.015, 1, 0, 0, frame_name.str());
 }
 
-void ReconstructionVisualizer::addPointCloud(
-    const pcl::PointCloud<PointT>::Ptr& cloud,
-    const Eigen::Affine3f& pose)
+void ReconstructionVisualizer::addPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud, const Eigen::Affine3f& pose)
 {
     // Create a new point cloud
     pcl::PointCloud<PointT>::Ptr transf_cloud(new pcl::PointCloud<PointT>);
@@ -197,17 +192,13 @@ void ReconstructionVisualizer::addEdge(const Edge& edge, const Eigen::Vector3f& 
     num_edges_++;
 }
 
-void ReconstructionVisualizer::addEdges(
-    const std::vector<Edge>& edges,
-    const Eigen::Vector3f& color)
+void ReconstructionVisualizer::addEdges(const std::vector<Edge>& edges, const Eigen::Vector3f& color)
 {
     // Iterate over vector edges and add them to the visualizer
     for (size_t i = 0; i < edges.size(); i++) { addEdge(edges[i], color); }
 }
 
-void ReconstructionVisualizer::addOptimizedEdges(
-    const std::vector<Edge>& edges,
-    const Eigen::Vector3f& color)
+void ReconstructionVisualizer::addOptimizedEdges(const std::vector<Edge>& edges, const Eigen::Vector3f& color)
 {
     // Iterate over vector edges, optimizing them and adding them to the visualizer
     for (size_t i = 0; i < edges.size(); i++)
@@ -226,9 +217,7 @@ void ReconstructionVisualizer::addOptimizedEdges(
     }
 }
 
-void ReconstructionVisualizer::viewReferenceFrame(
-    const Eigen::Affine3f& pose,
-    const std::string& text)
+void ReconstructionVisualizer::viewReferenceFrame(const Eigen::Affine3f& pose, const std::string& text)
 {
     viewer_->removeCoordinateSystem(text);
     viewer_->addCoordinateSystem(0.3, pose, text);
@@ -242,9 +231,7 @@ void ReconstructionVisualizer::viewReferenceFrame(
     viewer_->addText3D(text, pose_txt, 0.025, 1, 1, 1, ss.str());
 }
 
-void ReconstructionVisualizer::viewPointCloud(
-    const pcl::PointCloud<PointT>::Ptr& cloud,
-    const Eigen::Affine3f& pose)
+void ReconstructionVisualizer::viewPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud, const Eigen::Affine3f& pose)
 {
     // Create a new point cloud
     pcl::PointCloud<PointT>::Ptr transf_cloud(new pcl::PointCloud<PointT>);
@@ -283,9 +270,7 @@ void ReconstructionVisualizer::updateKeyframes(const std::vector<Keyframe>& keyf
 
     viewer_->removePointCloud("cloud");
 
-    logger.print(
-        EventLogger::L_INFO,
-        "[Visualizer::updateKeyframes] INFO: Updating keyframe visualization\n");
+    logger.print(EventLogger::L_INFO, "[Visualizer::updateKeyframes] INFO: Updating keyframe visualization\n");
 
     // Iterate over keyframes and add their clouds to visualization
     for (size_t i = 0; i < keyframes.size(); i++)
@@ -332,9 +317,7 @@ void ReconstructionVisualizer::updateKeyframes(const std::vector<Keyframe>& keyf
         pos.z = camera(2, 3);
         // viewer_->addText3D(coord_sys_name, pos, 0.025);
     }
-    logger.print(
-        EventLogger::L_INFO,
-        "[Visualizer::updateKeyframes] INFO: keyframe visualization UPDATED\n");
+    logger.print(EventLogger::L_INFO, "[Visualizer::updateKeyframes] INFO: keyframe visualization UPDATED\n");
 }
 
 void ReconstructionVisualizer::removeEdge(const Edge& edge) { viewer_->removeShape(edge.name_); }
@@ -345,10 +328,7 @@ void ReconstructionVisualizer::removeEdges(const std::vector<Edge>& edges)
     for (size_t i = 0; i < edges.size(); i++) { removeEdge(edges[i]); }
 }
 
-void ReconstructionVisualizer::setCameraPosition(
-    const float& pos_x,
-    const float& pos_y,
-    const float& pos_z)
+void ReconstructionVisualizer::setCameraPosition(const float& pos_x, const float& pos_y, const float& pos_z)
 {
     // Given the x y and z, set the camera position
     viewer_->setCameraPosition(
@@ -373,4 +353,5 @@ void ReconstructionVisualizer::resetVisualizer()
 {
     viewer_->removeAllShapes();
     viewer_->removeAllCoordinateSystems();
+    viewer_->removeAllPointClouds();
 }

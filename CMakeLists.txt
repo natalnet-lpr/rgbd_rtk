@@ -28,7 +28,6 @@ foreach(p LIB BIN INCLUDE CMAKE)
   endif()
 endforeach()
 
-
 # set up include-directories
 include_directories(
   "${PROJECT_SOURCE_DIR}"   

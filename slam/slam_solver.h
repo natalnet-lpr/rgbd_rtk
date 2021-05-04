@@ -32,13 +32,6 @@ private:
     g2o::SparseOptimizer optimizer_;
 
     /**
-     * Internal function to create edges
-     * @param from_edge_id id edge from
-     * @param to_edge_id id edge to
-     */
-    void addEdgeToList(const int& from_id, const int& to_id);
-
-    /**
      * Update internal state after optimization
      */
     void updateState();
@@ -46,14 +39,11 @@ private:
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+    // Number of loop edges
+    int num_loop_edges_;
+
     // 3D position in the global ref. frame of each node (for visualization)
     std::vector<Eigen::Vector3d> positions_;
-
-    // Stores information about all "odometry" edges
-    std::vector<Edge> odometry_edges_;
-
-    // Stores information about all "loop closing" edges
-    std::vector<Edge> loop_edges_;
 
     // Estimate of each active vertex after optimization
     std::vector<Eigen::Affine3f> optimized_estimates_;
@@ -77,6 +67,22 @@ public:
      * @param id vertex id
      */
     void addLoopClosingEdge(const Eigen::Affine3f& vertex_to_origin_transf, const int& id);
+
+    /**
+     * Returns an Edge
+     * @param from_id the id of the "back" of the edge arrow
+     * @param to_id the id of the "point" of the edge arrow
+     * @return Edge that connects from_id to to_id
+     */
+    Edge getEdge(const int& from_id, const int& to_id);
+
+    /**
+     * Returns the the last edge, if it is an odometry it will return the edge from positions_.size() - 2 to
+     * positions.size() - 1 If it is an loop it will return 0 to positions.size() - 1
+     * @param type Can be a odometry or loop
+     * @return Edge
+     */
+    Edge getLastEdge(const std::string& type);
 
     /**
      * Optimizes the graph with Levenberg-Marquardt for the given n. of iterations
