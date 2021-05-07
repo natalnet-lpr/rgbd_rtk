@@ -179,14 +179,18 @@ void ReconstructionVisualizer::addQuantizedPointCloud(
     addPointCloud(quant_cloud, pose);
 }
 
-void ReconstructionVisualizer::addEdge(const Edge& edge, const Eigen::Vector3f& color)
+void ReconstructionVisualizer::addEdge(
+    const Eigen::Affine3f& vertix_from,
+    const Eigen::Affine3f& vertix_to,
+    const string& name,
+    const Eigen::Vector3f& color)
 {
     // Create the "from" and "to" pcl points
-    pcl::PointXYZ from_pt(edge.pose_from_(0, 0), edge.pose_from_(1, 0), edge.pose_from_(2, 0));
-    pcl::PointXYZ to_pt(edge.pose_to_(0, 0), edge.pose_to_(1, 0), edge.pose_to_(2, 0));
+    pcl::PointXYZ from_pt(vertix_from(0, 3), vertix_from(1, 3), vertix_from(2, 3));
+    pcl::PointXYZ to_pt(vertix_to(0, 3), vertix_to(1, 3), vertix_to(2, 3));
 
     // Add an arrow that connects from_pt -> to_pt
-    viewer_->addArrow(to_pt, from_pt, color(0, 0), color(1, 0), color(2, 0), false, edge.name_);
+    viewer_->addArrow(to_pt, from_pt, color(0, 0), color(1, 0), color(2, 0), false, name);
 
     // Updating the number of edges
     num_edges_++;
@@ -195,7 +199,7 @@ void ReconstructionVisualizer::addEdge(const Edge& edge, const Eigen::Vector3f& 
 void ReconstructionVisualizer::addEdges(const std::vector<Edge>& edges, const Eigen::Vector3f& color)
 {
     // Iterate over vector edges and add them to the visualizer
-    for (size_t i = 0; i < edges.size(); i++) { addEdge(edges[i], color); }
+    // for (size_t i = 0; i < edges.size(); i++) { addEdge(edges[i], color); }
 }
 
 void ReconstructionVisualizer::addOptimizedEdges(const std::vector<Edge>& edges, const Eigen::Vector3f& color)
@@ -210,10 +214,10 @@ void ReconstructionVisualizer::addOptimizedEdges(const std::vector<Edge>& edges,
         opt_edge.name_ = edges[i].name_ + "_opt";
 
         // Check if the edge is "odometry" or "loop"
-        if (idx1 - idx0 == 1)
-            addEdge(opt_edge, color);
-        else
-            addEdge(opt_edge, color);
+        // if (idx1 - idx0 == 1)
+        //    addEdge(opt_edge, color);
+        //  else
+        //      addEdge(opt_edge, color);
     }
 }
 

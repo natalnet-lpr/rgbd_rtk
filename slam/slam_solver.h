@@ -19,6 +19,13 @@
 #include <common_types.h>
 #include <event_logger.h>
 
+struct EdgeObject
+{
+    Eigen::Affine3f from;
+    Eigen::Affine3f to;
+    bool error = false;
+};
+
 class SLAM_Solver
 {
 private:
@@ -74,15 +81,14 @@ public:
      * @param to_id the id of the "point" of the edge arrow
      * @return Edge that connects from_id to to_id
      */
-    Edge getEdge(const int& from_id, const int& to_id);
+    EdgeObject getEdge(const int& from_id, const int& to_id);
 
     /**
      * Returns the the last edge, if it is an odometry it will return the edge from positions_.size() - 2 to
      * positions.size() - 1 If it is an loop it will return 0 to positions.size() - 1
-     * @param type Can be a odometry or loop
      * @return Edge
      */
-    Edge getLastEdge(const std::string& type);
+    EdgeObject getLastEdge();
 
     /**
      * Optimizes the graph with Levenberg-Marquardt for the given n. of iterations

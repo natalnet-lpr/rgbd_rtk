@@ -86,6 +86,7 @@ struct ConfigParams
     float minimum_distance_between_keyframes = 0.05;
     int local_optimization_threshold = 20; // How many loop edges to make a optimization
 };
+EdgeObject edge;
 
 bool isOrientationCorrect(Eigen::Affine3f& first, Eigen::Affine3f newone);
 
@@ -314,14 +315,15 @@ void addVertixAndEdge(
         visualizer.viewReferenceFrame(cam_pose, to_string(num_keyframes));
         // Add the keyframe and creating an edge to the last vertex
         slam_solver.addVertexAndEdge(cam_pose, num_keyframes);
-        visualizer.addEdge(slam_solver.getLastEdge("odometry"));
+        visualizer.addEdge(slam_solver.getLastEdge());
         // Adding the loop closing edge that is an edge from this vertex to the initial
         // If we want to change the system coord from A to B -> A.inverse * B
         // A = cam pose no sistema de coordenadas do Aruco = P
         // B = origem
         slam_solver.addLoopClosingEdge(cam_pose.inverse() * aruco_pose, num_keyframes);
-        visualizer.addEdge(slam_solver.getLastEdge("loop"), Eigen::Vector3f(1.0, 0.0, 0.0));
-        cout << slam_solver.num_loop_edges_ << endl;
+        edge = slam_solver.getEdge(4, 5);
+        cout << "edge return " << edge.error << endl;
+        visualizer.addEdge(slam_solver.getLastEdge(), Eigen::Vector3f(1.0, 0.0, 0.0));
         // Make a optimization in the graph from every 20 loop edges
         if (slam_solver.num_loop_edges_ % config_params.local_optimization_threshold == 0)
         {

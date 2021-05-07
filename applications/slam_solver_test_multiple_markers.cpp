@@ -373,8 +373,8 @@ int main(int argc, char** argv)
         }
     }
     slam_solver.optimizeGraph(10);
-    visualizer.addOptimizedEdges(slam_solver.odometry_edges_, Eigen::Vector3f(1.0, 0.0, 1.0));
-    visualizer.addOptimizedEdges(slam_solver.loop_edges_, Eigen::Vector3f(0.0, 1.0, 1.0));
+    // visualizer.addOptimizedEdges(slam_solver.odometry_edges_, Eigen::Vector3f(1.0, 0.0, 1.0));
+    // visualizer.addOptimizedEdges(slam_solver.loop_edges_, Eigen::Vector3f(0.0, 1.0, 1.0));
     visualizer.spin();
     return 0;
 }
@@ -401,7 +401,7 @@ void addVertixAndEdge(
         visualizer.viewReferenceFrame(cam_pose, to_string(num_keyframes));
         // Add the keyframe and creating an edge to the last vertex
         slam_solver.addVertexAndEdge(cam_pose, num_keyframes);
-        visualizer.addEdge(slam_solver.odometry_edges_.back());
+        // visualizer.addEdge(slam_solver.odometry_edges_.back());
 
         last_keyframe_pose_odometry = cam_pose;
         num_keyframes++; // Increment the number of keyframes found
@@ -416,22 +416,22 @@ void addVertixAndEdge(
         visualizer.viewReferenceFrame(cam_pose, to_string(num_keyframes));
         // Add the keyframe and creating an edge to the last vertex
         slam_solver.addVertexAndEdge(cam_pose, num_keyframes);
-        visualizer.addEdge(slam_solver.odometry_edges_.back());
+        // visualizer.addEdge(slam_solver.getLastEdge("odometry"));
         // Adding the loop closing edge that is an edge from this vertex to the initial
         // If we want to change the system coord from A to B -> A.inverse * B
         slam_solver.addLoopClosingEdge(cam_pose.inverse() * aruco_pose, num_keyframes);
-        visualizer.addEdge(slam_solver.loop_edges_.back(), Eigen::Vector3f(1.0, 0.0, 0.0));
+        // visualizer.addEdge(slam_solver.loop_edges_.back(), Eigen::Vector3f(1.0, 0.0, 0.0));
         // Make a optimization in the graph from every 20 loop edges
-        if (slam_solver.loop_edges_.size() % 20 == 0)
-        {
-            visualizer.removeEdges(slam_solver.odometry_edges_);
-            visualizer.removeEdges(slam_solver.loop_edges_);
-            visualizer.resetVisualizer();
+        // if (slam_solver.loop_edges_.size() % 20 == 0)
+        //{
+        // visualizer.removeEdges(slam_solver.odometry_edges_);
+        // visualizer.removeEdges(slam_solver.loop_edges_);
+        // visualizer.resetVisualizer();
 
-            slam_solver.optimizeGraph(10);
-            visualizer.addOptimizedEdges(slam_solver.odometry_edges_, Eigen::Vector3f(1.0, 0.0, 1.0));
-            visualizer.addOptimizedEdges(slam_solver.loop_edges_, Eigen::Vector3f(0.0, 1.0, 1.0));
-        }
+        //   slam_solver.optimizeGraph(10);
+        // visualizer.addOptimizedEdges(slam_solver.odometry_edges_, Eigen::Vector3f(1.0, 0.0, 1.0));
+        // visualizer.addOptimizedEdges(slam_solver.loop_edges_, Eigen::Vector3f(0.0, 1.0, 1.0));
+        // }
         last_keyframe_pose_aruco = cam_pose;
         num_keyframes++; // Increment the number of keyframes found
     }

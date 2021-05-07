@@ -192,27 +192,59 @@ void SLAM_Solver::addLoopClosingEdge(const Eigen::Affine3f& vertex_to_origin_tra
         origin->id());
 }
 
-Edge SLAM_Solver::getEdge(const int& from_id, const int& to_id)
+EdgeObject SLAM_Solver::getEdge(const int& from_id, const int& to_id)
 {
-    Edge ep(from_id, to_id, positions_[from_id], positions_[to_id]);
-    return ep;
+    EdgeObject edge;
+
+    for (auto it = optimizer_.activeEdges().begin(); it != optimizer_.activeEdges().end(); ++it)
+    {
+        EdgeSE3* e = dynamic_cast<EdgeSE3*>(*it);
+        if (e->vertex(0)->id() == from_id and e->vertex(1)->id() == to_id)
+        {
+
+            cout << "entrou no if\n";
+
+            VertexSE3* v0 = static_cast<VertexSE3*>(optimizer_.vertex(e->vertex(0)->id()));
+            VertexSE3* v1 = static_cast<VertexSE3*>(optimizer_.vertex(e->vertex(1)->id()));
+
+            Eigen::Isometry3f vertix_from_tmp = v0->estimate().cast<float>();
+            Eigen::Affine3f vertix_from = Eigen::Affine3f::Identity();
+            vertix_from.matrix() = vertix_from_tmp.matrix();
+
+            Eigen::Isometry3f vertix_to_tmp = v1->estimate().cast<float>();
+            Eigen::Affine3f vertix_to = Eigen::Affine3f::Identity();
+            vertix_to.matrix() = vertix_to_tmp.matrix();
+
+            edge.from = vertix_from;
+            edge.to = vertix_to;
+
+            return edge;
+        }
+    }
+    edge.error = true;
+    return edge;
 }
 
-Edge SLAM_Solver::getLastEdge(const string& type)
+EdgeObject SLAM_Solver::getLastEdge()
 {
-    int last_id = positions_.size() - 1;
-    if (type == "odometry")
-    {
-        string name = to_string(positions_.size() - 2) + "_" + to_string(last_id);
-        Edge ep(positions_.size() - 2, last_id, positions_[positions_.size() - 2], positions_[last_id], name);
-        return ep;
-    }
-    else
-    {
-        string name = to_string(0) + "_" + to_string(last_id);
-        Edge ep(0, last_id, positions_[0], positions_[last_id], name);
-        return ep;
-    }
+    EdgeObject edge;
+
+    EdgeSE3* e = dynamic_cast<EdgeSE3*>(*optimizer_.activeEdges().back());
+
+    VertexSE3* v0 = static_cast<VertexSE3*>(optimizer_.vertex(e->vertex(0)->id()));
+    VertexSE3* v1 = static_cast<VertexSE3*>(optimizer_.vertex(e->vertex(1)->id()));
+
+    Eigen::Isometry3f vertix_from_tmp = v0->estimate().cast<float>();
+    Eigen::Affine3f vertix_from = Eigen::Affine3f::Identity();
+    vertix_from.matrix() = vertix_from_tmp.matrix();
+
+    Eigen::Isometry3f vertix_to_tmp = v1->estimate().cast<float>();
+    Eigen::Affine3f vertix_to = Eigen::Affine3f::Identity();
+    vertix_to.matrix() = vertix_to_tmp.matrix();
+
+    edge.from = vertix_from;
+    edge.to = vertix_to;
+    return edge;
 }
 
 void SLAM_Solver::optimizeGraph(const int& k)
