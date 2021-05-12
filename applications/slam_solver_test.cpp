@@ -89,6 +89,7 @@ struct ConfigParams
 Eigen::Vector3d edge_from, edge_to;
 string edge_name;
 
+void addOptimizedEdges(SLAM_Solver& slam_solver, ReconstructionVisualizer visualizer);
 void removeEdges(SLAM_Solver& slam_solver, ReconstructionVisualizer visualizer);
 bool isOrientationCorrect(Eigen::Affine3f& first, Eigen::Affine3f newone);
 
@@ -339,8 +340,7 @@ void addVertixAndEdge(
             visualizer.resetVisualizer();
 
             slam_solver.optimizeGraph(10);
-            // visualizer.addOptimizedEdges(slam_solver.odometry_edges_, Eigen::Vector3f(1.0, 0.0, 1.0));
-            // visualizer.addOptimizedEdges(slam_solver.loop_edges_, Eigen::Vector3f(0.0, 1.0, 1.0));
+            addOptimizedEdges(slam_solver, visualizer);
         }
 
         last_keyframe_pose_aruco = cam_pose;
@@ -374,19 +374,21 @@ void addOptimizedEdges(SLAM_Solver& slam_solver, ReconstructionVisualizer visual
     for (int i = 0; i < slam_solver.num_vertices_; i++)
     {
         slam_solver.getOptimizedEdge(i, i + 1, edge_from, edge_to, edge_name);
-        visualizer.addOptimizedEdges(edge_from, edge_to, edge_name, Eigen::Vector3f(1.0, 0.0, 1.0));
+        // visualizer.addOptimizedEdges(edge_from, edge_to, edge_name, Eigen::Vector3f(1.0, 0.0, 1.0));
     }
     for (int i = 0; i < slam_solver.loop_closure_edges_name.size(); i++)
     {
         string copy = edge_name.erase(0, 15);
-        cout << "first step " << copy.substr(0, copy.find('_')) << "second step"
-             << copy.substr(copy.find('_'), copy.size());
-        copy slam_solver.getOptimizedEdge(
+        cout << "loop closure edge first Id: " << copy.substr(0, copy.find('_'))
+             << " second id:" << copy.substr(copy.find('_') + 1, 1) << endl;
+        /*
+        slam_solver.getOptimizedEdge(
             copy.substr(0, copy.find('_')),
             copy.substr(copy.find('_'), copy.size()),
             edge_from,
             edge_to,
             edge_name.erase(0, 15));
-        visualizer.addOptimizedEdges(edge_from, edge_to, edge_name, Eigen::Vector3f(1.0, 0.0, 1.0));
+         visualizer.addOptimizedEdges(edge_from, edge_to, edge_name, Eigen::Vector3f(0.0, 1.0, 1.0));
+         */
     }
 }
