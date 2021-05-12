@@ -1,4 +1,4 @@
-/* 
+/*
  *  Software License Agreement (BSD License)
  *
  *  Copyright (c) 2016-2020, Natalnet Laboratory for Perceptual Robotics
@@ -11,11 +11,12 @@
  *
  *  2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and
  *     the following disclaimer in the documentation and/or other materials provided with the distribution.
- * 
+ *
  *  3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or
  *     promote products derived from this software without specific prior written permission.
- * 
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, *  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, *
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
  *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
  *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
@@ -51,9 +52,9 @@ using namespace cv;
  * class.
  * @param .yml config. file (from which index_file is used)
  */
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
-    EventLogger &logger = EventLogger::getInstance();
+    EventLogger& logger = EventLogger::getInstance();
     logger.setVerbosityLevel(EventLogger::L_ERROR);
 
     RGBDLoader loader;
@@ -68,9 +69,10 @@ int main(int argc, char **argv)
 
     if (argc != 2)
     {
-        logger.print(EventLogger::L_ERROR,
-                     "[reconstruction_visualizer_test.cpp] Usage: %s <path/to/config_file.yaml> ",
-                     argv[0]);
+        logger.print(
+            EventLogger::L_ERROR,
+            "[reconstruction_visualizer_test.cpp] Usage: %s <path/to/config_file.yaml> ",
+            argv[0]);
         exit(0);
     }
     ConfigLoader param_loader(argv[1]);
@@ -104,7 +106,7 @@ int main(int argc, char **argv)
 
         visualizer.viewReferenceFrame(vo.pose_);
         visualizer.viewPointCloud(vo.curr_dense_cloud_, vo.pose_);
-        if(is_kf)
+        if (is_kf)
         {
             if (num_keyframes == 1)
                 kf_to = vo.getLastKeyframe(); // Save the first keyframe
@@ -122,7 +124,7 @@ int main(int argc, char **argv)
                 Eigen::Vector3d to(kf_to.pose_(0, 3), kf_to.pose_(1, 3), kf_to.pose_(2, 3));
                 // Create and add an Edge to the visualizer
                 Edge edge(num_keyframes - 1, num_keyframes, from, to, to_string(num_keyframes));
-                visualizer.addEdge(edge);
+                // visualizer.addEdge(edge);
             }
             num_keyframes++; // Increment the number of keyframes found
         }
@@ -134,8 +136,7 @@ int main(int argc, char **argv)
         char key = waitKey(1);
         if (key == 27 || key == 'q' || key == 'Q')
         {
-            logger.print(EventLogger::L_INFO, "[reconstruction_visualizer_test.cpp] Exiting\n",
-                         argv[0]);
+            logger.print(EventLogger::L_INFO, "[reconstruction_visualizer_test.cpp] Exiting\n", argv[0]);
             break;
         }
     }

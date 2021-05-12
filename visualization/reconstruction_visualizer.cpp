@@ -180,26 +180,20 @@ void ReconstructionVisualizer::addQuantizedPointCloud(
 }
 
 void ReconstructionVisualizer::addEdge(
-    const Eigen::Affine3f& vertix_from,
-    const Eigen::Affine3f& vertix_to,
+    const Eigen::Vector3d& vertix_from,
+    const Eigen::Vector3d& vertix_to,
     const string& name,
     const Eigen::Vector3f& color)
 {
     // Create the "from" and "to" pcl points
-    pcl::PointXYZ from_pt(vertix_from(0, 3), vertix_from(1, 3), vertix_from(2, 3));
-    pcl::PointXYZ to_pt(vertix_to(0, 3), vertix_to(1, 3), vertix_to(2, 3));
+    pcl::PointXYZ from_pt(vertix_from(0), vertix_from(1), vertix_from(2));
+    pcl::PointXYZ to_pt(vertix_to(0), vertix_to(1), vertix_to(2));
 
     // Add an arrow that connects from_pt -> to_pt
     viewer_->addArrow(to_pt, from_pt, color(0, 0), color(1, 0), color(2, 0), false, name);
 
     // Updating the number of edges
     num_edges_++;
-}
-
-void ReconstructionVisualizer::addEdges(const std::vector<Edge>& edges, const Eigen::Vector3f& color)
-{
-    // Iterate over vector edges and add them to the visualizer
-    // for (size_t i = 0; i < edges.size(); i++) { addEdge(edges[i], color); }
 }
 
 void ReconstructionVisualizer::addOptimizedEdges(const std::vector<Edge>& edges, const Eigen::Vector3f& color)
@@ -324,13 +318,7 @@ void ReconstructionVisualizer::updateKeyframes(const std::vector<Keyframe>& keyf
     logger.print(EventLogger::L_INFO, "[Visualizer::updateKeyframes] INFO: keyframe visualization UPDATED\n");
 }
 
-void ReconstructionVisualizer::removeEdge(const Edge& edge) { viewer_->removeShape(edge.name_); }
-
-void ReconstructionVisualizer::removeEdges(const std::vector<Edge>& edges)
-{
-    // Iterate over the edges vector and remove all of them
-    for (size_t i = 0; i < edges.size(); i++) { removeEdge(edges[i]); }
-}
+void ReconstructionVisualizer::removeEdge(const string& name) { viewer_->removeShape(name); }
 
 void ReconstructionVisualizer::setCameraPosition(const float& pos_x, const float& pos_y, const float& pos_z)
 {

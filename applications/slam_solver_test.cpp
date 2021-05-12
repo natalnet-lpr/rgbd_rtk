@@ -86,8 +86,10 @@ struct ConfigParams
     float minimum_distance_between_keyframes = 0.05;
     int local_optimization_threshold = 20; // How many loop edges to make a optimization
 };
-EdgeObject edge;
+Eigen::Vector3d edge_from, edge_to;
+string edge_name;
 
+void removeEdges(SLAM_Solver& slam_solver, ReconstructionVisualizer visualizer);
 bool isOrientationCorrect(Eigen::Affine3f& first, Eigen::Affine3f newone);
 
 /**
@@ -300,7 +302,9 @@ void addVertixAndEdge(
         visualizer.viewReferenceFrame(cam_pose, to_string(num_keyframes));
         // Add the keyframe and creating an edge to the last vertex
         slam_solver.addVertexAndEdge(cam_pose, num_keyframes);
-        visualizer.addEdge(slam_solver.getLastEdge("odometry"));
+        slam_solver.getEdge(
+            slam_solver.num_vertices_ - 2, slam_solver.num_vertices_ - 1, edge_from, edge_to, edge_name);
+        visualizer.addEdge(edge_from, edge_to, edge_name);
 
         last_keyframe_pose_odometry = cam_pose;
         num_keyframes++; // Increment the number of keyframes found
@@ -315,23 +319,24 @@ void addVertixAndEdge(
         visualizer.viewReferenceFrame(cam_pose, to_string(num_keyframes));
         // Add the keyframe and creating an edge to the last vertex
         slam_solver.addVertexAndEdge(cam_pose, num_keyframes);
-        visualizer.addEdge(slam_solver.getLastEdge());
+        slam_solver.getEdge(
+            slam_solver.num_vertices_ - 2, slam_solver.num_vertices_ - 1, edge_from, edge_to, edge_name);
+        visualizer.addEdge(edge_from, edge_to, edge_name);
+
         // Adding the loop closing edge that is an edge from this vertex to the initial
         // If we want to change the system coord from A to B -> A.inverse * B
         // A = cam pose no sistema de coordenadas do Aruco = P
         // B = origem
         slam_solver.addLoopClosingEdge(cam_pose.inverse() * aruco_pose, num_keyframes);
-        edge = slam_solver.getEdge(4, 5);
-        cout << "edge return " << edge.error << endl;
-        visualizer.addEdge(slam_solver.getLastEdge(), Eigen::Vector3f(1.0, 0.0, 0.0));
+        slam_solver.getEdge(slam_solver.num_vertices_ - 1, 0, edge_from, edge_to, edge_name);
+        visualizer.addEdge(edge_from, edge_to, edge_name, Eigen::Vector3f(1.0, 0.0, 0.0));
+
+        slam_solver.loop_closure_edges_name.push_back(edge_name); // Saving the edge name of the loop closure edges
         // Make a optimization in the graph from every 20 loop edges
         if (slam_solver.num_loop_edges_ % config_params.local_optimization_threshold == 0)
         {
-            // visualizer.removeEdges(slam_solver.odometry_edges_);
-            // visualizer.removeEdges(slam_solver.loop_edges_);
-            // visualizer.resetVisualizer();
-            // visualizer.removeEdges(slam_solver.optimized_estimates_);  slam_solver.optimized_estimates is not
-            // Edge but affine3f
+            removeEdges(slam_solver, visualizer);
+            visualizer.resetVisualizer();
 
             slam_solver.optimizeGraph(10);
             // visualizer.addOptimizedEdges(slam_solver.odometry_edges_, Eigen::Vector3f(1.0, 0.0, 1.0));
@@ -349,4 +354,39 @@ bool isOrientationCorrect(Eigen::Affine3f& first, Eigen::Affine3f newone)
                    180.0 / 3.1315;
 
     return angle > 10 ? false : true;
+}
+
+void removeEdges(SLAM_Solver& slam_solver, ReconstructionVisualizer visualizer)
+{
+    for (int i = 0; i < slam_solver.num_vertices_; i++)
+    {
+        slam_solver.getEdge(i, i + 1, edge_from, edge_to, edge_name);
+        visualizer.removeEdge(edge_name);
+    }
+    for (int i = 0; i < slam_solver.loop_closure_edges_name.size(); i++)
+    {
+        visualizer.removeEdge(string("edge_") + slam_solver.loop_closure_edges_name[i]);
+    }
+}
+
+void addOptimizedEdges(SLAM_Solver& slam_solver, ReconstructionVisualizer visualizer)
+{
+    for (int i = 0; i < slam_solver.num_vertices_; i++)
+    {
+        slam_solver.getOptimizedEdge(i, i + 1, edge_from, edge_to, edge_name);
+        visualizer.addOptimizedEdges(edge_from, edge_to, edge_name, Eigen::Vector3f(1.0, 0.0, 1.0));
+    }
+    for (int i = 0; i < slam_solver.loop_closure_edges_name.size(); i++)
+    {
+        string copy = edge_name.erase(0, 15);
+        cout << "first step " << copy.substr(0, copy.find('_')) << "second step"
+             << copy.substr(copy.find('_'), copy.size());
+        copy slam_solver.getOptimizedEdge(
+            copy.substr(0, copy.find('_')),
+            copy.substr(copy.find('_'), copy.size()),
+            edge_from,
+            edge_to,
+            edge_name.erase(0, 15));
+        visualizer.addOptimizedEdges(edge_from, edge_to, edge_name, Eigen::Vector3f(1.0, 0.0, 1.0));
+    }
 }

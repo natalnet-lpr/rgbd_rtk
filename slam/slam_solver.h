@@ -19,19 +19,9 @@
 #include <common_types.h>
 #include <event_logger.h>
 
-struct EdgeObject
-{
-    Eigen::Affine3f from;
-    Eigen::Affine3f to;
-    bool error = false;
-};
-
 class SLAM_Solver
 {
 private:
-    // Number of vertices in the graph
-    int num_vertices_;
-
     // Id of the last added vertex (used when adding edges)
     int last_added_id_;
 
@@ -46,8 +36,13 @@ private:
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+    // Number of vertices in the graph
+    int num_vertices_;
+
     // Number of loop edges
     int num_loop_edges_;
+
+    std::vector<std::string> loop_closure_edges_name;
 
     // 3D position in the global ref. frame of each node (for visualization)
     std::vector<Eigen::Vector3d> positions_;
@@ -75,20 +70,27 @@ public:
      */
     void addLoopClosingEdge(const Eigen::Affine3f& vertex_to_origin_transf, const int& id);
 
+    void getOptimizedEdge(
+        const int& from_id,
+        const int& to_id,
+        Eigen::Vector3d& from,
+        Eigen::Vector3d& to,
+        std::string& name);
+
     /**
      * Returns an Edge
      * @param from_id the id of the "back" of the edge arrow
      * @param to_id the id of the "point" of the edge arrow
      * @return Edge that connects from_id to to_id
      */
-    EdgeObject getEdge(const int& from_id, const int& to_id);
+    void getEdge(const int& from_id, const int& to_id, Eigen::Vector3d& from, Eigen::Vector3d& to, std::string& name);
 
     /**
      * Returns the the last edge, if it is an odometry it will return the edge from positions_.size() - 2 to
      * positions.size() - 1 If it is an loop it will return 0 to positions.size() - 1
      * @return Edge
      */
-    EdgeObject getLastEdge();
+    void getLastEdge(Eigen::Vector3d& from, Eigen::Vector3d& to, std::string& name);
 
     /**
      * Optimizes the graph with Levenberg-Marquardt for the given n. of iterations
