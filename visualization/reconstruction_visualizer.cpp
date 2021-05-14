@@ -196,25 +196,6 @@ void ReconstructionVisualizer::addEdge(
     num_edges_++;
 }
 
-void ReconstructionVisualizer::addOptimizedEdges(const std::vector<Edge>& edges, const Eigen::Vector3f& color)
-{
-    // Iterate over vector edges, optimizing them and adding them to the visualizer
-    for (size_t i = 0; i < edges.size(); i++)
-    {
-        const int idx0 = edges[i].id_from_;
-        const int idx1 = edges[i].id_to_;
-
-        Edge opt_edge(idx0, idx1, edges[i].pose_from_, edges[i].pose_to_);
-        opt_edge.name_ = edges[i].name_ + "_opt";
-
-        // Check if the edge is "odometry" or "loop"
-        // if (idx1 - idx0 == 1)
-        //    addEdge(opt_edge, color);
-        //  else
-        //      addEdge(opt_edge, color);
-    }
-}
-
 void ReconstructionVisualizer::viewReferenceFrame(const Eigen::Affine3f& pose, const std::string& text)
 {
     viewer_->removeCoordinateSystem(text);

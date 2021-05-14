@@ -41,7 +41,9 @@
 // C++
 #include <cstdio>
 #include <cstdlib>
+#include <iostream>
 #include <math.h>
+#include <string>
 #include <vector>
 
 // C++ Third Party
@@ -378,17 +380,19 @@ void addOptimizedEdges(SLAM_Solver& slam_solver, ReconstructionVisualizer visual
     }
     for (int i = 0; i < slam_solver.loop_closure_edges_name.size(); i++)
     {
-        string copy = edge_name.erase(0, 15);
-        cout << "loop closure edge first Id: " << copy.substr(0, copy.find('_'))
-             << " second id:" << copy.substr(copy.find('_') + 1, 1) << endl;
-        /*
-        slam_solver.getOptimizedEdge(
-            copy.substr(0, copy.find('_')),
-            copy.substr(copy.find('_'), copy.size()),
-            edge_from,
-            edge_to,
-            edge_name.erase(0, 15));
-         visualizer.addOptimizedEdges(edge_from, edge_to, edge_name, Eigen::Vector3f(0.0, 1.0, 1.0));
-         */
+
+        string copy = slam_solver.loop_closure_edges_name[i].erase(0, 5);
+
+        string from_id = copy.substr(0, copy.find('_'));
+        string to_id = copy.substr(copy.find('_') + 1, 1);
+        cout << "from_id: " << from_id << " to_id" << to_id << endl;
+        // TODO: From id e to_id tá pegando o valor certo, a função getOptimizedEdge está sempre retornando a mesma
+        // coisa>> optimized_edge_13_14
+        if (from_id != "" && to_id != "")
+        {
+            slam_solver.getOptimizedEdge(stoi(from_id), stoi(to_id), edge_from, edge_to, edge_name);
+            cout << "valor do edge name dps do get optimized :   " << edge_name << endl;
+            visualizer.addEdge(edge_from, edge_to, edge_name, Eigen::Vector3f(0.0, 1.0, 1.0));
+        }
     }
 }
