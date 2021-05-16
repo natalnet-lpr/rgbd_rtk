@@ -71,13 +71,16 @@ if(WITH_IO AND WITH_TRACKING)
     add_executable(klttcw_tracker_test klttcw_tracker_test.cpp)
     add_executable(kltatcw_tracker_test kltatcw_tracker_test.cpp)
     add_executable(wide_baseline_tracker_test wide_baseline_tracker_test.cpp)
+    add_executable(feature_map_tracker_test feature_map_tracker_test.cpp)
 
     target_link_libraries(klt_tracker_test ${RGBD_RTK_COMMON} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING})
     target_link_libraries(klttw_tracker_test ${RGBD_RTK_COMMON} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING})
     target_link_libraries(klttcw_tracker_test ${RGBD_RTK_COMMON} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING})
     target_link_libraries(kltatcw_tracker_test ${RGBD_RTK_COMMON} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING})
     target_link_libraries(wide_baseline_tracker_test ${RGBD_RTK_COMMON} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING})
+    target_link_libraries(feature_map_tracker_test ${RGBD_RTK_COMMON} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING})
     install(TARGETS klt_tracker_test klttw_tracker_test klttcw_tracker_test kltatcw_tracker_test wide_baseline_tracker_test
+            feature_map_tracker_test
             EXPORT rgbd_rtkTargets
             RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin)
 

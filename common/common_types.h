@@ -57,40 +57,45 @@ typedef pcl::PointXYZRGB PointT;
  */
 struct Tracklet
 {
-    /* Index of the frame in which the keypoint first appeared */
-    int start_;
+	/* Index of the frame in which the keypoint first appeared */
+	int start_;
 
-    /* History of image projections of the keypoints along consecutive
-     * frames.
-     * m_pts2D[i] holds the position of the point at index start_ + i,
-     * that is,
-     * m_pts2D[0] holds the position of the point at index start_,
-     * m_pts2D[1] holds the position of the point at index start_ + 1
-     * and so on.
-     */
-    std::vector<cv::Point2f> pts2D_;
+	/* History of image projections of the keypoints along consecutive
+	 * frames.
+	 * m_pts2D[i] holds the position of the point at index start_ + i,
+	 * that is,
+	 * m_pts2D[0] holds the position of the point at index start_,
+	 * m_pts2D[1] holds the position of the point at index start_ + 1
+	 * and so on.
+	 */
+	std::vector<cv::Point2f> pts2D_;
 
-    /*
-     * At position i, the vector stores the index of the 3D point
-     * at the 3D point cloud start_ + i.
-     */
-    std::vector<int> cloud_indices_;
+	/*
+	 * At position i, the vector stores the index of the 3D point
+	 * at the 3D point cloud start_ + i.
+	 */
+	//std::vector<int> cloud_indices_;
 
-    /*
-     * At position i, the vector stores the index of the keypoint
-     * corresponding to the 2D point stored in pts2D_.
-     */
-    std::vector<int> keypoint_indices_;
 
-    /**
-     * Initializes a tracklet with start_ = 0
-     */
-    Tracklet() : start_(0) {}
+	/*
+	 * At position i, the vector stores the index of the keypoint
+	 * corresponding to the 2D point stored in pts2D_.
+	 */
+	std::vector<int> keypoint_indices_;
 
-    /**
-     * Initializes a tracklet with start_ = idx
-     */
-    Tracklet(const int idx) { start_ = idx; }
+	/*
+	 * History of the indices of the images that a keypoint of the map appeared.
+	 */
+	std::vector<int> inverted_indices_;
+
+	/* Initializes a tracklet with start_ = 0 */
+	Tracklet() : start_(0) {}
+
+	/* Initializes a tracklet with start_ = idx */
+	Tracklet(const int idx)
+	{
+		start_ = idx;
+	}
 };
 
 /*

@@ -1,6 +1,6 @@
 %YAML:1.0
-camera_calibration_file: "/home/bruno/Research/Datasets/kinect_default.yaml"
-index_file: "/home/bruno/Research/Datasets/rgbd_dataset_freiburg1_xyz/index"
+camera_calibration_file: "path of camera calibration file "
+index_file: "path of the index file"
 
 #motion estimation ransac parameters
 ransac_distance_threshold: 0.008 #8mm
@@ -23,10 +23,12 @@ max_r: 50 #default 50
 radius: 30 #default 30
 log_stats: 0 #false
 windows_size: 20 #square of size 20
-#wide_baseline_tracker
+#wide_baseline_tracker and feature_map_tracker
 feature_detector: "ORB" #default ORB
 descriptor_extractor: "ORB" #default ORB
 descriptor_matcher: "BruteForce" #default BruteForce
+#feature_map_tracker
+lifespan_of_a_feature: 3 #default 3
 
 
 

@@ -54,7 +54,7 @@ void KITTIStereoLoader::loadStereoSequence(const std::string& sequence_path, con
 {
     int exec_status;
     char tmp[3];
-    string seq_number_str, cmd, index_path;
+    string seq_number_str, cmd, index_path, needed_slash = "";
 
     //set the root directory (common to all gray/color left/right images)
     root_path_ = sequence_path;
@@ -63,9 +63,15 @@ void KITTIStereoLoader::loadStereoSequence(const std::string& sequence_path, con
     sprintf(tmp, "%02d", sequence_num);
     seq_number_str = string(tmp);
 
+    //add last '/'' if the path does not have one
+    if(sequence_path.back() != '/')
+    {
+        needed_slash = "/";
+    }
+
     //set the prefix path
-    prefix_path_ = root_path_ + "sequences/" + seq_number_str;
-    logger.print(EventLogger::L_INFO, "[kitti_stereo_loader.cpp] INFO: Loading KITTI sequence: %s\n", prefix_path_.c_str());
+    prefix_path_ = root_path_ + needed_slash + seq_number_str;
+    MLOG_INFO(EventLogger::M_IO, "Loading KITTI sequence: %s\n", prefix_path_.c_str());
 
     if(use_color)
     {
@@ -99,7 +105,7 @@ void KITTIStereoLoader::loadStereoSequence(const std::string& sequence_path, con
     }
     else
     {
-        logger.print(EventLogger::L_ERROR, "[kitti_stereo_loader.cpp] WARN: Could not create index file (error on system command).\nExiting\n");
+        MLOG_ERROR(EventLogger::M_IO, "@KITTIStereoLoader::loadStereoSequence: Could not create index file (error on system command).\n");
         exit(0);
     }
 }

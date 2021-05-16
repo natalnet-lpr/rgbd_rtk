@@ -1,39 +1,28 @@
-/*
+/* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2020, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
- *  Redistribution and use in source and binary forms, with or without modification, are permitted
- * provided
+ *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
  *
- *  1. Redistributions of source code must retain the above copyright notice, this list of
- * conditions and
+ *  1. Redistributions of source code must retain the above copyright notice, this list of conditions and
  *     the following disclaimer.
  *
- *  2. Redistributions in binary form must reproduce the above copyright notice, this list of
- * conditions and
- *     the following disclaimer in the documentation and/or other materials provided with the
- * distribution.
- *
- *  3. Neither the name of the copyright holder nor the names of its contributors may be used to
- * endorse or
+ *  2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and
+ *     the following disclaimer in the documentation and/or other materials provided with the distribution.
+ * 
+ *  3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or
  *     promote products derived from this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, *  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL,
- *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR
- *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY,
- *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE
+ * 
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, *  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  Author:
+ *  Authors:
  *
  *  Bruno Silva
  */
@@ -66,10 +55,10 @@ void KLTTracker::detect_keypoints()
     // Detect Shi-Tomasi keypoints and add them to a temporary buffer.
     // The buffer is erased at the end of add_keypoints()
     goodFeaturesToTrack(curr_frame_gray_, added_pts_, max_pts_, 0.01, 10.0, Mat(), 3, false, 0.04);
-    logger.print(EventLogger::L_DEBUG,
-                 "[KLTTracker::detect_keypoints] DEBUG: detecting keypoints...\n");
-    logger.print(EventLogger::L_DEBUG, "[KLTTracker::detect_keypoints] DEBUG: detected pts.: %lu\n",
-                 added_pts_.size());
+    
+    MLOG_DEBUG(EventLogger::M_TRACKING, "@KLTTracker::detect_keypoints: detecting keypoints...\n");
+    MLOG_DEBUG(EventLogger::M_TRACKING, "@KLTTracker::detect_keypoints: detected pts.: %lu\n",
+               added_pts_.size());
 }
 
 void KLTTracker::add_keypoints()
@@ -83,17 +72,19 @@ void KLTTracker::add_keypoints()
         tr.pts2D_.push_back(added_pts_[i]);
         tracklets_.push_back(tr);
     }
-    logger.print(EventLogger::L_DEBUG, "[KLTTracker::add_keypoints] DEBUG: adding keypoints...\n");
-    logger.print(EventLogger::L_DEBUG, "[KLTTracker::add_keypoints] DEBUG: added pts.: %lu\n",
-                 added_pts_.size());
-    logger.print(EventLogger::L_DEBUG, "[KLTTracker::add_keypoints] DEBUG: prev pts.: %lu\n",
-                 prev_pts_.size());
+    
+    MLOG_DEBUG(EventLogger::M_TRACKING, "@KLTTracker::add_keypoints: added pts.: %lu\n",
+               added_pts_.size());
+    MLOG_DEBUG(EventLogger::M_TRACKING, "@KLTTracker::add_keypoints: prev pts.: %lu\n",
+               prev_pts_.size());
 
     // Erase buffer
     added_pts_.clear();
 }
 
-void KLTTracker::update_buffers() { std::swap(curr_pts_, prev_pts_); }
+void KLTTracker::update_buffers() {
+    std::swap(curr_pts_, prev_pts_);
+}
 
 /* #####################################################
  * #####                                           #####
@@ -122,8 +113,8 @@ bool KLTTracker::track(const Mat &curr_frame)
     else
         curr_frame.copyTo(curr_frame_gray_);
 
-    logger.print(EventLogger::L_DEBUG, "[KLTTracker::track] DEBUG: tracking frame %i\n",
-                 frame_idx_);
+    MLOG_DEBUG(EventLogger::M_TRACKING, "@KLTTracker::track: tracking frame %i\n",
+               frame_idx_);
 
     // Swap buffers: prev_pts_ = curr_pts_
     update_buffers();
@@ -151,8 +142,6 @@ bool KLTTracker::track(const Mat &curr_frame)
         calcOpticalFlowPyrLK(prev_frame_gray_, curr_frame_gray_, prev_pts_, curr_pts_, status, err,
                              win_size, 3, crit, 0, 0.00001);
 
-        logger.print(EventLogger::L_DEBUG, "[KLTTracker::track] DEBUG: tracking...\n");
-
         // Update internal data according to the tracking result
         // Additional tests have to be applied to discard points outside the image boundaries.
         int tracked_pts = 0;
@@ -178,9 +167,10 @@ bool KLTTracker::track(const Mat &curr_frame)
         prev_pts_.resize(tracked_pts);
         curr_pts_.resize(tracked_pts);
         tracklets_.resize(tracked_pts);
-        logger.print(EventLogger::L_DEBUG,
-                     "[KLTTracker::track] DEBUG: tracked points/max_points:  %i/%i\n", tracked_pts,
-                     max_pts_);
+        
+        MLOG_DEBUG(EventLogger::M_TRACKING, "@KLTTracker::track: \
+                                             tracked points/max_points:  %i/%i\n",
+                                             tracked_pts, max_pts_);
 
         // Insufficient number of points being tracked
         if (tracked_pts < min_pts_)
@@ -198,8 +188,8 @@ bool KLTTracker::track(const Mat &curr_frame)
     // write_heatmap_info();
     // float total_time = get_time_per_frame();
 
-    logger.print(EventLogger::L_DEBUG, "[KLTTracker::track] DEBUG: curr_points:  %lu\n",
-                 curr_pts_.size());
+    MLOG_DEBUG(EventLogger::M_TRACKING, "@KLTTracker::track: curr_points:  %lu\n",
+               curr_pts_.size());
 
     cv::swap(curr_frame_gray_, prev_frame_gray_);
     frame_idx_++;
