@@ -108,6 +108,7 @@ Keyframe OpticalFlowVisualOdometry::getLastKeyframe()
 
     it = keyframes_.end();
 
+
     MLOG_DEBUG(EventLogger::M_VISUAL_ODOMETRY, "@OpticalFlowVisualOdometry::getLastKeyframe: \
                                                 last keyframe has id %lu\n", it->first);
     

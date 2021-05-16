@@ -169,42 +169,21 @@ void ReconstructionVisualizer::addQuantizedPointCloud(
     addPointCloud(quant_cloud, pose);
 }
 
-void ReconstructionVisualizer::addEdge(const Edge& edge, const Eigen::Vector3f& color)
+void ReconstructionVisualizer::addEdge(
+    const Eigen::Vector3d& vertix_from,
+    const Eigen::Vector3d& vertix_to,
+    const string& name,
+    const Eigen::Vector3f& color)
 {
     // Create the "from" and "to" pcl points
-    pcl::PointXYZ from_pt(edge.pose_from_(0, 0), edge.pose_from_(1, 0), edge.pose_from_(2, 0));
-    pcl::PointXYZ to_pt(edge.pose_to_(0, 0), edge.pose_to_(1, 0), edge.pose_to_(2, 0));
+    pcl::PointXYZ from_pt(vertix_from(0), vertix_from(1), vertix_from(2));
+    pcl::PointXYZ to_pt(vertix_to(0), vertix_to(1), vertix_to(2));
 
     // Add an arrow that connects from_pt -> to_pt
-    viewer_->addArrow(to_pt, from_pt, color(0, 0), color(1, 0), color(2, 0), false, edge.name_);
+    viewer_->addArrow(to_pt, from_pt, color(0, 0), color(1, 0), color(2, 0), false, name);
 
     // Updating the number of edges
     num_edges_++;
-}
-
-void ReconstructionVisualizer::addEdges(const std::vector<Edge>& edges, const Eigen::Vector3f& color)
-{
-    // Iterate over vector edges and add them to the visualizer
-    for (size_t i = 0; i < edges.size(); i++) { addEdge(edges[i], color); }
-}
-
-void ReconstructionVisualizer::addOptimizedEdges(const std::vector<Edge>& edges, const Eigen::Vector3f& color)
-{
-    // Iterate over vector edges, optimizing them and adding them to the visualizer
-    for (size_t i = 0; i < edges.size(); i++)
-    {
-        const int idx0 = edges[i].id_from_;
-        const int idx1 = edges[i].id_to_;
-
-        Edge opt_edge(idx0, idx1, edges[i].pose_from_, edges[i].pose_to_);
-        opt_edge.name_ = edges[i].name_ + "_opt";
-
-        // Check if the edge is "odometry" or "loop"
-        if (idx1 - idx0 == 1)
-            addEdge(opt_edge, Eigen::Vector3f(1.0, 0.0, 1.0));
-        else
-            addEdge(opt_edge, Eigen::Vector3f(0.0, 1.0, 1.0));
-    }
 }
 
 void ReconstructionVisualizer::viewReferenceFrame(const Eigen::Affine3f& pose, const std::string& text)
@@ -255,6 +234,7 @@ void ReconstructionVisualizer::updateKeyframes(const std::vector<Keyframe>& keyf
 {
     viewer_->removePointCloud("cloud");
 
+
     MLOG_INFO(EventLogger::M_VISUALIZATION, "@ReconstructionVisualizer::updateKeyframes: \
                                               Updating keyframe visualization\n");
 
@@ -303,17 +283,12 @@ void ReconstructionVisualizer::updateKeyframes(const std::vector<Keyframe>& keyf
         pos.z = camera(2, 3);
         // viewer_->addText3D(coord_sys_name, pos, 0.025);
     }
+
     MLOG_INFO(EventLogger::M_VISUALIZATION, "@ReconstructionVisualizer::updateKeyframes: \
                                               keyframe visualization updated\n");
 }
 
-void ReconstructionVisualizer::removeEdge(const Edge& edge) { viewer_->removeShape(edge.name_); }
-
-void ReconstructionVisualizer::removeEdges(const std::vector<Edge>& edges)
-{
-    // Iterate over the edges vector and remove all of them
-    for (size_t i = 0; i < edges.size(); i++) { removeEdge(edges[i]); }
-}
+void ReconstructionVisualizer::removeEdge(const string& name) { viewer_->removeShape(name); }
 
 void ReconstructionVisualizer::setCameraPosition(const float& pos_x, const float& pos_y, const float& pos_z)
 {
@@ -335,3 +310,12 @@ void ReconstructionVisualizer::spin() { viewer_->spin(); }
 void ReconstructionVisualizer::spinOnce() { viewer_->spinOnce(); }
 
 void ReconstructionVisualizer::close() { viewer_->close(); }
+
+void ReconstructionVisualizer::resetVisualizer()
+{
+    viewer_->removeAllShapes();
+    viewer_->removeAllCoordinateSystems();
+    viewer_->removeAllPointClouds();
+}
+
+void ReconstructionVisualizer::removeAllVertexesAndEdges() { viewer_->removeAllShapes(); }

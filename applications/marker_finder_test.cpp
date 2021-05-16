@@ -49,6 +49,8 @@ using namespace aruco;
  * This program shows the use of ARUCO marker detection.
  * @param .yml config. file (used fields: index_file, aruco_marker_size, camera_calibration_file, aruco_max_distance)
  */
+
+bool isOrientationCorrect(Eigen::Affine3f first, Eigen::Affine3f newone);
 int main(int argc, char** argv)
 {
     EventLogger& logger = EventLogger::getInstance();
@@ -57,6 +59,7 @@ int main(int argc, char** argv)
     OpticalFlowVisualOdometry vo(intr);
     ReconstructionVisualizer visualizer;
     Mat frame, depth;
+    Eigen::Affine3f first;
     float marker_size, aruco_max_distance;
     string camera_calibration_file, aruco_dic, index_file;
 
@@ -89,13 +92,23 @@ int main(int argc, char** argv)
 
         // Find ARUCO markers and compute their poses
         marker_finder.detectMarkersPoses(frame, vo.pose_, aruco_max_distance);
-        for (size_t i = 0; i < marker_finder.markers_.size(); i++)
+        for (size_t j = 0; j < marker_finder.markers_.size(); j++)
         {
-            marker_finder.markers_[i].draw(frame, Scalar(0, 0, 255), 1.5);
-            CvDrawingUtils::draw3dAxis(frame, marker_finder.markers_[i], marker_finder.camera_params_, 2);
-            stringstream ss;
-            ss << "m" << marker_finder.markers_[i].id;
-            visualizer.viewReferenceFrame(marker_finder.marker_poses_[i], ss.str());
+            if (250 == marker_finder.markers_[j].id)
+            {
+                if (i == 0)
+                {
+                    first = marker_finder.marker_poses_[j];
+                    if (isOrientationCorrect(first, marker_finder.marker_poses_[j]))
+                    {
+                        marker_finder.markers_[j].draw(frame, Scalar(0, 0, 255), 1.5);
+                        CvDrawingUtils::draw3dAxis(frame, marker_finder.markers_[j], marker_finder.camera_params_, 2);
+                        stringstream ss;
+                        ss << "m" << marker_finder.markers_[j].id;
+                        visualizer.viewReferenceFrame(marker_finder.marker_poses_[j], ss.str());
+                    }
+                }
+            }
         }
 
         if (i == 0) visualizer.addReferenceFrame(vo.pose_, "origin");
@@ -108,7 +121,7 @@ int main(int argc, char** argv)
 
         // Show RGB-D image
         imshow("Image view", frame);
-        char key = waitKey(1);
+        char key = waitKey(100);
         if (key == 27 || key == 'q' || key == 'Q')
         {
             printf("Exiting.\n");
@@ -119,4 +132,12 @@ int main(int argc, char** argv)
     visualizer.close();
 
     return 0;
+}
+bool isOrientationCorrect(Eigen::Affine3f first, Eigen::Affine3f new_pose)
+{
+    double angle =
+        acos((first(0, 2) * new_pose(0, 2)) + (first(1, 2) * new_pose(1, 2)) + (first(2, 2) * new_pose(2, 2))) * 180.0 /
+        3.1315;
+
+    return angle > 10 ? false : true;
 }

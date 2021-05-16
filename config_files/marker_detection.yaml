@@ -3,8 +3,10 @@ camera_calibration_file: "../../config_files/kinect_default.yaml" #default: "kin
 index_file: "/home/sarmento/LIB/Dataset/ar_sm_coffeemaker_only/index" #default: "path/index.txt"
 aruco_dic: "ARUCO" #default: "ARUCO" or ARUCO MIP 36h12
 aruco_max_distance: 4 #default: 4
-aruco_marker_size: 0.07 #default: 0.1778 (size of marker in ROS Gazebo and ~= 0.07 for our dataset)
-
+aruco_marker_size: 0.064 #default: 0.1778 (size of marker in ROS Gazebo and ~= 0.07 for our dataset)
+aruco_poses_file: "../../config_files/aruco_poses_coffee.txt"
+minimum_distance_between_keyframes: 0.05 # 5cm
+local_optimization_threshold: 10 # Every "X" loop closure vertices do an optimization
 #Parameter below are not used
 #motion estimation ransac parameters
 ransac_distance_threshold: 0.008 #8mm
