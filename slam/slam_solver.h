@@ -42,6 +42,13 @@ public:
     // Number of loop edges
     int num_loop_edges_;
 
+    // Vertices to add in update optimization
+    g2o::HyperGraph::VertexSet vertices_to_add;
+
+    // Edges to add in update optimization
+    g2o::HyperGraph::EdgeSet edges_to_add;
+
+    // Loop closure edges name
     std::vector<std::string> loop_closure_edges_name;
 
     // 3D position in the global ref. frame of each node (for visualization)
@@ -70,6 +77,14 @@ public:
      */
     void addLoopClosingEdge(const Eigen::Affine3f& vertex_to_origin_transf, const int& id);
 
+    /**
+     * Get Optimized edge from optimizer
+     * @param from_id edge from id
+     * @param to_id edge to id
+     * @param from position from, the result will be saved in this vector
+     * @param to position to, the result will be saved in this vector
+     * @param name string where the name of edge will be saved
+     */
     void getOptimizedEdge(
         const int& from_id,
         const int& to_id,
@@ -81,7 +96,9 @@ public:
      * Returns an Edge
      * @param from_id the id of the "back" of the edge arrow
      * @param to_id the id of the "point" of the edge arrow
-     * @return Edge that connects from_id to to_id
+     * @param from position from, the result will be saved in this vector
+     * @param to position to, the result will be saved in this vector
+     * @param name string where the name of edge will be saved
      */
     void getEdge(const int& from_id, const int& to_id, Eigen::Vector3d& from, Eigen::Vector3d& to, std::string& name);
 
@@ -90,7 +107,7 @@ public:
      * positions.size() - 1 If it is an loop it will return 0 to positions.size() - 1
      * @return Edge
      */
-    void getLastEdge(Eigen::Vector3d& from, Eigen::Vector3d& to, std::string& name);
+    // void getLastEdge(Eigen::Vector3d& from, Eigen::Vector3d& to, std::string& name);
 
     /**
      * Optimizes the graph with Levenberg-Marquardt for the given n. of iterations

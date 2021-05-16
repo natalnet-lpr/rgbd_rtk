@@ -100,7 +100,9 @@ public:
     void addCameraPath(const Eigen::Affine3f& pose);
 
     /** Adds an edge from the graph to the PCLVisualizer as an arrow.
-     * @param edge as Edge(common_types.h)
+     * @param vertix_from position
+     * @param vertix_to position
+     * @param name name of the vertex
      * @param color of the arrow(blue as default)
      */
     void addEdge(
@@ -108,14 +110,6 @@ public:
         const Eigen::Vector3d& vertix_to,
         const std::string& name,
         const Eigen::Vector3f& color = Eigen::Vector3f(0.0, 0.0, 1.0));
-
-     /**
-     * Adds the optimized version of the given edges to the PCLVisualizer.
-     * @param edges as a vector of Edge(common_types.h)
-     * @param color of the arrow(blue as default)
-     */
-    void
-    addOptimizedEdges(const std::vector<Edge>& edges, const Eigen::Vector3f& color = Eigen::Vector3f(0.0, 0.0, 1.0));
 
     /**
      * Adds a ref. frame with the given pose to the 3D reconstruction
@@ -216,6 +210,8 @@ public:
     void close();
 
     void resetVisualizer();
+
+    void removeAllVertexesAndEdges();
 };
 
 #endif /* INCLUDE_RECONSTRUCTION_VISUALIZER_H_ */

@@ -119,6 +119,7 @@ void SLAM_Solver::addVertexAndEdge(const Eigen::Affine3f& pose, const int& id)
         v0->setEstimate(est);
         v0->setFixed(true);
         optimizer_.addVertex(v0);
+        vertices_to_add.insert(v0);
 
         Eigen::Vector3d pos = est.translation();
         positions_.push_back(pos);
@@ -142,6 +143,7 @@ void SLAM_Solver::addVertexAndEdge(const Eigen::Affine3f& pose, const int& id)
         v1->setId(id);
         v1->setEstimate(est);
         optimizer_.addVertex(v1);
+        vertices_to_add.insert(v1);
 
         Eigen::Vector3d pos = est.translation();
         positions_.push_back(pos);
@@ -151,6 +153,7 @@ void SLAM_Solver::addVertexAndEdge(const Eigen::Affine3f& pose, const int& id)
         e->vertices()[1] = v1;
         e->setMeasurementFromState();
         optimizer_.addEdge(e);
+        edges_to_add.insert(e);
 
         logger.print(
             EventLogger::L_INFO,
@@ -183,6 +186,7 @@ void SLAM_Solver::addLoopClosingEdge(const Eigen::Affine3f& vertex_to_origin_tra
     e->vertices()[1] = origin;
     e->setMeasurement(measurement);
     optimizer_.addEdge(e);
+    edges_to_add.insert(e);
 
     num_loop_edges_++;
 
@@ -203,7 +207,7 @@ void SLAM_Solver::getOptimizedEdge(
     for (auto it = optimizer_.activeEdges().begin(); it != optimizer_.activeEdges().end(); ++it)
     {
         EdgeSE3* e = dynamic_cast<EdgeSE3*>(*it);
-        if (e->vertex(1)->id() - e->vertex(0)->id() == 1)
+        if (e->vertex(0)->id() == from_id and e->vertex(1)->id() == to_id)
         {
             VertexSE3* v0 = static_cast<VertexSE3*>(optimizer_.vertex(e->vertex(0)->id()));
             VertexSE3* v1 = static_cast<VertexSE3*>(optimizer_.vertex(e->vertex(1)->id()));
@@ -253,10 +257,10 @@ void SLAM_Solver::getEdge(
         }
     }
 }
+/*
 
 void SLAM_Solver::getLastEdge(Eigen::Vector3d& from, Eigen::Vector3d& to, string& name)
 {
-
     auto a = optimizer_.edges().end();
 
     EdgeSE3* e = dynamic_cast<EdgeSE3*>(*--optimizer_.edges().end());
@@ -276,13 +280,18 @@ void SLAM_Solver::getLastEdge(Eigen::Vector3d& from, Eigen::Vector3d& to, string
     to = Eigen::Vector3d(vertix_to(0, 3), vertix_to(1, 3), vertix_to(2, 3));
     name = "edge_" + to_string(e->vertex(0)->id()) + "_" + to_string(e->vertex(1)->id());
 }
+    */
 
 void SLAM_Solver::optimizeGraph(const int& k)
 {
     // optimizer_.save("graph.g2o"); // Save file
 
-    // Only initializeOptimization if the graph is not already initialized.
-    if (optimized_estimates_.size() == 0) optimizer_.initializeOptimization();
+    optimized_estimates_.size() == 0 ? optimizer_.initializeOptimization()
+                                     : optimizer_.updateInitialization(vertices_to_add, edges_to_add);
+
+    // When I pass only the subset the optimization may go wrong
+    // vertices_to_add.clear();
+    // edges_to_add.clear();
     optimizer_.optimize(k);
 
     updateState();
@@ -295,4 +304,6 @@ void SLAM_Solver::resetGraph()
     positions_.clear();
     optimized_estimates_.clear();
     optimizer_.clear();
+    num_loop_edges_ = 0;
+    loop_closure_edges_name = {};
 }

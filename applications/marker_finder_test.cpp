@@ -50,7 +50,7 @@ using namespace aruco;
  * @param .yml config. file (used fields: index_file, aruco_marker_size, camera_calibration_file, aruco_max_distance)
  */
 
-void checkError(Eigen::Affine3f first, Eigen::Affine3f newone);
+bool isOrientationCorrect(Eigen::Affine3f first, Eigen::Affine3f newone);
 int main(int argc, char** argv)
 {
     EventLogger& logger = EventLogger::getInstance();
@@ -96,14 +96,18 @@ int main(int argc, char** argv)
         {
             if (250 == marker_finder.markers_[j].id)
             {
-                if (i == 0) { first = marker_finder.marker_poses_[j]; }
-                checkError(first, marker_finder.marker_poses_[j]);
-
-                marker_finder.markers_[j].draw(frame, Scalar(0, 0, 255), 1.5);
-                CvDrawingUtils::draw3dAxis(frame, marker_finder.markers_[j], marker_finder.camera_params_, 2);
-                stringstream ss;
-                ss << "m" << marker_finder.markers_[j].id;
-                visualizer.viewReferenceFrame(marker_finder.marker_poses_[j], ss.str());
+                if (i == 0)
+                {
+                    first = marker_finder.marker_poses_[j];
+                    if (isOrientationCorrect(first, marker_finder.marker_poses_[j]))
+                    {
+                        marker_finder.markers_[j].draw(frame, Scalar(0, 0, 255), 1.5);
+                        CvDrawingUtils::draw3dAxis(frame, marker_finder.markers_[j], marker_finder.camera_params_, 2);
+                        stringstream ss;
+                        ss << "m" << marker_finder.markers_[j].id;
+                        visualizer.viewReferenceFrame(marker_finder.marker_poses_[j], ss.str());
+                    }
+                }
             }
         }
 
@@ -129,19 +133,11 @@ int main(int argc, char** argv)
 
     return 0;
 }
-
-void checkError(Eigen::Affine3f first, Eigen::Affine3f newone)
+bool isOrientationCorrect(Eigen::Affine3f first, Eigen::Affine3f new_pose)
 {
-    int count = 0;
-    double error;
-    double anglex = 0, angley = 0, anglez = 0;
-    Eigen::Affine3f rotation;
+    double angle =
+        acos((first(0, 2) * new_pose(0, 2)) + (first(1, 2) * new_pose(1, 2)) + (first(2, 2) * new_pose(2, 2))) * 180.0 /
+        3.1315;
 
-    rotation = newone.rotation() * first.rotation().transpose();
-
-    anglex = atan2(rotation(2, 1), rotation(2, 2));
-    angley = atan2(-rotation(2, 0), sqrt(pow(rotation(2, 1), 2) + pow(rotation(2, 2), 2)));
-    anglez = atan2(rotation(1, 0), rotation(0, 0));
-    printf("anglex: %f angley: %f anglez: %f\n", anglex, angley, anglez);
-    cout << "error count :" << count << endl;
+    return angle > 10 ? false : true;
 }

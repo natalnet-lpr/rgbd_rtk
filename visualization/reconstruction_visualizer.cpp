@@ -328,3 +328,5 @@ void ReconstructionVisualizer::resetVisualizer()
     viewer_->removeAllCoordinateSystems();
     viewer_->removeAllPointClouds();
 }
+
+void ReconstructionVisualizer::removeAllVertexesAndEdges() { viewer_->removeAllShapes(); }

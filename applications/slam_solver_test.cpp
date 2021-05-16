@@ -91,9 +91,9 @@ struct ConfigParams
 Eigen::Vector3d edge_from, edge_to;
 string edge_name;
 
-void addOptimizedEdges(SLAM_Solver& slam_solver, ReconstructionVisualizer visualizer);
-void removeEdges(SLAM_Solver& slam_solver, ReconstructionVisualizer visualizer);
-bool isOrientationCorrect(Eigen::Affine3f& first, Eigen::Affine3f newone);
+void addOptimizedEdges(SLAM_Solver& slam_solver, ReconstructionVisualizer& visualizer);
+void removeEdges(SLAM_Solver& slam_solver, ReconstructionVisualizer& visualizer);
+bool isOrientationCorrect(Eigen::Affine3f first, Eigen::Affine3f newone);
 
 /**
  * Adds vertix and edges in slam_solver and visualizer
@@ -276,8 +276,7 @@ int main(int argc, char** argv)
     }
 
     slam_solver.optimizeGraph(10);
-    // visualizer.addOptimizedEdges(slam_solver.odometry_edges_, Eigen::Vector3f(1.0, 0.0, 1.0));
-    //  visualizer.addOptimizedEdges(slam_solver.loop_edges_, Eigen::Vector3f(0.0, 1.0, 1.0));
+    addOptimizedEdges(slam_solver, visualizer);
     visualizer.spin();
     return 0;
 }
@@ -339,7 +338,7 @@ void addVertixAndEdge(
         if (slam_solver.num_loop_edges_ % config_params.local_optimization_threshold == 0)
         {
             removeEdges(slam_solver, visualizer);
-            visualizer.resetVisualizer();
+            visualizer.removeAllVertexesAndEdges();
 
             slam_solver.optimizeGraph(10);
             addOptimizedEdges(slam_solver, visualizer);
@@ -350,48 +349,65 @@ void addVertixAndEdge(
     }
 }
 
-bool isOrientationCorrect(Eigen::Affine3f& first, Eigen::Affine3f newone)
+/**
+ * Check if the orientation of the aruco pose found is correct, if the orientation changes a lot related with the first
+ * one detected, we ignore
+ * @param first First pose of aruco
+ * @param new_pose new aruco pose
+ */
+bool isOrientationCorrect(Eigen::Affine3f first, Eigen::Affine3f new_pose)
 {
-    double angle = acos((first(0, 2) * newone(0, 2)) + (first(1, 2) * newone(1, 2)) + (first(2, 2) * newone(2, 2))) *
-                   180.0 / 3.1315;
+    double angle =
+        acos((first(0, 2) * new_pose(0, 2)) + (first(1, 2) * new_pose(1, 2)) + (first(2, 2) * new_pose(2, 2))) * 180.0 /
+        3.1315;
 
     return angle > 10 ? false : true;
 }
 
-void removeEdges(SLAM_Solver& slam_solver, ReconstructionVisualizer visualizer)
+/**
+ * Remove edges from visualizer
+ * @param slam_solver
+ * @param visualizer
+ */
+void removeEdges(SLAM_Solver& slam_solver, ReconstructionVisualizer& visualizer)
 {
-    for (int i = 0; i < slam_solver.num_vertices_; i++)
+    // Removing the edges
+    for (signed i = 0; i < slam_solver.num_vertices_; i++)
     {
         slam_solver.getEdge(i, i + 1, edge_from, edge_to, edge_name);
         visualizer.removeEdge(edge_name);
     }
-    for (int i = 0; i < slam_solver.loop_closure_edges_name.size(); i++)
+    for (size_t i = 0; i < slam_solver.loop_closure_edges_name.size(); i++)
     {
-        visualizer.removeEdge(string("edge_") + slam_solver.loop_closure_edges_name[i]);
+        visualizer.removeEdge(slam_solver.loop_closure_edges_name[i]);
     }
 }
 
-void addOptimizedEdges(SLAM_Solver& slam_solver, ReconstructionVisualizer visualizer)
+/**
+ * Iterate over the number of vertices to add odometry optimization edges
+ * and Iterate over the loop edges to add loop edges odometry
+ * @param slam_solver
+ * @param visualizer
+ */
+void addOptimizedEdges(SLAM_Solver& slam_solver, ReconstructionVisualizer& visualizer)
 {
-    for (int i = 0; i < slam_solver.num_vertices_; i++)
+    // Iterate over number of vertices and get the optimized edge and adding to visualizer
+    for (signed i = 0; i < slam_solver.num_vertices_; i++)
     {
         slam_solver.getOptimizedEdge(i, i + 1, edge_from, edge_to, edge_name);
-        // visualizer.addOptimizedEdges(edge_from, edge_to, edge_name, Eigen::Vector3f(1.0, 0.0, 1.0));
+        visualizer.addEdge(edge_from, edge_to, edge_name, Eigen::Vector3f(1.0, 0.0, 1.0));
     }
-    for (int i = 0; i < slam_solver.loop_closure_edges_name.size(); i++)
+    // Iterate over number of vertices and get the optimized loop edge and adding to visualizer
+    for (size_t i = 0; i < slam_solver.loop_closure_edges_name.size(); i++)
     {
-
-        string copy = slam_solver.loop_closure_edges_name[i].erase(0, 5);
+        // name of edge is saved as "edge_fromid_toid"
+        string copy = slam_solver.loop_closure_edges_name[i].erase(0, 5); // Removing the first 5 strings "edge_"
 
         string from_id = copy.substr(0, copy.find('_'));
         string to_id = copy.substr(copy.find('_') + 1, 1);
-        cout << "from_id: " << from_id << " to_id" << to_id << endl;
-        // TODO: From id e to_id tá pegando o valor certo, a função getOptimizedEdge está sempre retornando a mesma
-        // coisa>> optimized_edge_13_14
         if (from_id != "" && to_id != "")
         {
             slam_solver.getOptimizedEdge(stoi(from_id), stoi(to_id), edge_from, edge_to, edge_name);
-            cout << "valor do edge name dps do get optimized :   " << edge_name << endl;
             visualizer.addEdge(edge_from, edge_to, edge_name, Eigen::Vector3f(0.0, 1.0, 1.0));
         }
     }
