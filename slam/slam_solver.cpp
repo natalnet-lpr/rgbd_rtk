@@ -1,4 +1,4 @@
-/* 
+/*
  *  Software License Agreement (BSD License)
  *
  *  Copyright (c) 2016-2021, Natalnet Laboratory for Perceptual Robotics
@@ -11,11 +11,12 @@
  *
  *  2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and
  *     the following disclaimer in the documentation and/or other materials provided with the distribution.
- * 
+ *
  *  3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or
  *     promote products derived from this software without specific prior written permission.
- * 
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, *  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, *
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
  *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
  *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
@@ -52,34 +53,12 @@ using namespace g2o;
  * #####################################################
  */
 
-
-void SLAM_Solver::addEdgeToList(const int& from_id, const int& to_id)
-{
-    Edge ep(from_id, to_id, positions_[from_id], positions_[to_id]);
-    stringstream edge_name;
-    edge_name << "edge_" << from_id << "_" << to_id;
-    ep.name_ = edge_name.str();
-
-    MLOG_DEBUG(EventLogger::M_SLAM, "@SLAM_Solver::addEdgeToList: built edge %s\n",
-              ep.name_.c_str());
-
-    // Check if the edge is "odometry" (from i to i+1) or "loop closing" (from i to j)
-    (to_id - from_id == 1) ? odometry_edges_.push_back(ep) : loop_edges_.push_back(ep);
-
-    MLOG_DEBUG(EventLogger::M_SLAM, "@SLAM_Solver::addEdgeToList: odom. edges: %lu\n",
-              odometry_edges_.size());
-    MLOG_DEBUG(EventLogger::M_SLAM, "@SLAM_Solver::addEdgeToList: loop closing edges: %lu\n",
-              loop_edges_.size());
-}
-
 void SLAM_Solver::updateState()
 {
     optimized_estimates_.clear();
     optimized_estimates_.resize(positions_.size());
 
-
-    MLOG_DEBUG(EventLogger::M_SLAM, "@SLAM_Solver::updateState: Updating %lu vertices\n",
-              positions_.size());
+    MLOG_DEBUG(EventLogger::M_SLAM, "@SLAM_Solver::updateState: Updating %lu vertices\n", positions_.size());
 
     // Update estimates of all vertices and positions
     for (OptimizableGraph::VertexIDMap::const_iterator it = optimizer_.vertices().begin();
@@ -110,42 +89,22 @@ void SLAM_Solver::updateState()
         optimized_estimates_[v_id] = new_estimate;
 
         MLOG_DEBUG(EventLogger::M_SLAM, "@SLAM_Solver::updateState: Updating node %i\n", v_id);
-        MLOG_DEBUG(EventLogger::M_SLAM, "@SLAM_Solver::updateState: ### from %f %f %f to %f %f %f\n",
-                   positions_[v_id].x(),
-                   positions_[v_id].y(),
-                   positions_[v_id].z(),
-                   new_estimate(0, 3),
-                   new_estimate(1, 3),
-                   new_estimate(2, 3));
+        MLOG_DEBUG(
+            EventLogger::M_SLAM,
+            "@SLAM_Solver::updateState: ### from %f %f %f to %f %f %f\n",
+            positions_[v_id].x(),
+            positions_[v_id].y(),
+            positions_[v_id].z(),
+            new_estimate(0, 3),
+            new_estimate(1, 3),
+            new_estimate(2, 3));
 
         positions_[v_id](0, 0) = new_estimate(0, 3);
         positions_[v_id](1, 0) = new_estimate(1, 3);
         positions_[v_id](2, 0) = new_estimate(2, 3);
     }
 
-
-    // Update all odometry edges
-    for (unsigned int i = 0; i < odometry_edges_.size(); i++)
-    {
-        const int id_from = odometry_edges_[i].id_from_;
-        const int id_to = odometry_edges_[i].id_to_;
-
-        odometry_edges_[i].pose_from_ = positions_[id_from];
-        odometry_edges_[i].pose_to_ = positions_[id_to];
-    }
-
-    // Update all loop closing edges
-    for (unsigned int i = 0; i < loop_edges_.size(); i++)
-    {
-        const int id_from = loop_edges_[i].id_from_;
-        const int id_to = loop_edges_[i].id_to_;
-
-        loop_edges_[i].pose_from_ = positions_[id_from];
-        loop_edges_[i].pose_to_ = positions_[id_to];
-    }
-
-    MLOG_DEBUG(EventLogger::M_SLAM, "@SLAM_Solver::updateState: Loop closing edges: %lu\n",
-               loop_edges_.size());
+    MLOG_DEBUG(EventLogger::M_SLAM, "@SLAM_Solver::updateState: Loop closing edges: %lu\n", num_loop_edges_);
 }
 
 /* #####################################################
@@ -191,10 +150,8 @@ void SLAM_Solver::addVertexAndEdge(const Eigen::Affine3f& pose, const int& id)
         Eigen::Vector3d pos = est.translation();
         positions_.push_back(pos);
 
-        MLOG_DEBUG(EventLogger::M_SLAM, "@SLAM_Solver::addVertexAndEdge: position (%f, %f, %f)\n",
-                   pos[0],
-                   pos[1],
-                   pos[2]);
+        MLOG_DEBUG(
+            EventLogger::M_SLAM, "@SLAM_Solver::addVertexAndEdge: position (%f, %f, %f)\n", pos[0], pos[1], pos[2]);
     }
     // When adding any nodes other than the first, add an edge connecting
     // to the previous one
@@ -220,13 +177,10 @@ void SLAM_Solver::addVertexAndEdge(const Eigen::Affine3f& pose, const int& id)
         optimizer_.addEdge(e);
         edges_to_add.insert(e);
 
-        MLOG_DEBUG(EventLogger::M_SLAM, "@SLAM_Solver::addVertexAndEdge: position (%f, %f, %f)\n",
-                   pos[0],
-                   pos[1],
-                   pos[2]);
-        MLOG_DEBUG(EventLogger::M_SLAM, "@SLAM_Solver::addVertexAndEdge: Adding edge(%lu -> %lu)\n",
-                   v0->id(),
-                   v1->id());
+        MLOG_DEBUG(
+            EventLogger::M_SLAM, "@SLAM_Solver::addVertexAndEdge: position (%f, %f, %f)\n", pos[0], pos[1], pos[2]);
+        MLOG_DEBUG(
+            EventLogger::M_SLAM, "@SLAM_Solver::addVertexAndEdge: Adding edge(%lu -> %lu)\n", v0->id(), v1->id());
     }
 
     last_added_id_ = id;
@@ -250,9 +204,8 @@ void SLAM_Solver::addLoopClosingEdge(const Eigen::Affine3f& vertex_to_origin_tra
 
     num_loop_edges_++;
 
-    MLOG_DEBUG(EventLogger::M_SLAM, "@SLAM_Solver::addLoopClosingEdge: adding edge(%lu -> %lu)\n",
-               v->id(),
-               origin->id());
+    MLOG_DEBUG(
+        EventLogger::M_SLAM, "@SLAM_Solver::addLoopClosingEdge: adding edge(%lu -> %lu)\n", v->id(), origin->id());
 }
 
 void SLAM_Solver::getOptimizedEdge(

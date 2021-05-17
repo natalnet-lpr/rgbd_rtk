@@ -392,13 +392,13 @@ void removeEdges(SLAM_Solver& slam_solver, ReconstructionVisualizer& visualizer)
 void addOptimizedEdges(SLAM_Solver& slam_solver, ReconstructionVisualizer& visualizer)
 {
     // Iterate over number of vertices and get the optimized edge and adding to visualizer
-    for (signed i = 0; i < slam_solver.num_vertices_; i++)
+    for (signed i = 0; i < slam_solver.num_vertices_ - 1; i++)
     {
         slam_solver.getOptimizedEdge(i, i + 1, edge_from, edge_to, edge_name);
         visualizer.addEdge(edge_from, edge_to, edge_name, Eigen::Vector3f(1.0, 0.0, 1.0));
     }
     // Iterate over number of vertices and get the optimized loop edge and adding to visualizer
-    for (size_t i = 0; i < slam_solver.loop_closure_edges_name.size(); i++)
+    for (size_t i = 0; i < slam_solver.loop_closure_edges_name.size() - 1; i++)
     {
         // name of edge is saved as "edge_fromid_toid"
         string copy = slam_solver.loop_closure_edges_name[i].erase(0, 5); // Removing the first 5 strings "edge_"
