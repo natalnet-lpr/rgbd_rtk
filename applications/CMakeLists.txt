@@ -156,14 +156,22 @@ if(WITH_IO AND WITH_VISUALIZATION)
 
         if(WITH_VISUAL_ODOMETRY AND WITH_MOTION_ESTIMATION)
             ##Install applications that needs IO, Visualization, Stereo, Visual Odometry and Motion Estimation
-            add_executable(stereo_optical_flow_visual_odometry_test stereo_optical_flow_visual_odometry_test.cpp)
-            target_link_libraries(stereo_optical_flow_visual_odometry_test ${PCL_LIBRARIES} ${RGBD_RTK_IO} ${RGBD_RTK_VISUALIZATION} ${RGBD_RTK_STEREO}                                   
-                                                                ${RGBD_RTK_VISUAL_ODOMETRY}
-                                                                ${RGBD_RTK_MOTION_ESTIMATION})
-            
+            add_executable(stereo_optical_flow_visual_odometry_test
+                           stereo_optical_flow_visual_odometry_test.cpp)
+            add_executable(kitti_odometry_improvements_test
+                           kitti_odometry_improvements_test.cpp)
+            target_link_libraries(stereo_optical_flow_visual_odometry_test ${PCL_LIBRARIES}
+                                  ${RGBD_RTK_IO} ${RGBD_RTK_VISUALIZATION}
+                                  ${RGBD_RTK_STEREO} ${RGBD_RTK_VISUAL_ODOMETRY}
+                                  ${RGBD_RTK_MOTION_ESTIMATION})
+            target_link_libraries(kitti_odometry_improvements_test ${PCL_LIBRARIES}
+                                  ${RGBD_RTK_IO} ${RGBD_RTK_VISUALIZATION}
+                                  ${RGBD_RTK_STEREO} ${RGBD_RTK_VISUAL_ODOMETRY}
+                                  ${RGBD_RTK_MOTION_ESTIMATION})                      
             install(TARGETS stereo_optical_flow_visual_odometry_test
-                EXPORT rgbd_rtkTargets
-                RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin)
+                            kitti_odometry_improvements_test
+                    EXPORT rgbd_rtkTargets
+                    RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin)
         endif()
     endif()
 endif()       
