@@ -41,7 +41,7 @@
 #include <g2o/types/slam3d/types_slam3d.h>
 
 #include <common_types.h>
-#include <slam_solver.h>
+#include <single_marker_slam.h>
 
 using namespace std;
 using namespace g2o;
@@ -53,12 +53,12 @@ using namespace g2o;
  * #####################################################
  */
 
-void SLAM_Solver::updateState()
+void SingleMarkerSlam::updateState()
 {
     optimized_estimates_.clear();
     optimized_estimates_.resize(positions_.size());
 
-    MLOG_DEBUG(EventLogger::M_SLAM, "@SLAM_Solver::updateState: Updating %lu vertices\n", positions_.size());
+    MLOG_DEBUG(EventLogger::M_SLAM, "@SingleMarkerSlam::updateState: Updating %lu vertices\n", positions_.size());
 
     // Update estimates of all vertices and positions
     for (OptimizableGraph::VertexIDMap::const_iterator it = optimizer_.vertices().begin();
@@ -88,10 +88,10 @@ void SLAM_Solver::updateState()
 
         optimized_estimates_[v_id] = new_estimate;
 
-        MLOG_DEBUG(EventLogger::M_SLAM, "@SLAM_Solver::updateState: Updating node %i\n", v_id);
+        MLOG_DEBUG(EventLogger::M_SLAM, "@SingleMarkerSlam::updateState: Updating node %i\n", v_id);
         MLOG_DEBUG(
             EventLogger::M_SLAM,
-            "@SLAM_Solver::updateState: ### from %f %f %f to %f %f %f\n",
+            "@SingleMarkerSlam::updateState: ### from %f %f %f to %f %f %f\n",
             positions_[v_id].x(),
             positions_[v_id].y(),
             positions_[v_id].z(),
@@ -104,7 +104,7 @@ void SLAM_Solver::updateState()
         positions_[v_id](2, 0) = new_estimate(2, 3);
     }
 
-    MLOG_DEBUG(EventLogger::M_SLAM, "@SLAM_Solver::updateState: Loop closing edges: %lu\n", num_loop_edges_);
+    MLOG_DEBUG(EventLogger::M_SLAM, "@SingleMarkerSlam::updateState: Loop closing edges: %lu\n", num_loop_edges_);
 }
 
 /* #####################################################
@@ -114,12 +114,12 @@ void SLAM_Solver::updateState()
  * #####################################################
  */
 
-SLAM_Solver::SLAM_Solver()
+SingleMarkerSlam::SingleMarkerSlam()
 {
     num_vertices_ = 0;
     last_added_id_ = -1;
     num_loop_edges_ = 0;
-    loop_closure_edges_name = {};
+    loop_closure_edges_name_ = {};
 
     std::unique_ptr<g2o::BlockSolverX::LinearSolverType> linearSolver =
         g2o::make_unique<g2o::LinearSolverCholmod<g2o::BlockSolverX::PoseMatrixType>>();
@@ -130,10 +130,10 @@ SLAM_Solver::SLAM_Solver()
     optimizer_.setVerbose(true);
 }
 
-void SLAM_Solver::addVertexAndEdge(const Eigen::Affine3f& pose, const int& id)
+void SingleMarkerSlam::addVertexAndEdge(const Eigen::Affine3f& pose, const int& id)
 {
 
-    MLOG_DEBUG(EventLogger::M_SLAM, "@SLAM_Solver::addVertexAndEdge: Adding node %i\n", id);
+    MLOG_DEBUG(EventLogger::M_SLAM, "@SingleMarkerSlam::addVertexAndEdge: Adding node %i\n", id);
 
     // Add the first node and fix it.
     if (num_vertices_ == 0)
@@ -145,13 +145,17 @@ void SLAM_Solver::addVertexAndEdge(const Eigen::Affine3f& pose, const int& id)
         v0->setEstimate(est);
         v0->setFixed(true);
         optimizer_.addVertex(v0);
-        vertices_to_add.insert(v0);
+        vertices_to_add_.insert(v0);
 
         Eigen::Vector3d pos = est.translation();
         positions_.push_back(pos);
 
         MLOG_DEBUG(
-            EventLogger::M_SLAM, "@SLAM_Solver::addVertexAndEdge: position (%f, %f, %f)\n", pos[0], pos[1], pos[2]);
+            EventLogger::M_SLAM,
+            "@SingleMarkerSlam::addVertexAndEdge: position (%f, %f, %f)\n",
+            pos[0],
+            pos[1],
+            pos[2]);
     }
     // When adding any nodes other than the first, add an edge connecting
     // to the previous one
@@ -165,7 +169,7 @@ void SLAM_Solver::addVertexAndEdge(const Eigen::Affine3f& pose, const int& id)
         v1->setId(id);
         v1->setEstimate(est);
         optimizer_.addVertex(v1);
-        vertices_to_add.insert(v1);
+        vertices_to_add_.insert(v1);
 
         Eigen::Vector3d pos = est.translation();
         positions_.push_back(pos);
@@ -175,19 +179,23 @@ void SLAM_Solver::addVertexAndEdge(const Eigen::Affine3f& pose, const int& id)
         e->vertices()[1] = v1;
         e->setMeasurementFromState();
         optimizer_.addEdge(e);
-        edges_to_add.insert(e);
+        edges_to_add_.insert(e);
 
         MLOG_DEBUG(
-            EventLogger::M_SLAM, "@SLAM_Solver::addVertexAndEdge: position (%f, %f, %f)\n", pos[0], pos[1], pos[2]);
+            EventLogger::M_SLAM,
+            "@SingleMarkerSlam::addVertexAndEdge: position (%f, %f, %f)\n",
+            pos[0],
+            pos[1],
+            pos[2]);
         MLOG_DEBUG(
-            EventLogger::M_SLAM, "@SLAM_Solver::addVertexAndEdge: Adding edge(%lu -> %lu)\n", v0->id(), v1->id());
+            EventLogger::M_SLAM, "@SingleMarkerSlam::addVertexAndEdge: Adding edge(%lu -> %lu)\n", v0->id(), v1->id());
     }
 
     last_added_id_ = id;
     num_vertices_++;
 }
 
-void SLAM_Solver::addLoopClosingEdge(const Eigen::Affine3f& vertex_to_origin_transf, const int& id)
+void SingleMarkerSlam::addLoopClosingEdge(const Eigen::Affine3f& vertex_to_origin_transf, const int& id)
 {
     // assumes the first vertex has id = 0
     VertexSE3* origin = dynamic_cast<g2o::VertexSE3*>(optimizer_.vertex(0));
@@ -200,15 +208,15 @@ void SLAM_Solver::addLoopClosingEdge(const Eigen::Affine3f& vertex_to_origin_tra
     e->vertices()[1] = origin;
     e->setMeasurement(measurement);
     optimizer_.addEdge(e);
-    edges_to_add.insert(e);
+    edges_to_add_.insert(e);
 
     num_loop_edges_++;
 
     MLOG_DEBUG(
-        EventLogger::M_SLAM, "@SLAM_Solver::addLoopClosingEdge: adding edge(%lu -> %lu)\n", v->id(), origin->id());
+        EventLogger::M_SLAM, "@SingleMarkerSlam::addLoopClosingEdge: adding edge(%lu -> %lu)\n", v->id(), origin->id());
 }
 
-void SLAM_Solver::getOptimizedEdge(
+void SingleMarkerSlam::getOptimizedEdge(
     const int& from_id,
     const int& to_id,
     Eigen::Vector3d& from,
@@ -238,7 +246,7 @@ void SLAM_Solver::getOptimizedEdge(
     }
 }
 
-void SLAM_Solver::getEdge(
+void SingleMarkerSlam::getEdge(
     const int& from_id,
     const int& to_id,
     Eigen::Vector3d& from,
@@ -270,7 +278,7 @@ void SLAM_Solver::getEdge(
 }
 /*
 
-void SLAM_Solver::getLastEdge(Eigen::Vector3d& from, Eigen::Vector3d& to, string& name)
+void SingleMarkerSlam::getLastEdge(Eigen::Vector3d& from, Eigen::Vector3d& to, string& name)
 {
     auto a = optimizer_.edges().end();
 
@@ -293,22 +301,22 @@ void SLAM_Solver::getLastEdge(Eigen::Vector3d& from, Eigen::Vector3d& to, string
 }
     */
 
-void SLAM_Solver::optimizeGraph(const int& k)
+void SingleMarkerSlam::optimizeGraph(const int& k)
 {
     // optimizer_.save("graph.g2o"); // Save file
 
     optimized_estimates_.size() == 0 ? optimizer_.initializeOptimization()
-                                     : optimizer_.updateInitialization(vertices_to_add, edges_to_add);
+                                     : optimizer_.updateInitialization(vertices_to_add_, edges_to_add_);
 
     // When I pass only the subset the optimization may go wrong
-    // vertices_to_add.clear();
-    // edges_to_add.clear();
+    // vertices_to_add_.clear();
+    // edges_to_add_.clear();
     optimizer_.optimize(k);
 
     updateState();
 }
 
-void SLAM_Solver::resetGraph()
+void SingleMarkerSlam::resetGraph()
 {
     num_vertices_ = 0;
     last_added_id_ = -1;
@@ -316,5 +324,5 @@ void SLAM_Solver::resetGraph()
     optimized_estimates_.clear();
     optimizer_.clear();
     num_loop_edges_ = 0;
-    loop_closure_edges_name = {};
+    loop_closure_edges_name_ = {};
 }
