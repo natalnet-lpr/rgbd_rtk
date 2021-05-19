@@ -42,11 +42,15 @@
 #ifndef INCLUDE_COMMON_TYPES_H_
 #define INCLUDE_COMMON_TYPES_H_
 
+#include <cstdlib>
+#include <vector>
 #include <Eigen/Geometry>
+
 #include <opencv2/core/core.hpp>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
-#include <vector>
+
+#include <event_logger.h>
 
 typedef pcl::PointXYZRGB PointT;
 
@@ -229,6 +233,60 @@ struct Intrinsics
         : fx_(fx), fy_(fy), cx_(cx), cy_(cy), scale_(1.0), baseline_(baseline), k1_(0.0), k2_(0.0), p1_(0.0), p2_(0.0),
           k3_(0.0)
     {
+    }
+
+    /**
+     * Set intrinsic parameters from yml file.
+     * @param filename full path of .yml camera calibration file.
+     */
+    void loadFromFile(const std::string& filename)
+    {
+        cv::Mat K;
+        cv::FileStorage fs(filename, cv::FileStorage::READ);
+
+        if(!fs.isOpened())
+        {
+            MLOG_ERROR(EventLogger::M_COMMON, "@Intrinsics::loadFromFile: could not open file %s\n", filename.c_str());
+            exit(0);
+        }
+
+        if(fs["camera_matrix"].empty())
+        {
+            MLOG_ERROR(EventLogger::M_COMMON, "@Intrinsics::loadFromFile: the supplied file does not have a camera calibration matrix\n");
+            exit(0);
+        } 
+        
+        fs["camera_matrix"] >> K;
+        if (K.cols == 0 || K.rows == 0)
+        {
+            MLOG_ERROR(EventLogger::M_COMMON, "@Intrinsics::loadFromFile: invalid camera calibration matrix\n");
+            exit(0);
+        }
+
+        if(K.type() == CV_32FC1)
+        {
+            fx_ = K.at<float>(0,0);
+            fy_ = K.at<float>(1,1);
+            cx_ = K.at<float>(0,2);
+            cy_ = K.at<float>(1,2);   
+        }
+        else
+        {
+            fx_ = K.at<double>(0,0);
+            fy_ = K.at<double>(1,1);
+            cx_ = K.at<double>(0,2);
+            cy_ = K.at<double>(1,2);
+        }
+        MLOG_INFO(EventLogger::M_COMMON, "@Intrinsics::loadFromFile:"
+                                         "fx = %f, fy = %f, cx = %f, cy = %f\n",
+                                          fx_, fy_, cx_, cy_);
+        scale_ = 1.0;
+        baseline_ = 0.0;
+        k1_ = 0.0;
+        k2_ = 0.0;
+        p1_ = 0.0;
+        p2_ = 0.0;
+        k3_ = 0.0;
     }
 };
 
