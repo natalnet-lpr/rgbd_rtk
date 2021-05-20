@@ -74,11 +74,11 @@ public:
     // Number of loop edges
     int num_loop_edges_;
 
-    // Vertices to add in update optimization
-    g2o::HyperGraph::VertexSet vertices_to_add_;
+    // Vertices added
+    g2o::HyperGraph::VertexSet vertices_;
 
-    // Edges to add in update optimization
-    g2o::HyperGraph::EdgeSet edges_to_add_;
+    // Edges added
+    g2o::HyperGraph::EdgeSet edges_;
 
     // Loop closure edges name
     std::vector<std::string> loop_closure_edges_name_;
