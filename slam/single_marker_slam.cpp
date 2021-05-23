@@ -276,6 +276,22 @@ void SingleMarkerSlam::getEdge(
         }
     }
 }
+
+Eigen::Affine3f SingleMarkerSlam::getVertix(const int& id)
+{
+    for (auto it = optimizer_.activeVertices().begin(); it != optimizer_.activeVertices().end(); ++it)
+    {
+        VertexSE3* v = dynamic_cast<VertexSE3*>(*it);
+
+        if (v->id() == id)
+        {
+            Eigen::Isometry3f pose_tmp = v->estimate().cast<float>();
+            Eigen::Affine3f pose = Eigen::Affine3f::Identity();
+            pose.matrix() = pose_tmp.matrix();
+            return pose;
+        }
+    }
+}
 /*
 
 void SingleMarkerSlam::getLastEdge(Eigen::Vector3d& from, Eigen::Vector3d& to, string& name)

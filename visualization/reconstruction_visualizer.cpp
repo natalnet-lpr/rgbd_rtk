@@ -234,13 +234,13 @@ void ReconstructionVisualizer::updateKeyframes(const std::vector<Keyframe>& keyf
 {
     viewer_->removePointCloud("cloud");
 
-
     MLOG_INFO(EventLogger::M_VISUALIZATION, "@ReconstructionVisualizer::updateKeyframes: \
                                               Updating keyframe visualization\n");
 
     // Iterate over keyframes and add their clouds to visualization
     for (size_t i = 0; i < keyframes.size(); i++)
     {
+
         // Grab coord. system and cloud names
         stringstream ss;
         ss << "kf" << keyframes[i].idx_;
@@ -253,14 +253,14 @@ void ReconstructionVisualizer::updateKeyframes(const std::vector<Keyframe>& keyf
         // THIS SOLUTION WORKS BUT IS VERY SLOW
         // Updates ref. frame and point clouds
 
-        // viewer_->removeCoordinateSystem(coord_sys_name);
+        viewer_->removeCoordinateSystem(coord_sys_name);
         // add_coord_frame(keyframes[i].pose_, coord_sys_name);
         // viewer_->updatePointCloud(keyframes[i].m_global_cloud, cloud_name);
 
         // THIS REMOVES AND ADDS BACK CLOUDS/REF. FRAMES
-        // viewer_->removeCoordinateSystem(coord_sys_name);
-        // viewer_->removePointCloud(cloud_name);
-        // add_keyframe(keyframes[i]);
+        viewer_->removeCoordinateSystem(coord_sys_name);
+        viewer_->removePointCloud(cloud_name);
+        addKeyFrame(keyframes[i], to_string(keyframes[i].idx_));
 
         Eigen::Affine3f camera = keyframes[i].pose_;
         Eigen::Affine3f rel_transf;
@@ -275,13 +275,13 @@ void ReconstructionVisualizer::updateKeyframes(const std::vector<Keyframe>& keyf
         rel_transf.linear()(2, 2) = camera(2, 2);
         rel_transf.translation() = Eigen::Vector3f(camera(0, 3), camera(1, 3), camera(2, 3));
 
-        // viewer_->updateCoordinateSystemPose(coord_sys_name, rel_transf);
+        viewer_->updateCoordinateSystemPose(coord_sys_name, rel_transf);
         viewer_->updatePointCloudPose(cloud_name, rel_transf);
         PointT pos;
         pos.x = camera(0, 3);
         pos.y = camera(1, 3);
         pos.z = camera(2, 3);
-        // viewer_->addText3D(coord_sys_name, pos, 0.025);
+        viewer_->addText3D(coord_sys_name, pos, 0.025);
     }
 
     MLOG_INFO(EventLogger::M_VISUALIZATION, "@ReconstructionVisualizer::updateKeyframes: \

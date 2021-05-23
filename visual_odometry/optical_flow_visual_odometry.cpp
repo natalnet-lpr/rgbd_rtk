@@ -1,4 +1,4 @@
-/* 
+/*
  *  Software License Agreement (BSD License)
  *
  *  Copyright (c) 2016-2020, Natalnet Laboratory for Perceptual Robotics
@@ -11,11 +11,12 @@
  *
  *  2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and
  *     the following disclaimer in the documentation and/or other materials provided with the distribution.
- * 
+ *
  *  3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or
  *     promote products derived from this software without specific prior written permission.
- * 
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, *  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, *
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
  *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
  *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
@@ -45,10 +46,27 @@ void OpticalFlowVisualOdometry::addKeyFrame(const Mat& rgb)
     kf.keypoints_.resize(tracker_.curr_pts_.size());
     copy(tracker_.curr_pts_.begin(), tracker_.curr_pts_.end(), kf.keypoints_.begin());
 
-    MLOG_DEBUG(EventLogger::M_VISUAL_ODOMETRY, "@OpticalFlowVisualOdometry::addKeyFrame: \
-                                                adding %lu as keyframe\n", frame_idx_);
-    
+    MLOG_DEBUG(
+        EventLogger::M_VISUAL_ODOMETRY,
+        "@OpticalFlowVisualOdometry::addKeyFrame: \
+                                                adding %lu as keyframe\n",
+        frame_idx_);
+
     keyframes_.insert(pair<size_t, Keyframe>(kf.idx_, kf));
+}
+
+void OpticalFlowVisualOdometry::createArtificialKeyframe(const Mat& rgb)
+{
+    Keyframe kf;
+    kf.idx_ = frame_idx_;
+    kf.pose_ = pose_;
+    rgb.copyTo(kf.img_);
+    *kf.local_cloud_ = *curr_dense_cloud_;
+    kf.keypoints_.resize(tracker_.curr_pts_.size());
+    copy(tracker_.curr_pts_.begin(), tracker_.curr_pts_.end(), kf.keypoints_.begin());
+
+    keyframes_.insert(pair<size_t, Keyframe>(kf.idx_, kf));
+    frame_idx_++;
 }
 
 OpticalFlowVisualOdometry::OpticalFlowVisualOdometry(const Eigen::Affine3f& initialPose)
@@ -108,9 +126,11 @@ Keyframe OpticalFlowVisualOdometry::getLastKeyframe()
 
     it = keyframes_.end();
 
+    MLOG_DEBUG(
+        EventLogger::M_VISUAL_ODOMETRY,
+        "@OpticalFlowVisualOdometry::getLastKeyframe: \
+                                                last keyframe has id %lu\n",
+        it->first);
 
-    MLOG_DEBUG(EventLogger::M_VISUAL_ODOMETRY, "@OpticalFlowVisualOdometry::getLastKeyframe: \
-                                                last keyframe has id %lu\n", it->first);
-    
     return prev(it)->second; // prev from std
 }

@@ -134,6 +134,8 @@ public:
      */
     void getEdge(const int& from_id, const int& to_id, Eigen::Vector3d& from, Eigen::Vector3d& to, std::string& name);
 
+    Eigen::Affine3f getVertix(const int& id);
+
     /**
      * Returns the the last edge, if it is an odometry it will return the edge from positions_.size() - 2 to
      * positions.size() - 1 If it is an loop it will return 0 to positions.size() - 1

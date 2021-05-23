@@ -101,6 +101,8 @@ public:
      */
     bool computeCameraPose(const cv::Mat& rgb, const cv::Mat& depth);
 
+    void createArtificialKeyframe(const cv::Mat& rgb);
+
     /**
      * @param Keyframe return the last detected keyframe.
      */
