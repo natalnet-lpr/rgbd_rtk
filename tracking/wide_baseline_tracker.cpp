@@ -252,7 +252,7 @@ WideBaselineTracker::WideBaselineTracker() : FeatureTracker()
     setFeatureDetector("ORB");
     setDescriptorExtractor("ORB");
     setMatcher("BRUTEFORCE");
-    keyframe_threshold_ = 0.3
+    keyframe_threshold_ = 0.3;
 }
 
 WideBaselineTracker::WideBaselineTracker(

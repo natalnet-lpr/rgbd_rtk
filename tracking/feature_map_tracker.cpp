@@ -510,11 +510,13 @@ bool FeatureMapTracker::track(const cv::Mat& img)
     int matches_with_small_age = 0;
     for (int i = 0; i < map_tracklets_.size(); i++)
     {   
-        if (map_tracklets_[i].pts2D_.size() == 2 && map_tracklets_[i].start_ == frame_idx_-1)
+        if (map_tracklets_[i].pts2D_.size() == 2 && map_tracklets_[i].start_ == (frame_idx_-1))
         {
             matches_with_small_age++;
         }
     }
+    MLOG_DEBUG(
+            EventLogger::M_TRACKING, "@FeatureMapTracker::track: matches with small age: %i\n", matches_with_small_age);
 
     // Percentage of new features (matches with map features at a young age)
     if ((matches_with_small_age/curr_kpts_.size()) > keyframe_threshold_)
