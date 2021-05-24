@@ -158,29 +158,36 @@ public:
     // of "good" features
     std::vector<cv::DMatch> good_matches_;
 
+    // Threshold that defines whether a frame is a keyframe or not
+    float keyframe_threshold_;
+
     /**
      * Default constructor: create a ORB detector and extractor and a BruteForce matcher.
      */
     WideBaselineTracker();
 
     /**
-     * Constructor with flexible feature detector, descriptor extractor and matcher and flag to log
-     * statistics
+     * Constructor with flexible feature detector, descriptor extractor and matcher, 
+     * keyframe threshold and flag to log statistics
      * The following combinations of (Feature Detector, Descriptor Extractor) are invalid:
      * (ORB, AKAZE); (GFTT, AKAZE); (FAST, AKAZE); (AGAST, AKAZE); (BRISK, AKAZE); (SURF, AKAZE); 
      * (SIFT, AKAZE); (SIFT, ORB);
      * @param feature_detector ORB, AKAZE, GFTT, FAST, AGAST, BRISK, SURF, SIFT
      * @param descriptor_extractor ORB, AKAZE, BRISK, SURF, SIFT
      * @param matcher BRUTEFORCE AND FLANNBASED
+     * @param keyframe_threshold threshold that defines whether a frame is a keyframe or not
      * @param log_stats if log statistics should be displayed
      */
     WideBaselineTracker(const std::string &feature_detector,
-                        const std::string &descriptor_extractor, const std::string &matcher,
+                        const std::string &descriptor_extractor, 
+                        const std::string &matcher,
+                        const float &keyframe_threshold, 
                         const bool &log_stats);
 
     /**
-      * Constructor with flexible feature detector, descriptor extractor and matcher and flag to log
-      * statistics and the minimum and maximum number of points to detect
+      * Constructor with flexible feature detector, descriptor extractor and matcher, 
+      * keyframe threshold, flag to log statistics 
+      * and the minimum and maximum number of points to detect
       * The following combinations of (Feature Detector, Descriptor Extractor) are invalid:
       * (ORB, AKAZE); (GFTT, AKAZE); (FAST, AKAZE); (AGAST, AKAZE); (BRISK, AKAZE); (SURF, AKAZE); 
       * (SIFT, AKAZE); (SIFT, ORB);
@@ -188,11 +195,16 @@ public:
       * @param descriptor_extractor ORB, AKAZE, BRISK, SURF, SIFT
       * @param matcher BRUTEFORCE AND FLANNBASED
       * @param min_pts to detect @param max_pts to detect
+      * @param keyframe_threshold threshold that defines whether a frame is a keyframe or not
       * @param log_stats if log statistics should be displayed
       */
     WideBaselineTracker(const std::string &feature_detector,
-                        const std::string &descriptor_extractor, const std::string &matcher,
-                        const int &min_pts, const int &max_pts, const bool &log_stats);
+                        const std::string &descriptor_extractor, 
+                        const std::string &matcher,
+                        const int &min_pts, 
+                        const int &max_pts, 
+                        const float &keyframe_threshold, 
+                        const bool &log_stats);
 
     /**
      * Get the "good" Matches of your features

@@ -53,9 +53,6 @@ using namespace cv;
 
 void FeatureMapTracker::add_keypoints()
 {
-    // logger.print(EventLogger::L_DEBUG, "[FeatureMapTracker::add_keypoints DEBUG]: Teste...\n");
-
-    // Tracklet tr(frame_idx_);
     for (size_t i = 0; i < curr_kpts_.size(); i++)
     {
         // Create and add tracklet
@@ -392,13 +389,15 @@ FeatureMapTracker::FeatureMapTracker() : FeatureTracker()
     setDescriptorExtractor("ORB");
 
     lifespan_of_a_feature_ = 3;
+    keyframe_threshold_ = 0.3;
 }
 
 FeatureMapTracker::FeatureMapTracker(
-    const std::string& feature_detector,
-    const std::string& descriptor_extractor,
-    const int& lifespan_of_a_feature,
-    const bool& log_stats)
+    const std::string &feature_detector,
+    const std::string &descriptor_extractor,
+    const int &lifespan_of_a_feature,
+    const float &keyframe_threshold, 
+    const bool &log_stats)
     : FeatureTracker()
 {
     if (checkCombination(feature_detector, descriptor_extractor))
@@ -408,17 +407,19 @@ FeatureMapTracker::FeatureMapTracker(
     }
 
     lifespan_of_a_feature_ = lifespan_of_a_feature;
+    keyframe_threshold_ = keyframe_threshold;
 
     if (log_stats) initialize_logger("timing_stats.txt", "tracking_stats.txt", "heatmap_stats.txt");
 }
 
 FeatureMapTracker::FeatureMapTracker(
-    const std::string& feature_detector,
-    const std::string& descriptor_extractor,
-    const int& lifespan_of_a_feature,
-    const int& min_pts,
-    const int& max_pts,
-    const bool& log_stats)
+    const std::string &feature_detector,
+    const std::string &descriptor_extractor,
+    const int &lifespan_of_a_feature,
+    const int &min_pts,
+    const int &max_pts,
+    const float &keyframe_threshold, 
+    const bool &log_stats)
     : FeatureTracker(min_pts, max_pts, log_stats)
 {
     if (checkCombination(feature_detector, descriptor_extractor))
@@ -428,6 +429,7 @@ FeatureMapTracker::FeatureMapTracker(
     }
 
     lifespan_of_a_feature_ = lifespan_of_a_feature;
+    keyframe_threshold_ = keyframe_threshold;
 }
 
 bool FeatureMapTracker::track(const cv::Mat& img)
@@ -504,8 +506,18 @@ bool FeatureMapTracker::track(const cv::Mat& img)
             EventLogger::M_TRACKING, "@FeatureMapTracker::track: number of current points: %i\n", curr_pts_.size());
     }
 
-    // Insufficient number of points being tracked
-    if (tracked_pts_ < min_pts_)
+    //Determining whether it is a keyframe
+    int matches_with_small_age = 0;
+    for (int i = 0; i < map_tracklets_.size(); i++)
+    {   
+        if (map_tracklets_[i].pts2D_.size() == 2 && map_tracklets_[i].start_ == frame_idx_-1)
+        {
+            matches_with_small_age++;
+        }
+    }
+
+    // Percentage of new features (matches with map features at a young age)
+    if ((matches_with_small_age/curr_kpts_.size()) > keyframe_threshold_)
     {
         // Make the current frame a new keyframe
         is_keyframe = true;
