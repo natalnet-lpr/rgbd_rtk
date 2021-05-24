@@ -99,7 +99,7 @@ public:
      * @param rgb image @param depth image
      * @param return a boolean
      */
-    bool computeCameraPose(const cv::Mat& rgb, const cv::Mat& depth);
+    bool computeCameraPose(const cv::Mat& rgb, const cv::Mat& depth, const std::bool force_keyframe = true);
 
     void createArtificialKeyframe(const cv::Mat& rgb);
 

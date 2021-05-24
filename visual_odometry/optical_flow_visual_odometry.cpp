@@ -88,7 +88,7 @@ OpticalFlowVisualOdometry::OpticalFlowVisualOdometry(const Intrinsics& intr, con
     curr_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
 }
 
-bool OpticalFlowVisualOdometry::computeCameraPose(const cv::Mat& rgb, const cv::Mat& depth)
+bool OpticalFlowVisualOdometry::computeCameraPose(const cv::Mat& rgb, const cv::Mat& depth, bool force_keyframe)
 {
     bool is_kf;
 
@@ -101,7 +101,7 @@ bool OpticalFlowVisualOdometry::computeCameraPose(const cv::Mat& rgb, const cv::
     is_kf = tracker_.track(rgb);
 
     // If a new keyframe is found, add it to the internal buffer
-    if (is_kf) addKeyFrame(rgb);
+    if (is_kf or force_keyframe) addKeyFrame(rgb);
 
     // Estimate motion between the current and the previous point clouds
     if (frame_idx_ > 0)

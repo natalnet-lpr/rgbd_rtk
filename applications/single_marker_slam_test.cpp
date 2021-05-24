@@ -194,7 +194,6 @@ int main(int argc, char** argv)
                     num_keyframes++; // Increment the number of keyframes found
                     // Set slam solver started to true since we found the marker for the first time
                     slam_solver_started = true;
-                    // vo.createArtificialKeyframe(frame);
                 }
             }
             continue;
@@ -217,6 +216,7 @@ int main(int argc, char** argv)
                 {
                     if (isOrientationCorrect(first_aruco_pose, marker_finder.marker_poses_[j]))
                     {
+                        vo.computeCameraPose(frame, depth, true) 
                         addVertixAndEdge(
                             vo,
                             last_keyframe_pose_odometry,
@@ -228,46 +228,50 @@ int main(int argc, char** argv)
                             true,
                             config_params);
                         marker_found = true;
-                        // vo.createArtificialKeyframe(frame);
                     }
                 }
             }
-            // Estimate current camera pose
-            bool is_kf = vo.computeCameraPose(frame, depth);
 
-            // View tracked points
-            for (size_t k = 0; k < vo.tracker_.curr_pts_.size(); k++)
-            {
-                Point2i pt1 = vo.tracker_.prev_pts_[k];
-                Point2i pt2 = vo.tracker_.curr_pts_[k];
-                Scalar color;
+            if(!marker_found){
+                // Estimate current camera pose
+                bool is_kf = vo.computeCameraPose(frame, depth);
 
-                is_kf ? color = CV_RGB(255, 0, 0) : color = CV_RGB(0, 0, 255);
+                // View tracked points
+                for (size_t k = 0; k < vo.tracker_.curr_pts_.size(); k++)
+                {
+                    Point2i pt1 = vo.tracker_.prev_pts_[k];
+                    Point2i pt2 = vo.tracker_.curr_pts_[k];
+                    Scalar color;
 
-                circle(frame, pt1, 1, color, -1);
-                circle(frame, pt2, 3, color, -1);
-                line(frame, pt1, pt2, color);
+                    is_kf ? color = CV_RGB(255, 0, 0) : color = CV_RGB(0, 0, 255);
+
+                    circle(frame, pt1, 1, color, -1);
+                    circle(frame, pt2, 3, color, -1);
+                    line(frame, pt1, pt2, color);
+                }
+
+                visualizer.viewReferenceFrame(vo.pose_);
+                visualizer.viewQuantizedPointCloud(vo.curr_dense_cloud_, 0.02, vo.pose_);
+
+                // If we found a keyframe we will added to slam solver and visualizer
+                if (is_kf)
+                {
+                    addVertixAndEdge(
+                        vo,
+                        last_keyframe_pose_odometry,
+                        last_keyframe_pose_aruco,
+                        Eigen::Affine3f::Identity(),
+                        num_keyframes,
+                        single_marker_slam,
+                        visualizer,
+                        false,
+                        config_params);
+                    // Adding a Keyframe to visualizer, this will save the point cloud
+                    visualizer.addKeyFrame(vo.keyframes_[vo.keyframes_.size()], to_string(vo.keyframes_.size()));
+                }
+
             }
-
-            visualizer.viewReferenceFrame(vo.pose_);
-            visualizer.viewQuantizedPointCloud(vo.curr_dense_cloud_, 0.02, vo.pose_);
-
-            // If we found a keyframe we will added to slam solver and visualizer
-            if (is_kf and !marker_found)
-            {
-                addVertixAndEdge(
-                    vo,
-                    last_keyframe_pose_odometry,
-                    last_keyframe_pose_aruco,
-                    Eigen::Affine3f::Identity(),
-                    num_keyframes,
-                    single_marker_slam,
-                    visualizer,
-                    false,
-                    config_params);
-                // Adding a Keyframe to visualizer, this will save the point cloud
-                visualizer.addKeyFrame(vo.keyframes_[vo.keyframes_.size()], to_string(vo.keyframes_.size()));
-            }
+          
         }
 
         visualizer.spinOnce();
