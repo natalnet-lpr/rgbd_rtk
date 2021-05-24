@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 2.6)
 
 message(STATUS ">>> slam subdirectory")
 
-set(RGBD_RTK_SLAM_SRC marker_finder.cpp slam_solver.cpp)
-set(RGBD_RTK_SLAM_INCLUDES marker_finder.h slam_solver.h)
+set(RGBD_RTK_SLAM_SRC marker_finder.cpp single_marker_slam.cpp)
+set(RGBD_RTK_SLAM_INCLUDES marker_finder.h single_marker_slam.h)
 
 add_library(rgbd_rtk_slam SHARED ${RGBD_RTK_SLAM_SRC})
 target_link_libraries(rgbd_rtk_slam ${aruco_LIBS} ${G2O_LIBS} cholmod)

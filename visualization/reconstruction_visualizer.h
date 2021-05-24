@@ -175,12 +175,6 @@ public:
         const Eigen::Affine3f& pose);
 
     /**
-     * Updates all given edges in the PCLVisualizer.
-     * @param edges to be removed as a Vector of Edge(common_types.h)
-     */
-    void updateEdges(const std::vector<Edge>& edges);
-
-    /**
      * Updates all keyframes (ref. frames and point clouds).
      * @param keyframes vector of keyframes
      */

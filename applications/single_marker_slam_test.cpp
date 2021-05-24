@@ -60,7 +60,7 @@
 #include <optical_flow_visual_odometry.h>
 #include <reconstruction_visualizer.h>
 #include <rgbd_loader.h>
-#include <slam_solver.h>
+#include <single_marker_slam.h>
 
 using namespace std;
 using namespace cv;
@@ -91,18 +91,18 @@ struct ConfigParams
 Eigen::Vector3d edge_from, edge_to;
 string edge_name;
 
-void addOptimizedEdges(SLAM_Solver& slam_solver, ReconstructionVisualizer& visualizer);
-void removeEdges(SLAM_Solver& slam_solver, ReconstructionVisualizer& visualizer);
+void addOptimizedEdges(SingleMarkerSlam& single_marker_slam, ReconstructionVisualizer& visualizer);
+void removeEdges(SingleMarkerSlam& single_marker_slam, ReconstructionVisualizer& visualizer);
 bool isOrientationCorrect(Eigen::Affine3f first, Eigen::Affine3f newone);
 
 /**
- * Adds vertix and edges in slam_solver and visualizer
+ * Adds vertix and edges in single_marker_slam and visualizer
  * @param new_keyframe_pose new keyframe that should be added
  * @param last_keyframe_pose_odometry the last keyframe added in graph, this is update this in this function
  * @param last_keyframe_pose_aruco the last keyframe added in graph, this is update this in this function
  * @param first_keyframe_pose the first keyframe
  * @param num_keyframes number of keyframes in graph, this is update in this function
- * @param slam_solver slam_solver reference
+ * @param single_marker_slam single_marker_slam reference
  * @param visualizer visualizer reference
  * @param is_loop_closure if the vertex added is a loop_closure as well
  */
@@ -112,7 +112,7 @@ void addVertixAndEdge(
     Eigen::Affine3f& last_keyframe_pose_aruco,
     Eigen::Affine3f aruco_pose,
     int& num_keyframes,
-    SLAM_Solver& slam_solver,
+    SingleMarkerSlam& single_marker_slam,
     ReconstructionVisualizer& visualizer,
     bool is_loop_closure,
     ConfigParams config_params);
@@ -130,7 +130,7 @@ int main(int argc, char** argv)
     logger.setVerbosityLevel(EventLogger::L_ERROR);
 
     ReconstructionVisualizer visualizer;
-    SLAM_Solver slam_solver;
+    SingleMarkerSlam single_marker_slam;
     Intrinsics intr(0);
     OpticalFlowVisualOdometry vo(intr);
     MarkerFinder marker_finder;
@@ -185,8 +185,8 @@ int main(int argc, char** argv)
                     last_keyframe_pose_odometry = vo.pose_;
                     last_keyframe_pose_aruco = vo.pose_;
 
-                    // Adding first pose to slam_solver and visualizer
-                    slam_solver.addVertexAndEdge(vo.pose_, num_keyframes);
+                    // Adding first pose to single_marker_slam and visualizer
+                    single_marker_slam.addVertexAndEdge(vo.pose_, num_keyframes);
                     visualizer.addReferenceFrame(vo.pose_, to_string(num_keyframes));
                     num_keyframes++; // Increment the number of keyframes found
                     // Set slam solver started to true since we found the marker for the first time
@@ -219,7 +219,7 @@ int main(int argc, char** argv)
                             last_keyframe_pose_aruco,
                             marker_finder.marker_poses_[j],
                             num_keyframes,
-                            slam_solver,
+                            single_marker_slam,
                             visualizer,
                             true,
                             config_params);
@@ -257,7 +257,7 @@ int main(int argc, char** argv)
                     last_keyframe_pose_aruco,
                     Eigen::Affine3f::Identity(),
                     num_keyframes,
-                    slam_solver,
+                    single_marker_slam,
                     visualizer,
                     false,
                     config_params);
@@ -275,8 +275,8 @@ int main(int argc, char** argv)
         }
     }
 
-    slam_solver.optimizeGraph(10);
-    addOptimizedEdges(slam_solver, visualizer);
+    single_marker_slam.optimizeGraph(10);
+    addOptimizedEdges(single_marker_slam, visualizer);
     visualizer.spin();
     return 0;
 }
@@ -287,7 +287,7 @@ void addVertixAndEdge(
     Eigen::Affine3f& last_keyframe_pose_aruco,
     Eigen::Affine3f aruco_pose,
     int& num_keyframes,
-    SLAM_Solver& slam_solver,
+    SingleMarkerSlam& single_marker_slam,
     ReconstructionVisualizer& visualizer,
     bool is_loop_closure,
     ConfigParams config_params)
@@ -303,9 +303,9 @@ void addVertixAndEdge(
         // Adding keyframe in visualizer
         visualizer.viewReferenceFrame(cam_pose, to_string(num_keyframes));
         // Add the keyframe and creating an edge to the last vertex
-        slam_solver.addVertexAndEdge(cam_pose, num_keyframes);
-        slam_solver.getEdge(
-            slam_solver.num_vertices_ - 2, slam_solver.num_vertices_ - 1, edge_from, edge_to, edge_name);
+        single_marker_slam.addVertexAndEdge(cam_pose, num_keyframes);
+        single_marker_slam.getEdge(
+            single_marker_slam.num_vertices_ - 2, single_marker_slam.num_vertices_ - 1, edge_from, edge_to, edge_name);
         visualizer.addEdge(edge_from, edge_to, edge_name);
 
         last_keyframe_pose_odometry = cam_pose;
@@ -320,28 +320,29 @@ void addVertixAndEdge(
         // Adding keyframe in visualizer
         visualizer.viewReferenceFrame(cam_pose, to_string(num_keyframes));
         // Add the keyframe and creating an edge to the last vertex
-        slam_solver.addVertexAndEdge(cam_pose, num_keyframes);
-        slam_solver.getEdge(
-            slam_solver.num_vertices_ - 2, slam_solver.num_vertices_ - 1, edge_from, edge_to, edge_name);
+        single_marker_slam.addVertexAndEdge(cam_pose, num_keyframes);
+        single_marker_slam.getEdge(
+            single_marker_slam.num_vertices_ - 2, single_marker_slam.num_vertices_ - 1, edge_from, edge_to, edge_name);
         visualizer.addEdge(edge_from, edge_to, edge_name);
 
         // Adding the loop closing edge that is an edge from this vertex to the initial
         // If we want to change the system coord from A to B -> A.inverse * B
         // A = cam pose no sistema de coordenadas do Aruco = P
         // B = origem
-        slam_solver.addLoopClosingEdge(cam_pose.inverse() * aruco_pose, num_keyframes);
-        slam_solver.getEdge(slam_solver.num_vertices_ - 1, 0, edge_from, edge_to, edge_name);
+        single_marker_slam.addLoopClosingEdge(cam_pose.inverse() * aruco_pose, num_keyframes);
+        single_marker_slam.getEdge(single_marker_slam.num_vertices_ - 1, 0, edge_from, edge_to, edge_name);
         visualizer.addEdge(edge_from, edge_to, edge_name, Eigen::Vector3f(1.0, 0.0, 0.0));
 
-        slam_solver.loop_closure_edges_name.push_back(edge_name); // Saving the edge name of the loop closure edges
+        single_marker_slam.loop_closure_edges_name_.push_back(
+            edge_name); // Saving the edge name of the loop closure edges
         // Make a optimization in the graph from every 20 loop edges
-        if (slam_solver.num_loop_edges_ % config_params.local_optimization_threshold == 0)
+        if (single_marker_slam.num_loop_edges_ % config_params.local_optimization_threshold == 0)
         {
-            removeEdges(slam_solver, visualizer);
+            removeEdges(single_marker_slam, visualizer);
             visualizer.removeAllVertexesAndEdges();
 
-            slam_solver.optimizeGraph(10);
-            addOptimizedEdges(slam_solver, visualizer);
+            single_marker_slam.optimizeGraph(10);
+            addOptimizedEdges(single_marker_slam, visualizer);
         }
 
         last_keyframe_pose_aruco = cam_pose;
@@ -366,48 +367,49 @@ bool isOrientationCorrect(Eigen::Affine3f first, Eigen::Affine3f new_pose)
 
 /**
  * Remove edges from visualizer
- * @param slam_solver
+ * @param single_marker_slam
  * @param visualizer
  */
-void removeEdges(SLAM_Solver& slam_solver, ReconstructionVisualizer& visualizer)
+void removeEdges(SingleMarkerSlam& single_marker_slam, ReconstructionVisualizer& visualizer)
 {
     // Removing the edges
-    for (signed i = 0; i < slam_solver.num_vertices_; i++)
+    for (signed i = 0; i < single_marker_slam.num_vertices_; i++)
     {
-        slam_solver.getEdge(i, i + 1, edge_from, edge_to, edge_name);
+        single_marker_slam.getEdge(i, i + 1, edge_from, edge_to, edge_name);
         visualizer.removeEdge(edge_name);
     }
-    for (size_t i = 0; i < slam_solver.loop_closure_edges_name.size(); i++)
+    for (size_t i = 0; i < single_marker_slam.loop_closure_edges_name_.size(); i++)
     {
-        visualizer.removeEdge(slam_solver.loop_closure_edges_name[i]);
+        visualizer.removeEdge(single_marker_slam.loop_closure_edges_name_[i]);
     }
 }
 
 /**
  * Iterate over the number of vertices to add odometry optimization edges
  * and Iterate over the loop edges to add loop edges odometry
- * @param slam_solver
+ * @param single_marker_slam
  * @param visualizer
  */
-void addOptimizedEdges(SLAM_Solver& slam_solver, ReconstructionVisualizer& visualizer)
+void addOptimizedEdges(SingleMarkerSlam& single_marker_slam, ReconstructionVisualizer& visualizer)
 {
     // Iterate over number of vertices and get the optimized edge and adding to visualizer
-    for (signed i = 0; i < slam_solver.num_vertices_; i++)
+    for (signed i = 0; i < single_marker_slam.num_vertices_ - 1; i++)
     {
-        slam_solver.getOptimizedEdge(i, i + 1, edge_from, edge_to, edge_name);
+        single_marker_slam.getOptimizedEdge(i, i + 1, edge_from, edge_to, edge_name);
         visualizer.addEdge(edge_from, edge_to, edge_name, Eigen::Vector3f(1.0, 0.0, 1.0));
     }
     // Iterate over number of vertices and get the optimized loop edge and adding to visualizer
-    for (size_t i = 0; i < slam_solver.loop_closure_edges_name.size(); i++)
+    for (size_t i = 0; i < single_marker_slam.loop_closure_edges_name_.size() - 1; i++)
     {
         // name of edge is saved as "edge_fromid_toid"
-        string copy = slam_solver.loop_closure_edges_name[i].erase(0, 5); // Removing the first 5 strings "edge_"
+        string copy =
+            single_marker_slam.loop_closure_edges_name_[i].erase(0, 5); // Removing the first 5 strings "edge_"
 
         string from_id = copy.substr(0, copy.find('_'));
         string to_id = copy.substr(copy.find('_') + 1, 1);
         if (from_id != "" && to_id != "")
         {
-            slam_solver.getOptimizedEdge(stoi(from_id), stoi(to_id), edge_from, edge_to, edge_name);
+            single_marker_slam.getOptimizedEdge(stoi(from_id), stoi(to_id), edge_from, edge_to, edge_name);
             visualizer.addEdge(edge_from, edge_to, edge_name, Eigen::Vector3f(0.0, 1.0, 1.0));
         }
     }

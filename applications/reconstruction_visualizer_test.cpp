@@ -123,7 +123,7 @@ int main(int argc, char** argv)
                 Eigen::Vector3d from(kf_from.pose_(0, 3), kf_from.pose_(1, 3), kf_from.pose_(2, 3));
                 Eigen::Vector3d to(kf_to.pose_(0, 3), kf_to.pose_(1, 3), kf_to.pose_(2, 3));
                 // Create and add an Edge to the visualizer
-                Edge edge(num_keyframes - 1, num_keyframes, from, to, to_string(num_keyframes));
+                // Edge edge(num_keyframes - 1, num_keyframes, from, to, to_string(num_keyframes));
                 // visualizer.addEdge(edge);
             }
             num_keyframes++; // Increment the number of keyframes found
