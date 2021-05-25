@@ -118,7 +118,7 @@ void ReconstructionVisualizer::addReferenceFrame(const Eigen::Affine3f& pose, co
     viewer_->addText3D(text, text_pose, 0.025, 1, 1, 1, frame_name.str());
 }
 
-void ReconstructionVisualizer::addKeyFrame(const Keyframe kf, const std::string& text)
+void ReconstructionVisualizer::addKeyFrame(const Keyframe& kf, const std::string& text)
 {
     stringstream frame_name;
     frame_name << "key" << num_keyframes_;
@@ -135,7 +135,8 @@ void ReconstructionVisualizer::addKeyFrame(const Keyframe kf, const std::string&
     viewer_->addText3D(text, text_pose, 0.015, 1, 0, 0, frame_name.str());
 }
 
-void ReconstructionVisualizer::addPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud, const Eigen::Affine3f& pose)
+void ReconstructionVisualizer::addPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud, const Eigen::Affine3f& pose,
+                                             const std::string& cloud_name)
 {
     // Create a new point cloud
     pcl::PointCloud<PointT>::Ptr transf_cloud(new pcl::PointCloud<PointT>);
@@ -143,20 +144,23 @@ void ReconstructionVisualizer::addPointCloud(const pcl::PointCloud<PointT>::Ptr&
     // Transform point cloud
     pcl::transformPointCloud(*cloud, *transf_cloud, pose);
 
-    stringstream cloud_name;
-    cloud_name << "cloud" << num_clouds_++;
+    string name;
+    stringstream cloud_name_ss;
+    cloud_name_ss << "cloud" << num_clouds_++;
+    if(cloud_name == "")
+        name = cloud_name_ss.str();
+    else
+        name = cloud_name;
 
     pcl::visualization::PointCloudColorHandlerRGBField<PointT> rgb(transf_cloud);
-    if (!viewer_->updatePointCloud<PointT>(transf_cloud, rgb, cloud_name.str()))
-        viewer_->addPointCloud<PointT>(transf_cloud, rgb, cloud_name.str());
+    if (!viewer_->updatePointCloud<PointT>(transf_cloud, rgb, name))
+        viewer_->addPointCloud<PointT>(transf_cloud, rgb, name);
 
     // pcl::visualization::PointCloudColorHandlerCustom<PointT> blue(curr_cloud, 0, 0, 255);
 }
 
-void ReconstructionVisualizer::addQuantizedPointCloud(
-    const pcl::PointCloud<PointT>::Ptr& cloud,
-    const float& radius,
-    const Eigen::Affine3f& pose)
+void ReconstructionVisualizer::addQuantizedPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud, const float& radius,
+                                                      const Eigen::Affine3f& pose, const std::string& cloud_name)
 {
     // Create a new point cloud
     pcl::PointCloud<PointT>::Ptr quant_cloud(new pcl::PointCloud<PointT>);
@@ -166,7 +170,7 @@ void ReconstructionVisualizer::addQuantizedPointCloud(
     uniform_sampling.setInputCloud(cloud);
     uniform_sampling.setRadiusSearch(radius);
     uniform_sampling.filter(*quant_cloud);
-    addPointCloud(quant_cloud, pose);
+    addPointCloud(quant_cloud, pose, cloud_name);
 }
 
 void ReconstructionVisualizer::addEdge(

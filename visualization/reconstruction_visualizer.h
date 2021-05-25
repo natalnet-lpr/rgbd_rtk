@@ -119,18 +119,20 @@ public:
     void addReferenceFrame(const Eigen::Affine3f& pose, const std::string& text);
 
     /**
-     * Adds a keyFrame with the given pose to the 3D reconstruction
-     * @param kf Keyframe to be added
+     * Adds a keyframe with the given pose to the 3D reconstruction
+     * @param kf keyframe to be added
      * @param text text of the pose in visualization
      */
-    void addKeyFrame(const Keyframe kf, const std::string& text);
+    void addKeyFrame(const Keyframe& kf, const std::string& text);
 
     /**
      * Adds a point cloud with the given pose to the 3D reconstruction
      * @param cloud PointCloud to be added
      * @param pose pose of the 3d Reconstruction
+     * @param cloud_name name of the point cloud
      */
-    void addPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud, const Eigen::Affine3f& pose);
+    void addPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud, const Eigen::Affine3f& pose,
+                       const std::string& cloud_name = "");
 
     /**
      * Receives a point cloud and quantize it (uniform sampling) with the given pose to the 3D
@@ -138,9 +140,12 @@ public:
      * @param cloud point cloud after quantization
      * @param radius radius search of uniform sampling
      * @param pose of the point cloud
+     * @param cloud_name name of the point cloud
      */
     void
-    addQuantizedPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud, const float& radius, const Eigen::Affine3f& pose);
+    addQuantizedPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud, const float& radius,
+                           const Eigen::Affine3f& pose, const std::string& cloud_name = "");
+
 
     /**
      * Removes an edge from the PCLVisualizer.
