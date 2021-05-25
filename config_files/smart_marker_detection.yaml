@@ -1,10 +1,13 @@
 %YAML:1.0
+# file parameters
 camera_calibration_file: "/media/bruno/NS2_DATA/Datasets/RGBD_Natalnet_SmartMarkers/rgbd_dataset_room_zed720_pionner3at/sm_cam.yml"
-index_file: "/media/bruno/NS2_DATA/Datasets/RGBD_Natalnet_SmartMarkers/rgbd_dataset_room_zed720_pionner3at/index.txt"
+index_file: "/home/bruno/Downloads/rgbd_dataset_room_zed720_pionner3at/index.txt"
+# tracker parameters
+min_pts: 600
+max_pts: 5000
+log_stats: 0
+# marker detection parameters
 aruco_dic: "ARUCO_MIP_36h12"
-aruco_max_distance: 4 #default: 4
+aruco_max_distance: 4
 aruco_marker_size: 1 #confirm size with Luis Ortiz
 ###aruco_poses_file: "../../config_files/aruco_poses_coffee.txt"
-#motion estimation ransac parameters
-ransac_distance_threshold: 0.008 #8mm
-ransac_inliers_ratio: = 0.8 #Should be between 0 and 1
