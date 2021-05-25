@@ -37,6 +37,7 @@
 #include <pcl/point_cloud.h>
 #include <sstream>
 
+#include <geometry.h>
 #include <reconstruction_visualizer.h>
 
 using namespace std;
@@ -110,12 +111,12 @@ void ReconstructionVisualizer::addReferenceFrame(const Eigen::Affine3f& pose, co
     viewer_->addCoordinateSystem(0.2, pose, frame_name.str());
     num_ref_frames_++;
     // Add text
-    PointT text_pose;
-    text_pose.x = pose(0, 3) + 0.02;
-    text_pose.y = pose(1, 3) + 0.05;
-    text_pose.z = pose(2, 3);
+    PointT text_pos;
+    text_pos.x = pose(0, 3) + 0.02;
+    text_pos.y = pose(1, 3) + 0.05;
+    text_pos.z = pose(2, 3);
     frame_name << "_text";
-    viewer_->addText3D(text, text_pose, 0.025, 1, 1, 1, frame_name.str());
+    viewer_->addText3D(text, text_pos, 0.025, 1, 1, 1, frame_name.str());
 }
 
 void ReconstructionVisualizer::addKeyFrame(const Keyframe& kf)
@@ -123,16 +124,13 @@ void ReconstructionVisualizer::addKeyFrame(const Keyframe& kf)
     stringstream frame_name;
     frame_name << "kf" << num_keyframes_;
     viewer_->addCoordinateSystem(0.2, kf.pose_, frame_name.str());
-    num_keyframes_++;
-    // The next line used to add a global point cloud, now it uses a local point cloud
-    addQuantizedPointCloud(kf.local_cloud_, 0.01, kf.pose_);
+    addQuantizedPointCloud(kf.local_cloud_, 0.01, kf.pose_, frame_name.str() + "_cloud");
     // Add text
-    PointT text_pose;
-    text_pose.x = kf.pose_(0, 3) + 0.02;
-    text_pose.y = kf.pose_(1, 3) + 0.05;
-    text_pose.z = kf.pose_(2, 3);
-    frame_name << "_text";
-    viewer_->addText3D(frame_name.str(), text_pose, 0.015, 1, 0, 0, frame_name.str());
+    PointT text_pos;
+    text_pos.x = kf.pose_(0, 3) + 0.02;
+    text_pos.y = kf.pose_(1, 3) + 0.05;
+    text_pos.z = kf.pose_(2, 3);
+    viewer_->addText3D(frame_name.str(), text_pos, 0.015, 1, 0, 0, frame_name.str() + "_text");
 }
 
 void ReconstructionVisualizer::addPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud, const Eigen::Affine3f& pose,
@@ -234,62 +232,31 @@ void ReconstructionVisualizer::viewQuantizedPointCloud(
     viewPointCloud(quant_cloud, pose);
 }
 
-void ReconstructionVisualizer::updateKeyframes(const std::vector<Keyframe>& keyframes)
+void ReconstructionVisualizer::updateKeyFrame(const Keyframe& kf)
 {
-    viewer_->removePointCloud("cloud");
+    // Grab names of coord. system and point cloud
+    stringstream frame_name;
+    frame_name << "kf" << kf.idx_;
 
-    MLOG_INFO(EventLogger::M_VISUALIZATION, "@ReconstructionVisualizer::updateKeyframes: \
-                                              Updating keyframe visualization\n");
+    MLOG_DEBUG(EventLogger::M_VISUALIZATION, "@ReconstructionVisualizer::updateKeyframe: "
+                                             "Updating keyframe %lu\n", kf.idx_);
 
-    // Iterate over keyframes and add their clouds to visualization
-    for (size_t i = 0; i < keyframes.size(); i++)
-    {
+    // Grab transformation from the original kf pose to its optimized kf pose
+    Eigen::Affine3f rel_transf = relativeTransform(kf.pose_, kf.opt_pose_);
 
-        // Grab coord. system and cloud names
-        stringstream ss;
-        ss << "kf" << keyframes[i].idx_;
-        string coord_sys_name = ss.str();
-        ss << "_cloud";
-        string cloud_name = ss.str();
+    // Update coord. system
+    viewer_->updateCoordinateSystemPose(frame_name.str(), rel_transf);
 
-        // Viewer_->removeText3D(coord_sys_name);
-
-        // THIS SOLUTION WORKS BUT IS VERY SLOW
-        // Updates ref. frame and point clouds
-
-        viewer_->removeCoordinateSystem(coord_sys_name);
-        // add_coord_frame(keyframes[i].pose_, coord_sys_name);
-        // viewer_->updatePointCloud(keyframes[i].m_global_cloud, cloud_name);
-
-        // THIS REMOVES AND ADDS BACK CLOUDS/REF. FRAMES
-        viewer_->removeCoordinateSystem(coord_sys_name);
-        viewer_->removePointCloud(cloud_name);
-        addKeyFrame(keyframes[i]);
-
-        Eigen::Affine3f camera = keyframes[i].pose_;
-        Eigen::Affine3f rel_transf;
-        rel_transf.linear()(0, 0) = camera(0, 0);
-        rel_transf.linear()(0, 1) = camera(0, 1);
-        rel_transf.linear()(0, 2) = camera(0, 2);
-        rel_transf.linear()(1, 0) = camera(1, 0);
-        rel_transf.linear()(1, 1) = camera(1, 1);
-        rel_transf.linear()(1, 2) = camera(1, 2);
-        rel_transf.linear()(2, 0) = camera(2, 0);
-        rel_transf.linear()(2, 1) = camera(2, 1);
-        rel_transf.linear()(2, 2) = camera(2, 2);
-        rel_transf.translation() = Eigen::Vector3f(camera(0, 3), camera(1, 3), camera(2, 3));
-
-        viewer_->updateCoordinateSystemPose(coord_sys_name, rel_transf);
-        viewer_->updatePointCloudPose(cloud_name, rel_transf);
-        PointT pos;
-        pos.x = camera(0, 3);
-        pos.y = camera(1, 3);
-        pos.z = camera(2, 3);
-        viewer_->addText3D(coord_sys_name, pos, 0.025);
-    }
-
-    MLOG_INFO(EventLogger::M_VISUALIZATION, "@ReconstructionVisualizer::updateKeyframes: \
-                                              keyframe visualization updated\n");
+    // Update point cloud
+    viewer_->updatePointCloudPose(frame_name.str() + "_cloud", rel_transf);
+    
+    // Update text
+    PointT text_pos;
+    text_pos.x = kf.opt_pose_(0, 3) + 0.02;
+    text_pos.y = kf.opt_pose_(1, 3) + 0.05;
+    text_pos.z = kf.opt_pose_(2, 3);
+    viewer_->removeText3D(frame_name.str() + "_text");
+    viewer_->addText3D(frame_name.str(), text_pos, 0.015, 1, 0, 0, frame_name.str() + "_text");
 }
 
 void ReconstructionVisualizer::removeEdge(const string& name) { viewer_->removeShape(name); }

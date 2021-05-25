@@ -179,10 +179,11 @@ public:
         const Eigen::Affine3f& pose);
 
     /**
-     * Updates all keyframes (ref. frames and point clouds).
-     * @param keyframes vector of keyframes
+     * Updates a given keyframe.
+     * @param keyframe keyframe to be updated
+     * (assumed to be with modified pose, pointcloud, keypoints, etc.)
      */
-    void updateKeyframes(const std::vector<Keyframe>& keyframes);
+    void updateKeyFrame(const Keyframe& kf);
 
     /**
      *Sets the virtual camera position in the virtual world
