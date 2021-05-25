@@ -52,10 +52,10 @@ int main(int argc, char** argv)
 
     RGBDLoader loader;
     Intrinsics intr;
-    OpticalFlowVisualOdometry vo(intr);
     ReconstructionVisualizer visualizer;
+
     Mat frame, depth;
-    Eigen::Affine3f first;
+    int min_pts, max_pts, log_stats;
     float marker_size, aruco_max_distance;
     string camera_calibration_file, aruco_dic, index_file;
 
@@ -66,18 +66,28 @@ int main(int argc, char** argv)
         exit(0);
     }
     ConfigLoader param_loader(argv[1]);
-    param_loader.checkAndGetFloat("aruco_marker_size", marker_size);
-    param_loader.checkAndGetFloat("aruco_max_distance", aruco_max_distance);
+    //file parameters
     param_loader.checkAndGetString("camera_calibration_file", camera_calibration_file);
     param_loader.checkAndGetString("index_file", index_file);
+    //tracker parameters
+    param_loader.checkAndGetInt("min_pts", min_pts);
+    param_loader.checkAndGetInt("max_pts", max_pts);
+    param_loader.checkAndGetInt("log_stats", log_stats);
+    //marker detection parameters
+    param_loader.checkAndGetFloat("aruco_marker_size", marker_size);
+    param_loader.checkAndGetFloat("aruco_max_distance", aruco_max_distance);
     param_loader.checkAndGetString("aruco_dic", aruco_dic);
-
+    
+    //KLTTracker tracker(min_pts, max_pts, log_stats);
     intr.loadFromFile(camera_calibration_file);
-
+    intr.setScale(1000.0); //transform zed point cloud from milimeters to meters
+    OpticalFlowVisualOdometry vo(intr);
     MarkerFinder marker_finder;
     marker_finder.markerParam(camera_calibration_file, marker_size, aruco_dic);
 
     loader.processFile(index_file);
+
+    //pcl::PointCloud<PointT>::Ptr cloud = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
 
     // Compute visual odometry and find markers on each image
     for (int i = 0; i < loader.num_images_; i++)
@@ -86,7 +96,8 @@ int main(int argc, char** argv)
         loader.getNextImage(frame, depth);
 
         // Estimate current camera pose
-        vo.computeCameraPose(frame, depth);
+        vo.computeCameraPose(frame, depth); //resulting in ransac exception (no keypoints)
+        //*cloud = getPointCloud(frame, depth, intr);
 
         // Find ARUCO markers and compute their poses
         /*
@@ -109,6 +120,9 @@ int main(int argc, char** argv)
         */
 
         if (i == 0) visualizer.addReferenceFrame(vo.pose_, "origin");
+
+        //visualizer.viewPointCloud(cloud, vo.pose_);
+        //visualizer.viewQuantizedPointCloud(cloud, 0.02, vo.pose_);
         visualizer.addQuantizedPointCloud(vo.curr_dense_cloud_, 0.05, vo.pose_);
         visualizer.viewReferenceFrame(vo.pose_);
         // visualizer.viewPointCloud(vo.curr_dense_cloud_, vo.pose_);
@@ -118,7 +132,7 @@ int main(int argc, char** argv)
 
         // Show RGB-D image
         imshow("Image view", frame);
-        char key = waitKey(30);
+        char key = waitKey(0);
         if (key == 27 || key == 'q' || key == 'Q')
         {
             printf("Exiting.\n");

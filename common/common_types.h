@@ -236,7 +236,7 @@ struct Intrinsics
     }
 
     /**
-     * Set intrinsic parameters from yml file.
+     * Sets intrinsic parameters from yml file.
      * @param filename full path of .yml camera calibration file.
      */
     void loadFromFile(const std::string& filename)
@@ -287,6 +287,15 @@ struct Intrinsics
         p1_ = 0.0;
         p2_ = 0.0;
         k3_ = 0.0;
+    }
+
+    /**
+     * Sets the scale of the point cloud (useful to convert between diff. units)
+     * @param s scale factor (use 1000 for ZED point clouds to convert from mm to meters)
+     */
+    void setScale(const float& s)
+    {
+        scale_ = s;
     }
 };
 
