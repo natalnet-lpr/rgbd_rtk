@@ -55,7 +55,8 @@ int main(int argc, char **argv)
 	
 	RGBDLoader loader;
 	Intrinsics intr(0);
-	OpticalFlowVisualOdometry vo(intr);
+	OpticalFlowVisualOdometry vo(intr, Eigen::Affine3f::Identity(), true);
+	//OpticalFlowVisualOdometry vo(intr);
 	ReconstructionVisualizer visualizer;
 	string index_file;
 	Mat frame, depth;
@@ -66,7 +67,7 @@ int main(int argc, char **argv)
 		exit(0);
 	}
 	ConfigLoader param_loader(argv[1]);
-	param_loader.checkAndGetString("index_file",index_file);
+	param_loader.checkAndGetString("index_file", index_file);
 	loader.processFile(index_file);
 
 	visualizer.addReferenceFrame(vo.pose_, "origin");
@@ -77,8 +78,14 @@ int main(int argc, char **argv)
 		//Load RGB-D image 
 		loader.getNextImage(frame, depth);
 
+		bool save_pose_information = vo.writePoseInfo("Time Stamp");
+		std::cout << "Pose Info " << save_pose_information << std::endl; 
+
 		//Estimate current camera pose
 		bool is_kf = vo.computeCameraPose(frame, depth);
+
+		// Save the pose information
+		//bool save_pose_information = vo.write_pose_info("Time Stamp", vo.pose_);
 
 		//View tracked points
 		for(size_t k = 0; k < vo.tracker_.curr_pts_.size(); k++)

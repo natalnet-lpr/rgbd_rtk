@@ -28,6 +28,7 @@
  */
 
 #include <algorithm>
+#include <Eigen/Geometry>
 
 #include <geometry.h>
 #include <optical_flow_visual_odometry.h>
@@ -51,16 +52,21 @@ void OpticalFlowVisualOdometry::addKeyFrame(const Mat& rgb)
     keyframes_.insert(pair<size_t, Keyframe>(kf.idx_, kf));
 }
 
-OpticalFlowVisualOdometry::OpticalFlowVisualOdometry(const Eigen::Affine3f& initialPose)
+OpticalFlowVisualOdometry::OpticalFlowVisualOdometry(const Eigen::Affine3f& initialPose, const bool& log_stats)
 {
     frame_idx_ = 0;
     pose_ = initialPose;
 
     prev_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
     curr_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
+
+    if (log_stats)
+    {
+        initialize_logger("pose_stats.txt");
+    }
 }
 
-OpticalFlowVisualOdometry::OpticalFlowVisualOdometry(const Intrinsics& intr, const Eigen::Affine3f& initialPose)
+OpticalFlowVisualOdometry::OpticalFlowVisualOdometry(const Intrinsics& intr, const Eigen::Affine3f& initialPose, const bool& log_stats)
 {
     frame_idx_ = 0;
     pose_ = initialPose;
@@ -68,6 +74,28 @@ OpticalFlowVisualOdometry::OpticalFlowVisualOdometry(const Intrinsics& intr, con
 
     prev_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
     curr_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
+
+    if (log_stats)
+    {
+        initialize_logger("pose_stats.txt");
+    }
+}
+
+void OpticalFlowVisualOdometry::initialize_logger(const std::string& pose_file_name)
+{
+    pose_info_.open(pose_file_name.c_str());
+    if (!pose_info_.is_open())
+    {
+        MLOG_ERROR(EventLogger::M_VISUAL_ODOMETRY, "@OpticalFlowVisualOdometry::initialize_logger: \
+			                                        there is a problem with the supplied \
+			                                        file for the pose information.\n");
+		exit(-1);
+    }
+    
+    pose_info_ << "Saving pose information \n"; 
+
+    MLOG_INFO(EventLogger::M_VISUAL_ODOMETRY, "@OpticalFlowVisualOdometry::initialize_logger: saving \
+		                                        pose information to %s\n", pose_file_name.c_str());
 }
 
 bool OpticalFlowVisualOdometry::computeCameraPose(const cv::Mat& rgb, const cv::Mat& depth)
@@ -113,4 +141,30 @@ Keyframe OpticalFlowVisualOdometry::getLastKeyframe()
                                                 last keyframe has id %lu\n", it->first);
     
     return prev(it)->second; // prev from std
+}
+
+bool OpticalFlowVisualOdometry::writePoseInfo(const std::string& time_stamp)
+{   
+    if (pose_info_.is_open())
+    {
+        Eigen::Matrix3f Rot;
+        Rot(0,0) = pose_(0,0); Rot(0,1) = pose_(0,1); Rot(0,2) = pose_(0,2);
+        Rot(1,0) = pose_(1,0); Rot(1,1) = pose_(1,1); Rot(0,2) = pose_(1,2);
+        Rot(2,0) = pose_(2,0); Rot(2,1) = pose_(2,1); Rot(2,2) = pose_(2,2);
+
+        Eigen::Quaternionf q(Rot);
+        /*pose_info_ << time_stamp << " " << pose_(0,3) << " "
+                                            << pose_(1,3) << " "
+                                            << pose_(2,3) << " "
+                                            << q.x() << " "
+                                            << q.y() << " "
+                                            << q.z() << " "
+                                            << q.w() << "\n";*/
+
+        //pose_info_ << "Testando...\n"; 
+        
+        MLOG_DEBUG(EventLogger::M_VISUAL_ODOMETRY, "@OpticalFlowVisualOdometry::write_pose_info: save pose information...\n");
+    }
+
+    return pose_info_.good(); 
 }
