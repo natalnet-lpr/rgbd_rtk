@@ -45,7 +45,7 @@ using namespace std;
 ReconstructionVisualizer::ReconstructionVisualizer()
 {
     // Initialize attributs
-    num_clouds_ = 0, num_lines_ = 0, num_ref_frames_ = 0, num_keyframes_ = 0, num_edges_ = 0;
+    num_clouds_ = 0, num_lines_ = 0, num_ref_frames_ = 0, num_edges_ = 0;
     prev_pos_ = pcl::PointXYZ();
     curr_pos_ = pcl::PointXYZ();
 
@@ -69,7 +69,7 @@ ReconstructionVisualizer::ReconstructionVisualizer()
 ReconstructionVisualizer::ReconstructionVisualizer(const std::string& title)
 {
     // Initialize attributs
-    num_clouds_ = 0, num_lines_ = 0, num_ref_frames_ = 0, num_keyframes_ = 0, num_edges_ = 0;
+    num_clouds_ = 0, num_lines_ = 0, num_ref_frames_ = 0, num_edges_ = 0;
 
     // Setup PCL visualizer
     viewer_ = PCLVisualizerPtr(new pcl::visualization::PCLVisualizer(title));
@@ -122,7 +122,7 @@ void ReconstructionVisualizer::addReferenceFrame(const Eigen::Affine3f& pose, co
 void ReconstructionVisualizer::addKeyFrame(const Keyframe& kf)
 {
     stringstream frame_name;
-    frame_name << "kf" << num_keyframes_;
+    frame_name << "kf" << kf.idx_;
     viewer_->addCoordinateSystem(0.2, kf.pose_, frame_name.str());
     addQuantizedPointCloud(kf.local_cloud_, 0.01, kf.pose_, frame_name.str() + "_cloud");
     // Add text

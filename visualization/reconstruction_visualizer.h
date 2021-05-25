@@ -64,9 +64,6 @@ private:
     // Number of reference frames added to the visualizer
     int num_ref_frames_;
 
-    // Number of keyframes added to the visualizer
-    int num_keyframes_;
-
     // Number of edged added to the visualizer
     int num_edges_;
 
