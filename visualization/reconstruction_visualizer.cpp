@@ -118,10 +118,10 @@ void ReconstructionVisualizer::addReferenceFrame(const Eigen::Affine3f& pose, co
     viewer_->addText3D(text, text_pose, 0.025, 1, 1, 1, frame_name.str());
 }
 
-void ReconstructionVisualizer::addKeyFrame(const Keyframe& kf, const std::string& text)
+void ReconstructionVisualizer::addKeyFrame(const Keyframe& kf)
 {
     stringstream frame_name;
-    frame_name << "key" << num_keyframes_;
+    frame_name << "kf" << num_keyframes_;
     viewer_->addCoordinateSystem(0.2, kf.pose_, frame_name.str());
     num_keyframes_++;
     // The next line used to add a global point cloud, now it uses a local point cloud
@@ -132,7 +132,7 @@ void ReconstructionVisualizer::addKeyFrame(const Keyframe& kf, const std::string
     text_pose.y = kf.pose_(1, 3) + 0.05;
     text_pose.z = kf.pose_(2, 3);
     frame_name << "_text";
-    viewer_->addText3D(text, text_pose, 0.015, 1, 0, 0, frame_name.str());
+    viewer_->addText3D(frame_name.str(), text_pose, 0.015, 1, 0, 0, frame_name.str());
 }
 
 void ReconstructionVisualizer::addPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud, const Eigen::Affine3f& pose,
@@ -264,7 +264,7 @@ void ReconstructionVisualizer::updateKeyframes(const std::vector<Keyframe>& keyf
         // THIS REMOVES AND ADDS BACK CLOUDS/REF. FRAMES
         viewer_->removeCoordinateSystem(coord_sys_name);
         viewer_->removePointCloud(cloud_name);
-        addKeyFrame(keyframes[i], to_string(keyframes[i].idx_));
+        addKeyFrame(keyframes[i]);
 
         Eigen::Affine3f camera = keyframes[i].pose_;
         Eigen::Affine3f rel_transf;

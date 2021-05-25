@@ -249,9 +249,6 @@ struct Keyframe
     // RGB image of the keyframe
     cv::Mat img_;
 
-    // Keyframe name
-    std::string name_;
-
     // RGB-D point cloud of the keyframe (in local reference frame)
     pcl::PointCloud<PointT>::Ptr local_cloud_;
 

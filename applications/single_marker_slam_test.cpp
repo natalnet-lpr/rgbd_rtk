@@ -216,7 +216,7 @@ int main(int argc, char** argv)
                 {
                     if (isOrientationCorrect(first_aruco_pose, marker_finder.marker_poses_[j]))
                     {
-                        vo.computeCameraPose(frame, depth, true) 
+                        vo.computeCameraPose(frame, depth, true);
                         addVertixAndEdge(
                             vo,
                             last_keyframe_pose_odometry,
@@ -267,7 +267,7 @@ int main(int argc, char** argv)
                         false,
                         config_params);
                     // Adding a Keyframe to visualizer, this will save the point cloud
-                    visualizer.addKeyFrame(vo.keyframes_[vo.keyframes_.size()], to_string(vo.keyframes_.size()));
+                    visualizer.addKeyFrame(vo.keyframes_[vo.keyframes_.size()]);
                 }
 
             }
