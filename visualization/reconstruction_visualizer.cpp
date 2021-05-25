@@ -242,7 +242,8 @@ void ReconstructionVisualizer::updateKeyFrame(const Keyframe& kf)
                                              "Updating keyframe %lu\n", kf.idx_);
 
     // Grab transformation from the original kf pose to its optimized kf pose
-    Eigen::Affine3f rel_transf = relativeTransform(kf.pose_, kf.opt_pose_);
+    // (point transformation and not pose transformation)
+    Eigen::Affine3f rel_transf = kf.opt_pose_ * kf.pose_.inverse();
 
     // Update coord. system
     viewer_->updateCoordinateSystemPose(frame_name.str(), rel_transf);
