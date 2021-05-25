@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2021, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -22,6 +22,10 @@
  *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
+ *  Authors:
+ *
+ *  Bruno Silva
+ *  Rodrigo Sarmento Xavier
  */
 
 #include <geometry.h>
@@ -131,4 +135,9 @@ Eigen::Affine3f newPoseOffset(const Eigen::Affine3f& pose, const float& offset_d
 	resultado(0,3) = V(0,0); resultado(1,3) = V(1,0); resultado(2,3) = V(2,0); //Setting the last column
 
 	return resultado;
+}
+
+Eigen::Affine3f relativeTransform(const Eigen::Affine3f &from_pose, const Eigen::Affine3f &to_pose)
+{
+	return from_pose.inverse()*to_pose;
 }
