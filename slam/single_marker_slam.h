@@ -133,8 +133,9 @@ public:
      * @param name (output parameter) string where the name of edge will be saved
      */
     void getEdge(const int& from_id, const int& to_id, Eigen::Vector3d& from, Eigen::Vector3d& to, std::string& name);
+    Eigen::Affine3f getVertex(const int& id);
 
-    Eigen::Affine3f getVertix(const int& id);
+    Eigen::Affine3f getOptimizedVertex(const int& id);
 
     /**
      * Returns the the last edge, if it is an odometry it will return the edge from positions_.size() - 2 to

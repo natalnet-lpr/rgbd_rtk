@@ -86,7 +86,7 @@ vector<Pose> markers_found; // List of marker structs
 void loadMarkersFound(string aruco_poses_file);
 
 /**
- * Adds vertix and edges in single_marker_slam and visualizer
+ * Adds vertex and edges in single_marker_slam and visualizer
  * @param new_keyframe_pose new keyframe that should be added
  * @param last_keyframe_pose_odometry the last keyframe added in graph, this is update this in this function
  * @param last_keyframe_pose_aruco the last keyframe added in graph, this is update this in this function
@@ -96,7 +96,7 @@ void loadMarkersFound(string aruco_poses_file);
  * @param visualizer visualizer reference
  * @param is_loop_closure if the vertex added is a loop_closure as well
  */
-void addVertixAndEdge(
+void addVertexAndEdge(
     Eigen::Affine3f cam_pose,
     Eigen::Affine3f& last_keyframe_pose_odometry,
     Eigen::Affine3f& last_keyframe_pose_aruco,
@@ -219,7 +219,7 @@ int main(int argc, char** argv)
                 // If the origin marker has been found again add a edge from cam to origin
                 if (aruco_origin_pose_uco_reference.id == marker_finder.markers_[i].id)
                 {
-                    addVertixAndEdge(
+                    addVertexAndEdge(
                         vo.pose_,
                         last_keyframe_pose_odometry,
                         last_keyframe_pose_aruco,
@@ -351,7 +351,7 @@ int main(int argc, char** argv)
             // If we found a keyframe we will added to slam solver and visualizer
             if (is_kf and !marker_found)
             {
-                addVertixAndEdge(
+                addVertexAndEdge(
                     vo.pose_,
                     last_keyframe_pose_odometry,
                     last_keyframe_pose_aruco,
@@ -379,7 +379,7 @@ int main(int argc, char** argv)
     return 0;
 }
 
-void addVertixAndEdge(
+void addVertexAndEdge(
     Eigen::Affine3f cam_pose,
     Eigen::Affine3f& last_keyframe_pose_odometry,
     Eigen::Affine3f& last_keyframe_pose_aruco,

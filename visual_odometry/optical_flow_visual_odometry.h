@@ -56,14 +56,14 @@ private:
     // Current frame index
     unsigned long int frame_idx_;
 
-    // Adds a new keyframe to the internal container of keyframes
-    void addKeyFrame(const cv::Mat& rgb);
-
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     // Previous dense point cloud
     pcl::PointCloud<PointT>::Ptr prev_dense_cloud_;
+
+    // Adds a new keyframe to the internal container of keyframes
+    void addKeyFrame(const cv::Mat& rgb);
 
     // Current dense point cloud
     pcl::PointCloud<PointT>::Ptr curr_dense_cloud_;
@@ -79,6 +79,8 @@ public:
 
     // Container with pairs idx <-> keyframe
     std::map<size_t, Keyframe> keyframes_;
+
+    int num_keyframes_;
 
     /**
      * Default constructor
@@ -99,7 +101,7 @@ public:
      * @param rgb image @param depth image
      * @param return a boolean
      */
-    bool computeCameraPose(const cv::Mat& rgb, const cv::Mat& depth, const std::bool force_keyframe = true);
+    bool computeCameraPose(const cv::Mat& rgb, const cv::Mat& depth);
 
     void createArtificialKeyframe(const cv::Mat& rgb);
 

@@ -99,20 +99,16 @@ void updatePointCloud(
     OpticalFlowVisualOdometry& vo,
     SingleMarkerSlam& single_marker_slam);
 /**
- * Adds vertix and edges in single_marker_slam and visualizer
+ * Adds vertex and edges in single_marker_slam and visualizer
  * @param new_keyframe_pose new keyframe that should be added
- * @param last_keyframe_pose_odometry the last keyframe added in graph, this is update this in this function
- * @param last_keyframe_pose_aruco the last keyframe added in graph, this is update this in this function
  * @param first_keyframe_pose the first keyframe
  * @param num_keyframes number of keyframes in graph, this is update in this function
  * @param single_marker_slam single_marker_slam reference
  * @param visualizer visualizer reference
  * @param is_loop_closure if the vertex added is a loop_closure as well
  */
-void addVertixAndEdge(
+void addVertexAndEdge(
     OpticalFlowVisualOdometry& vo,
-    Eigen::Affine3f& last_keyframe_pose_odometry,
-    Eigen::Affine3f& last_keyframe_pose_aruco,
     Eigen::Affine3f aruco_pose,
     int& num_keyframes,
     SingleMarkerSlam& single_marker_slam,
@@ -142,6 +138,7 @@ int main(int argc, char** argv)
     Eigen::Affine3f last_keyframe_pose_odometry; // Last odometry keyframe
     Eigen::Affine3f last_keyframe_pose_aruco;    // Last Aruco Keyframe
     Eigen::Affine3f first_aruco_pose;            // First Keyframe
+    double x = 0, y = 0, z = 0;
 
     // Slam solver will start when the marker is found for the first time
     if (argc != 2)
@@ -194,6 +191,8 @@ int main(int argc, char** argv)
                     num_keyframes++; // Increment the number of keyframes found
                     // Set slam solver started to true since we found the marker for the first time
                     slam_solver_started = true;
+                    vo.addKeyFrame(frame);
+                    visualizer.addKeyFrame(vo.getLastKeyframe());
                 }
             }
             continue;
@@ -202,6 +201,8 @@ int main(int argc, char** argv)
         // If we have already found the marker we start the keyframe process
         else
         {
+            bool is_kf = vo.computeCameraPose(frame, depth);
+
             // Reset marker finding boolean
             marker_found = false;
 
@@ -214,27 +215,33 @@ int main(int argc, char** argv)
 
                 if (250 == marker_finder.markers_[j].id)
                 {
-                    if (isOrientationCorrect(first_aruco_pose, marker_finder.marker_poses_[j]))
+                    x = pow(vo.pose_(0, 3) - last_keyframe_pose_aruco(0, 3), 2);
+                    y = pow(vo.pose_(1, 3) - last_keyframe_pose_aruco(1, 3), 2);
+                    z = pow(vo.pose_(2, 3) - last_keyframe_pose_aruco(2, 3), 2);
+                    if (sqrt(x + y + z) >= config_params.minimum_distance_between_keyframes)
                     {
-                        vo.computeCameraPose(frame, depth, true);
-                        addVertixAndEdge(
-                            vo,
-                            last_keyframe_pose_odometry,
-                            last_keyframe_pose_aruco,
-                            marker_finder.marker_poses_[j],
-                            num_keyframes,
-                            single_marker_slam,
-                            visualizer,
-                            true,
-                            config_params);
-                        marker_found = true;
+                        if (isOrientationCorrect(first_aruco_pose, marker_finder.marker_poses_[j]))
+                        {
+                            addVertexAndEdge(
+                                vo,
+                                marker_finder.marker_poses_[j],
+                                num_keyframes,
+                                single_marker_slam,
+                                visualizer,
+                                true,
+                                config_params);
+                            marker_found = true;
+                            last_keyframe_pose_aruco = vo.pose_;
+
+                            vo.addKeyFrame(frame);
+                            visualizer.addKeyFrame(vo.getLastKeyframe());
+                        }
                     }
                 }
             }
 
-            if(!marker_found){
-                // Estimate current camera pose
-                bool is_kf = vo.computeCameraPose(frame, depth);
+            if (!marker_found)
+            {
 
                 // View tracked points
                 for (size_t k = 0; k < vo.tracker_.curr_pts_.size(); k++)
@@ -256,22 +263,26 @@ int main(int argc, char** argv)
                 // If we found a keyframe we will added to slam solver and visualizer
                 if (is_kf)
                 {
-                    addVertixAndEdge(
-                        vo,
-                        last_keyframe_pose_odometry,
-                        last_keyframe_pose_aruco,
-                        Eigen::Affine3f::Identity(),
-                        num_keyframes,
-                        single_marker_slam,
-                        visualizer,
-                        false,
-                        config_params);
-                    // Adding a Keyframe to visualizer, this will save the point cloud
-                    visualizer.addKeyFrame(vo.keyframes_[vo.keyframes_.size()]);
-                }
+                    double x = pow(vo.pose_(0, 3) - last_keyframe_pose_odometry(0, 3), 2);
+                    double y = pow(vo.pose_(1, 3) - last_keyframe_pose_odometry(1, 3), 2);
+                    double z = pow(vo.pose_(2, 3) - last_keyframe_pose_odometry(2, 3), 2);
+                    if (sqrt(x + y + z) >= config_params.minimum_distance_between_keyframes)
+                    {
+                        addVertexAndEdge(
+                            vo,
+                            Eigen::Affine3f::Identity(),
+                            num_keyframes,
+                            single_marker_slam,
+                            visualizer,
+                            false,
+                            config_params);
+                        last_keyframe_pose_odometry = vo.pose_;
 
+                        vo.addKeyFrame(frame);
+                        visualizer.addKeyFrame(vo.getLastKeyframe());
+                    }
+                }
             }
-          
         }
 
         visualizer.spinOnce();
@@ -289,14 +300,14 @@ int main(int argc, char** argv)
     visualizer.removeAllVertexesAndEdges();
     single_marker_slam.optimizeGraph(10);
     addOptimizedEdges(single_marker_slam, visualizer);
+    updatePointCloud(visualizer, vo, single_marker_slam);
+
     visualizer.spin();
     return 0;
 }
 
-void addVertixAndEdge(
+void addVertexAndEdge(
     OpticalFlowVisualOdometry& vo,
-    Eigen::Affine3f& last_keyframe_pose_odometry,
-    Eigen::Affine3f& last_keyframe_pose_aruco,
     Eigen::Affine3f aruco_pose,
     int& num_keyframes,
     SingleMarkerSlam& single_marker_slam,
@@ -305,12 +316,9 @@ void addVertixAndEdge(
     ConfigParams config_params)
 
 {
-    double x = pow(vo.pose_(0, 3) - last_keyframe_pose_odometry(0, 3), 2);
-    double y = pow(vo.pose_(1, 3) - last_keyframe_pose_odometry(1, 3), 2);
-    double z = pow(vo.pose_(2, 3) - last_keyframe_pose_odometry(2, 3), 2);
 
     // We will only add a new keyframe if they have at least 5cm of distance between each other
-    if (sqrt(x + y + z) >= config_params.minimum_distance_between_keyframes and is_loop_closure == false)
+    if (is_loop_closure == false)
     {
         // Adding keyframe in visualizer
         visualizer.viewReferenceFrame(vo.pose_, to_string(num_keyframes));
@@ -320,14 +328,10 @@ void addVertixAndEdge(
             single_marker_slam.num_vertices_ - 2, single_marker_slam.num_vertices_ - 1, edge_from, edge_to, edge_name);
         visualizer.addEdge(edge_from, edge_to, edge_name);
 
-        last_keyframe_pose_odometry = vo.pose_;
         num_keyframes++; // Increment the number of keyframes found
     }
-    // If the keyframe is a loop closure we will create a loop closing edge
-    x = pow(vo.pose_(0, 3) - last_keyframe_pose_aruco(0, 3), 2);
-    y = pow(vo.pose_(1, 3) - last_keyframe_pose_aruco(1, 3), 2);
-    z = pow(vo.pose_(2, 3) - last_keyframe_pose_aruco(2, 3), 2);
-    if (sqrt(x + y + z) >= config_params.minimum_distance_between_keyframes and is_loop_closure == true)
+
+    if (is_loop_closure == true)
     {
         // Adding keyframe in visualizer
         visualizer.viewReferenceFrame(vo.pose_, to_string(num_keyframes));
@@ -358,7 +362,6 @@ void addVertixAndEdge(
             updatePointCloud(visualizer, vo, single_marker_slam);
         }
 
-        last_keyframe_pose_aruco = vo.pose_;
         num_keyframes++; // Increment the number of keyframes found
     }
 }
@@ -433,31 +436,37 @@ void updatePointCloud(
     OpticalFlowVisualOdometry& vo,
     SingleMarkerSlam& single_marker_slam)
 {
-    vector<Keyframe> v;
 
     for (auto& x : vo.keyframes_)
     {
-        // Iterate over the vector of keyframes, then get the id of each keyframe and get the optimized vertix of this
+        // Iterate over the vector of keyframes, then get the id of each keyframe and get the optimized vertex of this
         // keyframe id
-        Eigen::Affine3f vertixPose = single_marker_slam.getVertix(x.second.idx_);
+        Eigen::Affine3f vertexPose = single_marker_slam.getOptimizedVertex(x.second.idx_);
+        Eigen::Affine3f tmp = single_marker_slam.getVertex(x.second.idx_);
         Eigen::Affine3f new_estimate = Eigen::Affine3f::Identity();
 
         // Update the pose of the keyframe with the new pose and adding to the new vector of keyframes
-        new_estimate(0, 0) = vertixPose(0, 0);
-        new_estimate(0, 1) = vertixPose(0, 1);
-        new_estimate(0, 2) = vertixPose(0, 2);
-        new_estimate(0, 3) = vertixPose(0, 3);
-        new_estimate(1, 0) = vertixPose(1, 0);
-        new_estimate(1, 1) = vertixPose(1, 1);
-        new_estimate(1, 2) = vertixPose(1, 2);
-        new_estimate(1, 3) = vertixPose(1, 3);
-        new_estimate(2, 0) = vertixPose(2, 0);
-        new_estimate(2, 1) = vertixPose(2, 1);
-        new_estimate(2, 2) = vertixPose(2, 2);
-        new_estimate(2, 3) = vertixPose(2, 3);
+        new_estimate(0, 0) = vertexPose(0, 0);
+        new_estimate(0, 1) = vertexPose(0, 1);
+        new_estimate(0, 2) = vertexPose(0, 2);
+        new_estimate(0, 3) = vertexPose(0, 3);
+        new_estimate(1, 0) = vertexPose(1, 0);
+        new_estimate(1, 1) = vertexPose(1, 1);
+        new_estimate(1, 2) = vertexPose(1, 2);
+        new_estimate(1, 3) = vertexPose(1, 3);
+        new_estimate(2, 0) = vertexPose(2, 0);
+        new_estimate(2, 1) = vertexPose(2, 1);
+        new_estimate(2, 2) = vertexPose(2, 2);
+        new_estimate(2, 3) = vertexPose(2, 3);
 
-        x.second.pose_ = new_estimate;
-        v.push_back(x.second);
+        cout << "optimized : " << vertexPose(0, 3) << " " << vertexPose(1, 3) << " " << vertexPose(2, 3) << endl;
+        cout << "old : " << x.second.pose_(0, 3) << " " << x.second.pose_(1, 3) << " " << x.second.pose_(2, 3) << endl;
+        cout << "tmp : " << tmp(0, 3) << " " << tmp(1, 3) << " " << tmp(2, 3) << endl;
+
+        cout << "dif : " << vertexPose(0, 3) - x.second.pose_(0, 3) << " " << vertexPose(1, 3) - x.second.pose_(1, 3)
+             << " " << vertexPose(2, 3) - x.second.pose_(2, 3) << endl;
+
+        x.second.opt_pose_ = new_estimate;
+        visualizer.updateKeyFrame(x.second); // Updating keyframes in visualizer
     }
-    visualizer.updateKeyframes(v); // Updating keyframes in visualizer
 }

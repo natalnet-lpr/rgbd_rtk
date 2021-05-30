@@ -133,8 +133,10 @@ void ReconstructionVisualizer::addKeyFrame(const Keyframe& kf)
     viewer_->addText3D(frame_name.str(), text_pos, 0.015, 1, 0, 0, frame_name.str() + "_text");
 }
 
-void ReconstructionVisualizer::addPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud, const Eigen::Affine3f& pose,
-                                             const std::string& cloud_name)
+void ReconstructionVisualizer::addPointCloud(
+    const pcl::PointCloud<PointT>::Ptr& cloud,
+    const Eigen::Affine3f& pose,
+    const std::string& cloud_name)
 {
     // Create a new point cloud
     pcl::PointCloud<PointT>::Ptr transf_cloud(new pcl::PointCloud<PointT>);
@@ -145,7 +147,7 @@ void ReconstructionVisualizer::addPointCloud(const pcl::PointCloud<PointT>::Ptr&
     string name;
     stringstream cloud_name_ss;
     cloud_name_ss << "cloud" << num_clouds_++;
-    if(cloud_name == "")
+    if (cloud_name == "")
         name = cloud_name_ss.str();
     else
         name = cloud_name;
@@ -157,8 +159,11 @@ void ReconstructionVisualizer::addPointCloud(const pcl::PointCloud<PointT>::Ptr&
     // pcl::visualization::PointCloudColorHandlerCustom<PointT> blue(curr_cloud, 0, 0, 255);
 }
 
-void ReconstructionVisualizer::addQuantizedPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud, const float& radius,
-                                                      const Eigen::Affine3f& pose, const std::string& cloud_name)
+void ReconstructionVisualizer::addQuantizedPointCloud(
+    const pcl::PointCloud<PointT>::Ptr& cloud,
+    const float& radius,
+    const Eigen::Affine3f& pose,
+    const std::string& cloud_name)
 {
     // Create a new point cloud
     pcl::PointCloud<PointT>::Ptr quant_cloud(new pcl::PointCloud<PointT>);
@@ -172,14 +177,14 @@ void ReconstructionVisualizer::addQuantizedPointCloud(const pcl::PointCloud<Poin
 }
 
 void ReconstructionVisualizer::addEdge(
-    const Eigen::Vector3d& vertix_from,
-    const Eigen::Vector3d& vertix_to,
+    const Eigen::Vector3d& vertex_from,
+    const Eigen::Vector3d& vertex_to,
     const string& name,
     const Eigen::Vector3f& color)
 {
     // Create the "from" and "to" pcl points
-    pcl::PointXYZ from_pt(vertix_from(0), vertix_from(1), vertix_from(2));
-    pcl::PointXYZ to_pt(vertix_to(0), vertix_to(1), vertix_to(2));
+    pcl::PointXYZ from_pt(vertex_from(0), vertex_from(1), vertex_from(2));
+    pcl::PointXYZ to_pt(vertex_to(0), vertex_to(1), vertex_to(2));
 
     // Add an arrow that connects from_pt -> to_pt
     viewer_->addArrow(to_pt, from_pt, color(0, 0), color(1, 0), color(2, 0), false, name);
@@ -238,8 +243,11 @@ void ReconstructionVisualizer::updateKeyFrame(const Keyframe& kf)
     stringstream frame_name;
     frame_name << "kf" << kf.idx_;
 
-    MLOG_DEBUG(EventLogger::M_VISUALIZATION, "@ReconstructionVisualizer::updateKeyframe: "
-                                             "Updating keyframe %lu\n", kf.idx_);
+    MLOG_DEBUG(
+        EventLogger::M_VISUALIZATION,
+        "@ReconstructionVisualizer::updateKeyframe: "
+        "Updating keyframe %lu\n",
+        kf.idx_);
 
     // Grab transformation from the original kf pose to its optimized kf pose
     // (point transformation and not pose transformation)
@@ -250,7 +258,7 @@ void ReconstructionVisualizer::updateKeyFrame(const Keyframe& kf)
 
     // Update point cloud
     viewer_->updatePointCloudPose(frame_name.str() + "_cloud", rel_transf);
-    
+
     // Update text
     PointT text_pos;
     text_pos.x = kf.opt_pose_(0, 3) + 0.02;

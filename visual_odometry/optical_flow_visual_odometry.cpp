@@ -39,7 +39,7 @@ using namespace cv;
 void OpticalFlowVisualOdometry::addKeyFrame(const Mat& rgb)
 {
     Keyframe kf;
-    kf.idx_ = frame_idx_;
+    kf.idx_ = keyframes_.size();
     kf.pose_ = pose_;
     rgb.copyTo(kf.img_);
     *kf.local_cloud_ = *curr_dense_cloud_;
@@ -53,25 +53,13 @@ void OpticalFlowVisualOdometry::addKeyFrame(const Mat& rgb)
         frame_idx_);
 
     keyframes_.insert(pair<size_t, Keyframe>(kf.idx_, kf));
-}
-
-void OpticalFlowVisualOdometry::createArtificialKeyframe(const Mat& rgb)
-{
-    Keyframe kf;
-    kf.idx_ = frame_idx_;
-    kf.pose_ = pose_;
-    rgb.copyTo(kf.img_);
-    *kf.local_cloud_ = *curr_dense_cloud_;
-    kf.keypoints_.resize(tracker_.curr_pts_.size());
-    copy(tracker_.curr_pts_.begin(), tracker_.curr_pts_.end(), kf.keypoints_.begin());
-
-    keyframes_.insert(pair<size_t, Keyframe>(kf.idx_, kf));
-    frame_idx_++;
+    num_keyframes_++;
 }
 
 OpticalFlowVisualOdometry::OpticalFlowVisualOdometry(const Eigen::Affine3f& initialPose)
 {
     frame_idx_ = 0;
+    num_keyframes_ = 0;
     pose_ = initialPose;
 
     prev_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
@@ -81,6 +69,7 @@ OpticalFlowVisualOdometry::OpticalFlowVisualOdometry(const Eigen::Affine3f& init
 OpticalFlowVisualOdometry::OpticalFlowVisualOdometry(const Intrinsics& intr, const Eigen::Affine3f& initialPose)
 {
     frame_idx_ = 0;
+    num_keyframes_ = 0;
     pose_ = initialPose;
     motion_estimator_.intr_ = intr;
 
@@ -88,7 +77,7 @@ OpticalFlowVisualOdometry::OpticalFlowVisualOdometry(const Intrinsics& intr, con
     curr_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
 }
 
-bool OpticalFlowVisualOdometry::computeCameraPose(const cv::Mat& rgb, const cv::Mat& depth, bool force_keyframe)
+bool OpticalFlowVisualOdometry::computeCameraPose(const cv::Mat& rgb, const cv::Mat& depth)
 {
     bool is_kf;
 
@@ -99,9 +88,6 @@ bool OpticalFlowVisualOdometry::computeCameraPose(const cv::Mat& rgb, const cv::
 
     // Track keypoints using KLT optical flow
     is_kf = tracker_.track(rgb);
-
-    // If a new keyframe is found, add it to the internal buffer
-    if (is_kf or force_keyframe) addKeyFrame(rgb);
 
     // Estimate motion between the current and the previous point clouds
     if (frame_idx_ > 0)

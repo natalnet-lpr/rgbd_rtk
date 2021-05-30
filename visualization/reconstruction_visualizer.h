@@ -97,14 +97,14 @@ public:
     void addCameraPath(const Eigen::Affine3f& pose);
 
     /** Adds an edge from the graph to the PCLVisualizer as an arrow.
-     * @param vertix_from position
-     * @param vertix_to position
+     * @param vertex_from position
+     * @param vertex_to position
      * @param name name of the vertex
      * @param color of the arrow(blue as default)
      */
     void addEdge(
-        const Eigen::Vector3d& vertix_from,
-        const Eigen::Vector3d& vertix_to,
+        const Eigen::Vector3d& vertex_from,
+        const Eigen::Vector3d& vertex_to,
         const std::string& name,
         const Eigen::Vector3f& color = Eigen::Vector3f(0.0, 0.0, 1.0));
 
@@ -127,8 +127,10 @@ public:
      * @param pose pose of the 3d Reconstruction
      * @param cloud_name name of the point cloud
      */
-    void addPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud, const Eigen::Affine3f& pose,
-                       const std::string& cloud_name = "");
+    void addPointCloud(
+        const pcl::PointCloud<PointT>::Ptr& cloud,
+        const Eigen::Affine3f& pose,
+        const std::string& cloud_name = "");
 
     /**
      * Receives a point cloud and quantize it (uniform sampling) with the given pose to the 3D
@@ -138,10 +140,11 @@ public:
      * @param pose of the point cloud
      * @param cloud_name name of the point cloud
      */
-    void
-    addQuantizedPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud, const float& radius,
-                           const Eigen::Affine3f& pose, const std::string& cloud_name = "");
-
+    void addQuantizedPointCloud(
+        const pcl::PointCloud<PointT>::Ptr& cloud,
+        const float& radius,
+        const Eigen::Affine3f& pose,
+        const std::string& cloud_name = "");
 
     /**
      * Removes an edge from the PCLVisualizer.
