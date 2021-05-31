@@ -124,12 +124,6 @@ protected:
     void setPreviousPoints();
 
     /**
-     * Set the coordinates of the map keypoints to map_pts_.
-     */
-
-    // void setMapPoints(); TODO: Remove or implement this
-
-    /**
      * Set the feature_detector_ attribute from a string
      * @param feature_detector name of feature_detector, the list of options are:
      * ORB, AKAZE, GFTT, FAST, AGAST, BRISK, SURF, SIFT
@@ -191,6 +185,9 @@ public:
     // Max number of allowed frames without matches for a keypoint.
     int lifespan_of_a_feature_;
 
+    // Threshold that defines whether a frame is a keyframe or not
+    float keyframe_threshold_;
+
     /**
      * Default constructor: create a ORB feature detector and descriptor extractor
      * and  lifespan_of_a_feature_= 3.
@@ -198,27 +195,29 @@ public:
     FeatureMapTracker();
 
     /**
-     * Constructor with flexible feature detector and descriptor extractor, lifespan of a feature and flag to
-     * log statistics
+     * Constructor with flexible feature detector and descriptor extractor, lifespan of a feature, 
+     * keyframe threshold and flag to log statistics
      * The following combinations of (Feature Detector, Descriptor Extractor) are invalid:
      * (ORB, AKAZE); (GFTT, AKAZE); (FAST, AKAZE); (AGAST, AKAZE); (BRISK, AKAZE); (SURF, AKAZE);
      * (SIFT, AKAZE); (SIFT, ORB);
      * @param feature_detector ORB, AKAZE, GFTT, FAST, AGAST, BRISK, SURF, SIFT
      * @param descriptor_extractor ORB, AKAZE, BRISK, SURF, SIFT
      * @param lifespan_of_a_feature  Max number of allowed frames without matches for a keypoint.
+     * @param keyframe_threshold Threshold that defines whether a frame is a keyframe or not
      * @param log_stats if log statistics should be displayed
      *
      */
     FeatureMapTracker(
-        const std::string& feature_detector,
-        const std::string& descriptor_extractor,
-        const int& lifespan_of_a_feature,
-        const bool& log_stats);
+        const std::string &feature_detector,
+        const std::string &descriptor_extractor,
+        const int &lifespan_of_a_feature,
+        const float &keyframe_threshold,
+        const bool &log_stats);
 
     /**
      * Constructor with flexible feature detector and descriptor extractor,
      * the feature life (K), minimum number of tracked points,
-     * maximum number of tracked points and flag to log statistics
+     * maximum number of tracked points, keyframe threshold and flag to log statistics
      * The following combinations of (Feature Detector, Descriptor Extractor) are invalid:
      * (ORB, AKAZE); (GFTT, AKAZE); (FAST, AKAZE); (AGAST, AKAZE); (BRISK, AKAZE); (SURF, AKAZE);
      * (SIFT, AKAZE); (SIFT, ORB);
@@ -226,15 +225,17 @@ public:
      * @param descriptor_extractor ORB, AKAZE, BRISK, SURF, SIFT
      * @param lifespan_of_a_feature  Max number of allowed frames without matches for a keypoint.
      * @param min_pts to detect @param max_pts to detect
+     * @param keyframe_threshold Threshold that defines whether a frame is a keyframe or not
      * @param log_stats if log statistics should be displayed
      */
     FeatureMapTracker(
-        const std::string& feature_detector,
-        const std::string& descriptor_extractor,
-        const int& lifespan_of_a_feature,
-        const int& min_pts,
-        const int& max_pts,
-        const bool& log_stats);
+        const std::string &feature_detector,
+        const std::string &descriptor_extractor,
+        const int &lifespan_of_a_feature,
+        const int &min_pts,
+        const int &max_pts,
+        const float &keyframe_threshold,
+        const bool &log_stats);
 
     /**
      * Default Destructor

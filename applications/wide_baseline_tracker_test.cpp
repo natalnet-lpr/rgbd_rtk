@@ -72,6 +72,7 @@ int main(int argc, char **argv)
 
 	RGBDLoader loader;
 	string index_file;
+	float keyframe_threshold;
 	int log_stats;
 	Mat frame, depth, current_frame, previous_frame;
 	string feature_detector, descriptor_extractor, descriptor_matcher;
@@ -89,8 +90,9 @@ int main(int argc, char **argv)
 	param_loader.checkAndGetString("feature_detector", feature_detector);
 	param_loader.checkAndGetString("descriptor_extractor", descriptor_extractor);
 	param_loader.checkAndGetString("descriptor_matcher", descriptor_matcher);
+	param_loader.checkAndGetFloat("wide_baseline_keyframe_threshold", keyframe_threshold);
 
-	WideBaselineTracker wide_baseline_tracker(feature_detector, descriptor_extractor, descriptor_matcher, log_stats);
+	WideBaselineTracker wide_baseline_tracker(feature_detector, descriptor_extractor, descriptor_matcher, keyframe_threshold, log_stats);
 
 	loader.processFile(index_file);
 

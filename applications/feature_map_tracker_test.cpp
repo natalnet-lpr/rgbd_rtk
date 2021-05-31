@@ -62,6 +62,7 @@ int main(int argc, char** argv)
     RGBDLoader loader;
     string index_file;
     int log_stats, lifespan_of_a_feature;
+    float keyframe_threshold;
     Mat frame, depth, current_frame, previous_frame;
     string feature_detector, descriptor_extractor;
 
@@ -78,8 +79,9 @@ int main(int argc, char** argv)
     param_loader.checkAndGetString("feature_detector", feature_detector);
     param_loader.checkAndGetString("descriptor_extractor", descriptor_extractor);
     param_loader.checkAndGetInt("lifespan_of_a_feature", lifespan_of_a_feature);
+    param_loader.checkAndGetFloat("feature_map_keyframe_threshold", keyframe_threshold);
 
-    FeatureMapTracker feature_map_tracker(feature_detector, descriptor_extractor, lifespan_of_a_feature, log_stats);
+    FeatureMapTracker feature_map_tracker(feature_detector, descriptor_extractor, lifespan_of_a_feature, keyframe_threshold, log_stats);
 
     loader.processFile(index_file);
 

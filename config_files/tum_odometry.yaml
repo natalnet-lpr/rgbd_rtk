@@ -27,9 +27,10 @@ windows_size: 20 #square of size 20
 feature_detector: "ORB" #default ORB
 descriptor_extractor: "ORB" #default ORB
 descriptor_matcher: "BruteForce" #default BruteForce
+wide_baseline_keyframe_threshold: 0.3 #default 0.3
 #feature_map_tracker
 lifespan_of_a_feature: 3 #default 3
-
+feature_map_keyframe_threshold: 0.3 #default 0.3
 
 
 
