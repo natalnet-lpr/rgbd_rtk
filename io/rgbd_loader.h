@@ -48,6 +48,12 @@ private:
     // Vector position of the current RGB-D image
     int curr_img_;
 
+    // Vector position of the current RGB image time stamp
+    int curr_rgb_img_time_stamp_;
+
+    // Vector position of the current Depth image time stamp
+    int curr_depth_img_time_stamp_;
+
     // Path of the index file
     std::string path_;
 
@@ -56,6 +62,12 @@ private:
 
     // Depth file names to be loaded
     std::vector<std::string> depth_img_names_;
+
+    // Time stamps of rgb files
+    std::vector<std::string> rgb_time_stamps_;
+
+    // Time stamps of depth files
+    std::vector<std::string> depth_time_stamps_;
 
 public:
     // Number of images of the sequence
@@ -68,6 +80,8 @@ public:
     {
         num_images_ = 0;
         curr_img_ = 0;
+        curr_rgb_img_time_stamp_ = 0;
+        curr_depth_img_time_stamp_ = 0;
     }
 
     /**
@@ -78,6 +92,8 @@ public:
     {
         num_images_ = 0;
         curr_img_ = 0;
+        curr_rgb_img_time_stamp_ = 0;
+        curr_depth_img_time_stamp_ = 0;
         processFile(index_file_name);
     }
     /**
@@ -92,6 +108,14 @@ public:
       * @param rgb @param depth_img
       */
     void getNextImage(cv::Mat &rgb_img, cv::Mat &depth_img);
+    /**
+     * Returns the next RGB image time stamp.
+     */
+    std::string getNextRgbImageTimeStamp();
+    /**
+     * Returns the next depth image time stamp.
+     */
+    std::string getNextDepthImageTimeStamp();  
 };
 
 #endif /* INCLUDE_RGBD_LOADER_H_ */

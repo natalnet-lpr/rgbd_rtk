@@ -92,8 +92,9 @@ public:
     /**
      * Main member function: computes the current camera pose
      * @param left left image of stereo camera @param right right image of stereo camera
+     * @param time_stamp, the time that the pose was computed.
      */
-    void computeCameraPose(const cv::Mat &left, const cv::Mat &right);
+    void computeCameraPose(const cv::Mat &left, const cv::Mat &right, const std::string& time_stamp = "");
 
 private:
     // Current frame index
@@ -104,8 +105,9 @@ private:
 
     /**
      * Writes the last computed visual odometry pose to file.
+     * @param time_stamp, the time that the pose was computed.
      */
-    void writePoseToFile();
+    void writePoseToFile(const std::string& time_stamp);
 };
 
 #endif /* INCLUDE_STEREO_OPTICAL_FLOW_VISUAL_ODOMETRY_H_ */

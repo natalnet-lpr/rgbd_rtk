@@ -35,11 +35,11 @@
 using namespace std;
 using namespace cv;
 
-void StereoOpticalFlowVisualOdometry::writePoseToFile()
+void StereoOpticalFlowVisualOdometry::writePoseToFile(const std::string& time_stamp)
 {
-	poses_file_ << pose_(0,0) << " " << pose_(0,1) << " " << pose_(0,2) << " " << pose_(0,3) << " "
-	            << pose_(1,0) << " " << pose_(1,1) << " " << pose_(1,2) << " " << pose_(1,3) << " "
-	            << pose_(2,0) << " " << pose_(2,1) << " " << pose_(2,2) << " " << pose_(2,3) << "\n"; 
+	poses_file_ << time_stamp << pose_(0,0) << " " << pose_(0,1) << " " << pose_(0,2) << " " << pose_(0,3) << " "
+	            			  << pose_(1,0) << " " << pose_(1,1) << " " << pose_(1,2) << " " << pose_(1,3) << " "
+	            			  << pose_(2,0) << " " << pose_(2,1) << " " << pose_(2,2) << " " << pose_(2,3) << "\n"; 
 }
 
 StereoOpticalFlowVisualOdometry::StereoOpticalFlowVisualOdometry(const Intrinsics& intr,
@@ -61,7 +61,7 @@ motion_estimator_(intr, ransac_thr, 0), cloud_generator_(intr, 1), frame_idx_(0)
 	}
 }
 
-void StereoOpticalFlowVisualOdometry::computeCameraPose(const cv::Mat& left, const cv::Mat& right)
+void StereoOpticalFlowVisualOdometry::computeCameraPose(const cv::Mat& left, const cv::Mat& right, const std::string& time_stamp)
 {
 	Eigen::Affine3f trans = Eigen::Affine3f::Identity();
 
@@ -85,7 +85,7 @@ void StereoOpticalFlowVisualOdometry::computeCameraPose(const cv::Mat& left, con
 	}
 
 	// Write computed odometry pose to file
-	writePoseToFile();
+	writePoseToFile(time_stamp);
 
 	//Let the prev. cloud in the next frame be the current cloud
 	*prev_dense_cloud_ = *curr_dense_cloud_;
