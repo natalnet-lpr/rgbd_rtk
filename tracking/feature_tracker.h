@@ -121,6 +121,28 @@ protected:
     virtual void update_buffers() = 0;
 
 public:
+
+    //Most commonly used tracker types
+    enum TRACKER_TYPE
+    {
+        TRACKER_KLT,
+        TRACKER_KLTTW,
+        TRACKER_WIDEBASELINE
+    };
+
+    //Struct having tracker parameters
+    struct Parameters
+    {
+        TRACKER_TYPE type_;
+        bool log_stats_; //used in all trackers
+        int min_pts_; //used in KLT*
+        int max_pts_; //used in KLT*
+        cv::Size window_size_; //used in KLTTW
+        std::string feature_detector_; //used in WideBaselineTracker
+        std::string feature_extractor_; //used in WideBaselineTracker
+        float detection_threshold_; //used in WideBaselineTracker
+    };
+
     // Tracklets: history of each point as a vector of point2f
     std::vector<Tracklet> tracklets_;
 
