@@ -85,6 +85,12 @@ public:
     KLTTracker(const int &min_pts, const int &max_pts, const bool &log_stats = false);
 
     /**
+     * Constructor with a set of tracker parameters
+     * @param param struct holding different tracker parameters
+     */
+    KLTTracker(const FeatureTracker::Parameters& param);
+
+    /**
      * Main member function: tracks keypoints between the current frame and the previous.
      * @param img rgb image
      * @return boolean true if the current frame is a keyframe.
