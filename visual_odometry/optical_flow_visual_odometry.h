@@ -43,8 +43,10 @@
 
 #include <Eigen/Geometry>
 #include <map>
+#include <fstream>
 #include <opencv2/core/core.hpp>
 #include <pcl/point_cloud.h>
+
 
 #include <common_types.h>
 #include <motion_estimator_ransac.h>
@@ -58,6 +60,15 @@ private:
 
     // Adds a new keyframe to the internal container of keyframes
     void addKeyFrame(const cv::Mat& rgb);
+
+    // Output file computed poses
+    std::ofstream poses_file_;
+
+    /**
+     * Writes the last computed visual odometry pose to file.
+     * @param time_stamp, the time that the pose was computed. 
+     */
+    void writePoseToFile(const std::string& time_stamp);
 
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -99,7 +110,18 @@ public:
      * @param rgb image @param depth image
      * @param return a boolean
      */
-    bool computeCameraPose(const cv::Mat& rgb, const cv::Mat& depth);
+
+    ~OpticalFlowVisualOdometry()
+    {
+        poses_file_.close();
+    }
+
+     /**
+     * Main member function: computes the current camera pose
+     * @param rgb and @param depth images.
+     * @param time_stamp, the time that the pose was computed.
+     */ 
+    bool computeCameraPose(const cv::Mat& rgb, const cv::Mat& depth, const std::string& time_stamp = "");
 
     /**
      * @param Keyframe return the last detected keyframe.

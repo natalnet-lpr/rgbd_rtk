@@ -35,6 +35,13 @@
 using namespace std;
 using namespace cv;
 
+void OpticalFlowVisualOdometry::writePoseToFile(const std::string& time_stamp)
+{
+    poses_file_ << time_stamp << pose_(0,0) << " " << pose_(0,1) << " " << pose_(0,2) << " " << pose_(0,3) << " "
+	                          << pose_(1,0) << " " << pose_(1,1) << " " << pose_(1,2) << " " << pose_(1,3) << " "
+	                          << pose_(2,0) << " " << pose_(2,1) << " " << pose_(2,2) << " " << pose_(2,3) << "\n"; 
+}
+
 void OpticalFlowVisualOdometry::addKeyFrame(const Mat& rgb)
 {
     Keyframe kf;
@@ -58,6 +65,15 @@ OpticalFlowVisualOdometry::OpticalFlowVisualOdometry(const Eigen::Affine3f& init
 
     prev_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
     curr_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
+
+    poses_file_.open("optical_flow_visual_odometry_poses.txt");
+    if (!poses_file_.is_open())
+    {
+        MLOG_ERROR(EventLogger::M_VISUAL_ODOMETRY, "@OpticalFlowVisualOdometry: \
+                                                    there is a problem opening \
+                                                    the file with the computed poses.\n");
+        exit(-1);
+    }
 }
 
 OpticalFlowVisualOdometry::OpticalFlowVisualOdometry(const Intrinsics& intr, const Eigen::Affine3f& initialPose)
@@ -68,9 +84,18 @@ OpticalFlowVisualOdometry::OpticalFlowVisualOdometry(const Intrinsics& intr, con
 
     prev_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
     curr_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
+
+    poses_file_.open("optical_flow_visual_odometry_poses.txt");
+    if (!poses_file_.is_open())
+    {
+        MLOG_ERROR(EventLogger::M_VISUAL_ODOMETRY, "@OpticalFlowVisualOdometry: \
+                                                    there is a problem opening \
+                                                    the file with the computed poses.\n");
+        exit(-1);
+    }
 }
 
-bool OpticalFlowVisualOdometry::computeCameraPose(const cv::Mat& rgb, const cv::Mat& depth)
+bool OpticalFlowVisualOdometry::computeCameraPose(const cv::Mat& rgb, const cv::Mat& depth, const std::string& time_stamp)
 {
     bool is_kf;
 
@@ -92,6 +117,9 @@ bool OpticalFlowVisualOdometry::computeCameraPose(const cv::Mat& rgb, const cv::
             motion_estimator_.estimate(tracker_.prev_pts_, prev_dense_cloud_, tracker_.curr_pts_, curr_dense_cloud_);
         pose_ = pose_ * trans;
     }
+
+    // Write computed odometry pose to file
+    writePoseToFile(time_stamp);
 
     // Let the prev. cloud in the next frame be the current cloud
     *prev_dense_cloud_ = *curr_dense_cloud_;
