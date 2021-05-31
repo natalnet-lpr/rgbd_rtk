@@ -148,9 +148,9 @@ bool FeatureTracker::write_heatmap_info()
 FeatureTracker::FeatureTracker():
 	initialized_(false),
 	frame_idx_(0),
-	num_inliers_(0),
 	min_pts_(600),
-	max_pts_(5000)
+	max_pts_(5000),
+	num_inliers_(0)
 {
 
 }
@@ -158,9 +158,9 @@ FeatureTracker::FeatureTracker():
 FeatureTracker::FeatureTracker(const int& min_pts, const int& max_pts, const bool& log_stats):
 	initialized_(false),
 	frame_idx_(0),
-	num_inliers_(0),
 	min_pts_(min_pts),
-	max_pts_(max_pts)
+	max_pts_(max_pts),
+	num_inliers_(0)
 {
 	if(log_stats)
 	{
