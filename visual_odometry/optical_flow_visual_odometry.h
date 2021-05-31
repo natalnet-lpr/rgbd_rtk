@@ -41,7 +41,6 @@
 #ifndef INCLUDE_OPTICAL_FLOW_VISUAL_ODOMETRY_H_
 #define INCLUDE_OPTICAL_FLOW_VISUAL_ODOMETRY_H_
 
-#include <fstream>
 #include <Eigen/Geometry>
 #include <map>
 #include <opencv2/core/core.hpp>
@@ -51,7 +50,6 @@
 #include <motion_estimator_ransac.h>
 #include <wide_baseline_tracker.h>
 
-
 class OpticalFlowVisualOdometry
 {
 private:
@@ -60,9 +58,6 @@ private:
 
     // Adds a new keyframe to the internal container of keyframes
     void addKeyFrame(const cv::Mat& rgb);
-
-    // Output file with pose information
-    std::ofstream pose_info_;
 
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -88,20 +83,15 @@ public:
     /**
      * Default constructor
      * @param initialPose start pose of the camera, identity if nothing is passed
-     * @param log_stats boolean for log statistics state default is false
      */
-    OpticalFlowVisualOdometry(const Eigen::Affine3f& initialPose = Eigen::Affine3f::Identity(), 
-                              const bool& log_stats = false);
+    OpticalFlowVisualOdometry(const Eigen::Affine3f& initialPose = Eigen::Affine3f::Identity());
 
     /**
      * Constructor with the matrix of intrinsic parameters
      * @param intr camera parameters
      * @param initialPose start pose of the camera, identity if nothing is passed
-     * @param log_stats boolean for log statistics state default is false
      */
-    OpticalFlowVisualOdometry(const Intrinsics& intr, 
-                              const Eigen::Affine3f& initialPose = Eigen::Affine3f::Identity(), 
-                              const bool& log_stats = false);
+    OpticalFlowVisualOdometry(const Intrinsics& intr, const Eigen::Affine3f& initialPose = Eigen::Affine3f::Identity());
 
     /**
      * Main member function: computes the current camera pose.
@@ -115,18 +105,6 @@ public:
      * @param Keyframe return the last detected keyframe.
      */
     Keyframe getLastKeyframe();
-
-    /**
-     * Sets the output file for pose information.
-     * If not called, the system will not write any information to file.
-     * @param pose_file_name file name
-     */
-    void initialize_logger(const std::string& pose_file_name);
-
-    /**
-     * @param time_stamp time of the processed pose.
-     */
-    bool writePoseInfo(const std::string& time_stamp);
 };
 
 #endif /* INCLUDE_OPTICAL_FLOW_VISUAL_ODOMETRY_H_ */
