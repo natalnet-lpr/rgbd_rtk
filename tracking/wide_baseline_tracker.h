@@ -195,6 +195,12 @@ public:
                         const int &min_pts, const int &max_pts, const bool &log_stats);
 
     /**
+     * Constructor with a set of tracker parameters
+     * @param param struct holding different tracker parameters
+     */
+    WideBaselineTracker(const FeatureTracker::Parameters& param);
+
+    /**
      * Get the "good" Matches of your features
      * @param threshold as double
      */
