@@ -139,7 +139,7 @@ public:
         int max_pts_; //used in KLT*
         cv::Size window_size_; //used in KLTTW
         std::string feature_detector_; //used in WideBaselineTracker
-        std::string feature_extractor_; //used in WideBaselineTracker
+        std::string descriptor_extractor_; //used in WideBaselineTracker
         float detection_threshold_; //used in WideBaselineTracker
     };
 
