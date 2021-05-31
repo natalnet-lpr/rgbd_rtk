@@ -101,6 +101,12 @@ public:
                  const bool &log_stats = false);
 
     /**
+     * Constructor with a set of tracker parameters
+     * @param param struct holding different tracker parameters
+     */
+    KLTTWTracker(const FeatureTracker::Parameters& param);
+
+    /**
      * Main member function: tracks keypoints between the current frame and the previous.
      * @param img rgb image
      * @return true if the current frame is a keyframe.
