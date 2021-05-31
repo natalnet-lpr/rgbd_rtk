@@ -291,7 +291,7 @@ WideBaselineTracker::WideBaselineTracker(const FeatureTracker::Parameters& param
     {
         setFeatureDetector(param.feature_detector_);
         setDescriptorExtractor(param.descriptor_extractor_);
-        setMatcher("BRUTEFORCE");
+        setMatcher(param.matcher_);
     }
 }
 

@@ -140,6 +140,7 @@ public:
         cv::Size window_size_; //used in KLTTW
         std::string feature_detector_; //used in WideBaselineTracker
         std::string descriptor_extractor_; //used in WideBaselineTracker
+        std::string matcher_; //used in WideBaselineTracker
         float detection_threshold_; //used in WideBaselineTracker
     };
 
