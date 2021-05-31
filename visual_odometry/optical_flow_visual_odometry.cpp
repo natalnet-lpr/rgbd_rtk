@@ -37,9 +37,20 @@ using namespace cv;
 
 void OpticalFlowVisualOdometry::writePoseToFile(const std::string& time_stamp)
 {
-    poses_file_ << time_stamp << pose_(0,0) << " " << pose_(0,1) << " " << pose_(0,2) << " " << pose_(0,3) << " "
-	                          << pose_(1,0) << " " << pose_(1,1) << " " << pose_(1,2) << " " << pose_(1,3) << " "
-	                          << pose_(2,0) << " " << pose_(2,1) << " " << pose_(2,2) << " " << pose_(2,3) << "\n"; 
+    Eigen::Matrix3f Rot;
+	Rot(0,0) = pose_(0,0); Rot(0,1) = pose_(0,1); Rot(0,2) = pose_(0,2);
+	Rot(1,0) = pose_(1,0); Rot(1,1) = pose_(1,1); Rot(1,2) = pose_(1,2);
+	Rot(2,0) = pose_(2,0); Rot(2,1) = pose_(2,1); Rot(2,2) = pose_(2,2);
+	
+    Eigen::Quaternionf q(Rot);
+	
+    poses_file_ << time_stamp <<  " "  << pose_(0,3) << " "
+								  	   << pose_(1,3) << " "
+								  	   << pose_(2,3) << " "
+								  	   << q.x() << " "
+								  	   << q.y() << " "
+								  	   << q.z() << " "
+								  	   << q.w() << "\n";
 }
 
 void OpticalFlowVisualOdometry::addKeyFrame(const Mat& rgb)
