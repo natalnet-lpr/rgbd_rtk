@@ -231,16 +231,16 @@ void SingleMarkerSlam::getOptimizedEdge(
             VertexSE3* v0 = static_cast<VertexSE3*>(optimizer_.vertex(e->vertex(0)->id()));
             VertexSE3* v1 = static_cast<VertexSE3*>(optimizer_.vertex(e->vertex(1)->id()));
 
-            Eigen::Isometry3f vertex_from_tmp = v0->estimate().cast<float>();
-            Eigen::Affine3f vertex_from = Eigen::Affine3f::Identity();
-            vertex_from.matrix() = vertex_from_tmp.matrix();
+            Eigen::Isometry3f vertix_from_tmp = v0->estimate().cast<float>();
+            Eigen::Affine3f vertix_from = Eigen::Affine3f::Identity();
+            vertix_from.matrix() = vertix_from_tmp.matrix();
 
-            Eigen::Isometry3f vertex_to_tmp = v1->estimate().cast<float>();
-            Eigen::Affine3f vertex_to = Eigen::Affine3f::Identity();
-            vertex_to.matrix() = vertex_to_tmp.matrix();
+            Eigen::Isometry3f vertix_to_tmp = v1->estimate().cast<float>();
+            Eigen::Affine3f vertix_to = Eigen::Affine3f::Identity();
+            vertix_to.matrix() = vertix_to_tmp.matrix();
 
-            from = Eigen::Vector3d(vertex_from(0, 3), vertex_from(1, 3), vertex_from(2, 3));
-            to = Eigen::Vector3d(vertex_to(0, 3), vertex_to(1, 3), vertex_to(2, 3));
+            from = Eigen::Vector3d(vertix_from(0, 3), vertix_from(1, 3), vertix_from(2, 3));
+            to = Eigen::Vector3d(vertix_to(0, 3), vertix_to(1, 3), vertix_to(2, 3));
             name = "optimized_edge_" + to_string(e->vertex(0)->id()) + "_" + to_string(e->vertex(1)->id());
         }
     }
@@ -254,7 +254,7 @@ void SingleMarkerSlam::getEdge(
     string& name)
 {
 
-    for (auto it = edges_.begin(); it != edges_.end(); ++it)
+    for (auto it = optimizer_.edges().begin(); it != optimizer_.edges().end(); ++it)
     {
         EdgeSE3* e = dynamic_cast<EdgeSE3*>(*it);
         if (e->vertex(0)->id() == from_id and e->vertex(1)->id() == to_id)
@@ -262,16 +262,16 @@ void SingleMarkerSlam::getEdge(
             VertexSE3* v0 = static_cast<VertexSE3*>(optimizer_.vertex(e->vertex(0)->id()));
             VertexSE3* v1 = static_cast<VertexSE3*>(optimizer_.vertex(e->vertex(1)->id()));
 
-            Eigen::Isometry3f vertex_from_tmp = v0->estimate().cast<float>();
-            Eigen::Affine3f vertex_from = Eigen::Affine3f::Identity();
-            vertex_from.matrix() = vertex_from_tmp.matrix();
+            Eigen::Isometry3f vertix_from_tmp = v0->estimate().cast<float>();
+            Eigen::Affine3f vertix_from = Eigen::Affine3f::Identity();
+            vertix_from.matrix() = vertix_from_tmp.matrix();
 
-            Eigen::Isometry3f vertex_to_tmp = v1->estimate().cast<float>();
-            Eigen::Affine3f vertex_to = Eigen::Affine3f::Identity();
-            vertex_to.matrix() = vertex_to_tmp.matrix();
+            Eigen::Isometry3f vertix_to_tmp = v1->estimate().cast<float>();
+            Eigen::Affine3f vertix_to = Eigen::Affine3f::Identity();
+            vertix_to.matrix() = vertix_to_tmp.matrix();
 
-            from = Eigen::Vector3d(vertex_from(0, 3), vertex_from(1, 3), vertex_from(2, 3));
-            to = Eigen::Vector3d(vertex_to(0, 3), vertex_to(1, 3), vertex_to(2, 3));
+            from = Eigen::Vector3d(vertix_from(0, 3), vertix_from(1, 3), vertix_from(2, 3));
+            to = Eigen::Vector3d(vertix_to(0, 3), vertix_to(1, 3), vertix_to(2, 3));
             name = "edge_" + to_string(e->vertex(0)->id()) + "_" + to_string(e->vertex(1)->id());
         }
     }
@@ -314,36 +314,33 @@ Eigen::Affine3f SingleMarkerSlam::getOptimizedVertex(const int& id)
 
 void SingleMarkerSlam::getLastEdge(Eigen::Vector3d& from, Eigen::Vector3d& to, string& name)
 {
-    for (auto it = --edges_.end(); it != edges_.end(); ++it)
-    {
-        EdgeSE3* e = dynamic_cast<EdgeSE3*>(*it);
+    auto a = optimizer_.edges().end();
 
-        cout << "Valor do last edge " << optimizer_.vertex(e->vertex(0)->id()) << " Valor do id 2 last edge "
-             << optimizer_.vertex(e->vertex(1)->id()) << endl;
+    EdgeSE3* e = dynamic_cast<EdgeSE3*>(*--optimizer_.edges().end());
 
-        VertexSE3* v0 = static_cast<VertexSE3*>(optimizer_.vertex(e->vertex(0)->id()));
-        VertexSE3* v1 = static_cast<VertexSE3*>(optimizer_.vertex(e->vertex(1)->id()));
+    VertexSE3* v0 = static_cast<VertexSE3*>(optimizer_.vertex(e->vertex(0)->id()));
+    VertexSE3* v1 = static_cast<VertexSE3*>(optimizer_.vertex(e->vertex(1)->id()));
 
-        Eigen::Isometry3f vertex_from_tmp = v0->estimate().cast<float>();
-        Eigen::Affine3f vertex_from = Eigen::Affine3f::Identity();
-        vertex_from.matrix() = vertex_from_tmp.matrix();
+    Eigen::Isometry3f vertix_from_tmp = v0->estimate().cast<float>();
+    Eigen::Affine3f vertix_from = Eigen::Affine3f::Identity();
+    vertix_from.matrix() = vertix_from_tmp.matrix();
 
-        Eigen::Isometry3f vertex_to_tmp = v1->estimate().cast<float>();
-        Eigen::Affine3f vertex_to = Eigen::Affine3f::Identity();
-        vertex_to.matrix() = vertex_to_tmp.matrix();
+    Eigen::Isometry3f vertix_to_tmp = v1->estimate().cast<float>();
+    Eigen::Affine3f vertix_to = Eigen::Affine3f::Identity();
+    vertix_to.matrix() = vertix_to_tmp.matrix();
 
-        from = Eigen::Vector3d(vertex_from(0, 3), vertex_from(1, 3), vertex_from(2, 3));
-        to = Eigen::Vector3d(vertex_to(0, 3), vertex_to(1, 3), vertex_to(2, 3));
-        name = "edge_" + to_string(e->vertex(0)->id()) + "_" + to_string(e->vertex(1)->id());
-    }
+    from = Eigen::Vector3d(vertix_from(0, 3), vertix_from(1, 3), vertix_from(2, 3));
+    to = Eigen::Vector3d(vertix_to(0, 3), vertix_to(1, 3), vertix_to(2, 3));
+    name = "edge_" + to_string(e->vertex(0)->id()) + "_" + to_string(e->vertex(1)->id());
 }
-*/
+    */
+
 void SingleMarkerSlam::optimizeGraph(const int& k)
 {
     // optimizer_.save("graph.g2o"); // Save file
-    optimizer_.initializeOptimization();
-    // optimized_estimates_.size() == 0 ? optimizer_.initializeOptimization()
-    //                                   : optimizer_.updateInitialization(vertices_, edges_);
+    // optimizer_.initializeOptimization();
+    optimized_estimates_.size() == 0 ? optimizer_.initializeOptimization()
+                                     : optimizer_.updateInitialization(vertices_, edges_);
 
     // When I pass only the subset the optimization may go wrong
     // vertices_.clear();

@@ -211,6 +211,8 @@ public:
     void resetVisualizer();
 
     void removeAllVertexesAndEdges();
+
+    void removePointClouds();
 };
 
 #endif /* INCLUDE_RECONSTRUCTION_VISUALIZER_H_ */

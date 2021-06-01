@@ -299,3 +299,4 @@ void ReconstructionVisualizer::resetVisualizer()
 }
 
 void ReconstructionVisualizer::removeAllVertexesAndEdges() { viewer_->removeAllShapes(); }
+void ReconstructionVisualizer::removePointClouds() { viewer_->removeAllPointClouds(); }
