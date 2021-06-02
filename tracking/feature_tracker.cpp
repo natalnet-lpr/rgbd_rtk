@@ -208,3 +208,13 @@ void FeatureTracker::initialize_logger(const string& timing_file_name, const str
 		                               heatmap information to %s\n",
 		                               heatmap_file_name.c_str());
 }
+
+FeatureTracker::TRACKER_TYPE FeatureTracker::strToType(const std::string &s)
+{
+	if(s == "KLTTracker")
+		return FeatureTracker::TRACKER_TYPE::TRACKER_KLT;
+	if(s == "KLTTWTracker")
+		return FeatureTracker::TRACKER_TYPE::TRACKER_KLTTW;
+	if(s == "WBTracker")
+		return FeatureTracker::TRACKER_TYPE::TRACKER_WIDEBASELINE;
+}

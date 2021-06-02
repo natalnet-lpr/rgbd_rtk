@@ -133,7 +133,7 @@ public:
     //Struct having tracker parameters
     struct Parameters
     {
-        TRACKER_TYPE type_;
+        std::string type_;
         bool log_stats_; //used in all trackers
         int min_pts_; //used in KLT*
         int max_pts_; //used in KLT*
@@ -196,6 +196,13 @@ public:
      * @return boolean true if the current frame is a keyframe.
      */
     virtual bool track(const cv::Mat &img) = 0;
+
+    /**
+     * Converts a string to its equivalent tracker type
+     * @param s string with a tracker type.
+     * @return an int constant representing the tracker type
+     */
+    static FeatureTracker::TRACKER_TYPE strToType(const std::string &s);
 };
 
 #endif /* INCLUDE_FEATURE_TRACKER_H_ */
