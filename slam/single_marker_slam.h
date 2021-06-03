@@ -60,11 +60,6 @@ private:
     // G2O nonlinear optimizer
     g2o::SparseOptimizer optimizer_;
 
-    /**
-     * Update internal state after optimization
-     */
-    void updateState();
-
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -83,10 +78,6 @@ public:
     // Loop closure edges name
     std::vector<std::string> loop_closure_edges_name_;
 
-    // 3D position in the global ref. frame of each node (for visualization)
-    std::vector<Eigen::Vector3d> positions_;
-
-    // Estimate of each active vertex after optimization
     std::vector<Eigen::Affine3f> optimized_estimates_;
 
     // Default constructor

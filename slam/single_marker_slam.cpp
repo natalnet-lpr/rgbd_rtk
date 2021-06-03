@@ -53,60 +53,6 @@ using namespace g2o;
  * #####################################################
  */
 
-void SingleMarkerSlam::updateState()
-{
-    optimized_estimates_.clear();
-    optimized_estimates_.resize(positions_.size());
-
-    MLOG_DEBUG(EventLogger::M_SLAM, "@SingleMarkerSlam::updateState: Updating %lu vertices\n", positions_.size());
-
-    // Update estimates of all vertices and positions
-    for (OptimizableGraph::VertexIDMap::const_iterator it = optimizer_.vertices().begin();
-         it != optimizer_.vertices().end();
-         it++)
-    {
-        int v_id = static_cast<int>(it->first);
-        VertexSE3* v = static_cast<VertexSE3*>(it->second);
-
-        // Get a new estimation
-        Eigen::Isometry3f new_estimate_tmp = v->estimate().cast<float>();
-        Eigen::Affine3f new_estimate = Eigen::Affine3f::Identity();
-
-        // Save the new estimation to new_estimate
-        new_estimate(0, 0) = new_estimate_tmp(0, 0);
-        new_estimate(0, 1) = new_estimate_tmp(0, 1);
-        new_estimate(0, 2) = new_estimate_tmp(0, 2);
-        new_estimate(1, 0) = new_estimate_tmp(1, 0);
-        new_estimate(1, 1) = new_estimate_tmp(1, 1);
-        new_estimate(1, 2) = new_estimate_tmp(1, 2);
-        new_estimate(2, 0) = new_estimate_tmp(2, 0);
-        new_estimate(2, 1) = new_estimate_tmp(2, 1);
-        new_estimate(2, 2) = new_estimate_tmp(2, 2);
-        new_estimate(0, 3) = new_estimate_tmp(0, 3);
-        new_estimate(1, 3) = new_estimate_tmp(1, 3);
-        new_estimate(2, 3) = new_estimate_tmp(2, 3);
-
-        optimized_estimates_[v_id] = new_estimate;
-
-        MLOG_DEBUG(EventLogger::M_SLAM, "@SingleMarkerSlam::updateState: Updating node %i\n", v_id);
-        MLOG_DEBUG(
-            EventLogger::M_SLAM,
-            "@SingleMarkerSlam::updateState: ### from %f %f %f to %f %f %f\n",
-            positions_[v_id].x(),
-            positions_[v_id].y(),
-            positions_[v_id].z(),
-            new_estimate(0, 3),
-            new_estimate(1, 3),
-            new_estimate(2, 3));
-
-        positions_[v_id](0, 0) = new_estimate(0, 3);
-        positions_[v_id](1, 0) = new_estimate(1, 3);
-        positions_[v_id](2, 0) = new_estimate(2, 3);
-    }
-
-    MLOG_DEBUG(EventLogger::M_SLAM, "@SingleMarkerSlam::updateState: Loop closing edges: %lu\n", num_loop_edges_);
-}
-
 /* #####################################################
  * #####                                           #####
  * #####               Public Impl.                #####
@@ -146,16 +92,6 @@ void SingleMarkerSlam::addVertexAndEdge(const Eigen::Affine3f& pose, const int& 
         v0->setFixed(true);
         optimizer_.addVertex(v0);
         vertices_.insert(v0);
-
-        Eigen::Vector3d pos = est.translation();
-        positions_.push_back(pos);
-
-        MLOG_DEBUG(
-            EventLogger::M_SLAM,
-            "@SingleMarkerSlam::addVertexAndEdge: position (%f, %f, %f)\n",
-            pos[0],
-            pos[1],
-            pos[2]);
     }
     // When adding any nodes other than the first, add an edge connecting
     // to the previous one
@@ -171,22 +107,14 @@ void SingleMarkerSlam::addVertexAndEdge(const Eigen::Affine3f& pose, const int& 
         optimizer_.addVertex(v1);
         vertices_.insert(v1);
 
-        Eigen::Vector3d pos = est.translation();
-        positions_.push_back(pos);
-
         EdgeSE3* e = new EdgeSE3;
         e->vertices()[0] = v0;
         e->vertices()[1] = v1;
         e->setMeasurementFromState();
+        // e->information() = Eigen::Matrix<double, 6, 6>::Identity();
         optimizer_.addEdge(e);
         edges_.insert(e);
 
-        MLOG_DEBUG(
-            EventLogger::M_SLAM,
-            "@SingleMarkerSlam::addVertexAndEdge: position (%f, %f, %f)\n",
-            pos[0],
-            pos[1],
-            pos[2]);
         MLOG_DEBUG(
             EventLogger::M_SLAM, "@SingleMarkerSlam::addVertexAndEdge: Adding edge(%lu -> %lu)\n", v0->id(), v1->id());
     }
@@ -207,6 +135,7 @@ void SingleMarkerSlam::addLoopClosingEdge(const Eigen::Affine3f& vertex_to_origi
     e->vertices()[0] = v;
     e->vertices()[1] = origin;
     e->setMeasurement(measurement);
+    // e->information() = Eigen::Matrix<double, 6, 6>::Identity();
     optimizer_.addEdge(e);
     edges_.insert(e);
 
@@ -254,7 +183,7 @@ void SingleMarkerSlam::getEdge(
     string& name)
 {
 
-    for (auto it = optimizer_.edges().begin(); it != optimizer_.edges().end(); ++it)
+    for (auto it = edges_.begin(); it != edges_.end(); ++it)
     {
         EdgeSE3* e = dynamic_cast<EdgeSE3*>(*it);
         if (e->vertex(0)->id() == from_id and e->vertex(1)->id() == to_id)
@@ -288,7 +217,18 @@ Eigen::Affine3f SingleMarkerSlam::getVertex(const int& id)
         {
             Eigen::Isometry3f pose_tmp = v->estimate().cast<float>();
             Eigen::Affine3f pose = Eigen::Affine3f::Identity();
-            pose.matrix() = pose_tmp.matrix();
+            pose(0, 0) = pose_tmp(0, 0);
+            pose(0, 1) = pose_tmp(0, 1);
+            pose(0, 2) = pose_tmp(0, 2);
+            pose(0, 3) = pose_tmp(0, 3);
+            pose(1, 0) = pose_tmp(1, 0);
+            pose(1, 1) = pose_tmp(1, 1);
+            pose(1, 2) = pose_tmp(1, 2);
+            pose(1, 3) = pose_tmp(1, 3);
+            pose(2, 0) = pose_tmp(2, 0);
+            pose(2, 1) = pose_tmp(2, 1);
+            pose(2, 2) = pose_tmp(2, 2);
+            pose(2, 3) = pose_tmp(2, 3);
             return pose;
         }
     }
@@ -303,9 +243,22 @@ Eigen::Affine3f SingleMarkerSlam::getOptimizedVertex(const int& id)
 
         if (v->id() == id)
         {
+
             Eigen::Isometry3f pose_tmp = v->estimate().cast<float>();
             Eigen::Affine3f pose = Eigen::Affine3f::Identity();
-            pose.matrix() = pose_tmp.matrix();
+
+            pose(0, 0) = pose_tmp(0, 0);
+            pose(0, 1) = pose_tmp(0, 1);
+            pose(0, 2) = pose_tmp(0, 2);
+            pose(0, 3) = pose_tmp(0, 3);
+            pose(1, 0) = pose_tmp(1, 0);
+            pose(1, 1) = pose_tmp(1, 1);
+            pose(1, 2) = pose_tmp(1, 2);
+            pose(1, 3) = pose_tmp(1, 3);
+            pose(2, 0) = pose_tmp(2, 0);
+            pose(2, 1) = pose_tmp(2, 1);
+            pose(2, 2) = pose_tmp(2, 2);
+            pose(2, 3) = pose_tmp(2, 3);
             return pose;
         }
     }
@@ -339,6 +292,7 @@ void SingleMarkerSlam::optimizeGraph(const int& k)
 {
     // optimizer_.save("graph.g2o"); // Save file
     // optimizer_.initializeOptimization();
+    cout << "optimized estimates" << optimized_estimates_.size() << endl;
     optimized_estimates_.size() == 0 ? optimizer_.initializeOptimization()
                                      : optimizer_.updateInitialization(vertices_, edges_);
 
@@ -346,17 +300,14 @@ void SingleMarkerSlam::optimizeGraph(const int& k)
     // vertices_.clear();
     // edges_.clear();
     optimizer_.optimize(k);
-
-    updateState();
 }
 
 void SingleMarkerSlam::resetGraph()
 {
     num_vertices_ = 0;
     last_added_id_ = -1;
-    positions_.clear();
-    optimized_estimates_.clear();
     optimizer_.clear();
+    optimized_estimates_ = {};
     num_loop_edges_ = 0;
     loop_closure_edges_name_ = {};
 }

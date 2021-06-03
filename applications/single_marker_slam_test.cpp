@@ -202,7 +202,8 @@ int main(int argc, char** argv)
         else
         {
             bool is_kf = vo.computeCameraPose(frame, depth);
-
+            visualizer.viewReferenceFrame(vo.pose_);
+            visualizer.viewQuantizedPointCloud(vo.curr_dense_cloud_, 0.02, vo.pose_);
             // Reset marker finding boolean
             marker_found = false;
 
@@ -255,9 +256,6 @@ int main(int argc, char** argv)
                     circle(frame, pt2, 3, color, -1);
                     line(frame, pt1, pt2, color);
                 }
-
-                visualizer.viewReferenceFrame(vo.pose_);
-                visualizer.viewQuantizedPointCloud(vo.curr_dense_cloud_, 0.02, vo.pose_);
 
                 // If we found a keyframe we will added to slam solver and visualizer
                 if (is_kf)
@@ -434,9 +432,6 @@ void updatePointCloud(
     OpticalFlowVisualOdometry& vo,
     SingleMarkerSlam& single_marker_slam)
 {
-    cout << "size keyframe: " << vo.keyframes_.size() << endl;
-    cout << "size vertix: " << single_marker_slam.vertices_.size() << endl;
-    cout << "size vertix: " << single_marker_slam.optimizer_..size() << endl;
 
     for (auto& x : vo.keyframes_)
     {
@@ -444,30 +439,16 @@ void updatePointCloud(
         // keyframe id
         Eigen::Affine3f vertexPose = single_marker_slam.getOptimizedVertex(x.second.idx_);
         Eigen::Affine3f tmp = single_marker_slam.getVertex(x.second.idx_);
-        Eigen::Affine3f new_estimate = Eigen::Affine3f::Identity();
 
-        // Update the pose of the keyframe with the new pose and adding to the new vector of keyframes
-        new_estimate(0, 0) = vertexPose(0, 0);
-        new_estimate(0, 1) = vertexPose(0, 1);
-        new_estimate(0, 2) = vertexPose(0, 2);
-        new_estimate(0, 3) = vertexPose(0, 3);
-        new_estimate(1, 0) = vertexPose(1, 0);
-        new_estimate(1, 1) = vertexPose(1, 1);
-        new_estimate(1, 2) = vertexPose(1, 2);
-        new_estimate(1, 3) = vertexPose(1, 3);
-        new_estimate(2, 0) = vertexPose(2, 0);
-        new_estimate(2, 1) = vertexPose(2, 1);
-        new_estimate(2, 2) = vertexPose(2, 2);
-        new_estimate(2, 3) = vertexPose(2, 3);
+        // cout << "optimized : " << vertexPose(0, 3) << " " << vertexPose(1, 3) << " " << vertexPose(2, 3) << endl;
+        // cout << "old : " << x.second.pose_(0, 3) << " " << x.second.pose_(1, 3) << " " << x.second.pose_(2, 3) <<
+        // endl; cout << "tmp : " << tmp(0, 3) << " " << tmp(1, 3) << " " << tmp(2, 3) << endl;
 
-        cout << "optimized : " << vertexPose(0, 3) << " " << vertexPose(1, 3) << " " << vertexPose(2, 3) << endl;
-        cout << "old : " << x.second.pose_(0, 3) << " " << x.second.pose_(1, 3) << " " << x.second.pose_(2, 3) << endl;
-        cout << "tmp : " << tmp(0, 3) << " " << tmp(1, 3) << " " << tmp(2, 3) << endl;
+        // cout << "dif : " << vertexPose(0, 3) - x.second.pose_(0, 3) << " " << vertexPose(1, 3) - x.second.pose_(1, 3)
+        //   << " " << vertexPose(2, 3) - x.second.pose_(2, 3) << endl;
 
-        cout << "dif : " << vertexPose(0, 3) - x.second.pose_(0, 3) << " " << vertexPose(1, 3) - x.second.pose_(1, 3)
-             << " " << vertexPose(2, 3) - x.second.pose_(2, 3) << endl;
-
-        x.second.opt_pose_ = new_estimate;
+        x.second.opt_pose_ = vertexPose;
+        visualizer.viewReferenceFrame(vertexPose, to_string(x.second.idx_) + "optimized");
         // visualizer.updateKeyFrame(x.second); // Updating keyframes in visualizer
     }
 }
