@@ -222,6 +222,8 @@ int main(int argc, char** argv)
                     {
                         if (isOrientationCorrect(first_aruco_pose, marker_finder.marker_poses_[j]))
                         {
+                            vo.addKeyFrame(frame);
+                            visualizer.addKeyFrame(vo.getLastKeyframe());
                             addVertexAndEdge(
                                 vo,
                                 marker_finder.marker_poses_[j],
@@ -232,9 +234,6 @@ int main(int argc, char** argv)
                                 config_params);
                             marker_found = true;
                             last_keyframe_pose_aruco = vo.pose_;
-
-                            vo.addKeyFrame(frame);
-                            visualizer.addKeyFrame(vo.getLastKeyframe());
                         }
                     }
                 }
@@ -268,6 +267,8 @@ int main(int argc, char** argv)
                     double z = pow(vo.pose_(2, 3) - last_keyframe_pose_odometry(2, 3), 2);
                     if (sqrt(x + y + z) >= config_params.minimum_distance_between_keyframes)
                     {
+                        vo.addKeyFrame(frame);
+                        visualizer.addKeyFrame(vo.getLastKeyframe());
                         addVertexAndEdge(
                             vo,
                             Eigen::Affine3f::Identity(),
@@ -277,9 +278,6 @@ int main(int argc, char** argv)
                             false,
                             config_params);
                         last_keyframe_pose_odometry = vo.pose_;
-
-                        vo.addKeyFrame(frame);
-                        visualizer.addKeyFrame(vo.getLastKeyframe());
                     }
                 }
             }
@@ -436,6 +434,9 @@ void updatePointCloud(
     OpticalFlowVisualOdometry& vo,
     SingleMarkerSlam& single_marker_slam)
 {
+    cout << "size keyframe: " << vo.keyframes_.size() << endl;
+    cout << "size vertix: " << single_marker_slam.vertices_.size() << endl;
+    cout << "size vertix: " << single_marker_slam.optimizer_..size() << endl;
 
     for (auto& x : vo.keyframes_)
     {
@@ -467,6 +468,6 @@ void updatePointCloud(
              << " " << vertexPose(2, 3) - x.second.pose_(2, 3) << endl;
 
         x.second.opt_pose_ = new_estimate;
-        visualizer.updateKeyFrame(x.second); // Updating keyframes in visualizer
+        // visualizer.updateKeyFrame(x.second); // Updating keyframes in visualizer
     }
 }
