@@ -1,40 +1,31 @@
 /*
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016-2020, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2021, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
- *  Redistribution and use in source and binary forms, with or without modification, are permitted
- * provided
+ *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
  *
- *  1. Redistributions of source code must retain the above copyright notice, this list of
- * conditions and
+ *  1. Redistributions of source code must retain the above copyright notice, this list of conditions and
  *     the following disclaimer.
  *
- *  2. Redistributions in binary form must reproduce the above copyright notice, this list of
- * conditions and
- *     the following disclaimer in the documentation and/or other materials provided with the
- * distribution.
+ *  2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and
+ *     the following disclaimer in the documentation and/or other materials provided with the distribution.
  *
- *  3. Neither the name of the copyright holder nor the names of its contributors may be used to
- * endorse or
+ *  3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or
  *     promote products derived from this software without specific prior written permission.
  *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, *  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL,
- *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR
- *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY,
- *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, *
+ *  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *  Author:
  *
+ *  Rodrigo Sarmento
  *  Bruno Silva
  */
 
@@ -125,6 +116,7 @@ int main(int argc, char** argv)
     int num_keyframes = 0;
     bool slam_solver_started = false;
     bool marker_found;
+    float ransac_thr;
     ConfigParams config_params;
     EventLogger& logger = EventLogger::getInstance();
     logger.setVerbosityLevel(EventLogger::L_ERROR);
@@ -132,9 +124,9 @@ int main(int argc, char** argv)
     ReconstructionVisualizer visualizer;
     SingleMarkerSlam single_marker_slam;
     Intrinsics intr(0);
-    OpticalFlowVisualOdometry vo(intr);
     MarkerFinder marker_finder;
     RGBDLoader loader;
+    FeatureTracker::Parameters tracking_param;
     Mat frame, depth;
     Eigen::Affine3f last_keyframe_pose_odometry; // Last odometry keyframe
     Eigen::Affine3f last_keyframe_pose_aruco;    // Last Aruco Keyframe
@@ -148,14 +140,26 @@ int main(int argc, char** argv)
     }
 
     ConfigLoader param_loader(argv[1]);
+    //file parameters
+    param_loader.checkAndGetString("index_file", config_params.index_file);
+    //tracker parameters
+    param_loader.checkAndGetString("tracker_type", tracking_param.type_);
+    param_loader.checkAndGetInt("min_pts", tracking_param.min_pts_);
+    param_loader.checkAndGetInt("max_pts", tracking_param.max_pts_);
+    param_loader.checkAndGetBool("log_stats", tracking_param.log_stats_);
+    //motion estimator parameters
+    param_loader.checkAndGetFloat("ransac_distance_threshold", ransac_thr);
+    //marker detection parameters
     param_loader.checkAndGetFloat("aruco_marker_size", config_params.aruco_marker_size);
     param_loader.checkAndGetFloat("aruco_max_distance", config_params.aruco_max_distance);
-    param_loader.checkAndGetInt("local_optimization_threshold", config_params.local_optimization_threshold);
-    param_loader.checkAndGetString("index_file", config_params.index_file);
-    param_loader.checkAndGetFloat(
-        "minimum_distance_between_keyframes", config_params.minimum_distance_between_keyframes);
     param_loader.checkAndGetString("camera_calibration_file", config_params.camera_calibration_file);
     param_loader.checkAndGetString("aruco_dic", config_params.aruco_dic);
+    //slam with markers parameters
+    param_loader.checkAndGetInt("local_optimization_threshold", config_params.local_optimization_threshold);
+    param_loader.checkAndGetFloat(
+        "minimum_distance_between_keyframes", config_params.minimum_distance_between_keyframes);
+
+    OpticalFlowVisualOdometry vo(intr, tracking_param, ransac_thr);
 
     marker_finder.markerParam(
         config_params.camera_calibration_file, config_params.aruco_marker_size, config_params.aruco_dic);
@@ -231,10 +235,10 @@ int main(int argc, char** argv)
             bool is_kf = vo.computeCameraPose(frame, depth);
 
             // View tracked points
-            for (size_t k = 0; k < vo.tracker_.curr_pts_.size(); k++)
+            for (size_t k = 0; k < vo.tracker_ptr_->curr_pts_.size(); k++)
             {
-                Point2i pt1 = vo.tracker_.prev_pts_[k];
-                Point2i pt2 = vo.tracker_.curr_pts_[k];
+                Point2i pt1 = vo.tracker_ptr_->prev_pts_[k];
+                Point2i pt2 = vo.tracker_ptr_->curr_pts_[k];
                 Scalar color;
 
                 is_kf ? color = CV_RGB(255, 0, 0) : color = CV_RGB(0, 0, 255);

@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016-2020, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2021, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -42,8 +42,8 @@ void OpticalFlowVisualOdometry::addKeyFrame(const Mat& rgb)
     kf.pose_ = pose_;
     rgb.copyTo(kf.img_);
     *kf.local_cloud_ = *curr_dense_cloud_;
-    kf.keypoints_.resize(tracker_.curr_pts_.size());
-    copy(tracker_.curr_pts_.begin(), tracker_.curr_pts_.end(), kf.keypoints_.begin());
+    kf.keypoints_.resize(tracker_ptr_->curr_pts_.size());
+    copy(tracker_ptr_->curr_pts_.begin(), tracker_ptr_->curr_pts_.end(), kf.keypoints_.begin());
 
     MLOG_DEBUG(EventLogger::M_VISUAL_ODOMETRY, "@OpticalFlowVisualOdometry::addKeyFrame: \
                                                 adding %lu as keyframe\n", frame_idx_);
@@ -51,23 +51,25 @@ void OpticalFlowVisualOdometry::addKeyFrame(const Mat& rgb)
     keyframes_.insert(pair<size_t, Keyframe>(kf.idx_, kf));
 }
 
-OpticalFlowVisualOdometry::OpticalFlowVisualOdometry(const Eigen::Affine3f& initialPose)
+OpticalFlowVisualOdometry::OpticalFlowVisualOdometry(const Intrinsics& intr,
+                                                     const FeatureTracker::Parameters& tracking_param,
+                                                     const float& ransac_thr,
+                                                     const Eigen::Affine3f& initialPose):
+motion_estimator_(intr, ransac_thr, 0), frame_idx_(0)
 {
-    frame_idx_ = 0;
     pose_ = initialPose;
 
     prev_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
     curr_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
-}
 
-OpticalFlowVisualOdometry::OpticalFlowVisualOdometry(const Intrinsics& intr, const Eigen::Affine3f& initialPose)
-{
-    frame_idx_ = 0;
-    pose_ = initialPose;
-    motion_estimator_.intr_ = intr;
-
-    prev_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
-    curr_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
+    if(FeatureTracker::strToType(tracking_param.type_) == FeatureTracker::TRACKER_KLT)
+    {
+        tracker_ptr_ = cv::Ptr<FeatureTracker>(new KLTTracker(tracking_param));
+    }
+    if(FeatureTracker::strToType(tracking_param.type_) == FeatureTracker::TRACKER_KLTTW)
+    {
+        tracker_ptr_ = cv::Ptr<FeatureTracker>(new KLTTWTracker(tracking_param));
+    }
 }
 
 bool OpticalFlowVisualOdometry::computeCameraPose(const cv::Mat& rgb, const cv::Mat& depth)
@@ -80,7 +82,7 @@ bool OpticalFlowVisualOdometry::computeCameraPose(const cv::Mat& rgb, const cv::
     *curr_dense_cloud_ = getPointCloud(rgb, depth, motion_estimator_.intr_);
 
     // Track keypoints using KLT optical flow
-    is_kf = tracker_.track(rgb);
+    is_kf = tracker_ptr_->track(rgb);
 
     // If a new keyframe is found, add it to the internal buffer
     if (is_kf) addKeyFrame(rgb);
@@ -89,7 +91,7 @@ bool OpticalFlowVisualOdometry::computeCameraPose(const cv::Mat& rgb, const cv::
     if (frame_idx_ > 0)
     {
         trans =
-            motion_estimator_.estimate(tracker_.prev_pts_, prev_dense_cloud_, tracker_.curr_pts_, curr_dense_cloud_);
+            motion_estimator_.estimate(tracker_ptr_->prev_pts_, prev_dense_cloud_, tracker_ptr_->curr_pts_, curr_dense_cloud_);
         pose_ = pose_ * trans;
     }
 

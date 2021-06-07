@@ -1,0 +1,15 @@
+%YAML:1.0
+index_file: "/path/to/tum/sequence/index"
+
+# tracker parameters
+tracker_type: KLTTracker
+log_stats: 0
+min_pts: 600 #default 600
+max_pts: 5000 #default kltatcw : 5000, kltqt : 1000
+# windows_size: 20 #used in klttw - square of size 20
+#min_r: 10 #used in kltatcw
+#max_r: 50 #used in kltatcw
+#radius: 30 #used in kltatcw
+
+# motion estimation ransac parameters
+ransac_distance_threshold: 0.008 #8mm

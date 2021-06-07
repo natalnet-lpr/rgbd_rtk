@@ -1,0 +1,17 @@
+%YAML:1.0
+index_file: "/path/to/tum/sequence/index"
+
+# tracker parameters
+tracker_type: WBTracker
+log_stats: 0
+min_pts: 600
+max_pts: 5000
+
+# wide_baseline_tracker and feature_map_tracker
+feature_detector: "ORB" #default ORB
+descriptor_extractor: "ORB" #default ORB
+descriptor_matcher: "BruteForce" #default BruteForce
+#lifespan_of_a_feature: 3 #default 3
+
+# motion estimation ransac parameters
+ransac_distance_threshold: 0.008 #8mm

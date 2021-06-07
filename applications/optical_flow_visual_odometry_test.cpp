@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016-2020, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2021, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -53,20 +53,34 @@ int main(int argc, char **argv)
 	EventLogger& logger = EventLogger::getInstance();
 	logger.setVerbosityLevel(EventLogger::L_DEBUG);
 	
-	RGBDLoader loader;
-	Intrinsics intr(0);
-	OpticalFlowVisualOdometry vo(intr);
 	ReconstructionVisualizer visualizer;
+	RGBDLoader loader;
+	FeatureTracker::Parameters tracking_param;
+	Intrinsics intr(0);
+
 	string index_file;
 	Mat frame, depth;
+	float ransac_thr;
 
 	if(argc != 2)
 	{
 		logger.print(EventLogger::L_INFO, "[optical_flow_visual_odometry_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
+
 	ConfigLoader param_loader(argv[1]);
-	param_loader.checkAndGetString("index_file",index_file);
+	//file parameters
+    param_loader.checkAndGetString("index_file", index_file);
+    //tracker parameters
+    param_loader.checkAndGetString("tracker_type", tracking_param.type_);
+    param_loader.checkAndGetInt("min_pts", tracking_param.min_pts_);
+    param_loader.checkAndGetInt("max_pts", tracking_param.max_pts_);
+    param_loader.checkAndGetBool("log_stats", tracking_param.log_stats_);
+    //motion estimator parameters
+    param_loader.checkAndGetFloat("ransac_distance_threshold", ransac_thr);
+
+	OpticalFlowVisualOdometry vo(intr, tracking_param, ransac_thr);
+
 	loader.processFile(index_file);
 
 	visualizer.addReferenceFrame(vo.pose_, "origin");
@@ -81,10 +95,10 @@ int main(int argc, char **argv)
 		bool is_kf = vo.computeCameraPose(frame, depth);
 
 		//View tracked points
-		for(size_t k = 0; k < vo.tracker_.curr_pts_.size(); k++)
+		for(size_t k = 0; k < vo.tracker_ptr_->curr_pts_.size(); k++)
 		{
-			Point2i pt1 = vo.tracker_.prev_pts_[k];
-			Point2i pt2 = vo.tracker_.curr_pts_[k];
+			Point2i pt1 = vo.tracker_ptr_->prev_pts_[k];
+			Point2i pt2 = vo.tracker_ptr_->curr_pts_[k];
 			Scalar color;
 
 			is_kf ? color = CV_RGB(255,0,0) : color = CV_RGB(0,0,255);

@@ -1,7 +1,7 @@
-/*
+/* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2021, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -11,18 +11,20 @@
  *
  *  2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and
  *     the following disclaimer in the documentation and/or other materials provided with the distribution.
- *
+ * 
  *  3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or
  *     promote products derived from this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, *
- * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * 
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, *  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
  *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
  *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
  *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
+ *  Author:
+ *
+ *  Bruno Silva
  */
 
 #include <Eigen/Geometry>
@@ -50,13 +52,13 @@ int main(int argc, char** argv)
     EventLogger& logger = EventLogger::getInstance();
     logger.setVerbosityLevel(EventLogger::L_DEBUG);
 
-    RGBDLoader loader;
-    Intrinsics intr;
     ReconstructionVisualizer visualizer;
+    RGBDLoader loader;
+    FeatureTracker::Parameters tracking_param;
+    Intrinsics intr;
 
     Mat frame, depth;
-    int min_pts, max_pts, log_stats;
-    float marker_size, aruco_max_distance;
+    float marker_size, aruco_max_distance, ransac_thr;
     string camera_calibration_file, aruco_dic, index_file;
 
     if (argc != 2)
@@ -65,23 +67,28 @@ int main(int argc, char** argv)
             EventLogger::L_ERROR, "[zed_data_test.cpp] ERROR: Usage: %s <path/to/config_file.yaml>\n", argv[0]);
         exit(0);
     }
+    
     ConfigLoader param_loader(argv[1]);
     //file parameters
-    param_loader.checkAndGetString("camera_calibration_file", camera_calibration_file);
     param_loader.checkAndGetString("index_file", index_file);
     //tracker parameters
-    param_loader.checkAndGetInt("min_pts", min_pts);
-    param_loader.checkAndGetInt("max_pts", max_pts);
-    param_loader.checkAndGetInt("log_stats", log_stats);
+    param_loader.checkAndGetString("tracker_type", tracking_param.type_);
+    param_loader.checkAndGetInt("min_pts", tracking_param.min_pts_);
+    param_loader.checkAndGetInt("max_pts", tracking_param.max_pts_);
+    param_loader.checkAndGetBool("log_stats", tracking_param.log_stats_);
+    //motion estimator parameters
+    param_loader.checkAndGetFloat("ransac_distance_threshold", ransac_thr);
     //marker detection parameters
     param_loader.checkAndGetFloat("aruco_marker_size", marker_size);
     param_loader.checkAndGetFloat("aruco_max_distance", aruco_max_distance);
+    param_loader.checkAndGetString("camera_calibration_file", camera_calibration_file);
     param_loader.checkAndGetString("aruco_dic", aruco_dic);
-    
-    //KLTTracker tracker(min_pts, max_pts, log_stats);
+     
     intr.loadFromFile(camera_calibration_file);
     intr.setScale(1000.0); //transform zed point cloud from milimeters to meters
-    OpticalFlowVisualOdometry vo(intr);
+
+    OpticalFlowVisualOdometry vo(intr, tracking_param, ransac_thr);
+    
     MarkerFinder marker_finder;
     marker_finder.markerParam(camera_calibration_file, marker_size, aruco_dic);
 
