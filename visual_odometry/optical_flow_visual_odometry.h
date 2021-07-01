@@ -48,7 +48,7 @@
 
 #include <common_types.h>
 #include <motion_estimator_ransac.h>
-#include <wide_baseline_tracker.h>
+#include <klttw_tracker.h>
 
 class OpticalFlowVisualOdometry
 {
@@ -69,7 +69,7 @@ public:
     pcl::PointCloud<PointT>::Ptr curr_dense_cloud_;
 
     // Feature tracker
-    WideBaselineTracker tracker_;
+    KLTTWTracker tracker_;
 
     // Motion estimator
     MotionEstimatorRANSAC motion_estimator_;
