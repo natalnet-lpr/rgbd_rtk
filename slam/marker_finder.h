@@ -87,12 +87,14 @@ public:
 
     // Default constructor
     MarkerFinder() {}
+
     /**
      * Function to load params
      * @param camera intrinsic params @param size marker size
      * @param aruco_dic aruco dictionary
      */
     void markerParam(const std::string& params, const float& size, const std::string& aruco_dic);
+
     /**
      * Detect the marker related to the cam_pose, just pass a identity matrix to cam_pose if you
      * want to detect the pose of the marker related to the camera
@@ -104,5 +106,13 @@ public:
         const cv::Mat& img,
         const Eigen::Affine3f& cam_pose,
         const float& aruco_max_distance);
+
+    /**
+     * Returns true if a marker with given
+     * id was found.
+     * Must call detectMarkersPoses first.
+     * @param id: id of marker to be checked.
+     */
+    bool isMarkerFound(const int id);
 };
 #endif /* INCLUDE_MARKER_FINDER_H_ */

@@ -110,3 +110,15 @@ void MarkerFinder::detectMarkersPoses(
 
     setMarkerPoses(cam_pose, aruco_max_distance); // set the pose
 }
+
+bool MarkerFinder::isMarkerFound(const int id)
+{
+    for(size_t j = 0; j < markers_.size(); j++)
+    {
+        if(markers_[j].id == id)
+        {
+            return true;
+        }
+    }
+    return false;
+}
