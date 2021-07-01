@@ -28,7 +28,10 @@
  *  Rodrigo Sarmento Xavier
  */
 
+#include <cmath>
+
 #include <geometry.h>
+#include <event_logger.h>
 
 using namespace std;
 using namespace cv;
@@ -137,7 +140,65 @@ Eigen::Affine3f newPoseOffset(const Eigen::Affine3f& pose, const float& offset_d
 	return resultado;
 }
 
+double distanceBetween(const Eigen::Affine3f &first_rf, const Eigen::Affine3f& second_rf)
+{
+    double x0 = first_rf(0,3);
+    double y0 = first_rf(1,3);
+    double z0 = first_rf(2,3);
+    double x1 = second_rf(0,3);
+    double y1 = second_rf(1,3);
+    double z1 = second_rf(2,3);
+
+    return sqrt((x0 - x1)*(x0 - x1) + (y0 - y1)*(y0 - y1) + (z0 - z1)*(z0 - z1));
+}
+
+bool zAxisAngleBetween(const Eigen::Affine3f& first_rf, const Eigen::Affine3f& second_rf)
+{
+	double angle = acos((first_rf(0,2) * second_rf(0,2)) +
+		                (first_rf(1,2) * second_rf(1,2)) +
+		                (first_rf(2,2) * second_rf(2,2))) * 180.0/M_PI;
+
+    return angle;
+}
+
+Eigen::Isometry3d affineToIsometry(const Eigen::Affine3f &m)
+{
+    Eigen::Isometry3d r;
+    r.linear() = m.linear().cast<double>();
+    r.translation() = m.translation().cast<double>();
+    return r;
+}
+
 Eigen::Affine3f relativeTransform(const Eigen::Affine3f &from_pose, const Eigen::Affine3f &to_pose)
 {
 	return from_pose.inverse()*to_pose;
+}
+
+Eigen::Isometry3d relativeTransform(const Eigen::Isometry3d &from_pose, const Eigen::Isometry3d &to_pose)
+{
+	return from_pose.inverse()*to_pose;
+}
+
+void printTransform(const Eigen::Affine3f& t)
+{
+	MLOG_INFO(EventLogger::M_COMMON, "%f, %f. %f, %f\n",
+              t(0,0), t(0,1), t(0,2), t(0,3));
+	MLOG_INFO(EventLogger::M_COMMON, "%f, %f. %f, %f\n",
+              t(1,0), t(1,1), t(1,2), t(1,3));
+	MLOG_INFO(EventLogger::M_COMMON, "%f, %f. %f, %f\n",
+              t(2,0), t(2,1), t(2,2), t(2,3));
+	MLOG_INFO(EventLogger::M_COMMON, "%f, %f. %f, %f\n",
+              t(3,0), t(3,1), t(3,2), t(3,3));
+}
+
+void printTransform(const Eigen::Isometry3d& t)
+{
+	MLOG_INFO(EventLogger::M_COMMON, "%f, %f. %f, %f\n",
+              t(0,0), t(0,1), t(0,2), t(0,3));
+	MLOG_INFO(EventLogger::M_COMMON, "%f, %f. %f, %f\n",
+              t(1,0), t(1,1), t(1,2), t(1,3));
+	MLOG_INFO(EventLogger::M_COMMON, "%f, %f. %f, %f\n",
+              t(2,0), t(2,1), t(2,2), t(2,3));
+	MLOG_INFO(EventLogger::M_COMMON, "%f, %f. %f, %f\n",
+              t(3,0), t(3,1), t(3,2), t(3,3));	
 }

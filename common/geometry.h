@@ -66,6 +66,31 @@ pcl::PointCloud<PointT> getPointCloud(const cv::Mat &rgb, const cv::Mat &depth,
 Eigen::Affine3f newPoseOffset(const Eigen::Affine3f &pose, const float &offset_distance);
 
 /**
+ * Returns the distance between the centers of
+ * two reference frames.
+ * @param first_rf first ref. frame
+ * @param second_rf second ref. frame
+ * @return distance (same unit as the ref. frames)
+ */
+double distanceBetween(const Eigen::Affine3f &first_rf, const Eigen::Affine3f& second_rf);
+
+/**
+ * Returns the angle between the z-axis of
+ * two reference frames.
+ * @param first_rf first ref. frame
+ * @param second_rf second ref. frame
+ * @return angle (in degrees)
+ */
+bool zAxisAngleBetween(const Eigen::Affine3f& first_rf, const Eigen::Affine3f& second_rf);
+
+/**
+ * Converts the given Eigen::Affine3f matrix to Eigen::Isometry3d.
+ * @param m the Eigen::Affine3f matrix that should be transformed
+ * @return the resulting Eigen::Isometry3d matrix.
+ */
+Eigen::Isometry3d affineToIsometry(const Eigen::Affine3f &m);
+
+/**
  * Computes the relative transformation between two poses A and B.
  * This is given as the transformation T that transforms ref. frame A into B.
  * T is given relative to ref. frame A.
@@ -75,5 +100,28 @@ Eigen::Affine3f newPoseOffset(const Eigen::Affine3f &pose, const float &offset_d
  * @return The relative transformation from from_pose to to_pose.
  */
 Eigen::Affine3f relativeTransform(const Eigen::Affine3f &from_pose, const Eigen::Affine3f &to_pose);
+
+/**
+ * Computes the relative transformation between two poses A and B.
+ * This is given as the transformation T that transforms ref. frame A into B.
+ * T is given relative to ref. frame A.
+ * Therefore, T = A^(-1).B, since the post multiplication A.T = A.A^(-1).B = B
+ * @param from_pose the pose from which the transform must be computed
+ * @param to_pose the pose which the original pose must be transformed into
+ * @return The relative transformation from from_pose to to_pose.
+ */
+Eigen::Isometry3d relativeTransform(const Eigen::Isometry3d &from_pose, const Eigen::Isometry3d &to_pose);
+
+/**
+ * Prints the given transformation.
+ * @param t: transformation to be printed (Eigen::Affine3f)
+ */
+void printTransform(const Eigen::Affine3f& t);
+
+/**
+ * Prints the given transformation.
+ * @param t: transformation to be printed (Eigen::Isometry3d)
+ */
+void printTransform(const Eigen::Isometry3d& t);
 
 #endif /* INCLUDE_GEOMETRY_H_ */
