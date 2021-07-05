@@ -1,7 +1,7 @@
 /*
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2021, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted
  * provided
@@ -96,11 +96,14 @@ public:
     void markerParam(const std::string& params, const float& size, const std::string& aruco_dic);
 
     /**
-     * Detect the marker related to the cam_pose, just pass a identity matrix to cam_pose if you
-     * want to detect the pose of the marker related to the camera
-     * in cam_pose parameter
-     * @param rgb image @param cam_pose camera pose
-     * @param aruco_max_distance max distance aruco will be saved
+     * Detects ARUCO markers and their
+     * respectives poses in the reference
+     * frame of the camera
+     * (just pass a identity matrix to cam_pose if you
+     * want to detect the pose of the marker related to the camera)
+     * @param rgb image: which the markers should be detected
+     * @param cam_pose: current camera pose (in world ref. frame)
+     * @param aruco_max_distance: max distance aruco will be saved
      */
     void detectMarkersPoses(
         const cv::Mat& img,
@@ -113,6 +116,15 @@ public:
      * Must call detectMarkersPoses first.
      * @param id: id of marker to be checked.
      */
-    bool isMarkerFound(const int id);
+    bool isMarkerFound(const int &id);
+
+    /**
+     * Returns the pose of a marker with given
+     * id in the reference frame of the camera.
+     * Must call detectMarkersPoses first.
+     * @param id: id of marker to be checked.
+     * @return pose of marker with given id
+     */
+    Eigen::Affine3f markerPose(const int &id);
 };
 #endif /* INCLUDE_MARKER_FINDER_H_ */

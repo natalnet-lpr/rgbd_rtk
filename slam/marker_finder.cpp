@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016-2020, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2021, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -31,7 +31,8 @@
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/core/core.hpp>
 
-#include "marker_finder.h"
+#include <marker_finder.h>
+#include <event_logger.h>
 
 using namespace std;
 using namespace cv;
@@ -107,11 +108,14 @@ void MarkerFinder::detectMarkersPoses(
 {
     markers_.clear();
     marker_detector_.detect(img, markers_, camera_params_, marker_size_); // detect markers
+    MLOG_INFO(EventLogger::M_SLAM, "@MarkerFinder::detectMarkersPoses:"
+              " detected %lu markers.\n",
+              markers_.size());
 
     setMarkerPoses(cam_pose, aruco_max_distance); // set the pose
 }
 
-bool MarkerFinder::isMarkerFound(const int id)
+bool MarkerFinder::isMarkerFound(const int &id)
 {
     for(size_t j = 0; j < markers_.size(); j++)
     {
@@ -120,5 +124,25 @@ bool MarkerFinder::isMarkerFound(const int id)
             return true;
         }
     }
+    MLOG_INFO(EventLogger::M_SLAM, "@MarkerFinder::isMarkerFound: "
+              "marker %i not found.\n",
+              id);
     return false;
+}
+
+Eigen::Affine3f MarkerFinder::markerPose(const int &id)
+{
+    for(size_t j = 0; j < markers_.size(); j++)
+    {
+        printf("loop %lu\n", j);
+        if(markers_[j].id == id)
+        {
+            return marker_poses_[j];
+        }
+    }
+
+    MLOG_INFO(EventLogger::M_SLAM, "@MarkerFinder::markerPose: "
+              "marker %i not found. Returning identity pose.\n",
+              id);
+    return Eigen::Affine3f::Identity();
 }
