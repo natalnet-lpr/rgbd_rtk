@@ -41,9 +41,9 @@
 #include <g2o/solvers/dense/linear_solver_dense.h>
 #include <g2o/types/slam3d/types_slam3d.h>
 
-#include <common_types.h>
+#include <event_logger.h>
 #include <geometry.h>
-#include <single_marker_slam.h>
+#include <pose_graph_slam.h>
 
 using namespace std;
 using namespace g2o;
@@ -62,7 +62,7 @@ using namespace g2o;
  * #####################################################
  */
 
-SingleMarkerSlam::SingleMarkerSlam()
+PoseGraphSLAM::PoseGraphSLAM()
 {
     num_vertices_ = 0;
     last_added_id_ = -1;
@@ -78,10 +78,10 @@ SingleMarkerSlam::SingleMarkerSlam()
     optimizer_.setVerbose(true);
 }
 
-void SingleMarkerSlam::addVertexAndEdge(const Eigen::Affine3f& pose, const int& id)
+void PoseGraphSLAM::addVertexAndEdge(const Eigen::Affine3f& pose, const int& id)
 {
 
-    MLOG_DEBUG(EventLogger::M_SLAM, "@SingleMarkerSlam::addVertexAndEdge: adding node %i\n", id);
+    MLOG_DEBUG(EventLogger::M_SLAM, "@PoseGraphSLAM::addVertexAndEdge: adding node %i\n", id);
 
     // Add the first node and fix it.
     if (num_vertices_ == 0)
@@ -118,8 +118,8 @@ void SingleMarkerSlam::addVertexAndEdge(const Eigen::Affine3f& pose, const int& 
         optimizer_.addEdge(e);
         edges_.insert(e);
 
-        MLOG_DEBUG(
-            EventLogger::M_SLAM, "@SingleMarkerSlam::addVertexAndEdge: adding edge(%lu -> %lu)\n", v0->id(), v1->id());
+        MLOG_DEBUG(EventLogger::M_SLAM, "@PoseGraphSLAM::addVertexAndEdge: "
+                   "adding edge(%lu -> %lu)\n", v0->id(), v1->id());
 
         //DEBUG ERASE ME LATER
         Eigen::Isometry3f vertex_from_tmp = v0->estimate().cast<float>();
@@ -138,11 +138,11 @@ void SingleMarkerSlam::addVertexAndEdge(const Eigen::Affine3f& pose, const int& 
                " (%f %f %f)\n",
                e->measurement()(0,3), e->measurement()(1,3), e->measurement()(2,3));
         */
-        MLOG_INFO(EventLogger::M_SLAM, "@SingleMarkerSlam::addVertexAndEdge:"
-                  " computed odometry transform:\n");
+        MLOG_INFO(EventLogger::M_SLAM, "@PoseGraphSLAM::addVertexAndEdge: "
+                  "computed odometry transform:\n");
         printTransform(transf);
-        MLOG_INFO(EventLogger::M_SLAM, "@SingleMarkerSlam::addVertexAndEdge:"
-                  " stored odometry transform:\n");
+        MLOG_INFO(EventLogger::M_SLAM, "@PoseGraphSLAM::addVertexAndEdge: "
+                  "stored odometry transform:\n");
         printf("%f %f %f %f\n", e->measurement()(0,0), e->measurement()(0,1), e->measurement()(0,2), e->measurement()(0,3));
         printf("%f %f %f %f\n", e->measurement()(1,0), e->measurement()(1,1), e->measurement()(1,2), e->measurement()(1,3));
         printf("%f %f %f %f\n", e->measurement()(2,0), e->measurement()(2,1), e->measurement()(2,2), e->measurement()(2,3));
@@ -153,7 +153,7 @@ void SingleMarkerSlam::addVertexAndEdge(const Eigen::Affine3f& pose, const int& 
     num_vertices_++;
 }
 
-void SingleMarkerSlam::addLoopClosingEdge(const Eigen::Affine3f& vertex_to_origin_transf, const int& id)
+void PoseGraphSLAM::addLoopClosingEdge(const Eigen::Affine3f& vertex_to_origin_transf, const int& id)
 {
     // assumes the first vertex has id = 0
     VertexSE3* origin = dynamic_cast<g2o::VertexSE3*>(optimizer_.vertex(0));
@@ -180,10 +180,10 @@ void SingleMarkerSlam::addLoopClosingEdge(const Eigen::Affine3f& vertex_to_origi
 
     num_loop_edges_++;
 
-    MLOG_INFO(EventLogger::M_SLAM, "@SingleMarkerSlam::addLoopClosingEdge:"
+    MLOG_INFO(EventLogger::M_SLAM, "@PoseGraphSLAM::addLoopClosingEdge:"
               " computed lc transform:\n");
     printTransform(transf);
-    MLOG_INFO(EventLogger::M_SLAM, "@SingleMarkerSlam::addLoopClosingEdge:"
+    MLOG_INFO(EventLogger::M_SLAM, "@PoseGraphSLAM::addLoopClosingEdge:"
               " stored lc transform:\n");
     printf("%f %f %f %f\n", e->measurement()(0,0), e->measurement()(0,1), e->measurement()(0,2), e->measurement()(0,3));
     printf("%f %f %f %f\n", e->measurement()(1,0), e->measurement()(1,1), e->measurement()(1,2), e->measurement()(1,3));
@@ -191,7 +191,7 @@ void SingleMarkerSlam::addLoopClosingEdge(const Eigen::Affine3f& vertex_to_origi
     printf("%f %f %f %f\n", e->measurement()(3,0), e->measurement()(3,1), e->measurement()(3,2), e->measurement()(3,3));
 }
 
-void SingleMarkerSlam::getOptimizedEdge(
+void PoseGraphSLAM::getOptimizedEdge(
     const int& from_id,
     const int& to_id,
     Eigen::Vector3d& from,
@@ -221,7 +221,7 @@ void SingleMarkerSlam::getOptimizedEdge(
     }
 }
 
-void SingleMarkerSlam::getEdge(
+void PoseGraphSLAM::getEdge(
     const int& from_id,
     const int& to_id,
     Eigen::Vector3d& from,
@@ -249,16 +249,14 @@ void SingleMarkerSlam::getEdge(
             to = Eigen::Vector3d(vertix_to(0, 3), vertix_to(1, 3), vertix_to(2, 3));
             name = "edge_" + to_string(e->vertex(0)->id()) + "_" + to_string(e->vertex(1)->id());
 
-            MLOG_DEBUG(EventLogger::M_SLAM,
-               "@SingleMarkerSlam::getEdge(%i,%i):"
-               " from(%f %f %f)"
-               " to(%f %f %f)\n", from_id, to_id,
-               from(0), from(1), from(2), to(0), to(1), to(2));
+            MLOG_DEBUG(EventLogger::M_SLAM, "@PoseGraphSLAM::getEdge(%i,%i): "
+                       "from(%f %f %f) to(%f %f %f)\n", from_id, to_id,
+                       from(0), from(1), from(2), to(0), to(1), to(2));
         }
     }
 }
 
-Eigen::Affine3f SingleMarkerSlam::getVertex(const int& id)
+Eigen::Affine3f PoseGraphSLAM::getVertex(const int& id)
 {
 
     for (auto it = vertices_.begin(); it != vertices_.end(); ++it)
@@ -290,7 +288,7 @@ Eigen::Affine3f SingleMarkerSlam::getVertex(const int& id)
     printf(">>> RETURNING GARBAGE VERTEX POSE\n");
 }
 
-Eigen::Affine3f SingleMarkerSlam::getOptimizedVertex(const int& id)
+Eigen::Affine3f PoseGraphSLAM::getOptimizedVertex(const int& id)
 {
 
     for (auto it = optimizer_.activeVertices().begin(); it != optimizer_.activeVertices().end(); ++it)
@@ -321,7 +319,7 @@ Eigen::Affine3f SingleMarkerSlam::getOptimizedVertex(const int& id)
 }
 /*
 
-void SingleMarkerSlam::getLastEdge(Eigen::Vector3d& from, Eigen::Vector3d& to, string& name)
+void PoseGraphSLAM::getLastEdge(Eigen::Vector3d& from, Eigen::Vector3d& to, string& name)
 {
     auto a = optimizer_.edges().end();
 
@@ -344,14 +342,14 @@ void SingleMarkerSlam::getLastEdge(Eigen::Vector3d& from, Eigen::Vector3d& to, s
 }
     */
 
-void SingleMarkerSlam::optimizeGraph(const int& k)
+void PoseGraphSLAM::optimizeGraph(const int& k)
 {
-    MLOG_DEBUG(EventLogger::M_SLAM,
-               "@SingleMarkerSlam::optimizeGraph: %lu vertices"
-               " and %lu edges\n", optimizer_.vertices().size(), optimizer_.edges().size());
-    MLOG_DEBUG(EventLogger::M_SLAM,
-               "@SingleMarkerSlam::optimizeGraph: active %lu vertices"
-               " and %lu edges\n", optimizer_.activeVertices().size(), optimizer_.activeEdges().size());
+    MLOG_DEBUG(EventLogger::M_SLAM, "@PoseGraphSLAM::optimizeGraph: "
+               "%lu vertices and %lu edges\n",
+               optimizer_.vertices().size(), optimizer_.edges().size());
+    MLOG_DEBUG(EventLogger::M_SLAM, "@PoseGraphSLAM::optimizeGraph: "
+               "active %lu vertices and %lu edges\n",
+               optimizer_.activeVertices().size(), optimizer_.activeEdges().size());
 
     // optimizer_.save("graph.g2o"); // Save file
     // optimizer_.initializeOptimization();
@@ -365,7 +363,7 @@ void SingleMarkerSlam::optimizeGraph(const int& k)
     optimizer_.optimize(k);
 }
 
-void SingleMarkerSlam::resetGraph()
+void PoseGraphSLAM::resetGraph()
 {
     num_vertices_ = 0;
     last_added_id_ = -1;
@@ -375,9 +373,9 @@ void SingleMarkerSlam::resetGraph()
     loop_closure_edges_name_ = {};
 }
 
-void SingleMarkerSlam::printGraph()
+void PoseGraphSLAM::printGraph()
 {
-    MLOG_INFO(EventLogger::M_SLAM, "@SingleMarkerSlam::printGraph (all edges):\n");
+    MLOG_INFO(EventLogger::M_SLAM, "@PoseGraphSLAM::printGraph (all edges):\n");
 
     //for(auto it = optimizer_.activeEdges().begin(); it != optimizer_.activeEdges().end(); ++it)
     for (HyperGraph::EdgeSet::const_iterator it = optimizer_.edges().begin();
@@ -406,7 +404,7 @@ void SingleMarkerSlam::printGraph()
     }
 
     /*
-    MLOG_INFO(EventLogger::M_SLAM, "@SingleMarkerSlam::printGraph (active edges):\n");
+    MLOG_INFO(EventLogger::M_SLAM, "@PoseGraphSLAM::printGraph (active edges):\n");
 
     //for(auto it = optimizer_.activeEdges().begin(); it != optimizer_.activeEdges().end(); ++it)
     for (OptimizableGraph::EdgeContainer::const_iterator it = optimizer_.activeEdges().begin();

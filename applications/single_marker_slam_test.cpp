@@ -1,41 +1,31 @@
 /*
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016-2020, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2021, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
- *  Redistribution and use in source and binary forms, with or without modification, are permitted
- * provided
+ *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
  *
- *  1. Redistributions of source code must retain the above copyright notice, this list of
- * conditions and
+ *  1. Redistributions of source code must retain the above copyright notice, this list of conditions and
  *     the following disclaimer.
  *
- *  2. Redistributions in binary form must reproduce the above copyright notice, this list of
- * conditions and
- *     the following disclaimer in the documentation and/or other materials provided with the
- * distribution.
+ *  2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and
+ *     the following disclaimer in the documentation and/or other materials provided with the distribution.
  *
- *  3. Neither the name of the copyright holder nor the names of its contributors may be used to
- * endorse or
+ *  3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or
  *     promote products derived from this software without specific prior written permission.
  *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, *  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL,
- *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR
- *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY,
- *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, *
+ *  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  Author:
+ *  Authors:
  *
- *  Bruno Silva
+ *  Rodrigo Xavier
  */
 
 // C++
@@ -60,7 +50,7 @@
 #include <optical_flow_visual_odometry.h>
 #include <reconstruction_visualizer.h>
 #include <rgbd_loader.h>
-#include <single_marker_slam.h>
+#include <pose_graph_slam.h>
 
 using namespace std;
 using namespace cv;
@@ -90,14 +80,15 @@ struct ConfigParams
 };
 Eigen::Vector3d edge_from, edge_to;
 string edge_name;
+Eigen::Affine3f first_camera_pose;            // First camera pose
 
-void addOptimizedEdges(SingleMarkerSlam& single_marker_slam, ReconstructionVisualizer& visualizer);
-void removeEdges(SingleMarkerSlam& single_marker_slam, ReconstructionVisualizer& visualizer);
+void addOptimizedEdges(PoseGraphSLAM& single_marker_slam, ReconstructionVisualizer& visualizer);
+void removeEdges(PoseGraphSLAM& single_marker_slam, ReconstructionVisualizer& visualizer);
 bool isOrientationCorrect(Eigen::Affine3f first, Eigen::Affine3f newone);
 void updatePointCloud(
     ReconstructionVisualizer& visualizer,
     OpticalFlowVisualOdometry& vo,
-    SingleMarkerSlam& single_marker_slam);
+    PoseGraphSLAM& single_marker_slam);
 /**
  * Adds vertex and edges in single_marker_slam and visualizer
  * @param new_keyframe_pose new keyframe that should be added
@@ -111,7 +102,7 @@ void addVertexAndEdge(
     OpticalFlowVisualOdometry& vo,
     Eigen::Affine3f aruco_pose,
     int& num_keyframes,
-    SingleMarkerSlam& single_marker_slam,
+    PoseGraphSLAM& single_marker_slam,
     ReconstructionVisualizer& visualizer,
     bool is_loop_closure,
     ConfigParams config_params);
@@ -126,10 +117,13 @@ int main(int argc, char** argv)
     bool marker_found;
     ConfigParams config_params;
     EventLogger& logger = EventLogger::getInstance();
-    logger.setVerbosityLevel(EventLogger::L_ERROR);
+    logger.activateLoggingOnlyFor(EventLogger::M_SLAM);
+    logger.activateLoggingFor(EventLogger::M_COMMON);
+    logger.activateLoggingFor(EventLogger::M_VISUAL_ODOMETRY);
+    logger.setVerbosityLevel(EventLogger::L_DEBUG);
 
     ReconstructionVisualizer visualizer;
-    SingleMarkerSlam single_marker_slam;
+    PoseGraphSLAM single_marker_slam;
     Intrinsics intr(0);
     OpticalFlowVisualOdometry vo(intr);
     MarkerFinder marker_finder;
@@ -143,7 +137,7 @@ int main(int argc, char** argv)
     // Slam solver will start when the marker is found for the first time
     if (argc != 2)
     {
-        logger.print(EventLogger::L_ERROR, "[slam_solver_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
+        logger.print(EventLogger::L_ERROR, "[single_marker_slam_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
         exit(0);
     }
 
@@ -163,44 +157,50 @@ int main(int argc, char** argv)
     loader.processFile(config_params.index_file);
 
     // Compute visual odometry on each image
-    for (int i = 0; i < loader.num_images_; i++)
+    for(int i = 0; i < loader.num_images_; i++)
     {
+        MLOG_DEBUG(EventLogger::M_SLAM, "@single_marker_slam_test: processing image %i\n", i);
+
         // Load RGB-D image
         loader.getNextImage(frame, depth);
 
         // If aruco is not found yet
-        if (slam_solver_started == false)
+        if(slam_solver_started == false)
         {
             marker_finder.detectMarkersPoses(frame, Eigen::Affine3f::Identity(), config_params.aruco_max_distance);
-            if (marker_finder.markers_.size() > 0)
+            
+            if(marker_finder.isMarkerFound(250))
             {
-                if (250 == marker_finder.markers_[i].id)
-                {
-                    // If we found the mark for the first time, we will add the marker as the origin
-                    // of the system Then we add the first camera pose related to the marker pose.
-                    // Getting Camera Pose
+                // If we found the mark for the first time, we will add the marker as the origin
+                // of the system Then we add the first camera pose related to the marker pose.
+                // Getting Camera Pose
 
-                    vo.pose_ = marker_finder.marker_poses_[i].inverse();
-                    first_aruco_pose = marker_finder.marker_poses_[i];
-                    last_keyframe_pose_odometry = vo.pose_;
-                    last_keyframe_pose_aruco = vo.pose_;
+                MLOG_DEBUG(EventLogger::M_SLAM, "@single_marker_slam_test: setting coord. system origin\n");
 
-                    // Adding first pose to single_marker_slam and visualizer
-                    single_marker_slam.addVertexAndEdge(vo.pose_, num_keyframes);
-                    visualizer.addReferenceFrame(vo.pose_, to_string(num_keyframes));
-                    num_keyframes++; // Increment the number of keyframes found
-                    // Set slam solver started to true since we found the marker for the first time
-                    slam_solver_started = true;
-                    vo.addKeyFrame(frame);
-                    visualizer.addKeyFrame(vo.getLastKeyframe());
-                }
+                vo.pose_ = marker_finder.marker_poses_[i].inverse();
+                first_aruco_pose = marker_finder.marker_poses_[i];
+                first_camera_pose = first_aruco_pose.inverse();
+                last_keyframe_pose_odometry = vo.pose_;
+                last_keyframe_pose_aruco = vo.pose_;
+
+                // Adding first pose to single_marker_slam and visualizer
+                single_marker_slam.addVertexAndEdge(vo.pose_, num_keyframes);
+                visualizer.addReferenceFrame(vo.pose_, to_string(num_keyframes));
+                num_keyframes++; // Increment the number of keyframes found
+                // Set slam solver started to true since we found the marker for the first time
+                slam_solver_started = true;
+                vo.addKeyFrame(frame);
+                //visualizer.addKeyFrame(vo.getLastKeyframe());
             }
+            
             continue;
         }
 
         // If we have already found the marker we start the keyframe process
         else
         {
+            MLOG_DEBUG(EventLogger::M_SLAM, "@single_marker_slam_test: computing odometry\n");
+
             bool is_kf = vo.computeCameraPose(frame, depth);
             visualizer.viewReferenceFrame(vo.pose_);
             visualizer.viewQuantizedPointCloud(vo.curr_dense_cloud_, 0.02, vo.pose_);
@@ -223,8 +223,10 @@ int main(int argc, char** argv)
                     {
                         if (isOrientationCorrect(first_aruco_pose, marker_finder.marker_poses_[j]))
                         {
+                            MLOG_DEBUG(EventLogger::M_SLAM, "@single_marker_slam_test: marker found (possible loop closure)\n");
+
                             vo.addKeyFrame(frame);
-                            visualizer.addKeyFrame(vo.getLastKeyframe());
+                            //visualizer.addKeyFrame(vo.getLastKeyframe());
                             addVertexAndEdge(
                                 vo,
                                 marker_finder.marker_poses_[j],
@@ -242,6 +244,7 @@ int main(int argc, char** argv)
 
             if (!marker_found)
             {
+                MLOG_DEBUG(EventLogger::M_SLAM, "@single_marker_slam_test: marker not found\n");
 
                 // View tracked points
                 for (size_t k = 0; k < vo.tracker_.curr_pts_.size(); k++)
@@ -260,13 +263,15 @@ int main(int argc, char** argv)
                 // If we found a keyframe we will added to slam solver and visualizer
                 if (is_kf)
                 {
+                    MLOG_DEBUG(EventLogger::M_SLAM, "@single_marker_slam_test: keyframe triggered\n");
+
                     double x = pow(vo.pose_(0, 3) - last_keyframe_pose_odometry(0, 3), 2);
                     double y = pow(vo.pose_(1, 3) - last_keyframe_pose_odometry(1, 3), 2);
                     double z = pow(vo.pose_(2, 3) - last_keyframe_pose_odometry(2, 3), 2);
                     if (sqrt(x + y + z) >= config_params.minimum_distance_between_keyframes)
                     {
                         vo.addKeyFrame(frame);
-                        visualizer.addKeyFrame(vo.getLastKeyframe());
+                        //visualizer.addKeyFrame(vo.getLastKeyframe());
                         addVertexAndEdge(
                             vo,
                             Eigen::Affine3f::Identity(),
@@ -281,13 +286,13 @@ int main(int argc, char** argv)
             }
         }
 
-        visualizer.spinOnce();
+        visualizer.spin();
         imshow("Image view", frame);
         // imshow("Depth view", depth);
         char key = waitKey(1);
         if (key == 27 || key == 'q' || key == 'Q')
         {
-            logger.print(EventLogger::L_INFO, "[slam_solver_test.cpp] Exiting\n", argv[0]);
+            logger.print(EventLogger::L_INFO, "[single_marker_slam_test.cpp] Exiting.\n");
             break;
         }
     }
@@ -306,23 +311,22 @@ void addVertexAndEdge(
     OpticalFlowVisualOdometry& vo,
     Eigen::Affine3f aruco_pose,
     int& num_keyframes,
-    SingleMarkerSlam& single_marker_slam,
+    PoseGraphSLAM& single_marker_slam,
     ReconstructionVisualizer& visualizer,
     bool is_loop_closure,
     ConfigParams config_params)
 
 {
-
     // We will only add a new keyframe if they have at least 5cm of distance between each other
     if (is_loop_closure == false)
     {
         // Adding keyframe in visualizer
-        visualizer.viewReferenceFrame(vo.pose_, to_string(num_keyframes));
+        //visualizer.viewReferenceFrame(vo.pose_, to_string(num_keyframes));
         // Add the keyframe and creating an edge to the last vertex
         single_marker_slam.addVertexAndEdge(vo.pose_, num_keyframes);
         single_marker_slam.getEdge(
             single_marker_slam.num_vertices_ - 2, single_marker_slam.num_vertices_ - 1, edge_from, edge_to, edge_name);
-        visualizer.addEdge(edge_from, edge_to, edge_name);
+        //visualizer.addEdge(edge_from, edge_to, edge_name);
 
         num_keyframes++; // Increment the number of keyframes found
     }
@@ -330,20 +334,26 @@ void addVertexAndEdge(
     if (is_loop_closure == true)
     {
         // Adding keyframe in visualizer
-        visualizer.viewReferenceFrame(vo.pose_, to_string(num_keyframes));
+        //visualizer.viewReferenceFrame(vo.pose_, to_string(num_keyframes));
         // Add the keyframe and creating an edge to the last vertex
         single_marker_slam.addVertexAndEdge(vo.pose_, num_keyframes);
         single_marker_slam.getEdge(
             single_marker_slam.num_vertices_ - 2, single_marker_slam.num_vertices_ - 1, edge_from, edge_to, edge_name);
-        visualizer.addEdge(edge_from, edge_to, edge_name);
+        //visualizer.addEdge(edge_from, edge_to, edge_name);
 
         // Adding the loop closing edge that is an edge from this vertex to the initial
         // If we want to change the system coord from A to B -> A.inverse * B
         // A = cam pose no sistema de coordenadas do Aruco = P
         // B = origem
-        single_marker_slam.addLoopClosingEdge(vo.pose_.inverse() * aruco_pose, num_keyframes);
+        Eigen::Affine3f aruco_cam_pose = aruco_pose.inverse(), transf;
+        transf = relativeTransform(aruco_cam_pose, first_camera_pose);
+        MLOG_DEBUG(EventLogger::M_SLAM, "@single_marker_slam_test: lc edge"
+                   " translation: (%f %f %f)\n",
+                   transf(0, 3), transf(1, 3), transf(2, 3));
+        single_marker_slam.addLoopClosingEdge(transf, num_keyframes);
         single_marker_slam.getEdge(single_marker_slam.num_vertices_ - 1, 0, edge_from, edge_to, edge_name);
-        visualizer.addEdge(edge_from, edge_to, edge_name, Eigen::Vector3f(1.0, 0.0, 0.0));
+        visualizer.viewReferenceFrame(aruco_cam_pose, "marker_pose");
+        //visualizer.addEdge(edge_from, edge_to, edge_name, Eigen::Vector3f(1.0, 0.0, 0.0));
 
         single_marker_slam.loop_closure_edges_name_.push_back(
             edge_name); // Saving the edge name of the loop closure edges
@@ -353,7 +363,11 @@ void addVertexAndEdge(
             removeEdges(single_marker_slam, visualizer);
             visualizer.removeAllVertexesAndEdges();
 
+            MLOG_INFO(EventLogger::M_SLAM, "@single_marker_slam_test: before\n");
+            single_marker_slam.printGraph();
             single_marker_slam.optimizeGraph(10);
+            MLOG_INFO(EventLogger::M_SLAM, "@single_marker_slam_test: after\n");
+            single_marker_slam.printGraph();
             addOptimizedEdges(single_marker_slam, visualizer);
             updatePointCloud(visualizer, vo, single_marker_slam);
         }
@@ -382,7 +396,7 @@ bool isOrientationCorrect(Eigen::Affine3f first, Eigen::Affine3f new_pose)
  * @param single_marker_slam
  * @param visualizer
  */
-void removeEdges(SingleMarkerSlam& single_marker_slam, ReconstructionVisualizer& visualizer)
+void removeEdges(PoseGraphSLAM& single_marker_slam, ReconstructionVisualizer& visualizer)
 {
     // Removing the edges
     for (signed i = 0; i < single_marker_slam.num_vertices_; i++)
@@ -402,7 +416,7 @@ void removeEdges(SingleMarkerSlam& single_marker_slam, ReconstructionVisualizer&
  * @param single_marker_slam
  * @param visualizer
  */
-void addOptimizedEdges(SingleMarkerSlam& single_marker_slam, ReconstructionVisualizer& visualizer)
+void addOptimizedEdges(PoseGraphSLAM& single_marker_slam, ReconstructionVisualizer& visualizer)
 {
     // Iterate over number of vertices and get the optimized edge and adding to visualizer
     for (signed i = 0; i < single_marker_slam.num_vertices_ - 1; i++)
@@ -430,7 +444,7 @@ void addOptimizedEdges(SingleMarkerSlam& single_marker_slam, ReconstructionVisua
 void updatePointCloud(
     ReconstructionVisualizer& visualizer,
     OpticalFlowVisualOdometry& vo,
-    SingleMarkerSlam& single_marker_slam)
+    PoseGraphSLAM& single_marker_slam)
 {
 
     for (auto& x : vo.keyframes_)

@@ -58,7 +58,7 @@
 #include <optical_flow_visual_odometry.h>
 #include <reconstruction_visualizer.h>
 #include <rgbd_loader.h>
-#include <single_marker_slam.h>
+#include <pose_graph_slam.h>
 
 using namespace std;
 using namespace cv;
@@ -102,7 +102,7 @@ void addVertexAndEdge(
     Eigen::Affine3f& last_keyframe_pose_aruco,
     Eigen::Affine3f aruco_pose,
     int& num_keyframes,
-    SingleMarkerSlam& single_marker_slam,
+    PoseGraphSLAM& single_marker_slam,
     ReconstructionVisualizer& visualizer,
     bool is_loop_closure);
 /**
@@ -122,8 +122,8 @@ int main(int argc, char** argv)
     EventLogger& logger = EventLogger::getInstance();
     logger.setVerbosityLevel(EventLogger::L_ERROR);
 
-    SingleMarkerSlam single_marker_slam;
-    SingleMarkerSlam slam_solver_local;
+    PoseGraphSLAM single_marker_slam;
+    PoseGraphSLAM slam_solver_local;
     ReconstructionVisualizer visualizer;
     ReconstructionVisualizer visualizer_local;
     Intrinsics intr(0);
@@ -385,7 +385,7 @@ void addVertexAndEdge(
     Eigen::Affine3f& last_keyframe_pose_aruco,
     Eigen::Affine3f aruco_pose,
     int& num_keyframes,
-    SingleMarkerSlam& single_marker_slam,
+    PoseGraphSLAM& single_marker_slam,
     ReconstructionVisualizer& visualizer,
     bool is_loop_closure)
 

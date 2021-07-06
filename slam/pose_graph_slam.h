@@ -29,8 +29,8 @@
  *  Rodrigo Xavier
  */
 
-#ifndef INCLUDE_SingleMarkerSlam_H_
-#define INCLUDE_SingleMarkerSlam_H_
+#ifndef INCLUDE_POSEGRAPHSLAM_H_
+#define INCLUDE_POSEGRAPHSLAM_H_
 
 #include <vector>
 
@@ -38,10 +38,11 @@
 
 #include <g2o/core/sparse_optimizer.h>
 
-#include <common_types.h>
-#include <event_logger.h>
-
-class SingleMarkerSlam
+/**
+ * Class used to solve incarnations of
+ * SLAM modeled with PoseGraphs.
+ */
+class PoseGraphSLAM
 {
 private:
     // Id of the last added vertex (used when adding edges)
@@ -71,7 +72,7 @@ public:
     std::vector<Eigen::Affine3f> optimized_estimates_;
 
     // Default constructor
-    SingleMarkerSlam();
+    PoseGraphSLAM();
 
     /**
      * Adds a vertex to the graph with the given pose and id
@@ -144,4 +145,4 @@ public:
     void printGraph();
 };
 
-#endif /* INCLUDE_SLAM_H_ */
+#endif /* INCLUDE_POSEGRAPHSLAM_H_ */
