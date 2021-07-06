@@ -126,5 +126,13 @@ public:
      * @return pose of marker with given id
      */
     Eigen::Affine3f markerPose(const int &id);
+
+    /**
+     * Draws the pose of a marker with given
+     * id to the supplied image.
+     * @param id: id of marker to be drawn.
+     * @param img: RGB image in which the marker should be drawn
+     */
+    void drawMarker(const int &id, cv::Mat &img);
 };
 #endif /* INCLUDE_MARKER_FINDER_H_ */

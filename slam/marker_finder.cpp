@@ -108,9 +108,9 @@ void MarkerFinder::detectMarkersPoses(
 {
     markers_.clear();
     marker_detector_.detect(img, markers_, camera_params_, marker_size_); // detect markers
-    MLOG_INFO(EventLogger::M_SLAM, "@MarkerFinder::detectMarkersPoses:"
-              " detected %lu markers.\n",
-              markers_.size());
+    MLOG_DEBUG(EventLogger::M_SLAM, "@MarkerFinder::detectMarkersPoses:"
+               " detected %lu markers.\n",
+               markers_.size());
 
     setMarkerPoses(cam_pose, aruco_max_distance); // set the pose
 }
@@ -124,7 +124,7 @@ bool MarkerFinder::isMarkerFound(const int &id)
             return true;
         }
     }
-    MLOG_INFO(EventLogger::M_SLAM, "@MarkerFinder::isMarkerFound: "
+    MLOG_WARN(EventLogger::M_SLAM, "@MarkerFinder::isMarkerFound: "
               "marker %i not found.\n",
               id);
     return false;
@@ -134,15 +134,39 @@ Eigen::Affine3f MarkerFinder::markerPose(const int &id)
 {
     for(size_t j = 0; j < markers_.size(); j++)
     {
-        printf("loop %lu\n", j);
         if(markers_[j].id == id)
         {
             return marker_poses_[j];
         }
     }
 
-    MLOG_INFO(EventLogger::M_SLAM, "@MarkerFinder::markerPose: "
+    MLOG_WARN(EventLogger::M_SLAM, "@MarkerFinder::markerPose: "
               "marker %i not found. Returning identity pose.\n",
               id);
     return Eigen::Affine3f::Identity();
+}
+
+void MarkerFinder::drawMarker(const int &id, cv::Mat &img)
+{
+    int marker_idx = -1;
+
+    for(size_t j = 0; j < markers_.size(); j++)
+    {
+        if(markers_[j].id == id)
+        {
+            marker_idx = j;
+        }
+    }
+
+    if(marker_idx >= 0)
+    {
+        markers_[marker_idx].draw(img, cv::Scalar(0, 0, 255), 1.5);
+        CvDrawingUtils::draw3dAxis(img, markers_[marker_idx], camera_params_, 2);
+    }
+    else
+    {
+        MLOG_WARN(EventLogger::M_SLAM, "@MarkerFinder::isMarkerFound: "
+                  "marker %i not found.\n",
+                  id);
+    }
 }
