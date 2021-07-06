@@ -51,6 +51,7 @@
 #include <reconstruction_visualizer.h>
 #include <rgbd_loader.h>
 #include <pose_graph_slam.h>
+#include <single_marker_slam.h>
 
 using namespace std;
 using namespace cv;
@@ -122,6 +123,8 @@ int main(int argc, char** argv)
     logger.activateLoggingFor(EventLogger::M_VISUAL_ODOMETRY);
     logger.setVerbosityLevel(EventLogger::L_DEBUG);
 
+    SingleMarkerSLAM sm_slam;
+
     ReconstructionVisualizer visualizer;
     PoseGraphSLAM single_marker_slam;
     Intrinsics intr(0);
@@ -189,7 +192,7 @@ int main(int argc, char** argv)
                 num_keyframes++; // Increment the number of keyframes found
                 // Set slam solver started to true since we found the marker for the first time
                 slam_solver_started = true;
-                vo.addKeyFrame(frame);
+                vo.addKeyFrame();
                 //visualizer.addKeyFrame(vo.getLastKeyframe());
             }
             
@@ -225,7 +228,7 @@ int main(int argc, char** argv)
                         {
                             MLOG_DEBUG(EventLogger::M_SLAM, "@single_marker_slam_test: marker found (possible loop closure)\n");
 
-                            vo.addKeyFrame(frame);
+                            vo.addKeyFrame();
                             //visualizer.addKeyFrame(vo.getLastKeyframe());
                             addVertexAndEdge(
                                 vo,
@@ -270,7 +273,7 @@ int main(int argc, char** argv)
                     double z = pow(vo.pose_(2, 3) - last_keyframe_pose_odometry(2, 3), 2);
                     if (sqrt(x + y + z) >= config_params.minimum_distance_between_keyframes)
                     {
-                        vo.addKeyFrame(frame);
+                        vo.addKeyFrame();
                         //visualizer.addKeyFrame(vo.getLastKeyframe());
                         addVertexAndEdge(
                             vo,

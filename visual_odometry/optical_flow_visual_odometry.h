@@ -1,7 +1,7 @@
 /*
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016-2020, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2021, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted
  * provided
@@ -54,16 +54,19 @@ class OpticalFlowVisualOdometry
 {
 private:
     // Current frame index
-    unsigned long int frame_idx_;
+    size_t frame_idx_;
+
+    // Copy of the current RGB image (for Keyframe creation)
+    cv::Mat rgb_;
+
+    // Copy of the current depth image (for Keyframe creation)
+    cv::Mat depth_;
 
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     // Previous dense point cloud
     pcl::PointCloud<PointT>::Ptr prev_dense_cloud_;
-
-    // Adds a new keyframe to the internal container of keyframes
-    void addKeyFrame(const cv::Mat& rgb);
 
     // Current dense point cloud
     pcl::PointCloud<PointT>::Ptr curr_dense_cloud_;
@@ -79,8 +82,6 @@ public:
 
     // Container with pairs idx <-> keyframe
     std::map<size_t, Keyframe> keyframes_;
-
-    int num_keyframes_;
 
     /**
      * Default constructor
@@ -103,7 +104,21 @@ public:
      */
     bool computeCameraPose(const cv::Mat& rgb, const cv::Mat& depth);
 
-    void createArtificialKeyframe(const cv::Mat& rgb);
+    /**
+     * Utility function: creates and returns a Keyframe
+     * with the given id.
+     * computeCameraPose must be called first, so
+     * the last supplied data to computeCameraPose is
+     * used to create a keyframe.
+     * @param kf_id: id of the keyframe
+     */
+    Keyframe& createKeyframe(const size_t &kf_id);
+
+    /**
+     * Adds a new keyframe to the internal container of keyframes
+     * TODO: REMOVE THIS MEMBER FUNCTION
+     */ 
+    void addKeyFrame();
 
     /**
      * @param Keyframe return the last detected keyframe.

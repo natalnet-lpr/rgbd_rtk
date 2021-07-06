@@ -1,7 +1,7 @@
 /*
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016-2020, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2021, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -36,30 +36,9 @@
 using namespace std;
 using namespace cv;
 
-void OpticalFlowVisualOdometry::addKeyFrame(const Mat& rgb)
-{
-    Keyframe kf;
-    kf.idx_ = keyframes_.size();
-    kf.pose_ = pose_;
-    rgb.copyTo(kf.img_);
-    *kf.local_cloud_ = *curr_dense_cloud_;
-    kf.keypoints_.resize(tracker_.curr_pts_.size());
-    copy(tracker_.curr_pts_.begin(), tracker_.curr_pts_.end(), kf.keypoints_.begin());
-
-    MLOG_DEBUG(
-        EventLogger::M_VISUAL_ODOMETRY,
-        "@OpticalFlowVisualOdometry::addKeyFrame: \
-                                                adding %lu as keyframe\n",
-        frame_idx_);
-
-    keyframes_.insert(pair<size_t, Keyframe>(kf.idx_, kf));
-    num_keyframes_++;
-}
-
 OpticalFlowVisualOdometry::OpticalFlowVisualOdometry(const Eigen::Affine3f& initialPose)
 {
     frame_idx_ = 0;
-    num_keyframes_ = 0;
     pose_ = initialPose;
 
     prev_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
@@ -69,7 +48,6 @@ OpticalFlowVisualOdometry::OpticalFlowVisualOdometry(const Eigen::Affine3f& init
 OpticalFlowVisualOdometry::OpticalFlowVisualOdometry(const Intrinsics& intr, const Eigen::Affine3f& initialPose)
 {
     frame_idx_ = 0;
-    num_keyframes_ = 0;
     pose_ = initialPose;
     motion_estimator_.intr_ = intr;
 
@@ -83,6 +61,10 @@ bool OpticalFlowVisualOdometry::computeCameraPose(const cv::Mat& rgb, const cv::
 
     Eigen::Affine3f trans = Eigen::Affine3f::Identity();
 
+    // Copy RGB-D data to internal buffers
+    rgb.copyTo(rgb_);
+    depth.copyTo(depth_);
+
     // Get dense point cloud from RGB-D data
     *curr_dense_cloud_ = getPointCloud(rgb, depth, motion_estimator_.intr_);
 
@@ -92,8 +74,8 @@ bool OpticalFlowVisualOdometry::computeCameraPose(const cv::Mat& rgb, const cv::
     // Estimate motion between the current and the previous point clouds
     if (frame_idx_ > 0)
     {
-        trans =
-            motion_estimator_.estimate(tracker_.prev_pts_, prev_dense_cloud_, tracker_.curr_pts_, curr_dense_cloud_);
+        trans = motion_estimator_.estimate(tracker_.prev_pts_, prev_dense_cloud_,
+                                           tracker_.curr_pts_, curr_dense_cloud_);
         pose_ = pose_ * trans;
     }
 
@@ -104,6 +86,31 @@ bool OpticalFlowVisualOdometry::computeCameraPose(const cv::Mat& rgb, const cv::
     frame_idx_++;
 
     return is_kf;
+}
+
+Keyframe& OpticalFlowVisualOdometry::createKeyframe(const size_t &kf_id)
+{
+    Keyframe kf;
+    kf.idx_ = kf_id;
+    kf.pose_ = pose_;
+    rgb_.copyTo(kf.img_);
+    *kf.local_cloud_ = *curr_dense_cloud_;
+    kf.keypoints_.resize(tracker_.curr_pts_.size());
+    copy(tracker_.curr_pts_.begin(), tracker_.curr_pts_.end(), kf.keypoints_.begin());
+
+    return kf;
+}
+
+void OpticalFlowVisualOdometry::addKeyFrame()
+{
+    Keyframe kf = createKeyframe(keyframes_.size());
+
+    MLOG_DEBUG(EventLogger::M_VISUAL_ODOMETRY,
+               "@OpticalFlowVisualOdometry::addKeyFrame: "
+               "adding %lu as keyframe\n",
+               frame_idx_);
+
+    keyframes_.insert(pair<size_t, Keyframe>(kf.idx_, kf));
 }
 
 Keyframe OpticalFlowVisualOdometry::getLastKeyframe()
