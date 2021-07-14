@@ -169,6 +169,14 @@ Eigen::Isometry3d affineToIsometry(const Eigen::Affine3f &m)
     return r;
 }
 
+Eigen::Affine3f isometryToAffine(const Eigen::Isometry3d &m)
+{
+	Eigen::Affine3f r;
+	r.linear() = m.linear().cast<float>();
+	r.translation() = m.translation().cast<float>();
+	return r;
+}
+
 Eigen::Affine3f relativeTransform(const Eigen::Affine3f &from_pose, const Eigen::Affine3f &to_pose)
 {
 	return from_pose.inverse()*to_pose;

@@ -84,11 +84,18 @@ double distanceBetween(const Eigen::Affine3f &first_rf, const Eigen::Affine3f& s
 bool zAxisAngleBetween(const Eigen::Affine3f& first_rf, const Eigen::Affine3f& second_rf);
 
 /**
- * Converts the given Eigen::Affine3f matrix to Eigen::Isometry3d.
- * @param m the Eigen::Affine3f matrix that should be transformed
- * @return the resulting Eigen::Isometry3d matrix.
+ * Converts the given Eigen::Affine3f to Eigen::Isometry3d.
+ * @param m: the Eigen::Affine3f that should be transformed
+ * @return the resulting Eigen::Isometry3d.
  */
 Eigen::Isometry3d affineToIsometry(const Eigen::Affine3f &m);
+
+/**
+ * Converts the given Eigen::Isometry3d to Eigen::Affine3f.
+ * @param m: the Eigen::Isometry3d that should be transformed
+ * @return the resulting Eigen::Affine3f.
+ */
+Eigen::Affine3f isometryToAffine(const Eigen::Isometry3d &m);
 
 /**
  * Computes the relative transformation between two poses A and B.
