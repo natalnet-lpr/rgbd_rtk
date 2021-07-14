@@ -45,8 +45,6 @@
 class PoseGraphSLAM
 {
 private:
-    // Id of the last added vertex (used when adding edges)
-    int last_added_id_;
 
     // G2O nonlinear optimizer
     g2o::SparseOptimizer optimizer_;
@@ -54,88 +52,67 @@ private:
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    // Number of vertices in the graph
-    int num_vertices_;
-
-    // Number of loop edges
-    int num_loop_edges_;
-
     // Vertices added
     g2o::HyperGraph::VertexSet vertices_;
 
     // Edges added
     g2o::HyperGraph::EdgeSet edges_;
 
-    // Loop closure edges name
-    std::vector<std::string> loop_closure_edges_name_;
-
-    std::vector<Eigen::Affine3f> optimized_estimates_;
-
     // Default constructor
     PoseGraphSLAM();
 
     /**
-     * Adds a vertex to the graph with the given pose and id
-     * and also an "odometry" edge connecting it to the previous
-     * vertex in the graph
-     * @param pose pose to be added
-     * @param id pose id
+     * Adds a vertex to the graph with the given pose and id.
+     * The vertex can be optionally set to fixed.
+     * @param pose: vertex pose
+     * @param id: vertex id
+     * @param fixed_vertex: if the vertex should be fixed
      */
-    void addVertexAndEdge(const Eigen::Affine3f& pose, const int& id);
+    void addVertex(const Eigen::Affine3f &pose, const int &id,
+                   const bool &fixed_vertex = false);
 
     /**
-     * Adds a "loop closing" edge connecting the vertex with given id to the
-     * origin (vertex with id = 0)
-     * @param vertex_to_origin_transformation transformation from the vertex to origin
-     * @param id vertex id
+     * Adds an edge to the graph that connects the
+     * vertices of given ids by the given relative transform
+     * (measured in the from_vertex ref. frame)
+     * @param from_id: vertex id of the from_vertex
+     * @param to_id: vertex id of the to_vertex
+     * @param transform: 3D rigid transformation from the from_vertex
+     *                   to the to_vertex
      */
-    void addLoopClosingEdge(const Eigen::Affine3f& vertex_to_origin_transf, const int& id);
+    void addEdge(const int &from_id, const int &to_id,
+                 const Eigen::Isometry3d &transform);
 
     /**
-     * Returns an Optimized Edge (transformation between two keyframes if it was already optimized by graph)
-     * @param from_id edge from id
-     * @param to_id edge to id
-     * @param from (output parameter) 3D position of the edge "from" endpoint
-     * @param to (output parameter) 3D position of the edge "to" endpoint
-     * @param name (output parameter) string where the name of edge will be saved
+     * Adds an odometry edge to the graph.
+     * An odometry edge connects two nodes with consecutive ids.
+     * @param id: vertex id of the to_vertex (the vertex id of the
+                  from_vertex is obtained from this value)
      */
-    void getOptimizedEdge(
-        const int& from_id,
-        const int& to_id,
-        Eigen::Vector3d& from,
-        Eigen::Vector3d& to,
-        std::string& name);
+    void addOdometryEdge(const int &id);
 
     /**
-     * Returns an edge (transformation between two keyframes)
-     * @param from_id the id of the "back" of the edge arrow
-     * @param to_id the id of the "point" of the edge arrow
-     * @param from (output parameter) 3D position of the edge "from" endpoint
-     * @param to (output parameter) 3D position of the edge "to" endpoint
-     * @param name (output parameter) string where the name of edge will be saved
+     * Returns the pose of a vertex of given id.
+     * @param id: vertex id of the vertex
      */
-    void getEdge(const int& from_id, const int& to_id, Eigen::Vector3d& from, Eigen::Vector3d& to, std::string& name);
-    Eigen::Affine3f getVertex(const int& id);
-
-    Eigen::Affine3f getOptimizedVertex(const int& id);
+    Eigen::Affine3f getVertexPose(const int &id);
 
     /**
-     * Returns the the last edge, if it is an odometry it will return the edge from positions_.size() - 2 to
-     * positions.size() - 1 If it is an loop it will return 0 to positions.size() - 1
-     * @return Edge
+     * Returns the two endpoints (3D positions of "from" and "to" vertices)
+     * of an edge.
+     * @param from_id: id of the "from" endpoint
+     * @param to_id: id of the "to" endpoint
+     * @param from (output parameter): 3D position of the "from" vertex
+     * @param to (output parameter): 3D position of the "to" vertex
      */
-    // void getLastEdge(Eigen::Vector3d& from, Eigen::Vector3d& to, std::string& name);
+    void getEdgeEndpoints(const int &from_id, const int &to_id,
+                          Eigen::Vector3d& from, Eigen::Vector3d& to);
 
     /**
      * Optimizes the graph with Levenberg-Marquardt for the given n. of iterations
      * @param k number of iterations type int
      */
     void optimizeGraph(const int& k);
-
-    /**
-     * Reset graph
-     */
-    void resetGraph();
 
     /**
      * Prints all vertices and edges currently in

@@ -64,11 +64,6 @@ using namespace g2o;
 
 PoseGraphSLAM::PoseGraphSLAM()
 {
-    num_vertices_ = 0;
-    last_added_id_ = -1;
-    num_loop_edges_ = 0;
-    loop_closure_edges_name_ = {};
-
     std::unique_ptr<g2o::BlockSolverX::LinearSolverType> linearSolver =
         g2o::make_unique<g2o::LinearSolverCholmod<g2o::BlockSolverX::PoseMatrixType>>();
     g2o::OptimizationAlgorithmLevenberg* solver =
@@ -78,269 +73,93 @@ PoseGraphSLAM::PoseGraphSLAM()
     optimizer_.setVerbose(true);
 }
 
-void PoseGraphSLAM::addVertexAndEdge(const Eigen::Affine3f& pose, const int& id)
+void PoseGraphSLAM::addVertex(const Eigen::Affine3f &pose, const int &id,
+                              const bool &fixed_vertex)
 {
+    MLOG_DEBUG(EventLogger::M_SLAM, "@PoseGraphSLAM::addVertex: "
+                                    "id %lu\n", id);
 
-    MLOG_DEBUG(EventLogger::M_SLAM, "@PoseGraphSLAM::addVertexAndEdge: adding node %i\n", id);
+    Eigen::Isometry3d est(pose.matrix().cast<double>());
 
-    // Add the first node and fix it.
-    if (num_vertices_ == 0)
-    {
-        Eigen::Isometry3d est(pose.matrix().cast<double>());
-
-        VertexSE3* v0 = new VertexSE3;
-        v0->setId(id);
-        v0->setEstimate(est);
-        v0->setFixed(true);
-        optimizer_.addVertex(v0);
-        vertices_.insert(v0);
-    }
-    // When adding any nodes other than the first, add an edge connecting
-    // to the previous one
-    else
-    {
-        VertexSE3* v0 = dynamic_cast<g2o::VertexSE3*>(optimizer_.vertex(last_added_id_));
-
-        Eigen::Isometry3d est(pose.matrix().cast<double>());
-
-        VertexSE3* v1 = new VertexSE3;
-        v1->setId(id);
-        v1->setEstimate(est);
-        optimizer_.addVertex(v1);
-        vertices_.insert(v1);
-
-        EdgeSE3* e = new EdgeSE3;
-        e->vertices()[0] = v0;
-        e->vertices()[1] = v1;
-        //e->setMeasurementFromState(); //THIS DOES NOT WORK PROPERLY AND I DON'T KNOW WHY
-        e->setMeasurement(relativeTransform(v0->estimate(), v1->estimate()));
-        // e->information() = Eigen::Matrix<double, 6, 6>::Identity();
-        optimizer_.addEdge(e);
-        edges_.insert(e);
-
-        MLOG_DEBUG(EventLogger::M_SLAM, "@PoseGraphSLAM::addVertexAndEdge: "
-                   "adding edge(%lu -> %lu)\n", v0->id(), v1->id());
-
-        //DEBUG ERASE ME LATER
-        Eigen::Isometry3f vertex_from_tmp = v0->estimate().cast<float>();
-        Eigen::Affine3f vertex_from = Eigen::Affine3f::Identity();
-        vertex_from.matrix() = vertex_from_tmp.matrix();
-        Eigen::Isometry3f vertex_to_tmp = v1->estimate().cast<float>();
-        Eigen::Affine3f vertex_to = Eigen::Affine3f::Identity();
-        vertex_to.matrix() = vertex_to_tmp.matrix();
-        Eigen::Affine3f transf = relativeTransform(vertex_from, vertex_to);
-
-        /*
-        MLOG_DEBUG(EventLogger::M_SLAM, "@SingleMarkerSlam::addVertexAndEdge:"
-               " adding edge(%lu -> %lu) with translation from state (%f %f %f)\n",
-               v0->id(), v1->id(), transf(0,3), transf(1,3), transf(2,3));
-        MLOG_DEBUG(EventLogger::M_SLAM, "same data stored in the edge:"
-               " (%f %f %f)\n",
-               e->measurement()(0,3), e->measurement()(1,3), e->measurement()(2,3));
-        */
-        MLOG_INFO(EventLogger::M_SLAM, "@PoseGraphSLAM::addVertexAndEdge: "
-                  "computed odometry transform:\n");
-        printTransform(transf);
-        MLOG_INFO(EventLogger::M_SLAM, "@PoseGraphSLAM::addVertexAndEdge: "
-                  "stored odometry transform:\n");
-        printf("%f %f %f %f\n", e->measurement()(0,0), e->measurement()(0,1), e->measurement()(0,2), e->measurement()(0,3));
-        printf("%f %f %f %f\n", e->measurement()(1,0), e->measurement()(1,1), e->measurement()(1,2), e->measurement()(1,3));
-        printf("%f %f %f %f\n", e->measurement()(2,0), e->measurement()(2,1), e->measurement()(2,2), e->measurement()(2,3));
-        printf("%f %f %f %f\n", e->measurement()(3,0), e->measurement()(3,1), e->measurement()(3,2), e->measurement()(3,3));
-    }
-
-    last_added_id_ = id;
-    num_vertices_++;
+    VertexSE3* v = new VertexSE3;
+    v->setId(id);
+    v->setEstimate(est);
+    v->setFixed(fixed_vertex);
+    optimizer_.addVertex(v);
+    vertices_.insert(v);
 }
 
-void PoseGraphSLAM::addLoopClosingEdge(const Eigen::Affine3f& vertex_to_origin_transf, const int& id)
+void PoseGraphSLAM::addEdge(const int &from_id, const int &to_id,
+                            const Eigen::Isometry3d &transform)
 {
-    // assumes the first vertex has id = 0
-    VertexSE3* origin = dynamic_cast<g2o::VertexSE3*>(optimizer_.vertex(0));
-    VertexSE3* v = dynamic_cast<g2o::VertexSE3*>(optimizer_.vertex(id));
+    MLOG_DEBUG(EventLogger::M_SLAM, "@PoseGraphSLAM::addEdge: "
+                                    "from %lu to %lu\n", from_id, to_id);
 
-    //DEBUG ERASE ME LATER
-    Eigen::Isometry3f vertex_from_tmp = v->estimate().cast<float>();
-    Eigen::Affine3f vertex_from = Eigen::Affine3f::Identity();
-    vertex_from.matrix() = vertex_from_tmp.matrix();
-    Eigen::Isometry3f vertex_to_tmp = origin->estimate().cast<float>();
-    Eigen::Affine3f vertex_to = Eigen::Affine3f::Identity();
-    vertex_to.matrix() = vertex_to_tmp.matrix();
-    Eigen::Affine3f transf = relativeTransform(vertex_from, vertex_to);
-
-    Eigen::Isometry3d measurement(vertex_to_origin_transf.matrix().cast<double>());
+    VertexSE3* v0 = dynamic_cast<g2o::VertexSE3*>(optimizer_.vertex(from_id));
+    VertexSE3* v1 = dynamic_cast<g2o::VertexSE3*>(optimizer_.vertex(to_id));
 
     EdgeSE3* e = new EdgeSE3;
-    e->vertices()[0] = v;
-    e->vertices()[1] = origin;
-    e->setMeasurement(measurement);
+    e->vertices()[0] = v0;
+    e->vertices()[1] = v1;
+    e->setMeasurement(transform);
     // e->information() = Eigen::Matrix<double, 6, 6>::Identity();
     optimizer_.addEdge(e);
     edges_.insert(e);
-
-    num_loop_edges_++;
-
-    MLOG_INFO(EventLogger::M_SLAM, "@PoseGraphSLAM::addLoopClosingEdge:"
-              " computed lc transform:\n");
-    printTransform(transf);
-    MLOG_INFO(EventLogger::M_SLAM, "@PoseGraphSLAM::addLoopClosingEdge:"
-              " stored lc transform:\n");
-    printf("%f %f %f %f\n", e->measurement()(0,0), e->measurement()(0,1), e->measurement()(0,2), e->measurement()(0,3));
-    printf("%f %f %f %f\n", e->measurement()(1,0), e->measurement()(1,1), e->measurement()(1,2), e->measurement()(1,3));
-    printf("%f %f %f %f\n", e->measurement()(2,0), e->measurement()(2,1), e->measurement()(2,2), e->measurement()(2,3));
-    printf("%f %f %f %f\n", e->measurement()(3,0), e->measurement()(3,1), e->measurement()(3,2), e->measurement()(3,3));
 }
 
-void PoseGraphSLAM::getOptimizedEdge(
-    const int& from_id,
-    const int& to_id,
-    Eigen::Vector3d& from,
-    Eigen::Vector3d& to,
-    string& name)
+void PoseGraphSLAM::addOdometryEdge(const int &id)
 {
-    for (auto it = optimizer_.activeEdges().begin(); it != optimizer_.activeEdges().end(); ++it)
+    VertexSE3* v0 = dynamic_cast<g2o::VertexSE3*>(optimizer_.vertex(id-1));
+    VertexSE3* v1 = dynamic_cast<g2o::VertexSE3*>(optimizer_.vertex(id));
+
+    addEdge(id-1, id, relativeTransform(v0->estimate(), v1->estimate()));
+}
+
+Eigen::Affine3f PoseGraphSLAM::getVertexPose(const int &id)
+{
+    for(HyperGraph::VertexIDMap::const_iterator it = optimizer_.vertices().begin();
+         it != optimizer_.vertices().end(); it++)
     {
-        EdgeSE3* e = dynamic_cast<EdgeSE3*>(*it);
-        if (e->vertex(0)->id() == from_id and e->vertex(1)->id() == to_id)
+        VertexSE3* v = dynamic_cast<VertexSE3*>(it->second);
+
+        if(v->id() == id)
         {
-            VertexSE3* v0 = static_cast<VertexSE3*>(optimizer_.vertex(e->vertex(0)->id()));
-            VertexSE3* v1 = static_cast<VertexSE3*>(optimizer_.vertex(e->vertex(1)->id()));
-
-            Eigen::Isometry3f vertix_from_tmp = v0->estimate().cast<float>();
-            Eigen::Affine3f vertix_from = Eigen::Affine3f::Identity();
-            vertix_from.matrix() = vertix_from_tmp.matrix();
-
-            Eigen::Isometry3f vertix_to_tmp = v1->estimate().cast<float>();
-            Eigen::Affine3f vertix_to = Eigen::Affine3f::Identity();
-            vertix_to.matrix() = vertix_to_tmp.matrix();
-
-            from = Eigen::Vector3d(vertix_from(0, 3), vertix_from(1, 3), vertix_from(2, 3));
-            to = Eigen::Vector3d(vertix_to(0, 3), vertix_to(1, 3), vertix_to(2, 3));
-            name = "optimized_edge_" + to_string(e->vertex(0)->id()) + "_" + to_string(e->vertex(1)->id());
+            return isometryToAffine(v->estimate());
         }
     }
+
+    MLOG_WARN(EventLogger::M_SLAM, "@PoseGraphSLAM::getVertexPose: "
+                                   "vertex %lu not found. "
+                                   "Returning identity.\n");
+    return Eigen::Affine3f::Identity();
 }
 
-void PoseGraphSLAM::getEdge(
-    const int& from_id,
-    const int& to_id,
-    Eigen::Vector3d& from,
-    Eigen::Vector3d& to,
-    string& name)
+void PoseGraphSLAM::getEdgeEndpoints(const int &from_id, const int &to_id,
+                                     Eigen::Vector3d& from, Eigen::Vector3d& to)
 {
-
-    for (auto it = edges_.begin(); it != edges_.end(); ++it)
+    for(HyperGraph::EdgeSet::const_iterator it = optimizer_.edges().begin();
+        it != optimizer_.edges().end(); it++)
     {
         EdgeSE3* e = dynamic_cast<EdgeSE3*>(*it);
-        if (e->vertex(0)->id() == from_id and e->vertex(1)->id() == to_id)
+        if (e->vertex(0)->id() == from_id && e->vertex(1)->id() == to_id)
         {
             VertexSE3* v0 = static_cast<VertexSE3*>(optimizer_.vertex(e->vertex(0)->id()));
             VertexSE3* v1 = static_cast<VertexSE3*>(optimizer_.vertex(e->vertex(1)->id()));
 
-            Eigen::Isometry3f vertix_from_tmp = v0->estimate().cast<float>();
-            Eigen::Affine3f vertix_from = Eigen::Affine3f::Identity();
-            vertix_from.matrix() = vertix_from_tmp.matrix();
+            from = Eigen::Vector3d(v0->estimate()(0, 3),
+                                   v0->estimate()(1, 3),
+                                   v0->estimate()(2, 3));
+            to = Eigen::Vector3d(v1->estimate()(0, 3),
+                                 v1->estimate()(1, 3),
+                                 v1->estimate()(2, 3));
 
-            Eigen::Isometry3f vertix_to_tmp = v1->estimate().cast<float>();
-            Eigen::Affine3f vertix_to = Eigen::Affine3f::Identity();
-            vertix_to.matrix() = vertix_to_tmp.matrix();
-
-            from = Eigen::Vector3d(vertix_from(0, 3), vertix_from(1, 3), vertix_from(2, 3));
-            to = Eigen::Vector3d(vertix_to(0, 3), vertix_to(1, 3), vertix_to(2, 3));
-            name = "edge_" + to_string(e->vertex(0)->id()) + "_" + to_string(e->vertex(1)->id());
-
-            MLOG_DEBUG(EventLogger::M_SLAM, "@PoseGraphSLAM::getEdge(%i,%i): "
+            MLOG_DEBUG(EventLogger::M_SLAM, "@PoseGraphSLAM::getEdge(%lu -> %lu): "
                        "from(%f %f %f) to(%f %f %f)\n", from_id, to_id,
                        from(0), from(1), from(2), to(0), to(1), to(2));
         }
     }
 }
 
-Eigen::Affine3f PoseGraphSLAM::getVertex(const int& id)
-{
-
-    for (auto it = vertices_.begin(); it != vertices_.end(); ++it)
-    {
-        VertexSE3* v = dynamic_cast<VertexSE3*>(*it);
-
-        if (v->id() == id)
-        {
-            Eigen::Isometry3f pose_tmp = v->estimate().cast<float>();
-            Eigen::Affine3f pose = Eigen::Affine3f::Identity();
-            pose(0, 0) = pose_tmp(0, 0);
-            pose(0, 1) = pose_tmp(0, 1);
-            pose(0, 2) = pose_tmp(0, 2);
-            pose(0, 3) = pose_tmp(0, 3);
-            pose(1, 0) = pose_tmp(1, 0);
-            pose(1, 1) = pose_tmp(1, 1);
-            pose(1, 2) = pose_tmp(1, 2);
-            pose(1, 3) = pose_tmp(1, 3);
-            pose(2, 0) = pose_tmp(2, 0);
-            pose(2, 1) = pose_tmp(2, 1);
-            pose(2, 2) = pose_tmp(2, 2);
-            pose(2, 3) = pose_tmp(2, 3);
-
-            printf(">>> RETURNING VALID VERTEX POSE\n");
-            return pose;
-        }
-    }
-
-    printf(">>> RETURNING GARBAGE VERTEX POSE\n");
-}
-
-Eigen::Affine3f PoseGraphSLAM::getOptimizedVertex(const int& id)
-{
-
-    for (auto it = optimizer_.activeVertices().begin(); it != optimizer_.activeVertices().end(); ++it)
-    {
-        VertexSE3* v = dynamic_cast<VertexSE3*>(*it);
-
-        if (v->id() == id)
-        {
-
-            Eigen::Isometry3f pose_tmp = v->estimate().cast<float>();
-            Eigen::Affine3f pose = Eigen::Affine3f::Identity();
-
-            pose(0, 0) = pose_tmp(0, 0);
-            pose(0, 1) = pose_tmp(0, 1);
-            pose(0, 2) = pose_tmp(0, 2);
-            pose(0, 3) = pose_tmp(0, 3);
-            pose(1, 0) = pose_tmp(1, 0);
-            pose(1, 1) = pose_tmp(1, 1);
-            pose(1, 2) = pose_tmp(1, 2);
-            pose(1, 3) = pose_tmp(1, 3);
-            pose(2, 0) = pose_tmp(2, 0);
-            pose(2, 1) = pose_tmp(2, 1);
-            pose(2, 2) = pose_tmp(2, 2);
-            pose(2, 3) = pose_tmp(2, 3);
-            return pose;
-        }
-    }
-}
-/*
-
-void PoseGraphSLAM::getLastEdge(Eigen::Vector3d& from, Eigen::Vector3d& to, string& name)
-{
-    auto a = optimizer_.edges().end();
-
-    EdgeSE3* e = dynamic_cast<EdgeSE3*>(*--optimizer_.edges().end());
-
-    VertexSE3* v0 = static_cast<VertexSE3*>(optimizer_.vertex(e->vertex(0)->id()));
-    VertexSE3* v1 = static_cast<VertexSE3*>(optimizer_.vertex(e->vertex(1)->id()));
-
-    Eigen::Isometry3f vertix_from_tmp = v0->estimate().cast<float>();
-    Eigen::Affine3f vertix_from = Eigen::Affine3f::Identity();
-    vertix_from.matrix() = vertix_from_tmp.matrix();
-
-    Eigen::Isometry3f vertix_to_tmp = v1->estimate().cast<float>();
-    Eigen::Affine3f vertix_to = Eigen::Affine3f::Identity();
-    vertix_to.matrix() = vertix_to_tmp.matrix();
-
-    from = Eigen::Vector3d(vertix_from(0, 3), vertix_from(1, 3), vertix_from(2, 3));
-    to = Eigen::Vector3d(vertix_to(0, 3), vertix_to(1, 3), vertix_to(2, 3));
-    name = "edge_" + to_string(e->vertex(0)->id()) + "_" + to_string(e->vertex(1)->id());
-}
-    */
 
 void PoseGraphSLAM::optimizeGraph(const int& k)
 {
@@ -351,49 +170,31 @@ void PoseGraphSLAM::optimizeGraph(const int& k)
                "active %lu vertices and %lu edges\n",
                optimizer_.activeVertices().size(), optimizer_.activeEdges().size());
 
-    // optimizer_.save("graph.g2o"); // Save file
-    // optimizer_.initializeOptimization();
-    cout << "optimized estimates" << optimized_estimates_.size() << endl;
-    optimized_estimates_.size() == 0 ? optimizer_.initializeOptimization()
-                                     : optimizer_.updateInitialization(vertices_, edges_);
+    if(optimizer_.activeVertices().size() == 0)
+    {
+        optimizer_.initializeOptimization();
+    }
 
-    // When I pass only the subset the optimization may go wrong
-    // vertices_.clear();
-    // edges_.clear();
     optimizer_.optimize(k);
-}
-
-void PoseGraphSLAM::resetGraph()
-{
-    num_vertices_ = 0;
-    last_added_id_ = -1;
-    optimizer_.clear();
-    optimized_estimates_ = {};
-    num_loop_edges_ = 0;
-    loop_closure_edges_name_ = {};
 }
 
 void PoseGraphSLAM::printGraph()
 {
     MLOG_INFO(EventLogger::M_SLAM, "@PoseGraphSLAM::printGraph (all edges):\n");
 
-    //for(auto it = optimizer_.activeEdges().begin(); it != optimizer_.activeEdges().end(); ++it)
-    for (HyperGraph::EdgeSet::const_iterator it = optimizer_.edges().begin();
-         it != optimizer_.edges().end();
-         it++)
+    for(HyperGraph::EdgeSet::const_iterator it = optimizer_.edges().begin();
+         it != optimizer_.edges().end(); it++)
     {
         EdgeSE3* e = dynamic_cast<EdgeSE3*>(*it);
         e->computeError();
 
-        const int v0id = e->vertex(0)->id();
-        const int v1id = e->vertex(1)->id();
+        const size_t from_id = e->vertex(0)->id();
+        const size_t to_id = e->vertex(1)->id();
         
-        VertexSE3* v0 = static_cast<VertexSE3*>(optimizer_.vertex(v0id));
-        VertexSE3* v1 = static_cast<VertexSE3*>(optimizer_.vertex(v1id));
+        VertexSE3* v0 = static_cast<VertexSE3*>(optimizer_.vertex(from_id));
+        VertexSE3* v1 = static_cast<VertexSE3*>(optimizer_.vertex(to_id));
 
-        string edge_type = v1id != 0 ? "odom" : "loop closure";
-
-        MLOG_INFO(EventLogger::M_SLAM, "(%i -> %i): %s\n", v0id, v1id, edge_type.c_str());
+        MLOG_INFO(EventLogger::M_SLAM, "(%lu -> %lu)\n", from_id, to_id);
         //MLOG_INFO(EventLogger::M_SLAM, "from pose:\n");
         //printTransform(v0->estimate());
         //MLOG_INFO(EventLogger::M_SLAM, "to pose:\n");
