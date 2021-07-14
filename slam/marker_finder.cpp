@@ -94,11 +94,12 @@ void MarkerFinder::setMarkerPoses(const Eigen::Affine3f& cam_pose, const float& 
     }
 }
 
-void MarkerFinder::markerParam(const string& params, const float& size, const string& aruco_dic)
-{ // Load params
-    marker_detector_.setDictionary(aruco_dic, 0);
-    camera_params_.readFromXMLFile(params);
-    marker_size_ = size;
+void MarkerFinder::setParameters(const string &calib_file, const float &marker_size,
+                                 const string &aruco_dict)
+{
+    marker_detector_.setDictionary(aruco_dict, 0);
+    camera_params_.readFromXMLFile(calib_file);
+    marker_size_ = marker_size;
 }
 
 void MarkerFinder::detectMarkersPoses(

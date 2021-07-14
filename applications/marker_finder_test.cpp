@@ -61,7 +61,7 @@ int main(int argc, char** argv)
     Mat frame, depth;
     Eigen::Affine3f first;
     float marker_size, aruco_max_distance;
-    string camera_calibration_file, aruco_dic, index_file;
+    string camera_calibration_file, aruco_dict, index_file;
 
     if (argc != 2)
     {
@@ -74,10 +74,9 @@ int main(int argc, char** argv)
     param_loader.checkAndGetFloat("aruco_max_distance", aruco_max_distance);
     param_loader.checkAndGetString("camera_calibration_file", camera_calibration_file);
     param_loader.checkAndGetString("index_file", index_file);
-    param_loader.checkAndGetString("aruco_dic", aruco_dic);
+    param_loader.checkAndGetString("aruco_dic", aruco_dict);
 
-    MarkerFinder marker_finder;
-    marker_finder.markerParam(camera_calibration_file, marker_size, aruco_dic);
+    MarkerFinder marker_finder(camera_calibration_file, marker_size, aruco_dict);
 
     loader.processFile(index_file);
 

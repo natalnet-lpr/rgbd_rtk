@@ -85,15 +85,35 @@ public:
     // Vector with the pose of each detected marker
     std::vector<Eigen::Affine3f, Eigen::aligned_allocator<Eigen::Affine3f>> marker_poses_;
 
-    // Default constructor
-    MarkerFinder() {}
+    /** 
+     * Constructs a marker detector with
+     * default parameters.
+     */
+    MarkerFinder(){}
+
+    /** 
+     * Constructs a marker detector with
+     * given camera calibration file, marker size
+     * and marker dictionary.
+     * @param calib_file_name: name of the camera calibration file
+     * @param marker_size: size of the AR marker
+     * @param aruco_dict: dictionary for the ARUCO markers
+     */
+    MarkerFinder(const std::string &calib_file, const float &marker_size,
+                 const std::string &aruco_dict)
+    {
+        setParameters(calib_file, marker_size, aruco_dict);
+    }
 
     /**
-     * Function to load params
-     * @param camera intrinsic params @param size marker size
-     * @param aruco_dic aruco dictionary
+     * Sets the supplied camera calibration file, marker size
+     * and marker dictionary.
+     * @param calib_file_name: name of the camera calibration file
+     * @param marker_size: size of the AR marker
+     * @param aruco_dict: dictionary for the ARUCO markers
      */
-    void markerParam(const std::string& params, const float& size, const std::string& aruco_dic);
+    void setParameters(const std::string &calib_file, const float &marker_size,
+                       const std::string &aruco_dict);
 
     /**
      * Detects ARUCO markers and their
@@ -105,10 +125,9 @@ public:
      * @param cam_pose: current camera pose (in world ref. frame)
      * @param aruco_max_distance: max distance aruco will be saved
      */
-    void detectMarkersPoses(
-        const cv::Mat& img,
-        const Eigen::Affine3f& cam_pose,
-        const float& aruco_max_distance);
+    void detectMarkersPoses(const cv::Mat& img,
+                            const Eigen::Affine3f& cam_pose,
+                            const float& aruco_max_distance);
 
     /**
      * Returns true if a marker with given
