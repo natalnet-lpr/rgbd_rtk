@@ -152,7 +152,7 @@ double distanceBetween(const Eigen::Affine3f &first_rf, const Eigen::Affine3f& s
     return sqrt((x0 - x1)*(x0 - x1) + (y0 - y1)*(y0 - y1) + (z0 - z1)*(z0 - z1));
 }
 
-bool zAxisAngleBetween(const Eigen::Affine3f& first_rf, const Eigen::Affine3f& second_rf)
+double zAxisAngleBetween(const Eigen::Affine3f& first_rf, const Eigen::Affine3f& second_rf)
 {
 	double angle = acos((first_rf(0,2) * second_rf(0,2)) +
 		                (first_rf(1,2) * second_rf(1,2)) +

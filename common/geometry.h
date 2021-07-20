@@ -81,7 +81,7 @@ double distanceBetween(const Eigen::Affine3f &first_rf, const Eigen::Affine3f& s
  * @param second_rf second ref. frame
  * @return angle (in degrees)
  */
-bool zAxisAngleBetween(const Eigen::Affine3f& first_rf, const Eigen::Affine3f& second_rf);
+double zAxisAngleBetween(const Eigen::Affine3f& first_rf, const Eigen::Affine3f& second_rf);
 
 /**
  * Converts the given Eigen::Affine3f to Eigen::Isometry3d.
