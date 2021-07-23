@@ -112,7 +112,7 @@ public:
      * used to create a keyframe.
      * @param kf_id: id of the keyframe
      */
-    Keyframe& createKeyframe(const size_t &kf_id);
+    Keyframe createKeyframe(const size_t &kf_id);
 
     /**
      * Adds a new keyframe to the internal container of keyframes

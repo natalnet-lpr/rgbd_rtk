@@ -88,7 +88,7 @@ bool OpticalFlowVisualOdometry::computeCameraPose(const cv::Mat& rgb, const cv::
     return is_kf;
 }
 
-Keyframe& OpticalFlowVisualOdometry::createKeyframe(const size_t &kf_id)
+Keyframe OpticalFlowVisualOdometry::createKeyframe(const size_t &kf_id)
 {
     Keyframe kf;
     kf.idx_ = kf_id;
