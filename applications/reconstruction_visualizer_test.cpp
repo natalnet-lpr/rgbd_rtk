@@ -116,7 +116,7 @@ int main(int argc, char** argv)
                 kf_from = kf_to;
                 kf_to = vo.getLastKeyframe();
                 visualizer.addQuantizedPointCloud(kf_to.local_cloud_, 0.02, kf_to.pose_);
-                visualizer.addKeyFrame(kf_to); // Add Keyframe to the visualizer
+                visualizer.addKeyframe(kf_to); // Add Keyframe to the visualizer
 
                 // Create a vector 3d for the last and current kf pose
                 Eigen::Vector3d from(kf_from.pose_(0, 3), kf_from.pose_(1, 3), kf_from.pose_(2, 3));

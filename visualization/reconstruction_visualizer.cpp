@@ -1,7 +1,7 @@
 /*
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016-2020, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2021, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -119,7 +119,7 @@ void ReconstructionVisualizer::addReferenceFrame(const Eigen::Affine3f& pose, co
     viewer_->addText3D(text, text_pos, 0.025, 1, 1, 1, frame_name.str());
 }
 
-void ReconstructionVisualizer::addKeyFrame(const Keyframe& kf)
+void ReconstructionVisualizer::addKeyframe(const Keyframe& kf)
 {
     stringstream frame_name;
     frame_name << "kf" << kf.idx_;
@@ -130,7 +130,7 @@ void ReconstructionVisualizer::addKeyFrame(const Keyframe& kf)
     text_pos.x = kf.pose_(0, 3) + 0.02;
     text_pos.y = kf.pose_(1, 3) + 0.05;
     text_pos.z = kf.pose_(2, 3);
-    viewer_->addText3D(frame_name.str(), text_pos, 0.015, 1, 0, 0, frame_name.str() + "_text");
+    viewer_->addText3D(frame_name.str(), text_pos, 0.015, 1, 1, 1, frame_name.str() + "_text");
 }
 
 void ReconstructionVisualizer::addPointCloud(
@@ -237,7 +237,7 @@ void ReconstructionVisualizer::viewQuantizedPointCloud(
     viewPointCloud(quant_cloud, pose);
 }
 
-void ReconstructionVisualizer::updateKeyFrame(const Keyframe& kf)
+void ReconstructionVisualizer::updateKeyframe(const Keyframe& kf)
 {
     // Grab names of coord. system and point cloud
     stringstream frame_name;
