@@ -77,7 +77,8 @@ void PoseGraphSLAM::addVertex(const Eigen::Affine3f &pose, const int &id,
                               const bool &fixed_vertex)
 {
     MLOG_DEBUG(EventLogger::M_SLAM, "@PoseGraphSLAM::addVertex: "
-                                    "id %lu\n", id);
+                                    "id %lu (fixed: %i)\n",
+                                     id, fixed_vertex);
 
     Eigen::Isometry3d est(pose.matrix().cast<double>());
 
@@ -87,6 +88,11 @@ void PoseGraphSLAM::addVertex(const Eigen::Affine3f &pose, const int &id,
     v->setFixed(fixed_vertex);
     optimizer_.addVertex(v);
     vertices_.insert(v);
+
+    MLOG_DEBUG(EventLogger::M_SLAM, "\tpos.: %f %f %f\n",
+                                    v->estimate()(0,3),
+                                    v->estimate()(1,3),
+                                    v->estimate()(2,3));
 }
 
 void PoseGraphSLAM::addEdge(const int &from_id, const int &to_id,
@@ -105,6 +111,12 @@ void PoseGraphSLAM::addEdge(const int &from_id, const int &to_id,
     // e->information() = Eigen::Matrix<double, 6, 6>::Identity();
     optimizer_.addEdge(e);
     edges_.insert(e);
+
+    MLOG_DEBUG(EventLogger::M_SLAM, "rel. translation: "
+                                    "%f %f %f\n",
+                                    e->measurement()(0,3),
+                                    e->measurement()(1,3),
+                                    e->measurement()(2,3));
 }
 
 void PoseGraphSLAM::addOdometryEdge(const int &id)
@@ -194,7 +206,7 @@ void PoseGraphSLAM::printGraph()
         VertexSE3* v0 = static_cast<VertexSE3*>(optimizer_.vertex(from_id));
         VertexSE3* v1 = static_cast<VertexSE3*>(optimizer_.vertex(to_id));
 
-        MLOG_INFO(EventLogger::M_SLAM, "(%lu -> %lu)\n", from_id, to_id);
+        MLOG_INFO(EventLogger::M_SLAM, "edge(%lu -> %lu)\n", from_id, to_id);
         //MLOG_INFO(EventLogger::M_SLAM, "from pose:\n");
         //printTransform(v0->estimate());
         //MLOG_INFO(EventLogger::M_SLAM, "to pose:\n");

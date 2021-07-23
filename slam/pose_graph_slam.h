@@ -58,7 +58,10 @@ public:
     // Edges added
     g2o::HyperGraph::EdgeSet edges_;
 
-    // Default constructor
+    /** 
+     * Constructs a pose graph SLAM with
+     * default parameters.
+     */
     PoseGraphSLAM();
 
     /**
