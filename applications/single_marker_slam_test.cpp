@@ -57,19 +57,7 @@
 using namespace std;
 using namespace cv;
 using namespace aruco;
-
-/*
-struct ConfigParams
-{
-    string index_file;
-    string camera_calibration_file;
-    string aruco_dic;
-    float aruco_marker_size;
-    float aruco_max_distance = 4;
-    float minimum_distance_between_keyframes = 0.05;
-    int local_optimization_threshold = 20; // How many loop edges to make a optimization
-};
-*/
+using namespace g2o;
 
 int main(int argc, char** argv)
 {
@@ -85,7 +73,6 @@ int main(int argc, char** argv)
     SingleMarkerSLAM::Parameters slam_param;
     string index_file;
     Mat frame, depth;
-    bool kf_created;
 
     // Slam solver will start when the marker is found for the first time
     if (argc != 2)
@@ -103,7 +90,7 @@ int main(int argc, char** argv)
     slam_param.opt_iterations_ = 10; //TODO: load this parameter from file
     param_loader.checkAndGetInt("marker_id",
                                 slam_param.marker_id_);
-    param_loader.checkAndGetInt("local_optimization_threshold",
+    param_loader.checkAndGetInt("optimization_loop_closures",
                                 slam_param.opt_loop_closures_);
     param_loader.checkAndGetFloat("minimum_distance_between_keyframes",
                                   slam_param.min_dist_bw_keyframes_);
@@ -113,8 +100,7 @@ int main(int argc, char** argv)
     loader.processFile(index_file);
 
     // Compute SLAM using a single marker with each image
-//for(int i = 0; i < loader.num_images_; i++)
-    for(int i = 0; i <= 587; i++)  //DEBUG
+    for(int i = 0; i < loader.num_images_; i++)
     {
         MLOG_DEBUG(EventLogger::M_SLAM, "@single_marker_slam_test: processing image %i\n", i);
 
@@ -122,16 +108,13 @@ int main(int argc, char** argv)
         loader.getNextImage(frame, depth);
 
         // Process the RGB-D image using the supplied marker id as reference
-        kf_created = sm_slam.processImage(frame, depth, slam_param.marker_id_); 
+        sm_slam.processImage(frame, depth, slam_param.marker_id_); 
 
         // Update visualization
         visualizer.viewReferenceFrame(sm_slam.visualOdometryPose());
         visualizer.viewReferenceFrame(sm_slam.markerPose(), "AR_pose");
         visualizer.viewQuantizedPointCloud(sm_slam.visualOdometryPointCloud(), 0.02, sm_slam.visualOdometryPose());
-        if(kf_created)
-        {
-            visualizer.addKeyframe(sm_slam.lastKeyframe());
-        }
+        visualizer.viewKeyframes(sm_slam.keyframes());
         visualizer.spinOnce();
 
         imshow("Image view", frame);
@@ -143,8 +126,6 @@ int main(int argc, char** argv)
             break;
         }
     }
-
-    sm_slam.optimize();
 
     visualizer.spin();
 
