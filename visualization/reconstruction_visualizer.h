@@ -86,17 +86,17 @@ public:
      */
     void addCameraPath(const Eigen::Affine3f& pose);
 
-    /** Adds an edge from the graph to the PCLVisualizer as an arrow.
+    /**
+     * Adds an edge from the graph to the PCLVisualizer as an arrow.
      * @param vertex_from position
      * @param vertex_to position
      * @param name name of the vertex
      * @param color of the arrow(blue as default)
      */
-    void addEdge(
-        const Eigen::Vector3d& vertex_from,
-        const Eigen::Vector3d& vertex_to,
-        const std::string& name,
-        const Eigen::Vector3f& color = Eigen::Vector3f(0.0, 0.0, 1.0));
+    void addEdge(const Eigen::Vector3d& vertex_from,
+                 const Eigen::Vector3d& vertex_to,
+                 const std::string& name,
+                 const Eigen::Vector3f& color = Eigen::Vector3f(0.0, 0.0, 1.0));
 
     /**
      * Adds a ref. frame with the given pose to the 3D reconstruction
@@ -106,36 +106,27 @@ public:
     void addReferenceFrame(const Eigen::Affine3f& pose, const std::string& text);
 
     /**
-     * Adds a keyframe to the 3D reconstruction
-     * @param kf: keyframe to be added
-     */
-    void addKeyframe(const Keyframe& kf);
-
-    /**
      * Adds a point cloud with the given pose to the 3D reconstruction
-     * @param cloud PointCloud to be added
-     * @param pose pose of the 3d Reconstruction
+     * @param cloud point cloud
+     * @param pose pose of the point cloud
      * @param cloud_name name of the point cloud
      */
-    void addPointCloud(
-        const pcl::PointCloud<PointT>::Ptr& cloud,
-        const Eigen::Affine3f& pose,
-        const std::string& cloud_name = "");
+    void addPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud,
+                       const Eigen::Affine3f& pose,
+                       const std::string& cloud_name = "");
 
     /**
-     * Receives a point cloud and quantize it (uniform sampling) with the given pose to the 3D
-     * reconstruction
-     * @param cloud point cloud after quantization
-     * @param radius radius search of uniform sampling
+     * Adds a quantized (uniformly sampled) point cloud
+     * to the 3D reconstruction
+     * @param cloud point cloud
+     * @param radius radius of the uniform sampling
      * @param pose of the point cloud
      * @param cloud_name name of the point cloud
      */
-    void addQuantizedPointCloud(
-        const pcl::PointCloud<PointT>::Ptr& cloud,
-        const float& radius,
-        const Eigen::Affine3f& pose,
-        const std::string& cloud_name = "");
-
+    void addQuantizedPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud,
+                                const float &radius,
+                                const Eigen::Affine3f &pose,
+                                const std::string& cloud_name = "");
     /**
      * Removes an edge from the PCLVisualizer.
      * @param name of the edge to be removed as a Edge(common_types.h)
@@ -147,33 +138,44 @@ public:
      * @param pose pose of the frame
      * @param text pose text in visualization ("cam" as default)
      */
-    void viewReferenceFrame(const Eigen::Affine3f& pose, const std::string& text = "cam");
+    void viewReferenceFrame(const Eigen::Affine3f& pose,
+                            const std::string& text = "cam");
 
     /**
      * Views a point cloud in the 3D reconstruction
-     * @param cloud PointCloud
-     * @param pose pose of the 3d Reconstruction
+     * @param cloud point cloud
+     * @param pose pose of the point cloud
+     * @param cloud_name name of the point cloud
      */
-    void viewPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud, const Eigen::Affine3f& pose);
+    void viewPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud,
+                        const Eigen::Affine3f& pose,
+                        const std::string& cloud_name = "cloud");
 
     /**
-     * Views a point cloud after quantization (uniform sampling) with the given pose to the 3D
-     * reconstruction
-     * @param cloud point cloud after quantization
-     * @param radius radius search of uniform sampling
+     * Views a quantized (uniformly sampled) point cloud
+     * in the 3D reconstruction
+     * @param cloud point cloud
+     * @param radius radius of the uniform sampling
      * @param pose of the point cloud
+     * @param cloud_name name of the point cloud
      */
-    void viewQuantizedPointCloud(
-        const pcl::PointCloud<PointT>::Ptr& cloud,
-        const float& radius,
-        const Eigen::Affine3f& pose);
+    void viewQuantizedPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud,
+                                 const float& radius,
+                                 const Eigen::Affine3f& pose,
+                                 const std::string& cloud_name = "cloud");
 
     /**
-     * Updates a given keyframe.
-     * @param keyframe: keyframe to be updated
-     * (assumed to be with modified pose, pointcloud, keypoints, etc.)
+     * Views a given keyframe in the 3D reconstruction
+     * @param keyframe: keyframe
      */
-    void updateKeyframe(const Keyframe& kf);
+    void viewKeyframe(const Keyframe& kf);
+
+    /**
+     * Updates several keyframes (given as a std::map)
+     * in the 3D reconstruction.
+     * @param keyframes: std::map of pairs (id -> keyframe)
+     */
+    void viewKeyframes(const std::map<size_t, Keyframe> &keyframes);
 
     /**
      *Sets the virtual camera position in the virtual world
@@ -198,11 +200,32 @@ public:
      */
     void close();
 
+    /**
+     * Removes everything previously added to
+     * the visualizer.
+     */
     void resetVisualizer();
 
-    void removeAllVertexesAndEdges();
-
+    /**
+     * Removes all point clouds previously added to
+     * the visualizer.
+     */
     void removePointClouds();
+
+    /**
+     * DEPRECATED (TRY NOT TO USE THIS FUNCTION)
+     * Adds a keyframe to the 3D reconstruction
+     * @param kf: keyframe to be added
+     */
+    void addKeyframe(const Keyframe& kf);
+
+    /**
+     * DEPRECATED (TRY NOT TO USE THIS FUNCTION)
+     * Updates a given keyframe.
+     * @param keyframe: keyframe to be updated
+     * (assumed to be with modified pose, pointcloud, keypoints, etc.)
+     */
+    void updateKeyframe(const Keyframe& kf);
 };
 
 #endif /* INCLUDE_RECONSTRUCTION_VISUALIZER_H_ */
