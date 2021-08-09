@@ -191,11 +191,6 @@ bool SingleMarkerSLAM::processImage(const Mat &rgb, const Mat &depth,
             Eigen::Affine3f transf = relativeTransform(first_pose_from_AR_, last_pose_from_AR_);
             addVertexAndEdge(vo_.pose_);
             addLoopClosingEdge(transf);
-
-            MLOG_DEBUG(EventLogger::M_SLAM, "\tmarker pos.: %f %f %f\n",
-                       last_pose_from_AR_(0,3),
-                       last_pose_from_AR_(1,3),
-                       last_pose_from_AR_(2,3));
         }
     }
     // Marker not found: check if there is keyframe from odometry
@@ -220,15 +215,14 @@ bool SingleMarkerSLAM::processImage(const Mat &rgb, const Mat &depth,
     }
 
     // Run optimization if criteria is met and update poses of the optimized keyframes/positions of the edges
-    /*
     if(curr_loop_closures_ == opt_loop_closures_)
     {
         MLOG_INFO(EventLogger::M_SLAM,
                   "@SingleMarkerSLAM: pose graph before:\n");
         slam_.printGraph();
-        MLOG_DEBUG(EventLogger::M_SLAM,
-                   "@SingleMarkerSLAM: optimizing graph "
-                   "for %lu iterations\n", opt_iterations_);
+        MLOG_INFO(EventLogger::M_SLAM,
+                  "@SingleMarkerSLAM: optimizing graph "
+                  "for %lu iterations\n", opt_iterations_);
         slam_.optimizeGraph(opt_iterations_);
         MLOG_INFO(EventLogger::M_SLAM,
                   "@SingleMarkerSLAM: pose graph after:\n");
@@ -236,7 +230,6 @@ bool SingleMarkerSLAM::processImage(const Mat &rgb, const Mat &depth,
         _updateKeyframes();
         curr_loop_closures_ = 0;
     }
-    */
 
     return kf_created;
 }
@@ -283,19 +276,4 @@ Eigen::Affine3f SingleMarkerSLAM::markerPose()
 pcl::PointCloud<PointT>::Ptr SingleMarkerSLAM::visualOdometryPointCloud()
 {
     return vo_.curr_dense_cloud_;
-}
-
-void SingleMarkerSLAM::optimize()
-{
-    MLOG_INFO(EventLogger::M_SLAM,
-              "@SingleMarkerSLAM: pose graph before:\n");
-    slam_.printGraph();
-    MLOG_DEBUG(EventLogger::M_SLAM,
-               "@SingleMarkerSLAM: optimizing graph "
-               "for %lu iterations\n", opt_iterations_);
-    slam_.optimizeGraph(opt_iterations_);
-    MLOG_INFO(EventLogger::M_SLAM,
-              "@SingleMarkerSLAM: pose graph after:\n");
-    slam_.printGraph();
-    _updateKeyframes();
 }

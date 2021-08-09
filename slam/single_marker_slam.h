@@ -206,9 +206,6 @@ public:
      * visual odometry point cloud.
      */
     pcl::PointCloud<PointT>::Ptr visualOdometryPointCloud();
-
-    //DEBUG (THIS SHOULD NOT BE IN THE PUBLIC INTERFACE OF THE CLASS)
-    void optimize();
 };
 
 #endif /* INCLUDE_SINGLEMARKERSLAM_H_ */
