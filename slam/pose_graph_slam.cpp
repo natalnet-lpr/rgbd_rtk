@@ -64,10 +64,12 @@ using namespace g2o;
 
 PoseGraphSLAM::PoseGraphSLAM()
 {
-    std::unique_ptr<g2o::BlockSolverX::LinearSolverType> linearSolver =
-        g2o::make_unique<g2o::LinearSolverCholmod<g2o::BlockSolverX::PoseMatrixType>>();
+    started_ = false;
+
+    std::unique_ptr<g2o::BlockSolver_6_3::LinearSolverType> linearSolver =
+        g2o::make_unique<g2o::LinearSolverCholmod<g2o::BlockSolver_6_3::PoseMatrixType>>();
     g2o::OptimizationAlgorithmLevenberg* solver =
-        new g2o::OptimizationAlgorithmLevenberg(g2o::make_unique<g2o::BlockSolverX>(std::move(linearSolver)));
+        new g2o::OptimizationAlgorithmLevenberg(g2o::make_unique<g2o::BlockSolver_6_3>(std::move(linearSolver)));
 
     optimizer_.setAlgorithm(solver);
     optimizer_.setVerbose(true);
@@ -76,10 +78,6 @@ PoseGraphSLAM::PoseGraphSLAM()
 void PoseGraphSLAM::addVertex(const Eigen::Affine3f &pose, const int &id,
                               const bool &fixed_vertex)
 {
-    MLOG_DEBUG(EventLogger::M_SLAM, "@PoseGraphSLAM::addVertex: "
-                                    "id %lu (fixed: %i)\n",
-                                     id, fixed_vertex);
-
     Eigen::Isometry3d est(pose.matrix().cast<double>());
 
     VertexSE3* v = new VertexSE3;
@@ -87,20 +85,20 @@ void PoseGraphSLAM::addVertex(const Eigen::Affine3f &pose, const int &id,
     v->setEstimate(est);
     v->setFixed(fixed_vertex);
     optimizer_.addVertex(v);
-    vertices_.insert(v);
+    added_vertices_.insert(v);
 
-    MLOG_DEBUG(EventLogger::M_SLAM, "\tpos.: %f %f %f\n",
-                                    v->estimate()(0,3),
-                                    v->estimate()(1,3),
-                                    v->estimate()(2,3));
+    MLOG_DEBUG(EventLogger::M_SLAM, "@PoseGraphSLAM::addVertex: "
+                                    "id %lu (fixed: %i) "
+                                    "pos. %f %f %f\n",
+                                     id, fixed_vertex, 
+                                     v->estimate()(0,3),
+                                     v->estimate()(1,3),
+                                     v->estimate()(2,3));
 }
 
 void PoseGraphSLAM::addEdge(const int &from_id, const int &to_id,
                             const Eigen::Isometry3d &transform)
 {
-    MLOG_DEBUG(EventLogger::M_SLAM, "@PoseGraphSLAM::addEdge: "
-                                    "from %lu to %lu\n", from_id, to_id);
-
     VertexSE3* v0 = dynamic_cast<g2o::VertexSE3*>(optimizer_.vertex(from_id));
     VertexSE3* v1 = dynamic_cast<g2o::VertexSE3*>(optimizer_.vertex(to_id));
 
@@ -108,12 +106,14 @@ void PoseGraphSLAM::addEdge(const int &from_id, const int &to_id,
     e->vertices()[0] = v0;
     e->vertices()[1] = v1;
     e->setMeasurement(transform);
-    // e->information() = Eigen::Matrix<double, 6, 6>::Identity();
+    e->information() = Eigen::Matrix<double, 6, 6>::Identity();
     optimizer_.addEdge(e);
-    edges_.insert(e);
+    added_edges_.insert(e);
 
-    MLOG_DEBUG(EventLogger::M_SLAM, "rel. translation: "
-                                    "%f %f %f\n",
+    MLOG_DEBUG(EventLogger::M_SLAM, "@PoseGraphSLAM::addEdge: "
+                                    "from %lu to %lu "
+                                    "with rel. translation [%f %f %f]\n",
+                                    from_id, to_id,
                                     e->measurement()(0,3),
                                     e->measurement()(1,3),
                                     e->measurement()(2,3));
@@ -182,12 +182,39 @@ void PoseGraphSLAM::optimizeGraph(const int& k)
                "active %lu vertices and %lu edges\n",
                optimizer_.activeVertices().size(), optimizer_.activeEdges().size());
 
-    if(optimizer_.activeVertices().size() == 0)
+    bool psd_matrices = optimizer_.verifyInformationMatrices(true);
+    if(!psd_matrices)
     {
-        optimizer_.initializeOptimization();
+        MLOG_WARN(EventLogger::M_SLAM, "@PoseGraphSLAM::optimizeGraph: "
+                  "Some of the information matrices are not Positive Semidefinite. "
+                  "The optimization will not converge!");
     }
 
-    optimizer_.optimize(k);
+    if(!started_)
+    {
+        bool init_ok = optimizer_.initializeOptimization();
+        if(!init_ok)
+        {
+            MLOG_ERROR(EventLogger::M_SLAM, "@PoseGraphSLAM::optimizeGraph: "
+                       "failed to initialize optimization.\n");
+            exit(0);
+        }
+        started_ = true;
+    }
+    else
+    {
+        bool update_ok = optimizer_.updateInitialization(added_vertices_, added_edges_);
+        if(!update_ok)
+        {
+            MLOG_ERROR(EventLogger::M_SLAM, "@PoseGraphSLAM::optimizeGraph: "
+                       "failed to update initialization.\n");
+            exit(0);
+        }
+        added_vertices_.clear();
+        added_vertices_.clear();
+    }
+
+    optimizer_.optimize(k); //TODO: maybe experiment with the 2nd. param = true?
 }
 
 void PoseGraphSLAM::printGraph()
@@ -195,54 +222,24 @@ void PoseGraphSLAM::printGraph()
     MLOG_INFO(EventLogger::M_SLAM, "@PoseGraphSLAM::printGraph (all edges):\n");
 
     for(HyperGraph::EdgeSet::const_iterator it = optimizer_.edges().begin();
-         it != optimizer_.edges().end(); it++)
+        it != optimizer_.edges().end(); it++)
     {
         EdgeSE3* e = dynamic_cast<EdgeSE3*>(*it);
         e->computeError();
 
         const size_t from_id = e->vertex(0)->id();
         const size_t to_id = e->vertex(1)->id();
-        
-        VertexSE3* v0 = static_cast<VertexSE3*>(optimizer_.vertex(from_id));
-        VertexSE3* v1 = static_cast<VertexSE3*>(optimizer_.vertex(to_id));
 
         MLOG_INFO(EventLogger::M_SLAM, "edge(%lu -> %lu)\n", from_id, to_id);
-        //MLOG_INFO(EventLogger::M_SLAM, "from pose:\n");
+
+        //VertexSE3* v0 = static_cast<VertexSE3*>(optimizer_.vertex(from_id));
+        //VertexSE3* v1 = static_cast<VertexSE3*>(optimizer_.vertex(to_id));
+        //MLOG_DEBUG(EventLogger::M_SLAM, "from pose:\n");
         //printTransform(v0->estimate());
-        //MLOG_INFO(EventLogger::M_SLAM, "to pose:\n");
+        //MLOG_DEBUG(EventLogger::M_SLAM, "to pose:\n");
         //printTransform(v1->estimate());
-        //MLOG_INFO(EventLogger::M_SLAM, "rel. transform:\n");
+        //MLOG_DEBUG(EventLogger::M_SLAM, "rel. transform:\n");
         //printTransform(e->measurement());
         MLOG_INFO(EventLogger::M_SLAM, "chi2 error: %f\n", e->chi2());
     }
-
-    /*
-    MLOG_INFO(EventLogger::M_SLAM, "@PoseGraphSLAM::printGraph (active edges):\n");
-
-    //for(auto it = optimizer_.activeEdges().begin(); it != optimizer_.activeEdges().end(); ++it)
-    for (OptimizableGraph::EdgeContainer::const_iterator it = optimizer_.activeEdges().begin();
-         it != optimizer_.activeEdges().end();
-         it++)
-    {
-        EdgeSE3* e = dynamic_cast<EdgeSE3*>(*it);
-        e->computeError();
-
-        const int v0id = e->vertex(0)->id();
-        const int v1id = e->vertex(1)->id();
-        
-        VertexSE3* v0 = static_cast<VertexSE3*>(optimizer_.vertex(v0id));
-        VertexSE3* v1 = static_cast<VertexSE3*>(optimizer_.vertex(v1id));
-
-        string edge_type = v1id != 0 ? "odom" : "loop closure";
-
-        MLOG_INFO(EventLogger::M_SLAM, "(%i -> %i): %s\n", v0id, v1id, edge_type.c_str());
-        //MLOG_INFO(EventLogger::M_SLAM, "from pose:\n");
-        //printTransform(v0->estimate());
-        //MLOG_INFO(EventLogger::M_SLAM, "to pose:\n");
-        //printTransform(v1->estimate());
-        //MLOG_INFO(EventLogger::M_SLAM, "rel. transform:\n");
-        //printTransform(e->measurement());
-        MLOG_INFO(EventLogger::M_SLAM, "chi2 error: %f\n", e->chi2());
-    }
-    */
 }

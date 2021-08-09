@@ -49,14 +49,17 @@ private:
     // G2O nonlinear optimizer
     g2o::SparseOptimizer optimizer_;
 
+    //Flag informing if the solver was already started
+    bool started_;
+
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     // Vertices added
-    g2o::HyperGraph::VertexSet vertices_;
+    g2o::HyperGraph::VertexSet added_vertices_;
 
     // Edges added
-    g2o::HyperGraph::EdgeSet edges_;
+    g2o::HyperGraph::EdgeSet added_edges_;
 
     /** 
      * Constructs a pose graph SLAM with
@@ -109,13 +112,13 @@ public:
      * @param to (output parameter): 3D position of the "to" vertex
      */
     void getEdgeEndpoints(const int &from_id, const int &to_id,
-                          Eigen::Vector3d& from, Eigen::Vector3d& to);
+                          Eigen::Vector3d &from, Eigen::Vector3d &to);
 
     /**
      * Optimizes the graph with Levenberg-Marquardt for the given n. of iterations
      * @param k number of iterations type int
      */
-    void optimizeGraph(const int& k);
+    void optimizeGraph(const int &k);
 
     /**
      * Prints all vertices and edges currently in
