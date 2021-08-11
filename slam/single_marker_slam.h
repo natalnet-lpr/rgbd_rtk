@@ -85,6 +85,9 @@ private:
     // Last camera pose from the AR marker
     Eigen::Affine3f last_pose_from_AR_;
 
+    // Transformation from visual odometry coord. system to SLAM coord. system
+    Eigen::Affine3f vo_correction_;
+
     // Computes visual odometry from RGB-D images
     OpticalFlowVisualOdometry vo_;
 
@@ -105,6 +108,19 @@ private:
      * obtained from the graph vertices after optimization.
      */
     void _updateKeyframes();
+
+    /**
+     * Gets the pose of the last node added to the
+     * graph (which should be equal to the visual odometry pose
+     * if errors were not present).
+     */
+    Eigen::Affine3f _lastVertexPose();
+
+    /**
+     * Applies a transformation to the visual odometry
+     * ref. frame to align it with the SLAM ref. frame.
+     */
+    void _correctVisualOdometry();
 
 public:
 

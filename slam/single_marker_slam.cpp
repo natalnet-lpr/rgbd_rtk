@@ -80,6 +80,23 @@ void SingleMarkerSLAM::_updateKeyframes()
     }
 }
 
+Eigen::Affine3f SingleMarkerSLAM::_lastVertexPose()
+{
+    const int last_vertex_id = keyframes_.size() - 1;
+    MLOG_DEBUG(EventLogger::M_SLAM,
+               "@SingleMarkerSLAM::_lastVertexPose: "
+               "returning pose of id %lu\n", last_vertex_id);
+    
+    return slam_.getVertexPose(last_vertex_id);
+}
+
+void SingleMarkerSLAM::_correctVisualOdometry()
+{
+    Eigen::Affine3f slam_pose = _lastVertexPose();
+    vo_correction_ = relativeTransform(vo_.pose_, slam_pose);
+    vo_.pose_ = slam_pose; //same as right multiplying vo_.pose_ by vo_correction_
+}
+
 SingleMarkerSLAM::SingleMarkerSLAM():
     max_marker_dist_(4.0),
     min_kf_dist_(0.05),
@@ -90,6 +107,12 @@ SingleMarkerSLAM::SingleMarkerSLAM():
     initialized_ = false;
     marker_found_= false;
     curr_loop_closures_ = 0;
+
+    last_odom_kf_pose_ = Eigen::Affine3f::Identity();
+    last_lc_kf_pose_  = Eigen::Affine3f::Identity();
+    first_pose_from_AR_ = Eigen::Affine3f::Identity();
+    last_pose_from_AR_ = Eigen::Affine3f::Identity();
+    vo_correction_ = Eigen::Affine3f::Identity();
 }
 
 SingleMarkerSLAM::SingleMarkerSLAM(const MarkerFinder::Parameters &mf_param,
@@ -104,6 +127,12 @@ SingleMarkerSLAM::SingleMarkerSLAM(const MarkerFinder::Parameters &mf_param,
     initialized_ = false;
     marker_found_= false;
     curr_loop_closures_ = 0;
+
+    last_odom_kf_pose_ = Eigen::Affine3f::Identity();
+    last_lc_kf_pose_  = Eigen::Affine3f::Identity();
+    first_pose_from_AR_ = Eigen::Affine3f::Identity();
+    last_pose_from_AR_ = Eigen::Affine3f::Identity();
+    vo_correction_ = Eigen::Affine3f::Identity();
 }
 
 void SingleMarkerSLAM::addVertexAndEdge(const Eigen::Affine3f &pose)
@@ -227,7 +256,10 @@ bool SingleMarkerSLAM::processImage(const Mat &rgb, const Mat &depth,
         MLOG_INFO(EventLogger::M_SLAM,
                   "@SingleMarkerSLAM: pose graph after:\n");
         slam_.printGraph();
+        
         _updateKeyframes();
+        _correctVisualOdometry();
+        
         curr_loop_closures_ = 0;
     }
 
