@@ -64,6 +64,8 @@ void RGBDLoader::processFile(const string& file_name)
                 num_images_++;
                 rgb_img_names_.push_back(rgb_file);
                 depth_img_names_.push_back(depth_file);
+                rgb_time_stamps_.push_back(ts1);
+                depth_time_stamps_.push_back(ts2);
             }
         }
         else
@@ -97,6 +99,36 @@ void RGBDLoader::getNextImage(cv::Mat& rgb_img, cv::Mat& depth_img)
     else
     {
         MLOG_ERROR(EventLogger::M_IO, "@RGBDLoader::getNextImage: All images of the sequence were already loaded.\n");
+        exit(0);
+    }
+}
+
+std::string RGBDLoader::getNextRgbImageTimeStamp()
+{
+    if (curr_rgb_img_time_stamp_ < num_images_)
+    {
+        std::string ts = rgb_time_stamps_[curr_rgb_img_time_stamp_];
+        curr_rgb_img_time_stamp_++;
+        return ts;
+    }
+    else
+    {
+        MLOG_ERROR(EventLogger::M_IO, "@RGBDLoader::getNextRgbImageTimeStamp: All rgb time stamps of the sequence were already loaded.\n");
+        exit(0);
+    }
+}
+
+std::string RGBDLoader::getNextDepthImageTimeStamp()
+{
+    if (curr_depth_img_time_stamp_ < num_images_)
+    {
+        std::string ts = depth_time_stamps_[curr_depth_img_time_stamp_];
+        curr_depth_img_time_stamp_++;
+        return ts;
+    }
+    else
+    {
+        MLOG_ERROR(EventLogger::M_IO, "@RGBDLoader::getNextDepthImageTimeStamp: All depth time stamps of the sequence were already loaded.\n");
         exit(0);
     }
 }
