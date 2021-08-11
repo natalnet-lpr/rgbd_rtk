@@ -254,13 +254,15 @@ void ReconstructionVisualizer::viewKeyframe(const Keyframe &kf)
         viewer_->updatePointCloudPose(frame_name + "_cloud", kf.pose_);
     }
 
-    // Add/update text of the keyframe
+    // Add/update text of the keyframe ---> THIS IS SLOW
+    /*
     PointT text_pos;
     text_pos.x = kf.pose_(0, 3) + 0.02;
     text_pos.y = kf.pose_(1, 3) + 0.05;
     text_pos.z = kf.pose_(2, 3);
     viewer_->removeText3D(frame_name + "_text");
     viewer_->addText3D(frame_name, text_pos, 0.015, 1, 1, 1, frame_name + "_text");
+    */
 }
 
 void ReconstructionVisualizer::viewKeyframes(const std::map<size_t, Keyframe> &keyframes)
