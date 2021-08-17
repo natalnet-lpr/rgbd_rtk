@@ -1,7 +1,7 @@
 /*
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2021, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -16,13 +16,17 @@
  *     promote products derived from this software without specific prior written permission.
  *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, *
- * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
  *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
  *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
  *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
+ *  Author:
+ *
+ *  Rodrigo Sarmento
+ *  Bruno Silva
  */
 
 #include <Eigen/Geometry>
@@ -54,27 +58,44 @@ bool isOrientationCorrect(Eigen::Affine3f first, Eigen::Affine3f newone);
 int main(int argc, char** argv)
 {
     EventLogger& logger = EventLogger::getInstance();
-    RGBDLoader loader;
-    Intrinsics intr(0);
-    OpticalFlowVisualOdometry vo(intr);
+    logger.setVerbosityLevel(EventLogger::L_DEBUG);
+
     ReconstructionVisualizer visualizer;
+    RGBDLoader loader;
+    FeatureTracker::Parameters tracking_param;
+    Intrinsics intr(0);
+
     Mat frame, depth;
     Eigen::Affine3f first;
-    float marker_size, aruco_max_distance;
+    float marker_size, aruco_max_distance, ransac_thr;
     string camera_calibration_file, aruco_dic, index_file;
 
     if (argc != 2)
     {
         logger.print(
-            EventLogger::L_ERROR, "[icp_odometry_test.cpp] ERROR: Usage: %s <path/to/config_file.yaml>\n", argv[0]);
+            EventLogger::L_ERROR, "[marker_finder_test.cpp] ERROR: Usage: %s <path/to/config_file.yaml>\n", argv[0]);
         exit(0);
     }
+
     ConfigLoader param_loader(argv[1]);
+    //file parameters
+    param_loader.checkAndGetString("index_file", index_file);
+    //tracker parameters
+    param_loader.checkAndGetString("tracker_type", tracking_param.type_);
+    param_loader.checkAndGetInt("min_pts", tracking_param.min_pts_);
+    param_loader.checkAndGetInt("max_pts", tracking_param.max_pts_);
+    param_loader.checkAndGetBool("log_stats", tracking_param.log_stats_);
+    //motion estimator parameters
+    param_loader.checkAndGetFloat("ransac_distance_threshold", ransac_thr);
+    //marker detection parameters
     param_loader.checkAndGetFloat("aruco_marker_size", marker_size);
     param_loader.checkAndGetFloat("aruco_max_distance", aruco_max_distance);
     param_loader.checkAndGetString("camera_calibration_file", camera_calibration_file);
-    param_loader.checkAndGetString("index_file", index_file);
     param_loader.checkAndGetString("aruco_dic", aruco_dic);
+
+    OpticalFlowVisualOdometry vo(intr, tracking_param, ransac_thr);
+
+    visualizer.addReferenceFrame(vo.pose_, "origin");
 
     MarkerFinder marker_finder;
     marker_finder.markerParam(camera_calibration_file, marker_size, aruco_dic);

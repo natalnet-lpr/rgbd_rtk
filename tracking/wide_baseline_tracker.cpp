@@ -295,6 +295,17 @@ WideBaselineTracker::WideBaselineTracker(
     
 }
 
+WideBaselineTracker::WideBaselineTracker(const FeatureTracker::Parameters& param):
+    FeatureTracker(param.min_pts_, param.max_pts_, param.log_stats_)
+{
+    if (checkCombination(param.feature_detector_, param.descriptor_extractor_))
+    {
+        setFeatureDetector(param.feature_detector_);
+        setDescriptorExtractor(param.descriptor_extractor_);
+        setMatcher(param.matcher_);
+    }
+}
+
 void WideBaselineTracker::getGoodMatches(const double &threshold)
 {
     good_matches_.clear();

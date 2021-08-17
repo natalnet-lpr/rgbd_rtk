@@ -176,6 +176,7 @@ endif()
 if(aruco_FOUND AND WITH_IO AND WITH_TRACKING AND WITH_VISUALIZATION AND WITH_MOTION_ESTIMATION AND WITH_VISUAL_ODOMETRY)
     add_executable(marker_finder_test marker_finder_test.cpp)
     add_executable(single_marker_slam_test single_marker_slam_test.cpp)
+    add_executable(zed_data_test zed_data_test.cpp)
     add_executable(slam_solver_test_multiple_markers slam_solver_test_multiple_markers.cpp)
     find_library(RGBD_RTK_SLAM NAMES rgbd_rtk_slam)
     target_link_libraries(marker_finder_test ${PCL_LIBRARIES} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING}
@@ -187,6 +188,11 @@ if(aruco_FOUND AND WITH_IO AND WITH_TRACKING AND WITH_VISUALIZATION AND WITH_MOT
                                          ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUALIZATION}
                                          ${RGBD_RTK_MOTION_ESTIMATION}
                                          ${RGBD_RTK_VISUAL_ODOMETRY}
+                                         ${RGBD_RTK_SLAM})
+    target_link_libraries(zed_data_test ${PCL_LIBRARIES} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING}
+                                         ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUALIZATION}
+                                         ${RGBD_RTK_MOTION_ESTIMATION}
+                                         ${RGBD_RTK_VISUAL_ODOMETRY}
                                          ${RGBD_RTK_SLAM})                
     target_link_libraries(slam_solver_test_multiple_markers ${PCL_LIBRARIES} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING}
                                          ${RGBD_RTK_COMMON} ${RGBD_RTK_VISUALIZATION}
@@ -195,6 +201,7 @@ if(aruco_FOUND AND WITH_IO AND WITH_TRACKING AND WITH_VISUALIZATION AND WITH_MOT
                                          ${RGBD_RTK_SLAM})                                
     install(TARGETS marker_finder_test 
                     single_marker_slam_test
+                    zed_data_test
                     slam_solver_test_multiple_markers
         EXPORT rgbd_rtkTargets
         RUNTIME DESTINATION bin)

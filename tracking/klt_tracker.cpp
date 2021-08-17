@@ -103,6 +103,11 @@ KLTTracker::KLTTracker(const int &min_pts, const int &max_pts, const bool &log_s
 {
 }
 
+KLTTracker::KLTTracker(const FeatureTracker::Parameters& param):
+    FeatureTracker(param.min_pts_, param.max_pts_, param.log_stats_)
+{
+}
+
 bool KLTTracker::track(const Mat &curr_frame)
 {
     bool is_keyframe = false;

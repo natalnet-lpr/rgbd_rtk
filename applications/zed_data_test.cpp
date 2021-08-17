@@ -24,14 +24,13 @@
  *
  *  Author:
  *
- *  Rodrigo Sarmento
  *  Bruno Silva
  */
 
 #include <Eigen/Geometry>
+#include <aruco/cvdrawingutils.h>
 #include <cstdio>
 #include <cstdlib>
-
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -39,41 +38,33 @@
 #include <config_loader.h>
 #include <event_logger.h>
 #include <geometry.h>
+#include <marker_finder.h>
 #include <optical_flow_visual_odometry.h>
 #include <reconstruction_visualizer.h>
 #include <rgbd_loader.h>
 
 using namespace std;
 using namespace cv;
+using namespace aruco;
 
-/**
- * This program shows how to use the ReconstructionVisualizer
- * class.
- * @param .yml config. file (from which index_file is used)
- */
 int main(int argc, char** argv)
 {
     EventLogger& logger = EventLogger::getInstance();
-    logger.setVerbosityLevel(EventLogger::L_ERROR);
+    logger.setVerbosityLevel(EventLogger::L_DEBUG);
 
     ReconstructionVisualizer visualizer;
     RGBDLoader loader;
     FeatureTracker::Parameters tracking_param;
-    Intrinsics intr(0);
+    Intrinsics intr;
 
-    string index_file;
     Mat frame, depth;
-    float ransac_thr;
-    Keyframe kf_to;
-    Keyframe kf_from;
-    int num_keyframes = 0;
+    float marker_size, aruco_max_distance, ransac_thr;
+    string camera_calibration_file, aruco_dic, index_file;
 
     if (argc != 2)
     {
         logger.print(
-            EventLogger::L_ERROR,
-            "[reconstruction_visualizer_test.cpp] Usage: %s <path/to/config_file.yaml> ",
-            argv[0]);
+            EventLogger::L_ERROR, "[zed_data_test.cpp] ERROR: Usage: %s <path/to/config_file.yaml>\n", argv[0]);
         exit(0);
     }
     
@@ -87,72 +78,76 @@ int main(int argc, char** argv)
     param_loader.checkAndGetBool("log_stats", tracking_param.log_stats_);
     //motion estimator parameters
     param_loader.checkAndGetFloat("ransac_distance_threshold", ransac_thr);
+    //marker detection parameters
+    param_loader.checkAndGetFloat("aruco_marker_size", marker_size);
+    param_loader.checkAndGetFloat("aruco_max_distance", aruco_max_distance);
+    param_loader.checkAndGetString("camera_calibration_file", camera_calibration_file);
+    param_loader.checkAndGetString("aruco_dic", aruco_dic);
+     
+    intr.loadFromFile(camera_calibration_file);
+    intr.setScale(1000.0); //transform zed point cloud from milimeters to meters
 
     OpticalFlowVisualOdometry vo(intr, tracking_param, ransac_thr);
+    
+    MarkerFinder marker_finder;
+    marker_finder.markerParam(camera_calibration_file, marker_size, aruco_dic);
 
     loader.processFile(index_file);
 
-    visualizer.addReferenceFrame(vo.pose_, "origin");
+    //pcl::PointCloud<PointT>::Ptr cloud = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
 
-    // Compute visual odometry on each image
+    // Compute visual odometry and find markers on each image
     for (int i = 0; i < loader.num_images_; i++)
     {
         // Load RGB-D image
         loader.getNextImage(frame, depth);
 
         // Estimate current camera pose
-        bool is_kf = vo.computeCameraPose(frame, depth);
+        vo.computeCameraPose(frame, depth); //resulting in ransac exception (no keypoints)
+        //*cloud = getPointCloud(frame, depth, intr);
 
-        // View tracked points
-        for (size_t k = 0; k < vo.tracker_ptr_->curr_pts_.size(); k++)
+        // Find ARUCO markers and compute their poses
+        /*
+        marker_finder.detectMarkersPoses(frame, vo.pose_, aruco_max_distance);
+        for (size_t j = 0; j < marker_finder.markers_.size(); j++)
         {
-            Point2i pt1 = vo.tracker_ptr_->prev_pts_[k];
-            Point2i pt2 = vo.tracker_ptr_->curr_pts_[k];
-            Scalar color;
-
-            is_kf ? color = CV_RGB(255, 0, 0) : color = CV_RGB(0, 0, 255);
-
-            circle(frame, pt1, 1, color, -1);
-            circle(frame, pt2, 3, color, -1);
-            line(frame, pt1, pt2, color);
-        }
-
-        visualizer.viewReferenceFrame(vo.pose_);
-        visualizer.viewPointCloud(vo.curr_dense_cloud_, vo.pose_);
-        if (is_kf)
-        {
-            if (num_keyframes == 1)
-                kf_to = vo.getLastKeyframe(); // Save the first keyframe
-            else
+            if (250 == marker_finder.markers_[j].id)
             {
-                // Update the last and the current keyframe
-                kf_from = kf_to;
-                kf_to = vo.getLastKeyframe();
-                kf_to.name_ = "key_frame_" + to_string(num_keyframes);
-                visualizer.addQuantizedPointCloud(kf_to.local_cloud_, 0.02, kf_to.pose_);
-                visualizer.addKeyFrame(kf_to, kf_to.name_); // Add Keyframe to the visualizer
-
-                // Create a vector 3d for the last and current kf pose
-                Eigen::Vector3d from(kf_from.pose_(0, 3), kf_from.pose_(1, 3), kf_from.pose_(2, 3));
-                Eigen::Vector3d to(kf_to.pose_(0, 3), kf_to.pose_(1, 3), kf_to.pose_(2, 3));
-                // Create and add an Edge to the visualizer
-                // Edge edge(num_keyframes - 1, num_keyframes, from, to, to_string(num_keyframes));
-                // visualizer.addEdge(edge);
+                if (i == 0)
+                {
+                    first = marker_finder.marker_poses_[j];
+                    marker_finder.markers_[j].draw(frame, Scalar(0, 0, 255), 1.5);
+                    CvDrawingUtils::draw3dAxis(frame, marker_finder.markers_[j], marker_finder.camera_params_, 2);
+                    stringstream ss;
+                    ss << "m" << marker_finder.markers_[j].id;
+                    visualizer.viewReferenceFrame(marker_finder.marker_poses_[j], ss.str());
+                }
             }
-            num_keyframes++; // Increment the number of keyframes found
         }
+        */
+
+        if (i == 0) visualizer.addReferenceFrame(vo.pose_, "origin");
+
+        //visualizer.viewPointCloud(cloud, vo.pose_);
+        //visualizer.viewQuantizedPointCloud(cloud, 0.02, vo.pose_);
+        visualizer.addQuantizedPointCloud(vo.curr_dense_cloud_, 0.05, vo.pose_);
+        visualizer.viewReferenceFrame(vo.pose_);
+        // visualizer.viewPointCloud(vo.curr_dense_cloud_, vo.pose_);
+        visualizer.viewQuantizedPointCloud(vo.curr_dense_cloud_, 0.02, vo.pose_);
 
         visualizer.spinOnce();
 
         // Show RGB-D image
         imshow("Image view", frame);
-        char key = waitKey(1);
+        char key = waitKey(0);
         if (key == 27 || key == 'q' || key == 'Q')
         {
-            logger.print(EventLogger::L_INFO, "[reconstruction_visualizer_test.cpp] Exiting\n", argv[0]);
+            printf("Exiting.\n");
             break;
         }
     }
+
+    visualizer.close();
 
     return 0;
 }

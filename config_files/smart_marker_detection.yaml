@@ -1,0 +1,20 @@
+%YAML:1.0
+# file parameters
+camera_calibration_file: "/path/to/dataset/calibration_file"
+index_file: "/path/to/sequence/index" #sequence must have at least one AR marker
+
+# tracker parameters
+type: KLTTracker
+min_pts: 600
+max_pts: 5000
+log_stats: 0
+# windows_size: 20 #square of size 20
+
+#motion estimation ransac parameters
+ransac_distance_threshold: 0.008 #8mm
+
+# marker detection parameters
+aruco_dic: "ARUCO_MIP_36h12"
+aruco_max_distance: 4
+aruco_marker_size: 1 #confirm size with Luis Ortiz
+aruco_poses_file: "/path/to/txtfilewith/markerposes"
