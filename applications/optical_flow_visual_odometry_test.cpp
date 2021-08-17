@@ -62,6 +62,8 @@ int main(int argc, char **argv)
 	Mat frame, depth;
 	float ransac_thr;
 
+	std::string rgb_img_time_stamp;
+
 	if(argc != 2)
 	{
 		logger.print(EventLogger::L_INFO, "[optical_flow_visual_odometry_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
@@ -91,8 +93,11 @@ int main(int argc, char **argv)
 		//Load RGB-D image 
 		loader.getNextImage(frame, depth);
 
+		// Get the rgb image time stamp
+		rgb_img_time_stamp = loader.getNextRgbImageTimeStamp();
+
 		//Estimate current camera pose
-		bool is_kf = vo.computeCameraPose(frame, depth);
+		bool is_kf = vo.computeCameraPose(frame, depth, rgb_img_time_stamp);
 
 		//View tracked points
 		for(size_t k = 0; k < vo.tracker_ptr_->curr_pts_.size(); k++)

@@ -145,7 +145,7 @@ void SingleMarkerSlam::addVertexAndEdge(const Eigen::Affine3f& pose, const int& 
         v0->setEstimate(est);
         v0->setFixed(true);
         optimizer_.addVertex(v0);
-        vertices_to_add_.insert(v0);
+        vertices_.insert(v0);
 
         Eigen::Vector3d pos = est.translation();
         positions_.push_back(pos);
@@ -169,7 +169,7 @@ void SingleMarkerSlam::addVertexAndEdge(const Eigen::Affine3f& pose, const int& 
         v1->setId(id);
         v1->setEstimate(est);
         optimizer_.addVertex(v1);
-        vertices_to_add_.insert(v1);
+        vertices_.insert(v1);
 
         Eigen::Vector3d pos = est.translation();
         positions_.push_back(pos);
@@ -179,7 +179,7 @@ void SingleMarkerSlam::addVertexAndEdge(const Eigen::Affine3f& pose, const int& 
         e->vertices()[1] = v1;
         e->setMeasurementFromState();
         optimizer_.addEdge(e);
-        edges_to_add_.insert(e);
+        edges_.insert(e);
 
         MLOG_DEBUG(
             EventLogger::M_SLAM,
@@ -208,7 +208,7 @@ void SingleMarkerSlam::addLoopClosingEdge(const Eigen::Affine3f& vertex_to_origi
     e->vertices()[1] = origin;
     e->setMeasurement(measurement);
     optimizer_.addEdge(e);
-    edges_to_add_.insert(e);
+    edges_.insert(e);
 
     num_loop_edges_++;
 
@@ -254,7 +254,7 @@ void SingleMarkerSlam::getEdge(
     string& name)
 {
 
-    for (auto it = optimizer_.edges().begin(); it != optimizer_.edges().end(); ++it)
+    for (auto it = edges_.begin(); it != edges_.end(); ++it)
     {
         EdgeSE3* e = dynamic_cast<EdgeSE3*>(*it);
         if (e->vertex(0)->id() == from_id and e->vertex(1)->id() == to_id)
@@ -280,37 +280,40 @@ void SingleMarkerSlam::getEdge(
 
 void SingleMarkerSlam::getLastEdge(Eigen::Vector3d& from, Eigen::Vector3d& to, string& name)
 {
-    auto a = optimizer_.edges().end();
+    for (auto it = --edges_.end(); it != edges_.end(); ++it)
+    {
+        EdgeSE3* e = dynamic_cast<EdgeSE3*>(*it);
 
-    EdgeSE3* e = dynamic_cast<EdgeSE3*>(*--optimizer_.edges().end());
+        cout << "Valor do last edge " << optimizer_.vertex(e->vertex(0)->id()) << " Valor do id 2 last edge "
+             << optimizer_.vertex(e->vertex(1)->id()) << endl;
 
-    VertexSE3* v0 = static_cast<VertexSE3*>(optimizer_.vertex(e->vertex(0)->id()));
-    VertexSE3* v1 = static_cast<VertexSE3*>(optimizer_.vertex(e->vertex(1)->id()));
+        VertexSE3* v0 = static_cast<VertexSE3*>(optimizer_.vertex(e->vertex(0)->id()));
+        VertexSE3* v1 = static_cast<VertexSE3*>(optimizer_.vertex(e->vertex(1)->id()));
 
-    Eigen::Isometry3f vertix_from_tmp = v0->estimate().cast<float>();
-    Eigen::Affine3f vertix_from = Eigen::Affine3f::Identity();
-    vertix_from.matrix() = vertix_from_tmp.matrix();
+        Eigen::Isometry3f vertix_from_tmp = v0->estimate().cast<float>();
+        Eigen::Affine3f vertix_from = Eigen::Affine3f::Identity();
+        vertix_from.matrix() = vertix_from_tmp.matrix();
 
-    Eigen::Isometry3f vertix_to_tmp = v1->estimate().cast<float>();
-    Eigen::Affine3f vertix_to = Eigen::Affine3f::Identity();
-    vertix_to.matrix() = vertix_to_tmp.matrix();
+        Eigen::Isometry3f vertix_to_tmp = v1->estimate().cast<float>();
+        Eigen::Affine3f vertix_to = Eigen::Affine3f::Identity();
+        vertix_to.matrix() = vertix_to_tmp.matrix();
 
-    from = Eigen::Vector3d(vertix_from(0, 3), vertix_from(1, 3), vertix_from(2, 3));
-    to = Eigen::Vector3d(vertix_to(0, 3), vertix_to(1, 3), vertix_to(2, 3));
-    name = "edge_" + to_string(e->vertex(0)->id()) + "_" + to_string(e->vertex(1)->id());
+        from = Eigen::Vector3d(vertix_from(0, 3), vertix_from(1, 3), vertix_from(2, 3));
+        to = Eigen::Vector3d(vertix_to(0, 3), vertix_to(1, 3), vertix_to(2, 3));
+        name = "edge_" + to_string(e->vertex(0)->id()) + "_" + to_string(e->vertex(1)->id());
+    }
 }
-    */
-
+*/
 void SingleMarkerSlam::optimizeGraph(const int& k)
 {
     // optimizer_.save("graph.g2o"); // Save file
 
     optimized_estimates_.size() == 0 ? optimizer_.initializeOptimization()
-                                     : optimizer_.updateInitialization(vertices_to_add_, edges_to_add_);
+                                     : optimizer_.updateInitialization(vertices_, edges_);
 
     // When I pass only the subset the optimization may go wrong
-    // vertices_to_add_.clear();
-    // edges_to_add_.clear();
+    // vertices_.clear();
+    // edges_.clear();
     optimizer_.optimize(k);
 
     updateState();

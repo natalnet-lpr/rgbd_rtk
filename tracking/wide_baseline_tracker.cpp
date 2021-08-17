@@ -37,6 +37,7 @@
 #include "opencv2/xfeatures2d.hpp"
 
 #include <boost/algorithm/string.hpp>
+#include <cmath>
 
 #include "wide_baseline_tracker.h"
 #include <event_logger.h>
@@ -251,11 +252,15 @@ WideBaselineTracker::WideBaselineTracker() : FeatureTracker()
     setFeatureDetector("ORB");
     setDescriptorExtractor("ORB");
     setMatcher("BRUTEFORCE");
+    keyframe_threshold_ = 0.3;
 }
 
-WideBaselineTracker::WideBaselineTracker(const std::string &feature_detector,
-                                         const std::string &descriptor_extractor,
-                                         const std::string &matcher, const bool &log_stats)
+WideBaselineTracker::WideBaselineTracker(
+    const std::string &feature_detector,
+    const std::string &descriptor_extractor,
+    const std::string &matcher,
+    const float &keyframe_threshold, 
+    const bool &log_stats)
     : FeatureTracker()
 {
     if (checkCombination(feature_detector, descriptor_extractor))
@@ -263,16 +268,21 @@ WideBaselineTracker::WideBaselineTracker(const std::string &feature_detector,
         setFeatureDetector(feature_detector);
         setDescriptorExtractor(descriptor_extractor);
         setMatcher(matcher);
+        keyframe_threshold_ = keyframe_threshold;
     }
     
 
     if (log_stats) initialize_logger("timing_stats.txt", "tracking_stats.txt", "heatmap_stats.txt");
 }
 
-WideBaselineTracker::WideBaselineTracker(const std::string &feature_detector,
-                                         const std::string &descriptor_extractor,
-                                         const std::string &matcher, const int &min_pts,
-                                         const int &max_pts, const bool &log_stats)
+WideBaselineTracker::WideBaselineTracker(
+    const std::string &feature_detector,
+    const std::string &descriptor_extractor,
+    const std::string &matcher, 
+    const int &min_pts,
+    const int &max_pts,
+    const float &keyframe_threshold, 
+    const bool &log_stats)
     : FeatureTracker(min_pts, max_pts, log_stats)
 {
     if (checkCombination(feature_detector, descriptor_extractor))
@@ -280,6 +290,7 @@ WideBaselineTracker::WideBaselineTracker(const std::string &feature_detector,
         setFeatureDetector(feature_detector);
         setDescriptorExtractor(descriptor_extractor);
         setMatcher(matcher);
+        keyframe_threshold_ = keyframe_threshold;
     }
     
 }
@@ -403,8 +414,9 @@ bool WideBaselineTracker::track(const cv::Mat &img)
 
         //getGoodMatches(0.1);
 
-        // Insufficient number of points being tracked
-        if (tracked_pts < min_pts_)
+        // Percentage of the variation of features of the current instant 
+        // in relation to the previous instant
+        if (abs(curr_kpts_.size()-prev_kpts_.size())/prev_kpts_.size() > keyframe_threshold_)
         {
             // Make the current frame a new keyframe
             is_keyframe = true;
