@@ -2,13 +2,15 @@ cmake_minimum_required(VERSION 2.6)
 
 message(STATUS ">>> visual_odometry subdirectory")
 
-set(RGBD_RTK_VISUAL_ODOMETRY_SRC optical_flow_visual_odometry.cpp
+set(RGBD_RTK_VISUAL_ODOMETRY_SRC visual_odometry.cpp
+                                 optical_flow_visual_odometry.cpp
                                  stereo_optical_flow_visual_odometry.cpp
-				 wide_baseline_visual_odometry.cpp
+				                         wide_baseline_visual_odometry.cpp
                                  icp_odometry.cpp)
-set(RGBD_RTK_VISUAL_ODOMETRY_INCLUDES optical_flow_visual_odometry.h
+set(RGBD_RTK_VISUAL_ODOMETRY_INCLUDES visual_odometry.h
+                                      optical_flow_visual_odometry.h
                                       stereo_optical_flow_visual_odometry.h
-				      wide_baseline_visual_odometry.h
+				                              wide_baseline_visual_odometry.h
                                       icp_odometry.h)
 
 add_library(rgbd_rtk_visual_odometry SHARED ${RGBD_RTK_VISUAL_ODOMETRY_SRC})
