@@ -97,31 +97,32 @@ void SingleMarkerSLAM::_correctVisualOdometry()
     vo_.pose_ = slam_pose; //same as right multiplying vo_.pose_ by vo_correction_
 }
 
-SingleMarkerSLAM::SingleMarkerSLAM():
-    max_marker_dist_(4.0),
-    min_kf_dist_(0.05),
-    opt_iterations_(10),
-    opt_loop_closures_(10),
-    vo_(Intrinsics(0))
-{
-    initialized_ = false;
-    marker_found_= false;
-    curr_loop_closures_ = 0;
+// SingleMarkerSLAM::SingleMarkerSLAM():
+//     max_marker_dist_(4.0),
+//     min_kf_dist_(0.05),
+//     opt_iterations_(10),
+//     opt_loop_closures_(10),
+//     vo_(Intrinsics(0))
+// {
+//     initialized_ = false;
+//     marker_found_= false;
+//     curr_loop_closures_ = 0;
 
-    last_odom_kf_pose_ = Eigen::Affine3f::Identity();
-    last_lc_kf_pose_  = Eigen::Affine3f::Identity();
-    first_pose_from_AR_ = Eigen::Affine3f::Identity();
-    last_pose_from_AR_ = Eigen::Affine3f::Identity();
-    vo_correction_ = Eigen::Affine3f::Identity();
-}
+//     last_odom_kf_pose_ = Eigen::Affine3f::Identity();
+//     last_lc_kf_pose_  = Eigen::Affine3f::Identity();
+//     first_pose_from_AR_ = Eigen::Affine3f::Identity();
+//     last_pose_from_AR_ = Eigen::Affine3f::Identity();
+//     vo_correction_ = Eigen::Affine3f::Identity();
+// }
 
-SingleMarkerSLAM::SingleMarkerSLAM(const MarkerFinder::Parameters &mf_param,
+SingleMarkerSLAM::SingleMarkerSLAM(const FeatureTracker::Parameters &tracker_param,
+                                   const MarkerFinder::Parameters &mf_param,
                                    const SingleMarkerSLAM::Parameters &slam_param):
     max_marker_dist_(mf_param.max_marker_dist_),
     min_kf_dist_(slam_param.min_dist_bw_keyframes_),
     opt_iterations_(slam_param.opt_iterations_),
     opt_loop_closures_(slam_param.opt_loop_closures_),
-    vo_(Intrinsics(0)),
+    vo_(Intrinsics(0), tracker_param, 0.008), //TODO Remove this (hardcoded)!!!
     marker_finder_(mf_param.calib_file_, mf_param.marker_size_, mf_param.aruco_dict_)
 {
     initialized_ = false;

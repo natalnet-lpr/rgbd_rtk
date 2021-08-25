@@ -179,6 +179,12 @@ KLTTWTracker::KLTTWTracker(const int &min_pts, const int &max_pts, const cv::Siz
 {
 }
 
+KLTTWTracker::KLTTWTracker(const FeatureTracker::Parameters& param):
+    FeatureTracker(param.min_pts_, param.max_pts_, param.log_stats_),
+    num_points_last_kf_(0), window_size_(param.window_size_)
+{
+}
+
 bool KLTTWTracker::track(const Mat &curr_frame)
 {
     // Make a grayscale copy of the current frame if it is in color

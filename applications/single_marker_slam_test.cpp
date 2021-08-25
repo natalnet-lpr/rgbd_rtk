@@ -25,7 +25,7 @@
  *
  *  Authors:
  *
- *  Rodrigo Xavier
+ *  Rodrigo Sarmento
  *  Bruno Silva
  */
 
@@ -69,10 +69,12 @@ int main(int argc, char** argv)
 
     RGBDLoader loader;
     ReconstructionVisualizer visualizer;
+    FeatureTracker::Parameters tracker_param;
     MarkerFinder::Parameters mf_param;
     SingleMarkerSLAM::Parameters slam_param;
     string index_file;
     Mat frame, depth;
+    float ransac_thr;
 
     // Slam solver will start when the marker is found for the first time
     if (argc != 2)
@@ -82,11 +84,21 @@ int main(int argc, char** argv)
     }
 
     ConfigLoader param_loader(argv[1]);
+
     param_loader.checkAndGetString("index_file", index_file);
+    //tracker parameters
+    param_loader.checkAndGetString("tracker_type", tracker_param.type_);
+    param_loader.checkAndGetInt("min_pts", tracker_param.min_pts_);
+    param_loader.checkAndGetInt("max_pts", tracker_param.max_pts_);
+    param_loader.checkAndGetBool("log_stats", tracker_param.log_stats_);
+    //motion estimator parameters
+    param_loader.checkAndGetFloat("ransac_distance_threshold", ransac_thr);
+    //marker detection parameters
     param_loader.checkAndGetString("camera_calibration_file", mf_param.calib_file_);
     param_loader.checkAndGetFloat("aruco_marker_size", mf_param.marker_size_);
     param_loader.checkAndGetFloat("aruco_max_distance", mf_param.max_marker_dist_);
     param_loader.checkAndGetString("aruco_dic", mf_param.aruco_dict_);
+    //slam with markers parameters
     slam_param.opt_iterations_ = 10; //TODO: load this parameter from file
     param_loader.checkAndGetInt("marker_id",
                                 slam_param.marker_id_);
@@ -95,12 +107,12 @@ int main(int argc, char** argv)
     param_loader.checkAndGetFloat("minimum_distance_between_keyframes",
                                   slam_param.min_dist_bw_keyframes_);
 
-    SingleMarkerSLAM sm_slam(mf_param, slam_param);
+    SingleMarkerSLAM sm_slam(tracker_param, mf_param, slam_param);
 
     loader.processFile(index_file);
 
     // Compute SLAM using a single marker with each image
-    for(int i = 0; i < loader.num_images_; i++)
+    for (int i = 0; i < loader.num_images_; i++)
     {
         MLOG_DEBUG(EventLogger::M_SLAM, "@single_marker_slam_test: processing image %i\n", i);
 

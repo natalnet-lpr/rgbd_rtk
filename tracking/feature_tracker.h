@@ -121,6 +121,30 @@ protected:
     virtual void update_buffers() = 0;
 
 public:
+
+    //Most commonly used tracker types
+    enum TRACKER_TYPE
+    {
+        TRACKER_UNKNOWN,
+        TRACKER_KLT,
+        TRACKER_KLTTW,
+        TRACKER_WIDEBASELINE
+    };
+
+    //Struct having tracker parameters
+    struct Parameters
+    {
+        std::string type_;
+        bool log_stats_; //used in all trackers
+        int min_pts_; //used in KLT*
+        int max_pts_; //used in KLT*
+        cv::Size window_size_; //used in KLTTW
+        std::string feature_detector_; //used in WideBaselineTracker
+        std::string descriptor_extractor_; //used in WideBaselineTracker
+        std::string matcher_; //used in WideBaselineTracker
+        float detection_threshold_; //used in WideBaselineTracker
+    };
+
     // Tracklets: history of each point as a vector of point2f
     std::vector<Tracklet> tracklets_;
 
@@ -173,6 +197,13 @@ public:
      * @return boolean true if the current frame is a keyframe.
      */
     virtual bool track(const cv::Mat &img) = 0;
+
+    /**
+     * Converts a string to its equivalent tracker type
+     * @param s string with a tracker type.
+     * @return an int constant representing the tracker type
+     */
+    static FeatureTracker::TRACKER_TYPE strToType(const std::string &s);
 };
 
 #endif /* INCLUDE_FEATURE_TRACKER_H_ */

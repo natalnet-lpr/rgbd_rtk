@@ -148,9 +148,9 @@ bool FeatureTracker::write_heatmap_info()
 FeatureTracker::FeatureTracker():
 	initialized_(false),
 	frame_idx_(0),
-	num_inliers_(0),
 	min_pts_(600),
-	max_pts_(5000)
+	max_pts_(5000),
+	num_inliers_(0)
 {
 
 }
@@ -158,9 +158,9 @@ FeatureTracker::FeatureTracker():
 FeatureTracker::FeatureTracker(const int& min_pts, const int& max_pts, const bool& log_stats):
 	initialized_(false),
 	frame_idx_(0),
-	num_inliers_(0),
 	min_pts_(min_pts),
-	max_pts_(max_pts)
+	max_pts_(max_pts),
+	num_inliers_(0)
 {
 	if(log_stats)
 	{
@@ -207,4 +207,21 @@ void FeatureTracker::initialize_logger(const string& timing_file_name, const str
 	MLOG_INFO(EventLogger::M_TRACKING, "@FeatureTracker::initialize_logger: saving \
 		                               heatmap information to %s\n",
 		                               heatmap_file_name.c_str());
+}
+
+FeatureTracker::TRACKER_TYPE FeatureTracker::strToType(const std::string &s)
+{
+	MLOG_DEBUG(EventLogger::M_TRACKING,
+               "@FeatureTracker::strToType "
+               "returning constant for %s\n",
+               s.c_str());
+
+	if(s == "KLTTracker")
+		return FeatureTracker::TRACKER_TYPE::TRACKER_KLT;
+	else if(s == "KLTTWTracker")
+		return FeatureTracker::TRACKER_TYPE::TRACKER_KLTTW;
+	else if(s == "WBTracker")
+		return FeatureTracker::TRACKER_TYPE::TRACKER_WIDEBASELINE;
+	else
+		return FeatureTracker::TRACKER_TYPE::TRACKER_UNKNOWN;
 }

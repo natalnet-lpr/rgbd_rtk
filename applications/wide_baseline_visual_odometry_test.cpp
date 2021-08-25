@@ -61,6 +61,7 @@ int main(int argc, char **argv)
 	string index_file;
 	Mat frame, depth;
 	int log_stats;
+	float keyframe_threshold;
 	string feature_detector, descriptor_extractor, descriptor_matcher;
 
 	if(argc != 2)
@@ -74,9 +75,9 @@ int main(int argc, char **argv)
 	param_loader.checkAndGetInt("log_stats",log_stats);
 	param_loader.checkAndGetString("feature_detector",feature_detector);
 	param_loader.checkAndGetString("descriptor_extractor",descriptor_extractor);
-	param_loader.checkAndGetString("descriptor_matcher",descriptor_matcher);
-	
-	WideBaselineTracker wide_baseline_tracker(feature_detector, descriptor_extractor, descriptor_matcher, log_stats);
+	param_loader.checkAndGetFloat("wide_baseline_keyframe_threshold", keyframe_threshold);
+
+	WideBaselineTracker wide_baseline_tracker(feature_detector, descriptor_extractor, descriptor_matcher, keyframe_threshold, log_stats);
 	
 	WideBaselineVisualOdometry vo(intr, wide_baseline_tracker);
 

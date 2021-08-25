@@ -1,14 +1,25 @@
 %YAML:1.0
-camera_calibration_file: "<path/to>/rgbd_rtk/config_files/kinect_default.yaml"
-index_file: "<path/to/index/file/of/dataset/with/marker>"
-aruco_dic: "ARUCO" #default: "ARUCO" or ARUCO MIP 36h12
-aruco_max_distance: 4 #default: 4
-aruco_marker_size: 0.064 #default: 0.1778 (size of marker in ROS Gazebo and ~= 0.07 for our dataset)
-aruco_poses_file: "../../config_files/aruco_poses_coffee.txt" #not being used
-marker_id: 549 #id of marker to be considered for loop closure
-minimum_distance_between_keyframes: 0.2 #default: 20cm
-optimization_loop_closures: 5 #every "X" vertex addition do an optimization
-#Parameter below are not used
-#motion estimation ransac parameters
+# file parameters
+camera_calibration_file: "/path/to/dataset/calibration_file"
+index_file: "/path/to/sequence/index" #sequence must have at least one AR marker
+
+# tracker parameters
+tracker_type: "KLTTWTracker" #or KLTTWTracker
+log_stats: 0
+min_pts: 600
+max_pts: 5000
+windows_size: 20
+
+# motion estimation ransac parameters
 ransac_distance_threshold: 0.008 #8mm
-ransac_inliers_ratio: = 0.8 #Should be between 0 and 1
+
+# marker detection parameters
+aruco_dic: "ARUCO" #default: "ARUCO" or "ARUCO MIP 36h12"
+aruco_max_distance: 4 #do not consider markers away from the camera by than this distance
+aruco_marker_size: 0.064 #default: 0.1778 (size of marker in ROS Gazebo and ~= 0.07 for our dataset)
+
+# SLAM with marker parameters
+marker_id: 549 #id of marker to be considered for loop closure
+aruco_poses_file: "../../config_files/aruco_poses.txt" #not being used
+minimum_distance_between_keyframes: 0.05 #default: 20cm
+optimization_loop_closures: 5 #perform an optimization at every "X" vertices added
