@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016-2020, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2021, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -31,7 +31,8 @@
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/core/core.hpp>
 
-#include "marker_finder.h"
+#include <marker_finder.h>
+#include <event_logger.h>
 
 using namespace std;
 using namespace cv;
@@ -93,11 +94,12 @@ void MarkerFinder::setMarkerPoses(const Eigen::Affine3f& cam_pose, const float& 
     }
 }
 
-void MarkerFinder::markerParam(const string& params, const float& size, const string& aruco_dic)
-{ // Load params
-    marker_detector_.setDictionary(aruco_dic, 0);
-    camera_params_.readFromXMLFile(params);
-    marker_size_ = size;
+void MarkerFinder::setParameters(const string &calib_file, const float &marker_size,
+                                 const string &aruco_dict)
+{
+    marker_detector_.setDictionary(aruco_dict, 0);
+    camera_params_.readFromXMLFile(calib_file);
+    marker_size_ = marker_size;
 }
 
 void MarkerFinder::detectMarkersPoses(
@@ -107,6 +109,65 @@ void MarkerFinder::detectMarkersPoses(
 {
     markers_.clear();
     marker_detector_.detect(img, markers_, camera_params_, marker_size_); // detect markers
+    MLOG_DEBUG(EventLogger::M_SLAM, "@MarkerFinder::detectMarkersPoses:"
+               " detected %lu markers.\n",
+               markers_.size());
 
     setMarkerPoses(cam_pose, aruco_max_distance); // set the pose
+}
+
+bool MarkerFinder::isMarkerFound(const int &id)
+{
+    for(size_t j = 0; j < markers_.size(); j++)
+    {
+        if(markers_[j].id == id)
+        {
+            return true;
+        }
+    }
+    MLOG_WARN(EventLogger::M_SLAM, "@MarkerFinder::isMarkerFound: "
+              "marker %i not found.\n",
+              id);
+    return false;
+}
+
+Eigen::Affine3f MarkerFinder::markerPose(const int &id)
+{
+    for(size_t j = 0; j < markers_.size(); j++)
+    {
+        if(markers_[j].id == id)
+        {
+            return marker_poses_[j];
+        }
+    }
+
+    MLOG_WARN(EventLogger::M_SLAM, "@MarkerFinder::markerPose: "
+              "marker %i not found. Returning identity pose.\n",
+              id);
+    return Eigen::Affine3f::Identity();
+}
+
+void MarkerFinder::drawMarker(const int &id, cv::Mat &img)
+{
+    int marker_idx = -1;
+
+    for(size_t j = 0; j < markers_.size(); j++)
+    {
+        if(markers_[j].id == id)
+        {
+            marker_idx = j;
+        }
+    }
+
+    if(marker_idx >= 0)
+    {
+        markers_[marker_idx].draw(img, cv::Scalar(0, 0, 255), 1.5);
+        CvDrawingUtils::draw3dAxis(img, markers_[marker_idx], camera_params_, 2);
+    }
+    else
+    {
+        MLOG_WARN(EventLogger::M_SLAM, "@MarkerFinder::isMarkerFound: "
+                  "marker %i not found.\n",
+                  id);
+    }
 }

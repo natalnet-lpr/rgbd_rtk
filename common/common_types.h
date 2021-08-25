@@ -313,11 +313,11 @@ struct Keyframe
     // Pose of the keyframe (in the global reference frame)
     Eigen::Affine3f pose_;
 
+    // Optimized pose of the keyframe (in the global reference frame)
+    Eigen::Affine3f opt_pose_;
+
     // RGB image of the keyframe
     cv::Mat img_;
-
-    // Keyframe name
-    std::string name_;
 
     // RGB-D point cloud of the keyframe (in local reference frame)
     pcl::PointCloud<PointT>::Ptr local_cloud_;
@@ -325,7 +325,10 @@ struct Keyframe
     // Keypoints detected in the keyframe
     std::vector<cv::Point2f> keypoints_;
 
-    Keyframe() : idx_(0), pose_(Eigen::Affine3f::Identity()), local_cloud_(new pcl::PointCloud<PointT>) {}
+    Keyframe() : idx_(0), pose_(Eigen::Affine3f::Identity()),
+                 opt_pose_(Eigen::Affine3f::Identity()),
+                 local_cloud_(new pcl::PointCloud<PointT>)
+    {}
 };
 
 #endif /* COMMON_TYPES_H_ */

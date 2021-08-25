@@ -1,4 +1,4 @@
-/* 
+/*
  *  Software License Agreement (BSD License)
  *
  *  Copyright (c) 2016-2021, Natalnet Laboratory for Perceptual Robotics
@@ -11,11 +11,12 @@
  *
  *  2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and
  *     the following disclaimer in the documentation and/or other materials provided with the distribution.
- * 
+ *
  *  3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or
  *     promote products derived from this software without specific prior written permission.
- * 
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, *  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, *
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
  *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
  *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
@@ -27,19 +28,19 @@
  *  Bruno Silva
  */
 
+#include <Eigen/Geometry>
 #include <cstdio>
 #include <cstdlib>
-#include <Eigen/Geometry>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-#include <geometry.h>
 #include <config_loader.h>
-#include <rgbd_loader.h>
 #include <event_logger.h>
+#include <geometry.h>
 #include <optical_flow_visual_odometry.h>
 #include <reconstruction_visualizer.h>
+#include <rgbd_loader.h>
 
 using namespace std;
 using namespace cv;
@@ -48,7 +49,7 @@ using namespace cv;
  * This program shows the use of camera pose estimation using optical flow visual odometry.
  * @param .yml config. file (from which index_file is used)
  */
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
 	EventLogger& logger = EventLogger::getInstance();
 	logger.setVerbosityLevel(EventLogger::L_DEBUG);
@@ -120,7 +121,7 @@ int main(int argc, char **argv)
 
 		if(is_kf)
 		{
-			Keyframe kf = vo.getLastKeyframe();
+			Keyframe kf = vo.createKeyframe(i);
 			visualizer.addQuantizedPointCloud(kf.local_cloud_, 0.02, kf.pose_);
 			//visualizer.addPointCloud(kf.local_cloud_, kf.pose_);
 		}

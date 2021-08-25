@@ -211,10 +211,17 @@ void FeatureTracker::initialize_logger(const string& timing_file_name, const str
 
 FeatureTracker::TRACKER_TYPE FeatureTracker::strToType(const std::string &s)
 {
+	MLOG_DEBUG(EventLogger::M_TRACKING,
+               "@FeatureTracker::strToType "
+               "returning constant for %s\n",
+               s.c_str());
+
 	if(s == "KLTTracker")
 		return FeatureTracker::TRACKER_TYPE::TRACKER_KLT;
-	if(s == "KLTTWTracker")
+	else if(s == "KLTTWTracker")
 		return FeatureTracker::TRACKER_TYPE::TRACKER_KLTTW;
-	if(s == "WBTracker")
+	else if(s == "WBTracker")
 		return FeatureTracker::TRACKER_TYPE::TRACKER_WIDEBASELINE;
+	else
+		return FeatureTracker::TRACKER_TYPE::TRACKER_UNKNOWN;
 }

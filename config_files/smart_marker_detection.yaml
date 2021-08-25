@@ -4,7 +4,7 @@ camera_calibration_file: "/path/to/dataset/calibration_file"
 index_file: "/path/to/sequence/index" #sequence must have at least one AR marker
 
 # tracker parameters
-type: KLTTracker
+type: "KLTTracker" #or KLTTWTracker
 min_pts: 600
 max_pts: 5000
 log_stats: 0

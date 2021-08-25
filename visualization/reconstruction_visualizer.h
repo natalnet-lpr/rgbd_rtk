@@ -1,42 +1,32 @@
 /*
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016-2020, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2021, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
- *  Redistribution and use in source and binary forms, with or without modification, are permitted
- * provided
+ *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
  *
- *  1. Redistributions of source code must retain the above copyright notice, this list of
- * conditions and
+ *  1. Redistributions of source code must retain the above copyright notice, this list of conditions and
  *     the following disclaimer.
  *
- *  2. Redistributions in binary form must reproduce the above copyright notice, this list of
- * conditions and
- *     the following disclaimer in the documentation and/or other materials provided with the
- * distribution.
+ *  2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and
+ *     the following disclaimer in the documentation and/or other materials provided with the distribution.
  *
- *  3. Neither the name of the copyright holder nor the names of its contributors may be used to
- * endorse or
+ *  3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or
  *     promote products derived from this software without specific prior written permission.
  *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, *  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL,
- *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR
- *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY,
- *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, *
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *  Authors:
  *
  *  Bruno Silva
- *  Rodrigo Sarmento Xavier
+ *  Rodrigo Xavier
  */
 
 #ifndef INCLUDE_RECONSTRUCTION_VISUALIZER_H_
@@ -63,9 +53,6 @@ private:
 
     // Number of reference frames added to the visualizer
     int num_ref_frames_;
-
-    // Number of keyframes added to the visualizer
-    int num_keyframes_;
 
     // Number of edged added to the visualizer
     int num_edges_;
@@ -99,17 +86,17 @@ public:
      */
     void addCameraPath(const Eigen::Affine3f& pose);
 
-    /** Adds an edge from the graph to the PCLVisualizer as an arrow.
-     * @param vertix_from position
-     * @param vertix_to position
+    /**
+     * Adds an edge from the graph to the PCLVisualizer as an arrow.
+     * @param vertex_from position
+     * @param vertex_to position
      * @param name name of the vertex
      * @param color of the arrow(blue as default)
      */
-    void addEdge(
-        const Eigen::Vector3d& vertix_from,
-        const Eigen::Vector3d& vertix_to,
-        const std::string& name,
-        const Eigen::Vector3f& color = Eigen::Vector3f(0.0, 0.0, 1.0));
+    void addEdge(const Eigen::Vector3d& vertex_from,
+                 const Eigen::Vector3d& vertex_to,
+                 const std::string& name,
+                 const Eigen::Vector3f& color = Eigen::Vector3f(0.0, 0.0, 1.0));
 
     /**
      * Adds a ref. frame with the given pose to the 3D reconstruction
@@ -119,29 +106,27 @@ public:
     void addReferenceFrame(const Eigen::Affine3f& pose, const std::string& text);
 
     /**
-     * Adds a keyFrame with the given pose to the 3D reconstruction
-     * @param kf Keyframe to be added
-     * @param text text of the pose in visualization
-     */
-    void addKeyFrame(const Keyframe kf, const std::string& text);
-
-    /**
      * Adds a point cloud with the given pose to the 3D reconstruction
-     * @param cloud PointCloud to be added
-     * @param pose pose of the 3d Reconstruction
+     * @param cloud point cloud
+     * @param pose pose of the point cloud
+     * @param cloud_name name of the point cloud
      */
-    void addPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud, const Eigen::Affine3f& pose);
+    void addPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud,
+                       const Eigen::Affine3f& pose,
+                       const std::string& cloud_name = "");
 
     /**
-     * Receives a point cloud and quantize it (uniform sampling) with the given pose to the 3D
-     * reconstruction
-     * @param cloud point cloud after quantization
-     * @param radius radius search of uniform sampling
+     * Adds a quantized (uniformly sampled) point cloud
+     * to the 3D reconstruction
+     * @param cloud point cloud
+     * @param radius radius of the uniform sampling
      * @param pose of the point cloud
+     * @param cloud_name name of the point cloud
      */
-    void
-    addQuantizedPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud, const float& radius, const Eigen::Affine3f& pose);
-
+    void addQuantizedPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud,
+                                const float &radius,
+                                const Eigen::Affine3f &pose,
+                                const std::string& cloud_name = "");
     /**
      * Removes an edge from the PCLVisualizer.
      * @param name of the edge to be removed as a Edge(common_types.h)
@@ -153,32 +138,44 @@ public:
      * @param pose pose of the frame
      * @param text pose text in visualization ("cam" as default)
      */
-    void viewReferenceFrame(const Eigen::Affine3f& pose, const std::string& text = "cam");
+    void viewReferenceFrame(const Eigen::Affine3f& pose,
+                            const std::string& text = "cam");
 
     /**
      * Views a point cloud in the 3D reconstruction
-     * @param cloud PointCloud
-     * @param pose pose of the 3d Reconstruction
+     * @param cloud point cloud
+     * @param pose pose of the point cloud
+     * @param cloud_name name of the point cloud
      */
-    void viewPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud, const Eigen::Affine3f& pose);
+    void viewPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud,
+                        const Eigen::Affine3f& pose,
+                        const std::string& cloud_name = "cloud");
 
     /**
-     * Views a point cloud after quantization (uniform sampling) with the given pose to the 3D
-     * reconstruction
-     * @param cloud point cloud after quantization
-     * @param radius radius search of uniform sampling
+     * Views a quantized (uniformly sampled) point cloud
+     * in the 3D reconstruction
+     * @param cloud point cloud
+     * @param radius radius of the uniform sampling
      * @param pose of the point cloud
+     * @param cloud_name name of the point cloud
      */
-    void viewQuantizedPointCloud(
-        const pcl::PointCloud<PointT>::Ptr& cloud,
-        const float& radius,
-        const Eigen::Affine3f& pose);
+    void viewQuantizedPointCloud(const pcl::PointCloud<PointT>::Ptr& cloud,
+                                 const float& radius,
+                                 const Eigen::Affine3f& pose,
+                                 const std::string& cloud_name = "cloud");
 
     /**
-     * Updates all keyframes (ref. frames and point clouds).
-     * @param keyframes vector of keyframes
+     * Views a given keyframe in the 3D reconstruction
+     * @param keyframe: keyframe
      */
-    void updateKeyframes(const std::vector<Keyframe>& keyframes);
+    void viewKeyframe(const Keyframe& kf);
+
+    /**
+     * Updates several keyframes (given as a std::map)
+     * in the 3D reconstruction.
+     * @param keyframes: std::map of pairs (id -> keyframe)
+     */
+    void viewKeyframes(const std::map<size_t, Keyframe> &keyframes);
 
     /**
      *Sets the virtual camera position in the virtual world
@@ -203,9 +200,32 @@ public:
      */
     void close();
 
+    /**
+     * Removes everything previously added to
+     * the visualizer.
+     */
     void resetVisualizer();
 
-    void removeAllVertexesAndEdges();
+    /**
+     * Removes all point clouds previously added to
+     * the visualizer.
+     */
+    void removePointClouds();
+
+    /**
+     * DEPRECATED (TRY NOT TO USE THIS FUNCTION)
+     * Adds a keyframe to the 3D reconstruction
+     * @param kf: keyframe to be added
+     */
+    void addKeyframe(const Keyframe& kf);
+
+    /**
+     * DEPRECATED (TRY NOT TO USE THIS FUNCTION)
+     * Updates a given keyframe.
+     * @param keyframe: keyframe to be updated
+     * (assumed to be with modified pose, pointcloud, keypoints, etc.)
+     */
+    void updateKeyframe(const Keyframe& kf);
 };
 
 #endif /* INCLUDE_RECONSTRUCTION_VISUALIZER_H_ */

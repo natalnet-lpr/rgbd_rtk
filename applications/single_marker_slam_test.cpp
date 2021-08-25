@@ -23,7 +23,7 @@
  *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  *  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  Author:
+ *  Authors:
  *
  *  Rodrigo Sarmento
  *  Bruno Silva
@@ -51,370 +51,95 @@
 #include <optical_flow_visual_odometry.h>
 #include <reconstruction_visualizer.h>
 #include <rgbd_loader.h>
+#include <pose_graph_slam.h>
 #include <single_marker_slam.h>
 
 using namespace std;
 using namespace cv;
 using namespace aruco;
+using namespace g2o;
 
-struct Pose
-{
-    int id;
-    float x;
-    float y;
-    float z;
-    float x_rotation;
-    float y_rotation;
-    float z_rotation;
-    float w_rotation;
-};
-
-struct ConfigParams
-{
-    string index_file;
-    string camera_calibration_file;
-    string aruco_dic;
-    float aruco_marker_size;
-    float aruco_max_distance = 4;
-    float minimum_distance_between_keyframes = 0.05;
-    int local_optimization_threshold = 20; // How many loop edges to make a optimization
-};
-Eigen::Vector3d edge_from, edge_to;
-string edge_name;
-
-void addOptimizedEdges(SingleMarkerSlam& single_marker_slam, ReconstructionVisualizer& visualizer);
-void removeEdges(SingleMarkerSlam& single_marker_slam, ReconstructionVisualizer& visualizer);
-bool isOrientationCorrect(Eigen::Affine3f first, Eigen::Affine3f newone);
-
-/**
- * Adds vertix and edges in single_marker_slam and visualizer
- * @param new_keyframe_pose new keyframe that should be added
- * @param last_keyframe_pose_odometry the last keyframe added in graph, this is update this in this function
- * @param last_keyframe_pose_aruco the last keyframe added in graph, this is update this in this function
- * @param first_keyframe_pose the first keyframe
- * @param num_keyframes number of keyframes in graph, this is update in this function
- * @param single_marker_slam single_marker_slam reference
- * @param visualizer visualizer reference
- * @param is_loop_closure if the vertex added is a loop_closure as well
- */
-void addVertixAndEdge(
-    Eigen::Affine3f cam_pose,
-    Eigen::Affine3f& last_keyframe_pose_odometry,
-    Eigen::Affine3f& last_keyframe_pose_aruco,
-    Eigen::Affine3f aruco_pose,
-    int& num_keyframes,
-    SingleMarkerSlam& single_marker_slam,
-    ReconstructionVisualizer& visualizer,
-    bool is_loop_closure,
-    ConfigParams config_params);
-/**
- * This program shows the use of camera pose estimation using optical flow visual odometry.
- * @param .yml config. file (from which index_file is used)
- */
 int main(int argc, char** argv)
 {
-    int num_keyframes = 0;
-    bool slam_solver_started = false;
-    bool marker_found;
-    float ransac_thr;
-    ConfigParams config_params;
     EventLogger& logger = EventLogger::getInstance();
-    logger.setVerbosityLevel(EventLogger::L_ERROR);
+    logger.activateLoggingOnlyFor(EventLogger::M_SLAM);
+    logger.activateLoggingFor(EventLogger::M_COMMON);
+    logger.activateLoggingFor(EventLogger::M_VISUAL_ODOMETRY);
+    logger.setVerbosityLevel(EventLogger::L_DEBUG);
 
-    ReconstructionVisualizer visualizer;
-    SingleMarkerSlam single_marker_slam;
-    Intrinsics intr(0);
-    MarkerFinder marker_finder;
     RGBDLoader loader;
-    FeatureTracker::Parameters tracking_param;
+    ReconstructionVisualizer visualizer;
+    FeatureTracker::Parameters tracker_param;
+    MarkerFinder::Parameters mf_param;
+    SingleMarkerSLAM::Parameters slam_param;
+    string index_file;
     Mat frame, depth;
-    Eigen::Affine3f last_keyframe_pose_odometry; // Last odometry keyframe
-    Eigen::Affine3f last_keyframe_pose_aruco;    // Last Aruco Keyframe
-    Eigen::Affine3f first_aruco_pose;            // First Keyframe
+    float ransac_thr;
 
     // Slam solver will start when the marker is found for the first time
     if (argc != 2)
     {
-        logger.print(EventLogger::L_ERROR, "[slam_solver_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
+        logger.print(EventLogger::L_ERROR, "[single_marker_slam_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
         exit(0);
     }
 
     ConfigLoader param_loader(argv[1]);
-    //file parameters
-    param_loader.checkAndGetString("index_file", config_params.index_file);
+
+    param_loader.checkAndGetString("index_file", index_file);
     //tracker parameters
-    param_loader.checkAndGetString("tracker_type", tracking_param.type_);
-    param_loader.checkAndGetInt("min_pts", tracking_param.min_pts_);
-    param_loader.checkAndGetInt("max_pts", tracking_param.max_pts_);
-    param_loader.checkAndGetBool("log_stats", tracking_param.log_stats_);
+    param_loader.checkAndGetString("tracker_type", tracker_param.type_);
+    param_loader.checkAndGetInt("min_pts", tracker_param.min_pts_);
+    param_loader.checkAndGetInt("max_pts", tracker_param.max_pts_);
+    param_loader.checkAndGetBool("log_stats", tracker_param.log_stats_);
     //motion estimator parameters
     param_loader.checkAndGetFloat("ransac_distance_threshold", ransac_thr);
     //marker detection parameters
-    param_loader.checkAndGetFloat("aruco_marker_size", config_params.aruco_marker_size);
-    param_loader.checkAndGetFloat("aruco_max_distance", config_params.aruco_max_distance);
-    param_loader.checkAndGetString("camera_calibration_file", config_params.camera_calibration_file);
-    param_loader.checkAndGetString("aruco_dic", config_params.aruco_dic);
+    param_loader.checkAndGetString("camera_calibration_file", mf_param.calib_file_);
+    param_loader.checkAndGetFloat("aruco_marker_size", mf_param.marker_size_);
+    param_loader.checkAndGetFloat("aruco_max_distance", mf_param.max_marker_dist_);
+    param_loader.checkAndGetString("aruco_dic", mf_param.aruco_dict_);
     //slam with markers parameters
-    param_loader.checkAndGetInt("local_optimization_threshold", config_params.local_optimization_threshold);
-    param_loader.checkAndGetFloat(
-        "minimum_distance_between_keyframes", config_params.minimum_distance_between_keyframes);
+    slam_param.opt_iterations_ = 10; //TODO: load this parameter from file
+    param_loader.checkAndGetInt("marker_id",
+                                slam_param.marker_id_);
+    param_loader.checkAndGetInt("optimization_loop_closures",
+                                slam_param.opt_loop_closures_);
+    param_loader.checkAndGetFloat("minimum_distance_between_keyframes",
+                                  slam_param.min_dist_bw_keyframes_);
 
-    OpticalFlowVisualOdometry vo(intr, tracking_param, ransac_thr);
+    SingleMarkerSLAM sm_slam(tracker_param, mf_param, slam_param);
 
-    marker_finder.markerParam(
-        config_params.camera_calibration_file, config_params.aruco_marker_size, config_params.aruco_dic);
+    loader.processFile(index_file);
 
-    loader.processFile(config_params.index_file);
-
-    // Compute visual odometry on each image
+    // Compute SLAM using a single marker with each image
     for (int i = 0; i < loader.num_images_; i++)
     {
+        MLOG_DEBUG(EventLogger::M_SLAM, "@single_marker_slam_test: processing image %i\n", i);
+
         // Load RGB-D image
         loader.getNextImage(frame, depth);
 
-        // If aruco is not found yet
-        if (slam_solver_started == false)
-        {
-            marker_finder.detectMarkersPoses(frame, Eigen::Affine3f::Identity(), config_params.aruco_max_distance);
-            if (marker_finder.markers_.size() > 0)
-            {
-                if (250 == marker_finder.markers_[i].id)
-                {
-                    // If we found the mark for the first time, we will add the marker as the origin
-                    // of the system Then we add the first camera pose related to the marker pose.
-                    // Getting Camera Pose
+        // Process the RGB-D image using the supplied marker id as reference
+        sm_slam.processImage(frame, depth, slam_param.marker_id_); 
 
-                    vo.pose_ = marker_finder.marker_poses_[i].inverse();
-                    first_aruco_pose = marker_finder.marker_poses_[i];
-                    last_keyframe_pose_odometry = vo.pose_;
-                    last_keyframe_pose_aruco = vo.pose_;
-
-                    // Adding first pose to single_marker_slam and visualizer
-                    single_marker_slam.addVertexAndEdge(vo.pose_, num_keyframes);
-                    visualizer.addReferenceFrame(vo.pose_, to_string(num_keyframes));
-                    num_keyframes++; // Increment the number of keyframes found
-                    // Set slam solver started to true since we found the marker for the first time
-                    slam_solver_started = true;
-                }
-            }
-            continue;
-        }
-
-        // If we have already found the marker we start the keyframe process
-        else
-        {
-            // Reset marker finding boolean
-            marker_found = false;
-
-            marker_finder.detectMarkersPoses(frame, Eigen::Affine3f::Identity(), config_params.aruco_max_distance);
-            for (size_t j = 0; j < marker_finder.markers_.size(); j++)
-            {
-
-                marker_finder.markers_[j].draw(frame, Scalar(0, 0, 255), 1.5);
-                CvDrawingUtils::draw3dAxis(frame, marker_finder.markers_[j], marker_finder.camera_params_, 2);
-
-                if (250 == marker_finder.markers_[j].id)
-                {
-                    if (isOrientationCorrect(first_aruco_pose, marker_finder.marker_poses_[j]))
-                    {
-                        addVertixAndEdge(
-                            vo.pose_,
-                            last_keyframe_pose_odometry,
-                            last_keyframe_pose_aruco,
-                            marker_finder.marker_poses_[j],
-                            num_keyframes,
-                            single_marker_slam,
-                            visualizer,
-                            true,
-                            config_params);
-                        marker_found = true;
-                    }
-                }
-            }
-            // Estimate current camera pose
-            bool is_kf = vo.computeCameraPose(frame, depth);
-
-            // View tracked points
-            for (size_t k = 0; k < vo.tracker_ptr_->curr_pts_.size(); k++)
-            {
-                Point2i pt1 = vo.tracker_ptr_->prev_pts_[k];
-                Point2i pt2 = vo.tracker_ptr_->curr_pts_[k];
-                Scalar color;
-
-                is_kf ? color = CV_RGB(255, 0, 0) : color = CV_RGB(0, 0, 255);
-
-                circle(frame, pt1, 1, color, -1);
-                circle(frame, pt2, 3, color, -1);
-                line(frame, pt1, pt2, color);
-            }
-
-            visualizer.viewReferenceFrame(vo.pose_);
-            visualizer.viewQuantizedPointCloud(vo.curr_dense_cloud_, 0.02, vo.pose_);
-            visualizer.addQuantizedPointCloud(vo.curr_dense_cloud_, 0.05, vo.pose_);
-
-            // If we found a keyframe we will added to slam solver and visualizer
-            if (is_kf and !marker_found)
-            {
-                addVertixAndEdge(
-                    vo.pose_,
-                    last_keyframe_pose_odometry,
-                    last_keyframe_pose_aruco,
-                    Eigen::Affine3f::Identity(),
-                    num_keyframes,
-                    single_marker_slam,
-                    visualizer,
-                    false,
-                    config_params);
-            }
-        }
-
+        // Update visualization
+        visualizer.viewReferenceFrame(sm_slam.visualOdometryPose());
+        visualizer.viewReferenceFrame(sm_slam.markerPose(), "AR_pose");
+        visualizer.viewQuantizedPointCloud(sm_slam.visualOdometryPointCloud(), 0.02, sm_slam.visualOdometryPose());
+        visualizer.viewKeyframes(sm_slam.keyframes());
         visualizer.spinOnce();
+
         imshow("Image view", frame);
-        // imshow("Depth view", depth);
-        char key = waitKey(10);
+
+        char key = waitKey(1);
         if (key == 27 || key == 'q' || key == 'Q')
         {
-            logger.print(EventLogger::L_INFO, "[slam_solver_test.cpp] Exiting\n", argv[0]);
+            logger.print(EventLogger::L_INFO, "[single_marker_slam_test.cpp] Exiting.\n");
             break;
         }
     }
 
-    single_marker_slam.optimizeGraph(10);
-    addOptimizedEdges(single_marker_slam, visualizer);
     visualizer.spin();
+
     return 0;
-}
-
-void addVertixAndEdge(
-    Eigen::Affine3f cam_pose,
-    Eigen::Affine3f& last_keyframe_pose_odometry,
-    Eigen::Affine3f& last_keyframe_pose_aruco,
-    Eigen::Affine3f aruco_pose,
-    int& num_keyframes,
-    SingleMarkerSlam& single_marker_slam,
-    ReconstructionVisualizer& visualizer,
-    bool is_loop_closure,
-    ConfigParams config_params)
-
-{
-    double x = pow(cam_pose(0, 3) - last_keyframe_pose_odometry(0, 3), 2);
-    double y = pow(cam_pose(1, 3) - last_keyframe_pose_odometry(1, 3), 2);
-    double z = pow(cam_pose(2, 3) - last_keyframe_pose_odometry(2, 3), 2);
-
-    // We will only add a new keyframe if they have at least 5cm of distance between each other
-    if (sqrt(x + y + z) >= config_params.minimum_distance_between_keyframes and is_loop_closure == false)
-    {
-        // Adding keyframe in visualizer
-        visualizer.viewReferenceFrame(cam_pose, to_string(num_keyframes));
-        // Add the keyframe and creating an edge to the last vertex
-        single_marker_slam.addVertexAndEdge(cam_pose, num_keyframes);
-        single_marker_slam.getEdge(
-            single_marker_slam.num_vertices_ - 2, single_marker_slam.num_vertices_ - 1, edge_from, edge_to, edge_name);
-        visualizer.addEdge(edge_from, edge_to, edge_name);
-
-        last_keyframe_pose_odometry = cam_pose;
-        num_keyframes++; // Increment the number of keyframes found
-    }
-    // If the keyframe is a loop closure we will create a loop closing edge
-    x = pow(cam_pose(0, 3) - last_keyframe_pose_aruco(0, 3), 2);
-    y = pow(cam_pose(1, 3) - last_keyframe_pose_aruco(1, 3), 2);
-    z = pow(cam_pose(2, 3) - last_keyframe_pose_aruco(2, 3), 2);
-    if (sqrt(x + y + z) >= config_params.minimum_distance_between_keyframes and is_loop_closure == true)
-    {
-        // Adding keyframe in visualizer
-        visualizer.viewReferenceFrame(cam_pose, to_string(num_keyframes));
-        // Add the keyframe and creating an edge to the last vertex
-        single_marker_slam.addVertexAndEdge(cam_pose, num_keyframes);
-        single_marker_slam.getEdge(
-            single_marker_slam.num_vertices_ - 2, single_marker_slam.num_vertices_ - 1, edge_from, edge_to, edge_name);
-        visualizer.addEdge(edge_from, edge_to, edge_name);
-
-        // Adding the loop closing edge that is an edge from this vertex to the initial
-        // If we want to change the system coord from A to B -> A.inverse * B
-        // A = cam pose no sistema de coordenadas do Aruco = P
-        // B = origem
-        single_marker_slam.addLoopClosingEdge(cam_pose.inverse() * aruco_pose, num_keyframes);
-        single_marker_slam.getEdge(single_marker_slam.num_vertices_ - 1, 0, edge_from, edge_to, edge_name);
-        visualizer.addEdge(edge_from, edge_to, edge_name, Eigen::Vector3f(1.0, 0.0, 0.0));
-
-        single_marker_slam.loop_closure_edges_name_.push_back(
-            edge_name); // Saving the edge name of the loop closure edges
-        // Make a optimization in the graph from every 20 loop edges
-        if (single_marker_slam.num_loop_edges_ % config_params.local_optimization_threshold == 0)
-        {
-            removeEdges(single_marker_slam, visualizer);
-            visualizer.removeAllVertexesAndEdges();
-
-            single_marker_slam.optimizeGraph(10);
-            addOptimizedEdges(single_marker_slam, visualizer);
-        }
-
-        last_keyframe_pose_aruco = cam_pose;
-        num_keyframes++; // Increment the number of keyframes found
-    }
-}
-
-/**
- * Check if the orientation of the aruco pose found is correct, if the orientation changes a lot related with the first
- * one detected, we ignore
- * @param first First pose of aruco
- * @param new_pose new aruco pose
- */
-bool isOrientationCorrect(Eigen::Affine3f first, Eigen::Affine3f new_pose)
-{
-    double angle =
-        acos((first(0, 2) * new_pose(0, 2)) + (first(1, 2) * new_pose(1, 2)) + (first(2, 2) * new_pose(2, 2))) * 180.0 /
-        3.1315;
-
-    return angle > 10 ? false : true;
-}
-
-/**
- * Remove edges from visualizer
- * @param single_marker_slam
- * @param visualizer
- */
-void removeEdges(SingleMarkerSlam& single_marker_slam, ReconstructionVisualizer& visualizer)
-{
-    // Removing the edges
-    for (signed i = 0; i < single_marker_slam.num_vertices_; i++)
-    {
-        single_marker_slam.getEdge(i, i + 1, edge_from, edge_to, edge_name);
-        visualizer.removeEdge(edge_name);
-    }
-    for (size_t i = 0; i < single_marker_slam.loop_closure_edges_name_.size(); i++)
-    {
-        visualizer.removeEdge(single_marker_slam.loop_closure_edges_name_[i]);
-    }
-}
-
-/**
- * Iterate over the number of vertices to add odometry optimization edges
- * and Iterate over the loop edges to add loop edges odometry
- * @param single_marker_slam
- * @param visualizer
- */
-void addOptimizedEdges(SingleMarkerSlam& single_marker_slam, ReconstructionVisualizer& visualizer)
-{
-    // Iterate over number of vertices and get the optimized edge and adding to visualizer
-    for (signed i = 0; i < single_marker_slam.num_vertices_ - 1; i++)
-    {
-        single_marker_slam.getOptimizedEdge(i, i + 1, edge_from, edge_to, edge_name);
-        visualizer.addEdge(edge_from, edge_to, edge_name, Eigen::Vector3f(1.0, 0.0, 1.0));
-    }
-    // Iterate over number of vertices and get the optimized loop edge and adding to visualizer
-    for (size_t i = 0; i < single_marker_slam.loop_closure_edges_name_.size() - 1; i++)
-    {
-        // name of edge is saved as "edge_fromid_toid"
-        string copy =
-            single_marker_slam.loop_closure_edges_name_[i].erase(0, 5); // Removing the first 5 strings "edge_"
-
-        string from_id = copy.substr(0, copy.find('_'));
-        string to_id = copy.substr(copy.find('_') + 1, 1);
-        if (from_id != "" && to_id != "")
-        {
-            single_marker_slam.getOptimizedEdge(stoi(from_id), stoi(to_id), edge_from, edge_to, edge_name);
-            visualizer.addEdge(edge_from, edge_to, edge_name, Eigen::Vector3f(0.0, 1.0, 1.0));
-        }
-    }
 }

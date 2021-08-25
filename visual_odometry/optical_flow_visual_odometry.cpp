@@ -1,4 +1,4 @@
-/* 
+/*
  *  Software License Agreement (BSD License)
  *
  *  Copyright (c) 2016-2021, Natalnet Laboratory for Perceptual Robotics
@@ -11,11 +11,12 @@
  *
  *  2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and
  *     the following disclaimer in the documentation and/or other materials provided with the distribution.
- * 
+ *
  *  3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or
  *     promote products derived from this software without specific prior written permission.
- * 
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, *  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, *
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
  *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
  *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
@@ -53,48 +54,45 @@ void OpticalFlowVisualOdometry::writePoseToFile(const std::string& time_stamp)
 								  	   << q.w() << "\n";
 }
 
-void OpticalFlowVisualOdometry::addKeyFrame(const Mat& rgb)
-{
-    Keyframe kf;
-    kf.idx_ = frame_idx_;
-    kf.pose_ = pose_;
-    rgb.copyTo(kf.img_);
-    *kf.local_cloud_ = *curr_dense_cloud_;
-    kf.keypoints_.resize(tracker_ptr_->curr_pts_.size());
-    copy(tracker_ptr_->curr_pts_.begin(), tracker_ptr_->curr_pts_.end(), kf.keypoints_.begin());
-
-    MLOG_DEBUG(EventLogger::M_VISUAL_ODOMETRY, "@OpticalFlowVisualOdometry::addKeyFrame: \
-                                                adding %lu as keyframe\n", frame_idx_);
-    
-    keyframes_.insert(pair<size_t, Keyframe>(kf.idx_, kf));
-}
-
 OpticalFlowVisualOdometry::OpticalFlowVisualOdometry(const Intrinsics& intr,
                                                      const FeatureTracker::Parameters& tracking_param,
                                                      const float& ransac_thr,
                                                      const Eigen::Affine3f& initialPose):
-motion_estimator_(intr, ransac_thr, 0), frame_idx_(0)
+frame_idx_(0), motion_estimator_(intr, ransac_thr, 0)
 {
     pose_ = initialPose;
 
     prev_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
     curr_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
 
+    MLOG_DEBUG(EventLogger::M_VISUAL_ODOMETRY,
+               "@OpticalFlowVisualOdometry: "
+               "building with tracker %s\n",
+               tracking_param.type_.c_str());
+
     if(FeatureTracker::strToType(tracking_param.type_) == FeatureTracker::TRACKER_KLT)
     {
         tracker_ptr_ = cv::Ptr<FeatureTracker>(new KLTTracker(tracking_param));
     }
-    if(FeatureTracker::strToType(tracking_param.type_) == FeatureTracker::TRACKER_KLTTW)
+    else if(FeatureTracker::strToType(tracking_param.type_) == FeatureTracker::TRACKER_KLTTW)
     {
         tracker_ptr_ = cv::Ptr<FeatureTracker>(new KLTTWTracker(tracking_param));
+    }
+    else
+    {
+        MLOG_ERROR(EventLogger::M_VISUAL_ODOMETRY, "@OpticalFlowVisualOdometry: "
+                                                   "unknown feature tracker "
+                                                   "informed: %s\n",
+                                                   tracking_param.type_.c_str());
+        exit(-1);
     }
 
     poses_file_.open("optical_flow_visual_odometry_poses.txt");
     if (!poses_file_.is_open())
     {
-        MLOG_ERROR(EventLogger::M_VISUAL_ODOMETRY, "@OpticalFlowVisualOdometry: \
-                                                    there is a problem opening \
-                                                    the file with the computed poses.\n");
+        MLOG_ERROR(EventLogger::M_VISUAL_ODOMETRY, "@OpticalFlowVisualOdometry: "
+                                                   "there is a problem opening "
+                                                   "the file with the computed poses.\n");
         exit(-1);
     }
 }
@@ -103,7 +101,14 @@ bool OpticalFlowVisualOdometry::computeCameraPose(const cv::Mat& rgb, const cv::
 {
     bool is_kf;
 
+    MLOG_INFO(EventLogger::M_VISUAL_ODOMETRY, "Processing frame %lu\n",
+              frame_idx_);
+
     Eigen::Affine3f trans = Eigen::Affine3f::Identity();
+
+    // Copy RGB-D data to internal buffers
+    rgb.copyTo(rgb_);
+    depth.copyTo(depth_);
 
     // Get dense point cloud from RGB-D data
     *curr_dense_cloud_ = getPointCloud(rgb, depth, motion_estimator_.intr_);
@@ -111,14 +116,13 @@ bool OpticalFlowVisualOdometry::computeCameraPose(const cv::Mat& rgb, const cv::
     // Track keypoints using KLT optical flow
     is_kf = tracker_ptr_->track(rgb);
 
-    // If a new keyframe is found, add it to the internal buffer
-    if (is_kf) addKeyFrame(rgb);
-
     // Estimate motion between the current and the previous point clouds
     if (frame_idx_ > 0)
     {
-        trans =
-            motion_estimator_.estimate(tracker_ptr_->prev_pts_, prev_dense_cloud_, tracker_ptr_->curr_pts_, curr_dense_cloud_);
+        trans = motion_estimator_.estimate(tracker_ptr_->prev_pts_,
+                                           prev_dense_cloud_,
+                                           tracker_ptr_->curr_pts_,
+                                           curr_dense_cloud_);
         pose_ = pose_ * trans;
     }
 
@@ -134,15 +138,15 @@ bool OpticalFlowVisualOdometry::computeCameraPose(const cv::Mat& rgb, const cv::
     return is_kf;
 }
 
-Keyframe OpticalFlowVisualOdometry::getLastKeyframe()
+Keyframe OpticalFlowVisualOdometry::createKeyframe(const size_t &kf_id)
 {
-    map<size_t, Keyframe>::iterator it;
+    Keyframe kf;
+    kf.idx_ = kf_id;
+    kf.pose_ = pose_;
+    rgb_.copyTo(kf.img_);
+    *kf.local_cloud_ = *curr_dense_cloud_;
+    kf.keypoints_.resize(tracker_ptr_->curr_pts_.size());
+    copy(tracker_ptr_->curr_pts_.begin(), tracker_ptr_->curr_pts_.end(), kf.keypoints_.begin());
 
-    it = keyframes_.end();
-
-
-    MLOG_DEBUG(EventLogger::M_VISUAL_ODOMETRY, "@OpticalFlowVisualOdometry::getLastKeyframe: \
-                                                last keyframe has id %lu\n", it->first);
-    
-    return prev(it)->second; // prev from std
+    return kf;
 }

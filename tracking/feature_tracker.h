@@ -125,6 +125,7 @@ public:
     //Most commonly used tracker types
     enum TRACKER_TYPE
     {
+        TRACKER_UNKNOWN,
         TRACKER_KLT,
         TRACKER_KLTTW,
         TRACKER_WIDEBASELINE

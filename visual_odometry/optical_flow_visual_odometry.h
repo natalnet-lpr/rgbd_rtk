@@ -46,10 +46,13 @@ class OpticalFlowVisualOdometry
 {
 private:
     // Current frame index
-    unsigned long int frame_idx_;
+    size_t frame_idx_;
 
-    // Adds a new keyframe to the internal container of keyframes
-    void addKeyFrame(const cv::Mat& rgb);
+    // Copy of the current RGB image (for Keyframe creation)
+    cv::Mat rgb_;
+
+    // Copy of the current depth image (for Keyframe creation)
+    cv::Mat depth_;
 
     // Output file computed poses
     std::ofstream poses_file_;
@@ -77,9 +80,6 @@ public:
 
     // Current camera pose
     Eigen::Affine3f pose_;
-
-    // Container with pairs idx <-> keyframe
-    std::map<size_t, Keyframe> keyframes_;
 
     /**
      * Constructs a Visual Odometry given the matrix of intrinsic parameters,
@@ -113,9 +113,14 @@ public:
     bool computeCameraPose(const cv::Mat& rgb, const cv::Mat& depth, const std::string& time_stamp = "");
 
     /**
-     * @param Keyframe return the last detected keyframe.
+     * Utility function: creates and returns a Keyframe
+     * with the given id.
+     * computeCameraPose must be called first, so
+     * the last supplied data to computeCameraPose is
+     * used to create a keyframe.
+     * @param kf_id: id of the keyframe
      */
-    Keyframe getLastKeyframe();
+    Keyframe createKeyframe(const size_t &kf_id);
 };
 
 #endif /* INCLUDE_OPTICAL_FLOW_VISUAL_ODOMETRY_H_ */

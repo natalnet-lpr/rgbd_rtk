@@ -54,7 +54,6 @@ using namespace aruco;
  * @param .yml config. file (used fields: index_file, aruco_marker_size, camera_calibration_file, aruco_max_distance)
  */
 
-bool isOrientationCorrect(Eigen::Affine3f first, Eigen::Affine3f newone);
 int main(int argc, char** argv)
 {
     EventLogger& logger = EventLogger::getInstance();
@@ -66,7 +65,6 @@ int main(int argc, char** argv)
     Intrinsics intr(0);
 
     Mat frame, depth;
-    Eigen::Affine3f first;
     float marker_size, aruco_max_distance, ransac_thr;
     string camera_calibration_file, aruco_dic, index_file;
 
@@ -93,17 +91,15 @@ int main(int argc, char** argv)
     param_loader.checkAndGetString("camera_calibration_file", camera_calibration_file);
     param_loader.checkAndGetString("aruco_dic", aruco_dic);
 
+    MarkerFinder marker_finder(camera_calibration_file, marker_size, aruco_dic);
     OpticalFlowVisualOdometry vo(intr, tracking_param, ransac_thr);
 
     visualizer.addReferenceFrame(vo.pose_, "origin");
 
-    MarkerFinder marker_finder;
-    marker_finder.markerParam(camera_calibration_file, marker_size, aruco_dic);
-
     loader.processFile(index_file);
 
     // Compute visual odometry and find markers on each image
-    for (int i = 0; i < loader.num_images_; i++)
+    for(int i = 0; i < loader.num_images_; i++)
     {
         // Load RGB-D image
         loader.getNextImage(frame, depth);
@@ -113,23 +109,12 @@ int main(int argc, char** argv)
 
         // Find ARUCO markers and compute their poses
         marker_finder.detectMarkersPoses(frame, vo.pose_, aruco_max_distance);
-        for (size_t j = 0; j < marker_finder.markers_.size(); j++)
+        for(size_t j = 0; j < marker_finder.markers_.size(); j++)
         {
-            if (250 == marker_finder.markers_[j].id)
-            {
-                if (i == 0)
-                {
-                    first = marker_finder.marker_poses_[j];
-                    if (isOrientationCorrect(first, marker_finder.marker_poses_[j]))
-                    {
-                        marker_finder.markers_[j].draw(frame, Scalar(0, 0, 255), 1.5);
-                        CvDrawingUtils::draw3dAxis(frame, marker_finder.markers_[j], marker_finder.camera_params_, 2);
-                        stringstream ss;
-                        ss << "m" << marker_finder.markers_[j].id;
-                        visualizer.viewReferenceFrame(marker_finder.marker_poses_[j], ss.str());
-                    }
-                }
-            }
+            marker_finder.markers_[j].draw(frame, Scalar(0, 0, 255), 1.5);
+            CvDrawingUtils::draw3dAxis(frame, marker_finder.markers_[j], marker_finder.camera_params_, 2);
+            string marker_name = "m" + to_string(marker_finder.markers_[j].id);
+            visualizer.viewReferenceFrame(marker_finder.marker_poses_[j], marker_name);
         }
 
         if (i == 0) visualizer.addReferenceFrame(vo.pose_, "origin");
@@ -153,12 +138,4 @@ int main(int argc, char** argv)
     visualizer.close();
 
     return 0;
-}
-bool isOrientationCorrect(Eigen::Affine3f first, Eigen::Affine3f new_pose)
-{
-    double angle =
-        acos((first(0, 2) * new_pose(0, 2)) + (first(1, 2) * new_pose(1, 2)) + (first(2, 2) * new_pose(2, 2))) * 180.0 /
-        3.1315;
-
-    return angle > 10 ? false : true;
 }

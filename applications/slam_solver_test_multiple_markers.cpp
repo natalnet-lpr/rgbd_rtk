@@ -48,7 +48,7 @@
 #include <optical_flow_visual_odometry.h>
 #include <reconstruction_visualizer.h>
 #include <rgbd_loader.h>
-#include <single_marker_slam.h>
+#include <pose_graph_slam.h>
 
 using namespace std;
 using namespace cv;
@@ -76,7 +76,7 @@ vector<Pose> markers_found; // List of marker structs
 void loadMarkersFound(string aruco_poses_file);
 
 /**
- * Adds vertix and edges in single_marker_slam and visualizer
+ * Adds vertex and edges in single_marker_slam and visualizer
  * @param new_keyframe_pose new keyframe that should be added
  * @param last_keyframe_pose_odometry the last keyframe added in graph, this is update this in this function
  * @param last_keyframe_pose_aruco the last keyframe added in graph, this is update this in this function
@@ -86,13 +86,13 @@ void loadMarkersFound(string aruco_poses_file);
  * @param visualizer visualizer reference
  * @param is_loop_closure if the vertex added is a loop_closure as well
  */
-void addVertixAndEdge(
+void addVertexAndEdge(
     Eigen::Affine3f cam_pose,
     Eigen::Affine3f& last_keyframe_pose_odometry,
     Eigen::Affine3f& last_keyframe_pose_aruco,
     Eigen::Affine3f aruco_pose,
     int& num_keyframes,
-    SingleMarkerSlam& single_marker_slam,
+    PoseGraphSLAM& single_marker_slam,
     ReconstructionVisualizer& visualizer,
     bool is_loop_closure);
 /**
@@ -112,8 +112,8 @@ int main(int argc, char** argv)
     EventLogger& logger = EventLogger::getInstance();
     logger.setVerbosityLevel(EventLogger::L_ERROR);
 
-    SingleMarkerSlam single_marker_slam;
-    SingleMarkerSlam slam_solver_local;
+    PoseGraphSLAM single_marker_slam;
+    PoseGraphSLAM slam_solver_local;
     ReconstructionVisualizer visualizer;
     ReconstructionVisualizer visualizer_local;
     FeatureTracker::Parameters tracking_param;
@@ -221,7 +221,7 @@ int main(int argc, char** argv)
                 // If the origin marker has been found again add a edge from cam to origin
                 if (aruco_origin_pose_uco_reference.id == marker_finder.markers_[i].id)
                 {
-                    addVertixAndEdge(
+                    addVertexAndEdge(
                         vo.pose_,
                         last_keyframe_pose_odometry,
                         last_keyframe_pose_aruco,
@@ -353,7 +353,7 @@ int main(int argc, char** argv)
             // If we found a keyframe we will added to slam solver and visualizer
             if (is_kf and !marker_found)
             {
-                addVertixAndEdge(
+                addVertexAndEdge(
                     vo.pose_,
                     last_keyframe_pose_odometry,
                     last_keyframe_pose_aruco,
@@ -381,13 +381,13 @@ int main(int argc, char** argv)
     return 0;
 }
 
-void addVertixAndEdge(
+void addVertexAndEdge(
     Eigen::Affine3f cam_pose,
     Eigen::Affine3f& last_keyframe_pose_odometry,
     Eigen::Affine3f& last_keyframe_pose_aruco,
     Eigen::Affine3f aruco_pose,
     int& num_keyframes,
-    SingleMarkerSlam& single_marker_slam,
+    PoseGraphSLAM& single_marker_slam,
     ReconstructionVisualizer& visualizer,
     bool is_loop_closure)
 

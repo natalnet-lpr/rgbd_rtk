@@ -87,10 +87,8 @@ int main(int argc, char** argv)
     intr.loadFromFile(camera_calibration_file);
     intr.setScale(1000.0); //transform zed point cloud from milimeters to meters
 
+    MarkerFinder marker_finder(camera_calibration_file, marker_size, aruco_dic);
     OpticalFlowVisualOdometry vo(intr, tracking_param, ransac_thr);
-    
-    MarkerFinder marker_finder;
-    marker_finder.markerParam(camera_calibration_file, marker_size, aruco_dic);
 
     loader.processFile(index_file);
 
