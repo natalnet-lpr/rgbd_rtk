@@ -58,12 +58,11 @@ int main(int argc, char** argv)
 
     ReconstructionVisualizer visualizer;
     RGBDLoader loader;
-    FeatureTracker::Parameters tracking_param;
+    VisualOdometry::Parameters vo_param;
     Intrinsics intr(0);
 
     string index_file;
     Mat frame, depth;
-    float ransac_thr;
     Keyframe kf_to;
     Keyframe kf_from;
     int num_keyframes = 0;
@@ -81,14 +80,15 @@ int main(int argc, char** argv)
     //file parameters
     param_loader.checkAndGetString("index_file", index_file);
     //tracker parameters
-    param_loader.checkAndGetString("tracker_type", tracking_param.type_);
-    param_loader.checkAndGetInt("min_pts", tracking_param.min_pts_);
-    param_loader.checkAndGetInt("max_pts", tracking_param.max_pts_);
-    param_loader.checkAndGetBool("log_stats", tracking_param.log_stats_);
+    param_loader.checkAndGetString("tracker_type", vo_param.tracker_param_.type_);
+    param_loader.checkAndGetInt("min_pts", vo_param.tracker_param_.min_pts_);
+    param_loader.checkAndGetInt("max_pts", vo_param.tracker_param_.max_pts_);
+    param_loader.checkAndGetBool("log_stats", vo_param.tracker_param_.log_stats_);
     //motion estimator parameters
-    param_loader.checkAndGetFloat("ransac_distance_threshold", ransac_thr);
+    param_loader.checkAndGetFloat("ransac_distance_threshold", vo_param.ransac_thr_);
+    vo_param.intr_ = Intrinsics(0); //TODO: load this parameter from file
 
-    OpticalFlowVisualOdometry vo(intr, tracking_param, ransac_thr);
+    OpticalFlowVisualOdometry vo(vo_param);
 
     loader.processFile(index_file);
 

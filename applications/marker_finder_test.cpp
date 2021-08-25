@@ -61,11 +61,11 @@ int main(int argc, char** argv)
 
     ReconstructionVisualizer visualizer;
     RGBDLoader loader;
-    FeatureTracker::Parameters tracking_param;
+    VisualOdometry::Parameters vo_param;
     Intrinsics intr(0);
 
     Mat frame, depth;
-    float marker_size, aruco_max_distance, ransac_thr;
+    float marker_size, aruco_max_distance;
     string camera_calibration_file, aruco_dic, index_file;
 
     if (argc != 2)
@@ -79,12 +79,13 @@ int main(int argc, char** argv)
     //file parameters
     param_loader.checkAndGetString("index_file", index_file);
     //tracker parameters
-    param_loader.checkAndGetString("tracker_type", tracking_param.type_);
-    param_loader.checkAndGetInt("min_pts", tracking_param.min_pts_);
-    param_loader.checkAndGetInt("max_pts", tracking_param.max_pts_);
-    param_loader.checkAndGetBool("log_stats", tracking_param.log_stats_);
+    param_loader.checkAndGetString("tracker_type", vo_param.tracker_param_.type_);
+    param_loader.checkAndGetInt("min_pts", vo_param.tracker_param_.min_pts_);
+    param_loader.checkAndGetInt("max_pts", vo_param.tracker_param_.max_pts_);
+    param_loader.checkAndGetBool("log_stats", vo_param.tracker_param_.log_stats_);
     //motion estimator parameters
-    param_loader.checkAndGetFloat("ransac_distance_threshold", ransac_thr);
+    param_loader.checkAndGetFloat("ransac_distance_threshold", vo_param.ransac_thr_);
+    vo_param.intr_ = Intrinsics(0); //TODO: load this parameter from file
     //marker detection parameters
     param_loader.checkAndGetFloat("aruco_marker_size", marker_size);
     param_loader.checkAndGetFloat("aruco_max_distance", aruco_max_distance);
@@ -92,7 +93,7 @@ int main(int argc, char** argv)
     param_loader.checkAndGetString("aruco_dic", aruco_dic);
 
     MarkerFinder marker_finder(camera_calibration_file, marker_size, aruco_dic);
-    OpticalFlowVisualOdometry vo(intr, tracking_param, ransac_thr);
+    OpticalFlowVisualOdometry vo(vo_param);
 
     visualizer.addReferenceFrame(vo.pose_, "origin");
 

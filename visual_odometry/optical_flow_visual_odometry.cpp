@@ -28,81 +28,26 @@
  *  Bruno Silva
  */
 
-#include <algorithm>
-
 #include <geometry.h>
 #include <optical_flow_visual_odometry.h>
 
 using namespace std;
 using namespace cv;
 
-void OpticalFlowVisualOdometry::writePoseToFile(const std::string& time_stamp)
+OpticalFlowVisualOdometry::OpticalFlowVisualOdometry(const VisualOdometry::Parameters &vo_param,
+                                                     const Eigen::Affine3f &initialPose):
+    VisualOdometry(vo_param, initialPose)
 {
-    Eigen::Matrix3f Rot;
-	Rot(0,0) = pose_(0,0); Rot(0,1) = pose_(0,1); Rot(0,2) = pose_(0,2);
-	Rot(1,0) = pose_(1,0); Rot(1,1) = pose_(1,1); Rot(1,2) = pose_(1,2);
-	Rot(2,0) = pose_(2,0); Rot(2,1) = pose_(2,1); Rot(2,2) = pose_(2,2);
-	
-    Eigen::Quaternionf q(Rot);
-	
-    poses_file_ << time_stamp <<  " "  << pose_(0,3) << " "
-								  	   << pose_(1,3) << " "
-								  	   << pose_(2,3) << " "
-								  	   << q.x() << " "
-								  	   << q.y() << " "
-								  	   << q.z() << " "
-								  	   << q.w() << "\n";
-}
 
-OpticalFlowVisualOdometry::OpticalFlowVisualOdometry(const Intrinsics& intr,
-                                                     const FeatureTracker::Parameters& tracking_param,
-                                                     const float& ransac_thr,
-                                                     const Eigen::Affine3f& initialPose):
-frame_idx_(0), motion_estimator_(intr, ransac_thr, 0)
-{
-    pose_ = initialPose;
-
-    prev_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
-    curr_dense_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
-
-    MLOG_DEBUG(EventLogger::M_VISUAL_ODOMETRY,
-               "@OpticalFlowVisualOdometry: "
-               "building with tracker %s\n",
-               tracking_param.type_.c_str());
-
-    if(FeatureTracker::strToType(tracking_param.type_) == FeatureTracker::TRACKER_KLT)
-    {
-        tracker_ptr_ = cv::Ptr<FeatureTracker>(new KLTTracker(tracking_param));
-    }
-    else if(FeatureTracker::strToType(tracking_param.type_) == FeatureTracker::TRACKER_KLTTW)
-    {
-        tracker_ptr_ = cv::Ptr<FeatureTracker>(new KLTTWTracker(tracking_param));
-    }
-    else
-    {
-        MLOG_ERROR(EventLogger::M_VISUAL_ODOMETRY, "@OpticalFlowVisualOdometry: "
-                                                   "unknown feature tracker "
-                                                   "informed: %s\n",
-                                                   tracking_param.type_.c_str());
-        exit(-1);
-    }
-
-    poses_file_.open("optical_flow_visual_odometry_poses.txt");
-    if (!poses_file_.is_open())
-    {
-        MLOG_ERROR(EventLogger::M_VISUAL_ODOMETRY, "@OpticalFlowVisualOdometry: "
-                                                   "there is a problem opening "
-                                                   "the file with the computed poses.\n");
-        exit(-1);
-    }
 }
 
 bool OpticalFlowVisualOdometry::computeCameraPose(const cv::Mat& rgb, const cv::Mat& depth, const std::string& time_stamp)
 {
     bool is_kf;
 
-    MLOG_INFO(EventLogger::M_VISUAL_ODOMETRY, "Processing frame %lu\n",
-              frame_idx_);
+    MLOG_INFO(EventLogger::M_VISUAL_ODOMETRY,
+              "@VisualOdometry::computeCameraPose: "
+              "processing frame %lu\n", frame_idx_);
 
     Eigen::Affine3f trans = Eigen::Affine3f::Identity();
 
@@ -113,7 +58,7 @@ bool OpticalFlowVisualOdometry::computeCameraPose(const cv::Mat& rgb, const cv::
     // Get dense point cloud from RGB-D data
     *curr_dense_cloud_ = getPointCloud(rgb, depth, motion_estimator_.intr_);
 
-    // Track keypoints using KLT optical flow
+    // Track keypoints
     is_kf = tracker_ptr_->track(rgb);
 
     // Estimate motion between the current and the previous point clouds
@@ -127,7 +72,7 @@ bool OpticalFlowVisualOdometry::computeCameraPose(const cv::Mat& rgb, const cv::
     }
 
     // Write computed odometry pose to file
-    writePoseToFile(time_stamp);
+    _writePoseToFile(time_stamp);
 
     // Let the prev. cloud in the next frame be the current cloud
     *prev_dense_cloud_ = *curr_dense_cloud_;
@@ -136,17 +81,4 @@ bool OpticalFlowVisualOdometry::computeCameraPose(const cv::Mat& rgb, const cv::
     frame_idx_++;
 
     return is_kf;
-}
-
-Keyframe OpticalFlowVisualOdometry::createKeyframe(const size_t &kf_id)
-{
-    Keyframe kf;
-    kf.idx_ = kf_id;
-    kf.pose_ = pose_;
-    rgb_.copyTo(kf.img_);
-    *kf.local_cloud_ = *curr_dense_cloud_;
-    kf.keypoints_.resize(tracker_ptr_->curr_pts_.size());
-    copy(tracker_ptr_->curr_pts_.begin(), tracker_ptr_->curr_pts_.end(), kf.keypoints_.begin());
-
-    return kf;
 }

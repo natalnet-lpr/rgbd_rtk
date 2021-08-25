@@ -115,14 +115,14 @@ void SingleMarkerSLAM::_correctVisualOdometry()
 //     vo_correction_ = Eigen::Affine3f::Identity();
 // }
 
-SingleMarkerSLAM::SingleMarkerSLAM(const FeatureTracker::Parameters &tracker_param,
+SingleMarkerSLAM::SingleMarkerSLAM(const VisualOdometry::Parameters &vo_param,
                                    const MarkerFinder::Parameters &mf_param,
                                    const SingleMarkerSLAM::Parameters &slam_param):
     max_marker_dist_(mf_param.max_marker_dist_),
     min_kf_dist_(slam_param.min_dist_bw_keyframes_),
     opt_iterations_(slam_param.opt_iterations_),
     opt_loop_closures_(slam_param.opt_loop_closures_),
-    vo_(Intrinsics(0), tracker_param, 0.008), //TODO Remove this (hardcoded)!!!
+    vo_(vo_param),
     marker_finder_(mf_param.calib_file_, mf_param.marker_size_, mf_param.aruco_dict_)
 {
     initialized_ = false;

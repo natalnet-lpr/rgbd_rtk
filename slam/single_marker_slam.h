@@ -142,14 +142,13 @@ public:
 //    SingleMarkerSLAM();
 
     /**
-     * TODO: add tracking and visual odometry parameters
      * Builds a SingleMarkerSLAM with
      * the given parameters.
-     * @parameter tracker_param: FeatureTracker parameters
+     * @parameter vo_param: VisualOdometry parameters
      * @parameter mf_param: MarkerFinder parameters
      * @parameter slam_param: SingleMarkerSLAM parameters
      */
-    SingleMarkerSLAM(const FeatureTracker::Parameters &tracker_param,
+    SingleMarkerSLAM(const VisualOdometry::Parameters &vo_param,
                      const MarkerFinder::Parameters &mf_param,
                      const SingleMarkerSLAM::Parameters &slam_param);
 

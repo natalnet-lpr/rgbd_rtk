@@ -54,11 +54,11 @@ int main(int argc, char** argv)
 
     ReconstructionVisualizer visualizer;
     RGBDLoader loader;
-    FeatureTracker::Parameters tracking_param;
+    VisualOdometry::Parameters vo_param;
     Intrinsics intr;
 
     Mat frame, depth;
-    float marker_size, aruco_max_distance, ransac_thr;
+    float marker_size, aruco_max_distance;
     string camera_calibration_file, aruco_dic, index_file;
 
     if (argc != 2)
@@ -71,24 +71,24 @@ int main(int argc, char** argv)
     ConfigLoader param_loader(argv[1]);
     //file parameters
     param_loader.checkAndGetString("index_file", index_file);
+    intr.loadFromFile(camera_calibration_file);
+    intr.setScale(1000.0); //transform zed point cloud from milimeters to meters
     //tracker parameters
-    param_loader.checkAndGetString("tracker_type", tracking_param.type_);
-    param_loader.checkAndGetInt("min_pts", tracking_param.min_pts_);
-    param_loader.checkAndGetInt("max_pts", tracking_param.max_pts_);
-    param_loader.checkAndGetBool("log_stats", tracking_param.log_stats_);
+    param_loader.checkAndGetString("tracker_type", vo_param.tracker_param_.type_);
+    param_loader.checkAndGetInt("min_pts", vo_param.tracker_param_.min_pts_);
+    param_loader.checkAndGetInt("max_pts", vo_param.tracker_param_.max_pts_);
+    param_loader.checkAndGetBool("log_stats", vo_param.tracker_param_.log_stats_);
     //motion estimator parameters
-    param_loader.checkAndGetFloat("ransac_distance_threshold", ransac_thr);
+    param_loader.checkAndGetFloat("ransac_distance_threshold", vo_param.ransac_thr_);
+    vo_param.intr_ = intr;
     //marker detection parameters
     param_loader.checkAndGetFloat("aruco_marker_size", marker_size);
     param_loader.checkAndGetFloat("aruco_max_distance", aruco_max_distance);
     param_loader.checkAndGetString("camera_calibration_file", camera_calibration_file);
     param_loader.checkAndGetString("aruco_dic", aruco_dic);
-     
-    intr.loadFromFile(camera_calibration_file);
-    intr.setScale(1000.0); //transform zed point cloud from milimeters to meters
 
     MarkerFinder marker_finder(camera_calibration_file, marker_size, aruco_dic);
-    OpticalFlowVisualOdometry vo(intr, tracking_param, ransac_thr);
+    OpticalFlowVisualOdometry vo(vo_param);
 
     loader.processFile(index_file);
 

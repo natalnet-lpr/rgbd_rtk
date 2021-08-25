@@ -69,12 +69,11 @@ int main(int argc, char** argv)
 
     RGBDLoader loader;
     ReconstructionVisualizer visualizer;
-    FeatureTracker::Parameters tracker_param;
+    VisualOdometry::Parameters vo_param;
     MarkerFinder::Parameters mf_param;
     SingleMarkerSLAM::Parameters slam_param;
     string index_file;
     Mat frame, depth;
-    float ransac_thr;
 
     // Slam solver will start when the marker is found for the first time
     if (argc != 2)
@@ -87,12 +86,13 @@ int main(int argc, char** argv)
 
     param_loader.checkAndGetString("index_file", index_file);
     //tracker parameters
-    param_loader.checkAndGetString("tracker_type", tracker_param.type_);
-    param_loader.checkAndGetInt("min_pts", tracker_param.min_pts_);
-    param_loader.checkAndGetInt("max_pts", tracker_param.max_pts_);
-    param_loader.checkAndGetBool("log_stats", tracker_param.log_stats_);
+    param_loader.checkAndGetString("tracker_type", vo_param.tracker_param_.type_);
+    param_loader.checkAndGetInt("min_pts", vo_param.tracker_param_.min_pts_);
+    param_loader.checkAndGetInt("max_pts", vo_param.tracker_param_.max_pts_);
+    param_loader.checkAndGetBool("log_stats", vo_param.tracker_param_.log_stats_);
     //motion estimator parameters
-    param_loader.checkAndGetFloat("ransac_distance_threshold", ransac_thr);
+    param_loader.checkAndGetFloat("ransac_distance_threshold", vo_param.ransac_thr_);
+    vo_param.intr_ = Intrinsics(0); //TODO: load this parameter from file
     //marker detection parameters
     param_loader.checkAndGetString("camera_calibration_file", mf_param.calib_file_);
     param_loader.checkAndGetFloat("aruco_marker_size", mf_param.marker_size_);
@@ -107,7 +107,7 @@ int main(int argc, char** argv)
     param_loader.checkAndGetFloat("minimum_distance_between_keyframes",
                                   slam_param.min_dist_bw_keyframes_);
 
-    SingleMarkerSLAM sm_slam(tracker_param, mf_param, slam_param);
+    SingleMarkerSLAM sm_slam(vo_param, mf_param, slam_param);
 
     loader.processFile(index_file);
 

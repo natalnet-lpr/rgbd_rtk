@@ -33,94 +33,35 @@
 #include <Eigen/Geometry>
 #include <map>
 #include <fstream>
+
 #include <opencv2/core/core.hpp>
 #include <pcl/point_cloud.h>
 
+#include <visual_odometry.h>
 
-#include <common_types.h>
-#include <motion_estimator_ransac.h>
-#include <klt_tracker.h>
-#include <klttw_tracker.h>
-
-class OpticalFlowVisualOdometry
+class OpticalFlowVisualOdometry: public VisualOdometry
 {
-private:
-    // Current frame index
-    size_t frame_idx_;
-
-    // Copy of the current RGB image (for Keyframe creation)
-    cv::Mat rgb_;
-
-    // Copy of the current depth image (for Keyframe creation)
-    cv::Mat depth_;
-
-    // Output file computed poses
-    std::ofstream poses_file_;
-
-    /**
-     * Writes the last computed visual odometry pose to file.
-     * @param time_stamp, the time that the pose was computed. 
-     */
-    void writePoseToFile(const std::string& time_stamp);
 
 public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
-    // Previous dense point cloud
-    pcl::PointCloud<PointT>::Ptr prev_dense_cloud_;
-
-    // Current dense point cloud
-    pcl::PointCloud<PointT>::Ptr curr_dense_cloud_;
-
-    // Feature tracker
-    cv::Ptr<FeatureTracker> tracker_ptr_;
-
-    // Motion estimator
-    MotionEstimatorRANSAC motion_estimator_;
-
-    // Current camera pose
-    Eigen::Affine3f pose_;
 
     /**
-     * Constructs a Visual Odometry given the matrix of intrinsic parameters,
-     * tracker parameters, motion estimation parameter (RANSAC) and initial pose.
-     * @param intr intrinsic camera parameters
-     * @param tracking_param tracking parameters
-     * @param ransac_thr threshold for RANSAC (a correspondence is accepted if < thr)
-     * @param initialPose initial pose of the camera, identity if nothing is passed
+     * Builds a Visual Odometry algorithm with the
+     * given parameters
+     * @param vo_param: VisualOdometry parameters
+     * @param initialPose: Visual Odometry initial pose
      */
-    OpticalFlowVisualOdometry(const Intrinsics& intr, const FeatureTracker::Parameters& tracking_param,
-                              const float& ransac_thr,
-                              const Eigen::Affine3f& initialPose = Eigen::Affine3f::Identity());
-
-    /**
-     * Main member function: computes the current camera pose.
-     * Returns true if the current frame is a keyframe.
-     * @param rgb image @param depth image
-     * @param return a boolean
-     */
-
-    ~OpticalFlowVisualOdometry()
-    {
-        poses_file_.close();
-    }
+    OpticalFlowVisualOdometry(const VisualOdometry::Parameters &vo_param,
+                              const Eigen::Affine3f &initialPose =
+                                    Eigen::Affine3f::Identity());
 
      /**
-     * Main member function: computes the current camera pose
-     * @param rgb and @param depth images.
-     * @param time_stamp, the time that the pose was computed.
+     * Main member function: computes camera pose
+     * with KLT feature tracking and RANSAC motion estimation.
+     * @param rgb: RGB image
+     * @param depth: depth image
+     * @param time_stamp: the time that the pose was computed
      */ 
     bool computeCameraPose(const cv::Mat& rgb, const cv::Mat& depth, const std::string& time_stamp = "");
-
-    /**
-     * Utility function: creates and returns a Keyframe
-     * with the given id.
-     * computeCameraPose must be called first, so
-     * the last supplied data to computeCameraPose is
-     * used to create a keyframe.
-     * @param kf_id: id of the keyframe
-     */
-    Keyframe createKeyframe(const size_t &kf_id);
 };
 
 #endif /* INCLUDE_OPTICAL_FLOW_VISUAL_ODOMETRY_H_ */
