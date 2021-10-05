@@ -80,11 +80,11 @@ checkVerboseFromUserInput()
 {
     VERBOSE=$FALSE
     BUILD_G2O=$FALSE
+    BUILD_ARUCO=$FALSE
     INSTALL_DEPENDENCIES=$FALSE
     options=" "
     for var in "$@"
     do
-        echo $var
         if [ $var == "-v" ];
         then
             VERBOSE=$TRUE
@@ -97,6 +97,10 @@ checkVerboseFromUserInput()
         then
             BUILD_G2O=$TRUE
             options="${options} -BUILD_G2O"
+        elif [ $var == "-BUILD_ARUCO" ];
+        then
+            BUILD_ARUCO=$TRUE
+            options="${options} -BUILD_ARUCO"
         fi
     done
     if [ $VERBOSE -eq $FALSE ];then
@@ -114,6 +118,7 @@ buildG2O()
     echo COMPILING G2O...
     wget https://github.com/RainerKuemmerle/g2o/archive/refs/tags/20201223_git.tar.gz
     tar -xf 20201223_git.tar.gz
+    rm 20201223_git.tar.gz
     cd g2o-20201223_git
     mkdir build
     mkdir install
@@ -121,6 +126,23 @@ buildG2O()
     cmake -DCMAKE_INSTALL_PREFIX=../install -DG2O_USE_CSPARSE=ON ..
     make -j4
     make install
+}
+
+buildAruco()
+{
+    local filename=aruco-3.1.12.zip
+    local aruco_dir=aruco-3.1.12
+    echo COMPILING ARUCO...
+    wget hwget https://sourceforge.net/projects/aruco/files/$filename
+    unzip $filename
+    rm $filename
+    cd $aruco-3.1.12
+    mkdir build
+    cd build
+    cmake ..
+    make && sudo make install
+
+    
 }
 
 installUbuntuDependencies()
@@ -171,6 +193,10 @@ main()
 
             if [ $BUILD_G2O -eq $TRUE ]; then
                 buildG2O
+            fi
+            if [ $BUILD_ARUCO -eq $TRUE ]; then
+                echo UHUU
+                buildAruco
             fi
 
         elif [ $is_valid_distro -eq $FALSE ];
