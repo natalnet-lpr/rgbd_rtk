@@ -1,5 +1,4 @@
 # Find the header files
-
 find_path(G2O_INCLUDE_DIR g2o/core/base_vertex.h
   ${G2O_ROOT}/include
   $ENV{G2O_ROOT}/include
@@ -9,6 +8,7 @@ find_path(G2O_INCLUDE_DIR g2o/core/base_vertex.h
   /opt/local/include
   /sw/local/include
   /sw/include
+  ${G2O_DIR}/include
   NO_DEFAULT_PATH
   )
 
@@ -17,7 +17,6 @@ find_path(G2O_INCLUDE_DIR g2o/core/base_vertex.h
 # macro.
 
 macro(FIND_G2O_LIBRARY MYLIBRARY MYLIBRARYNAME)
-
   find_library("${MYLIBRARY}_DEBUG"
     NAMES "g2o_${MYLIBRARYNAME}_d"
     PATHS
@@ -30,6 +29,7 @@ macro(FIND_G2O_LIBRARY MYLIBRARY MYLIBRARYNAME)
     /opt/local/lib
     /sw/local/lib
     /sw/lib
+    ${G2O_DIR}/lib
     NO_DEFAULT_PATH
     )
 
@@ -45,6 +45,7 @@ macro(FIND_G2O_LIBRARY MYLIBRARY MYLIBRARYNAME)
     /opt/local/lib
     /sw/local/lib
     /sw/lib
+    ${G2O_DIR}/lib
     NO_DEFAULT_PATH
     )
   
