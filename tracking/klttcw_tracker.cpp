@@ -176,7 +176,13 @@ bool KLTTCWTracker::track(const Mat &curr_frame)
 {
     // Make a grayscale copy of the current frame if it is in color
     if (curr_frame.channels() > 1)
-        cvtColor(curr_frame, curr_frame_gray_, CV_BGR2GRAY);
+    {
+        #if CV_MAJOR_VERSION < 4
+            cvtColor(curr_frame, curr_frame_gray_, CV_BGR2GRAY);
+        #else
+            cvtColor(curr_frame, curr_frame_gray_, COLOR_BGR2GRAY);
+        #endif
+    }
     else
         curr_frame.copyTo(curr_frame_gray_);
 
@@ -203,7 +209,12 @@ bool KLTTCWTracker::track(const Mat &curr_frame)
         vector<uchar> status;
         vector<float> err;
         Size win_size(53, 53); // def is 31x31
-        TermCriteria crit(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, 0.03);
+        
+        #if CV_MAJOR_VERSION < 4
+            TermCriteria crit(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, 0.03);
+        #else
+          TermCriteria crit(TermCriteria::MAX_ITER | TermCriteria::EPS, 20, 0.03);
+        #endif
 
         calcOpticalFlowPyrLK(prev_frame_gray_, curr_frame_gray_, prev_pts_, curr_pts_, status, err,
                              win_size, 3, crit, 0, 0.00001);
