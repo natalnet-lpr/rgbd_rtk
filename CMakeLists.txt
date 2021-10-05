@@ -6,7 +6,7 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wextra -fsanitize=address -fsanitize=leak")
+set(CMAKE_CXX_FLAGS "-std=c++14 -Wall -Wextra -fsanitize=address -fsanitize=leak")
 set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3") # WITH -march=native: seg_fault. on Mac OS
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}" )
