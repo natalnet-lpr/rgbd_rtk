@@ -112,24 +112,42 @@ int main(int argc, char **argv)
         else
         {
             capture.grab();
-            capture.retrieve(frame, CV_CAP_OPENNI_BGR_IMAGE); // Kinect
+            #if CV_MAJOR_VERSION < 4
+			    capture.retrieve(frame, CV_CAP_OPENNI_BGR_IMAGE); // Kinect
+            #else
+			    capture.retrieve(frame,  cv::CAP_OPENNI_BGR_IMAGE);
+            #endif
         }
-        cvtColor(frame, g_frame, CV_BGR2GRAY);
-
+        #if CV_MAJOR_VERSION < 4
+            cvtColor(frame, g_frame, CV_BGR2GRAY);
+        #else
+            cvtColor(frame, g_frame, cv::COLOR_BGR2GRAY);
+        #endif
         im_size = frame.size();
         vector<Point2f> curr_corners;
 
         // Find chessboard corners
-        bool found = findChessboardCorners(frame, board_size, curr_corners,
+        #if CV_MAJOR_VERSION < 4
+
+            bool found = findChessboardCorners(frame, board_size, curr_corners,
                                            CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FAST_CHECK |
                                                CV_CALIB_CB_NORMALIZE_IMAGE);
-
+        #else
+            bool found = findChessboardCorners(frame, board_size, curr_corners,
+                                           cv::CALIB_CB_ADAPTIVE_THRESH | cv::CALIB_CB_FAST_CHECK |
+                                               cv::CALIB_CB_NORMALIZE_IMAGE);
+        #endif
         time_t curr_step = clock();
         if (found && ((curr_step - last_step) / CLOCKS_PER_SEC >= delta_t))
         {
             // Refine chessboard corners
-            cornerSubPix(g_frame, curr_corners, Size(11, 11), Size(-1, -1),
+            #if CV_MAJOR_VERSION < 4
+                cornerSubPix(g_frame, curr_corners, Size(11, 11), Size(-1, -1),
                          TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.1));
+            #else
+                cornerSubPix(g_frame, curr_corners, Size(11, 11), Size(-1, -1),
+                         TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::MAX_ITER, 30, 0.1));
+            #endif
 
             // Add refined corners to the list of corners
             corners_2d.push_back(curr_corners);
@@ -183,7 +201,11 @@ int main(int argc, char **argv)
         else
         {
             capture.grab();
-            capture.retrieve(frame, CV_CAP_OPENNI_BGR_IMAGE); // Kinect
+            #if CV_MAJOR_VERSION < 4
+                capture.retrieve(frame, CV_CAP_OPENNI_BGR_IMAGE); // Kinect
+            #else
+                capture.retrieve(frame,  cv::CAP_OPENNI_BGR_IMAGE);
+            #endif
         }
 
         int k = (char)waitKey(16);
