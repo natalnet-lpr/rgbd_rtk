@@ -23,7 +23,23 @@ It is recommended to install both dependencies from source. The following two li
 
 > [Compiling PCL from source on Linux](http://pointclouds.org/documentation/tutorials/compiling_pcl_posix.php)
 
-Building
+Building On Ubuntu 20.04
+------------
+
+
+```
+bash setup.sh -v -BUILD_G2O -install_dependencies
+```
+
+```
+mkdir build
+cd build
+```
+```
+cmake -DG2O_DIR=$PWD/../g2o-20201223_git/install ..
+make
+```
+Others Distros
 ------------
 
 First, get the newest version of this repository by using the follwing command on your working directory.
