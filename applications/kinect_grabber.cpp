@@ -157,7 +157,11 @@ int main(int argc, char **argv)
                  prefix.c_str());
 
     // Open Kinect capture device
-    cv::VideoCapture cam(CV_CAP_OPENNI);
+    #if CV_MAJOR_VERSION < 4
+        cv::VideoCapture cam(CV_CAP_OPENNI);
+    #else
+        cv::VideoCapture cam(cv::CAP_OPENNI);
+    #endif
     if (!cam.isOpened())
     {
         logger.print(EventLogger::L_ERROR,
@@ -196,9 +200,15 @@ int main(int argc, char **argv)
 
         // Grab Kinect streams
         cam.grab();
-        cam.retrieve(rgb_img, CV_CAP_OPENNI_BGR_IMAGE);
-        cam.retrieve(depth_buffer, CV_CAP_OPENNI_DEPTH_MAP);
-        cam.retrieve(cv_cloud, CV_CAP_OPENNI_POINT_CLOUD_MAP);
+        #if CV_MAJOR_VERSION < 4
+			cam.retrieve(rgb_img, CV_CAP_OPENNI_BGR_IMAGE);
+            cam.retrieve(depth_buffer, CV_CAP_OPENNI_DEPTH_MAP);
+            cam.retrieve(cv_cloud, CV_CAP_OPENNI_POINT_CLOUD_MAP);
+		#else
+			cam.retrieve(rgb_img,  cv::CAP_OPENNI_BGR_IMAGE);
+            cam.retrieve(depth_buffer,  cv::CAP_OPENNI_DEPTH_MAP);
+            cam.retrieve(cv_cloud, cv::CAP_OPENNI_POINT_CLOUD_MAP);
+        #endif
         if (rgb_img.empty() || depth_buffer.empty() || cv_cloud.empty())
         {
             logger.print(
