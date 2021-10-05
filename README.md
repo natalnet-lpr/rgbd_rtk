@@ -25,16 +25,28 @@ It is recommended to install both dependencies from source. The following two li
 
 Building On Ubuntu 20.04
 ------------
+First, get the newest version of this repository by using the follwing command on your working directory.
+
+```bash
+cd /my_working _directory 
+```
+
+Execute our setup script to install all dependencies and build the G2O library
 
 
 ```
 bash setup.sh -v -BUILD_G2O -install_dependencies
 ```
 
+Create a directory called build, and change directory to it.
+
 ```
 mkdir build
 cd build
 ```
+
+Build the project passing the G2O install directory 
+
 ```
 cmake -DG2O_DIR=$PWD/../g2o-20201223_git/install ..
 make
