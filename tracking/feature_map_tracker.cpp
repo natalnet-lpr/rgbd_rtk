@@ -519,7 +519,7 @@ bool FeatureMapTracker::track(const cv::Mat& img)
             EventLogger::M_TRACKING, "@FeatureMapTracker::track: matches with small age: %i\n", matches_with_small_age);
 
     // Percentage of new features (matches with map features at a young age)
-    if ((matches_with_small_age/curr_kpts_.size()) > keyframe_threshold_)
+    if (((float)matches_with_small_age/curr_kpts_.size()) > keyframe_threshold_)
     {
         // Make the current frame a new keyframe
         is_keyframe = true;
