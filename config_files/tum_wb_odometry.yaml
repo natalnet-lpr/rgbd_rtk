@@ -4,7 +4,6 @@ log_stats: 0 # informs if the resulting poses should be saved to file
 
 # tracker parameters
 tracker_type: WBTracker
-log_stats: 0
 min_pts: 600
 max_pts: 5000
 
@@ -12,6 +11,7 @@ max_pts: 5000
 feature_detector: "ORB" #default ORB
 descriptor_extractor: "ORB" #default ORB
 descriptor_matcher: "BruteForce" #default BruteForce
+wide_baseline_keyframe_threshold: 0.3 #default 0.3
 #lifespan_of_a_feature: 3 #default 3 (feature_map_tracker only)
 #feature_map_keyframe_threshold: 0.3 #default 0.3 (feature_map_tracker only)
 
