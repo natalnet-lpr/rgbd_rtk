@@ -416,7 +416,7 @@ bool WideBaselineTracker::track(const cv::Mat &img)
 
         // Percentage of the variation of features of the current instant 
         // in relation to the previous instant
-        if (abs(curr_kpts_.size()-prev_kpts_.size())/prev_kpts_.size() > keyframe_threshold_)
+        if (abs(curr_kpts_.size()-prev_kpts_.size())/(float)prev_kpts_.size() > keyframe_threshold_)
         {
             // Make the current frame a new keyframe
             is_keyframe = true;
