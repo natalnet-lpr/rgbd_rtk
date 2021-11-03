@@ -1,11 +1,10 @@
 #include <iostream>
-#include <motion_segmenter.h>
-#include <dnn_motion_segmenter.h>
+#include <factory_motion_segmenter.h>
 using namespace std;
 
 int main()
 {       
-    auto segmenter = MotionSegmenter::create(MotionSegmenterType::DNN);
+    auto segmenter = FactoryMotionSegmenter::create(MotionSegmenterType::DNN,"model_path","config_file");
 
     return 0;
 }
