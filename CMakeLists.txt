@@ -68,7 +68,7 @@ message(STATUS "CSparse Found: " ${CSPARSE_FOUND})
 include_directories(${OpenCV_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS}
                     ${EIGEN3_INCLUDE_DIR} ${G2O_INCLUDE_DIR} ${CSPARSE_INCLUDE_DIR}
                     common io tracking motion_estimation visualization visual_odometry
-                    quadtree stereo)
+                    quadtree stereo motion_segmentation)
 link_directories(${PCL_LIBRARY_DIRS})
 
 LIST(APPEND G2O_LIBS
@@ -90,6 +90,7 @@ option(WITH_MOTION_ESTIMATION "Build with motion estimation module" ON)
 option(WITH_STEREO "Build with stereo module" ON)
 option(WITH_VISUAL_ODOMETRY "Build with odometry module" ON)
 option(WITH_SLAM "Build with slam module" ON)
+option(WITH_MOTION_SEGMENTATION "Build with motion segmentation module" ON)
 
 # Needed for every other module
 add_subdirectory(common)
@@ -170,6 +171,12 @@ if(WITH_SLAM)
 	else()
 		message(WARNING "ARUCO NOT FOUND")
 	endif()
+endif()
+
+if(WITH_MOTION_SEGMENTATION)
+	add_subdirectory(motion_segmentation)
+	set(RGBD_RTK_MOTION_SEGMENTATION rgbd_rtk_motion_segmentation)
+	export(TARGETS rgbd_rtk_motion_segmentation APPEND FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
 endif()
 
 add_subdirectory(applications)

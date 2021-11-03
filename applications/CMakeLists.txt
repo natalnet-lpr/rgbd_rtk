@@ -54,6 +54,10 @@ if(WITH_STEREO)
     find_library(RGBD_RTK_STEREO NAMES rgbd_rtk_stereo)
 endif()
 
+if(WITH_MOTION_SEGMENTATION)
+    find_library(RGBD_RTK_MOTION_SEGMENTATION NAMES rgbd_rtk_motion_segmentation)
+endif()
+
 ##Install applications that only needs opencv
 add_executable(monocular_calibration monocular_calibration.cpp)
 add_executable(monocular_image_grabber monocular_image_grabber.cpp)
@@ -170,7 +174,20 @@ if(WITH_IO AND WITH_VISUALIZATION)
                 RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin)
         endif()
     endif()
+    if(RGBD_RTK_MOTION_SEGMENTATION)
+        add_executable(test_motion_image_segmentation test_motion_image_segmentation.cpp)
+        target_link_libraries(test_motion_image_segmentation ${RGBD_RTK_MOTION_SEGMENTATION})
+            
+        install(
+            TARGETS test_motion_image_segmentation
+            EXPORT rgbd_rtkTargets
+            RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin)
+    endif()
 endif()       
+
+if(WITH_MOTION_SEGMENTATION)
+
+endif()
 
 # Build SLAM related applications only if ARUCO was found
 if(aruco_FOUND AND WITH_IO AND WITH_TRACKING AND WITH_VISUALIZATION AND WITH_MOTION_ESTIMATION AND WITH_VISUAL_ODOMETRY)
