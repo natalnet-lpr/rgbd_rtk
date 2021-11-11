@@ -176,7 +176,7 @@ if(WITH_IO AND WITH_VISUALIZATION)
     endif()
     if(RGBD_RTK_MOTION_SEGMENTATION)
         add_executable(test_motion_image_segmentation test_motion_image_segmentation.cpp)
-        target_link_libraries(test_motion_image_segmentation ${RGBD_RTK_MOTION_SEGMENTATION})
+        target_link_libraries(test_motion_image_segmentation ${RGBD_RTK_MOTION_SEGMENTATION} ${RGBD_RTK_IO})
             
         install(
             TARGETS test_motion_image_segmentation

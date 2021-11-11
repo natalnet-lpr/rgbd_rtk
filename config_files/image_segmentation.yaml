@@ -1,0 +1,6 @@
+%YAML:1.0
+# image path
+image_path: "/home/luiz/Pictures/town.jpg"
+# dnn models path
+dnn_model_path: "/home/luiz/Faculdade/TCC/ImageSegmentationPOC/mask_rcnn_inception_v2_coco_2018_01_28/frozen_inference_graph.pb"
+dnn_config_file_path: "/home/luiz/Faculdade/TCC/ImageSegmentationPOC/mask_rcnn_inception_v2_coco_2018_01_28/mscoco.pbtxt"

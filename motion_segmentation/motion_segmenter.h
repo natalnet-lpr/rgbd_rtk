@@ -11,6 +11,6 @@ class MotionSegmenter
     public:
         // this method should receive a image and
         // segment it, returning a mask matrix
-        virtual void segment(const cv::Mat & in_img, cv::Mat & out_img) = 0;
+        virtual void segment(const cv::Mat & in_img, cv::Mat & out_img) = 0 ;
         
 };
