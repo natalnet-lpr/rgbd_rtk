@@ -90,7 +90,12 @@ option(WITH_MOTION_ESTIMATION "Build with motion estimation module" ON)
 option(WITH_STEREO "Build with stereo module" ON)
 option(WITH_VISUAL_ODOMETRY "Build with odometry module" ON)
 option(WITH_SLAM "Build with slam module" ON)
-option(WITH_MOTION_SEGMENTATION "Build with motion segmentation module" ON)
+
+if(${OpenCV_VERSION_MAJOR} GREATER_EQUAL 4 )
+	option(WITH_MOTION_SEGMENTATION "Build with motion segmentation module" ON)
+else()
+	option(WITH_MOTION_SEGMENTATION "Build with motion segmentation module" OFF)
+endif()
 
 # Needed for every other module
 add_subdirectory(common)
