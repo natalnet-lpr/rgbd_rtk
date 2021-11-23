@@ -2,8 +2,11 @@ cmake_minimum_required(VERSION 2.6)
 
 message(STATUS ">>> motion_segmentation subdirectory")
 
-set(RGBD_RTK_MOTION_SEGMENTATION_SRC motion_segmenter.cpp dnn/dnn_motion_segmenter.cpp)
-set(RGBD_RTK_MOTION_SEGMENTATION_INCLUDES motion_segmenter.h dnn/dnn_motion_segmenter.h factory_motion_segmenter.h) 
+set(SRC_FILES motion_segmenter.cpp dnn/dnn_motion_segmenter.cpp geometric/geometric_motion_segmenter.cpp)
+set(INCLUDE_FILES motion_segmenter.h dnn/dnn_motion_segmenter.h geometric/geometric_motion_segmenter.h)
+
+set(RGBD_RTK_MOTION_SEGMENTATION_SRC ${SRC_FILES})
+set(RGBD_RTK_MOTION_SEGMENTATION_INCLUDES ${INCLUDE_FILES}) 
 
 add_library(rgbd_rtk_motion_segmentation SHARED ${RGBD_RTK_MOTION_SEGMENTATION_SRC})
 target_link_libraries(rgbd_rtk_motion_segmentation ${RGBD_RTK_COMMON} ${OpenCV_LIBS})

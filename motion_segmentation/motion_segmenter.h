@@ -8,9 +8,18 @@
 class MotionSegmenter
 {   
     protected:
+
+            float threshold_;
     public:
-        // this method should receive a image and
-        // segment it, returning a mask matrix
+        /**
+         * 
+         * @param  {cv::Mat} in_img  : frame/image
+         * @param  {cv::Mat} out_img : image binary mask
+         */
         virtual void segment(const cv::Mat & in_img, cv::Mat & out_img) = 0 ;
-        
+        inline virtual void setThreshold(float threshold)
+        {
+            threshold_ = threshold;
+        }
+       
 };

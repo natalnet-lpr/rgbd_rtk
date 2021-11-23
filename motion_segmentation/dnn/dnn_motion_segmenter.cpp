@@ -31,7 +31,7 @@ void DNNMotionSegmenter::segment( const cv::Mat & in_img, cv::Mat & out_img)
     
     std::chrono::duration<double> diff = dnn_end - dnn_start;
 
-    this->postProcess(in_img,out_img,outputs,0.3);
+    this->postProcess(in_img,out_img,outputs,threshold_);
 
 }
 

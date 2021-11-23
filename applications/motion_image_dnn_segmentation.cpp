@@ -38,8 +38,9 @@ int main(int argc, char ** argv)
     
 
     // create image segmentor
-    auto segmenter = FactoryMotionSegmenter::create(MotionSegmenterType::DNN,model_path,
+    auto segmenter = FactoryMotionSegmenter::create<DNNMotionSegmenter>(model_path,
                             config_file,classMap({{0,"person"},{2,"car"}}));
+    segmenter->setThreshold(0.3);
 
     if(is_video)
     {           
