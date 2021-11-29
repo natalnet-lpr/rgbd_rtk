@@ -83,15 +83,22 @@ int main(int argc, char **argv)
 
 	MotionEstimatorRANSAC motion_estimator(intr, ransac_distance_threshold,
 											ransac_inliers_ratio);
-	
-    auto  trackelts3d = std::make_shared<std::vector<std::vector<PointT>>>();
-
 
 	std::vector<cv::Point2f> * prev_pts_ptr = &tracker.prev_pts_;
 	std::vector<cv::Point2f> * curr_pts_ptr = &tracker.curr_pts_;
 
-	GeometricMotionSegmenter segmenter(prev_cloud,prev_pts_ptr,curr_cloud,curr_pts_ptr,trans,2);
+	std::vector<Tracklet> * tracklet_ptr = &tracker.tracklets_;
+	constexpr float threshold = 1.1f;
+	constexpr uint8_t dynamic_range = 5;
+	constexpr float mask_point_radius = 3.0f;
 
+	GeometricMotionSegmenter segmenter(tracklet_ptr,
+									   curr_cloud,
+									   prev_cloud,
+									   trans,
+									   threshold,
+									   dynamic_range,
+									   mask_point_radius);
 	//Track points on each image
 	for(int i = 0; i < loader.num_images_; i++)
 	{	
@@ -126,17 +133,20 @@ int main(int argc, char **argv)
 		//visualizer.viewQuantizedPointCloud(curr_cloud, 0.02, pose);
 
 		visualizer.spinOnce();
-		//GeometricMotionSegmenter::calculateDynamicPoints(prev_cloud,curr_cloud,*trans,*is_dyna_pt,0.3);
-		
-		segmenter.calculateDynamicPoints();
+
+		cv::Mat mask;
+		segmenter.segment(frame,mask);
+
 		auto dyna_pts = segmenter.getDynaPoints();
-        for(const auto & pt:(*dyna_pts))
-        {
-			circle(frame, (pt), 2, CV_RGB(255,255,0), -1);
-        }		
+
+		for(const auto & pt:*dyna_pts)
+			cv::circle(frame,pt,mask_point_radius,cv::Scalar(255,255,255),-1);
+
 		//Show RGB-D image
 		imshow("Image view", frame);
 		imshow("Depth view", depth);
+		imshow("Mask view",  mask);
+
 		char key = waitKey(1);
 		if(key == 27 || key == 'q' || key == 'Q')
 		{

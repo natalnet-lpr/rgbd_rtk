@@ -15,11 +15,13 @@ using pcl::PointCloud;
 class GeometricMotionSegmenter : public MotionSegmenter{
     public:
         GeometricMotionSegmenter();
-        GeometricMotionSegmenter(const PointCloud<PointT>::Ptr cloud_from,
-                                vector<cv::Point2f> * points_from,
-                                 const PointCloud<PointT>::Ptr cloud_to,
-                                vector<cv::Point2f> * points_to,
-                                 const shared_ptr<Eigen::Affine3f> & clouds_relative_pose, float threshold);
+        GeometricMotionSegmenter(vector<Tracklet> * tracklets,
+                                 const PointCloud<PointT>::Ptr curr_cloud,
+                                 const PointCloud<PointT>::Ptr prev_cloud,
+                                 const shared_ptr<Eigen::Affine3f> & curr_cloud_relative_pose, 
+                                 float threshold, 
+                                 uint8_t dynamic_range=5,
+                                 float mask_point_radius=4.0f);
                         
         virtual void segment(const cv::Mat & in_img, cv::Mat & out_img);
         // assuming that these points are already projected in it respectives poses
@@ -28,8 +30,9 @@ class GeometricMotionSegmenter : public MotionSegmenter{
         bool isDynamicPoint(const PointT & pt_from, const PointT & pt_to) const;
 
         void calculateDynamicPoints(const pcl::PointCloud<PointT> & sparse_cloud_from, 
-            const pcl::PointCloud<PointT> & sparse_cloud_to, const Eigen::Affine3f & clouds_relative_pose,
-            std::vector<cv::Point2f> & dyna_pts, const float  threshold,std::vector<int>  & idxs_to);
+            const pcl::PointCloud<PointT> & sparse_cloud_to,  const std::vector<cv::Point2f> & curr_pts,
+            const Eigen::Affine3f & clouds_relative_pose,std::vector<cv::Point2f> & dyna_pts, 
+            const float  threshold, const std::vector<int> & idxs_to);
                                             
         void calculateDynamicPoints();
 
@@ -38,20 +41,30 @@ class GeometricMotionSegmenter : public MotionSegmenter{
         };
     protected:
 
-        // This variable determinate how many poses will be
-        // used to determinate if an object is dynamic or not
-        uint16_t pose_range_;
-
-        // store a reference to the tracklets vector
-        std::shared_ptr<std::vector<std::vector<PointT>>> tracklets_;
-
         //  current dynamic points
         shared_ptr<vector<cv::Point2f>> dyna_pts_;
-        pcl::PointCloud<PointT>::Ptr dense_cloud_from_;
-        vector<cv::Point2f> * points_from_;
-        pcl::PointCloud<PointT>::Ptr dense_cloud_to_;
-        vector<cv::Point2f> * points_to_;
-        std::shared_ptr<Eigen::Affine3f> clouds_relative_pose_;
+
+        // This variable determinate how many poses will be
+        // used to determinate if an object is dynamic or not
+        uint8_t dynamic_range_;
+
+        // store a reference to the tracklets vector
+        vector<Tracklet> * tracklets_;
+        // store a reference to the current dense cloud
+        PointCloud<PointT>::Ptr curr_dense_cloud_;
+        // store a reference to the previous dense cloud
+        PointCloud<PointT>::Ptr prev_dense_cloud_;
+        // store a reference to the current relative pose 
+        std::shared_ptr<Eigen::Affine3f> curr_cloud_relative_pose_;
+        
+        // store the sparses point clouds
+        vector<PointCloud<PointT>> sparse_clouds_;
+        // store the relative poses
+        vector<Eigen::Affine3f> relative_poses_;
+
+        bool initialized_;
+        
+        float mask_point_radius_;
 
 
 };
