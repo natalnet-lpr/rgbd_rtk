@@ -45,23 +45,6 @@
 
 using namespace std;
 using namespace cv;
-template <class T>
-std::vector<T> PointCloud2Vector(const pcl::PointCloud<T> &  cloud)
-{
-    std::vector<T> pts_;
-    for(const auto & pt:cloud)
-    {
-        if(is_valid(pt))
-        {
-            pts_.push_back(pt);
-        }
-    }
-    return pts_;
-}
-void vector2SparceClound(std::vector<cv::Point2f> pts, pcl::PointCloud<PointT>)
-{
-
-}
 
 /**
  * This program shows the use of camera motion estimation based on
@@ -101,13 +84,13 @@ int main(int argc, char **argv)
 	MotionEstimatorRANSAC motion_estimator(intr, ransac_distance_threshold,
 											ransac_inliers_ratio);
 	
-    std::shared_ptr<std::vector<std::vector<PointT>>> trackelts3d = std::make_shared<std::vector<std::vector<PointT>>>();
+    auto  trackelts3d = std::make_shared<std::vector<std::vector<PointT>>>();
 
 
-	std::vector<cv::Point2f> * prev_pts = &tracker.prev_pts_;
-	std::vector<cv::Point2f> * curr_pts = &tracker.curr_pts_;
+	std::vector<cv::Point2f> * prev_pts_ptr = &tracker.prev_pts_;
+	std::vector<cv::Point2f> * curr_pts_ptr = &tracker.curr_pts_;
 
-	GeometricMotionSegmenter segmenter(prev_cloud,prev_pts,curr_cloud,curr_pts,trans,2);
+	GeometricMotionSegmenter segmenter(prev_cloud,prev_pts_ptr,curr_cloud,curr_pts_ptr,trans,2);
 
 	//Track points on each image
 	for(int i = 0; i < loader.num_images_; i++)
