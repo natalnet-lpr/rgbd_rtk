@@ -58,6 +58,10 @@ std::vector<T> PointCloud2Vector(const pcl::PointCloud<T> &  cloud)
     }
     return pts_;
 }
+void vector2SparceClound(std::vector<cv::Point2f> pts, pcl::PointCloud<PointT>)
+{
+
+}
 
 /**
  * This program shows the use of camera motion estimation based on
@@ -79,7 +83,7 @@ int main(int argc, char **argv)
 	string index_file;
 	float ransac_distance_threshold, ransac_inliers_ratio;
 	Eigen::Affine3f pose = Eigen::Affine3f::Identity();
-	Eigen::Affine3f trans = Eigen::Affine3f::Identity();
+	std::shared_ptr<Eigen::Affine3f> trans = std::make_shared<Eigen::Affine3f>(Eigen::Affine3f::Identity());
 	pcl::PointCloud<PointT>::Ptr prev_cloud(new pcl::PointCloud<PointT>);
 	pcl::PointCloud<PointT>::Ptr curr_cloud(new pcl::PointCloud<PointT>);
 
@@ -96,26 +100,30 @@ int main(int argc, char **argv)
 
 	MotionEstimatorRANSAC motion_estimator(intr, ransac_distance_threshold,
 											ransac_inliers_ratio);
-
+	
     std::shared_ptr<std::vector<std::vector<PointT>>> trackelts3d = std::make_shared<std::vector<std::vector<PointT>>>();
-    GeometricMotionSegmenter segmenter;
-    segmenter.set3DTracklets(trackelts3d);
+
+
+	std::vector<cv::Point2f> * prev_pts = &tracker.prev_pts_;
+	std::vector<cv::Point2f> * curr_pts = &tracker.curr_pts_;
+
+	GeometricMotionSegmenter segmenter(prev_cloud,prev_pts,curr_cloud,curr_pts,trans,2);
+
 	//Track points on each image
 	for(int i = 0; i < loader.num_images_; i++)
-	{
+	{	
 		//Load RGB-D image and point cloud 
 		loader.getNextImage(frame, depth);
 		*curr_cloud = getPointCloud(frame, depth, intr);
-
 		//Track feature points in the current frame
 		tracker.track(frame);
 
 		//Estimate motion between the current and the previous frame/point clouds
 		if(i > 0)
 		{
-			trans = motion_estimator.estimate(tracker.prev_pts_, prev_cloud,
+			*trans = motion_estimator.estimate(tracker.prev_pts_, prev_cloud,
 				                              tracker.curr_pts_, curr_cloud);
-			pose = pose*trans;
+			pose = pose*(*trans);
 		}
 
 		//View tracked points
@@ -125,7 +133,7 @@ int main(int argc, char **argv)
 			Point2i pt2 = tracker.curr_pts_[k];
 			circle(frame, pt1, 1, CV_RGB(255,0,0), -1);
 			circle(frame, pt2, 3, CV_RGB(0,0,255), -1);
-			line(frame, pt1, pt2, CV_RGB(0,0,255));
+			//line(frame, pt1, pt2, CV_RGB(0,0,255));
 		}
 
 		if(i == 0) visualizer.addReferenceFrame(pose, "origin");
@@ -135,7 +143,14 @@ int main(int argc, char **argv)
 		//visualizer.viewQuantizedPointCloud(curr_cloud, 0.02, pose);
 
 		visualizer.spinOnce();
-
+		//GeometricMotionSegmenter::calculateDynamicPoints(prev_cloud,curr_cloud,*trans,*is_dyna_pt,0.3);
+		
+		segmenter.calculateDynamicPoints();
+		auto dyna_pts = segmenter.getDynaPoints();
+        for(const auto & pt:(*dyna_pts))
+        {
+			circle(frame, (pt), 2, CV_RGB(255,255,0), -1);
+        }		
 		//Show RGB-D image
 		imshow("Image view", frame);
 		imshow("Depth view", depth);
@@ -145,14 +160,6 @@ int main(int argc, char **argv)
 			logger.print(EventLogger::L_INFO, "[motion_image_geometric_segmentation.cpp] Exiting\n", argv[0]);
 			break;
 		}
-        auto to_pts = PointCloud2Vector(*curr_cloud);
-        segmenter.calculateDynamicPoints(to_pts);
-        trackelts3d->push_back(to_pts);
-        for(const auto & pt: *segmenter.getDynaPoints())
-        {
-			circle(frame, pt, 4, CV_RGB(255,255,0), -1);
-            std::cout << pt.x << " " << pt.y <<"\n";
-        }
 		//Let the prev. cloud in the next frame be the current cloud
 		*prev_cloud = *curr_cloud;
 
