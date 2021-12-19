@@ -1,8 +1,10 @@
 #!/bin/bash
 declare -r TRUE=1
 declare -r FALSE=0
-
-
+declare -r PROJECT_DIR=$PWD
+declare -r DEPENDENCIES_DIR="$PROJECT_DIR"/deps
+declare -r CORES_NUMBER=`nproc`
+echo "CPU Cores :" $CORES_NUMBER
 splitString(){
 
     local string=$(echo "$1")    
@@ -54,7 +56,7 @@ checkDistro()
     # first get the complete distro name and split it into a string
     local distro_name=$(lsb_release -d)
 
-    if [ $VERBOSE -eq $TRUE ]; then
+    if [ "$VERBOSE" -eq "$TRUE" ]; then
         echo "Distro Name: " $distro_name
     fi
 
@@ -65,7 +67,7 @@ checkDistro()
 
     if [ $?  -eq 1 ];
     then 
-        if [ $VERBOSE -eq $TRUE ];
+        if [ "$VERBOSE" -eq "$TRUE" ];
             then echo "DISTRO NAME: $target_distro"
             echo $?
         fi
@@ -79,12 +81,21 @@ checkDistro()
 checkVerboseFromUserInput()
 {
     VERBOSE=$FALSE
+    BUILD_OPENCV=$FALSE
     BUILD_G2O=$FALSE
     BUILD_ARUCO=$FALSE
     INSTALL_DEPENDENCIES=$FALSE
     options=" "
     for var in "$@"
     do
+        if [ $var == '-a' ];
+        then
+            VERBOSE=$TRUEa
+            BUILD_OPENCV=$TRUE
+            BUILD_G2O=$TRUE
+            BUILD_ARUCO=$TRUE
+            INSTALL_DEPENDENCIES=$TRUE
+        fi
         if [ $var == "-v" ];
         then
             VERBOSE=$TRUE
@@ -93,6 +104,10 @@ checkVerboseFromUserInput()
         then
             INSTALL_DEPENDENCIES=$TRUE
             options="${options} -install_dependencies"
+        elif [ $var == "-BUILD_OPENCV" ];
+        then
+             BUILD_OPENCV=$TRUE
+             options="${options} -BUILD_OPENCV"
         elif [ $var == "-BUILD_G2O" ];
         then
             BUILD_G2O=$TRUE
@@ -113,34 +128,64 @@ checkVerboseFromUserInput()
 
 }
 
+buildOpenCV()
+{
+    cd $DEPENDENCIES_DIR
+    if [ ! -d "opencv_contrib" ];then
+        git clone https://github.com/opencv/opencv_contrib.git
+        cd opencv_contrib
+        git checkout 4.5.3
+        cd ..
+    fi
+    if [ ! -d "opencv" ];then
+        git clone https://github.com/opencv/opencv.git
+        cd opencv
+        git checkout 4.5.3
+        cd ..
+    fi
+    cd opencv
+    mkdir build
+    cd build
+    cmake  -DOPENCV_EXTRA_MODULES_PATH=../../opencv_contrib/modules  -DCMAKE_CXX_FLAGS="--std=c++17" ..
+    make -j$CORES_NUMBER
+    sudo make install
+}
+
 buildG2O()
 {
+    cd $DEPENDENCIES_DIR
+    if [ ! -d 20201223_git ]; then
+	wget https://github.com/RainerKuemmerle/g2o/archive/refs/tags/20201223_git.tar.gz
+    	tar -xf 20201223_git.tar.gz
+    	rm 20201223_git.tar.gz
+    fi
     echo COMPILING G2O...
-    wget https://github.com/RainerKuemmerle/g2o/archive/refs/tags/20201223_git.tar.gz
-    tar -xf 20201223_git.tar.gz
-    rm 20201223_git.tar.gz
     cd g2o-20201223_git
-    mkdir build
-    mkdir install
+    if [ !-d build ]; then
+    	mkdir build
+    fi
     cd build
-    cmake -DCMAKE_INSTALL_PREFIX=../install -DG2O_USE_CSPARSE=ON ..
-    make -j4
-    make install
+    cmake -DG2O_USE_CSPARSE=ON ..
+    make -j$CORES_NUMBER
+    sudo make install
+    cd $PROJECT_DIR
 }
 
 buildAruco()
 {
+    cd $DEPENDENCIES_DIR
     local filename=aruco-3.1.12.zip
     local aruco_dir=aruco-3.1.12
     echo COMPILING ARUCO...
     wget hwget https://sourceforge.net/projects/aruco/files/$filename
     unzip $filename
     rm $filename
-    cd $aruco-3.1.12
+    cd $aruco_dir
     mkdir build
     cd build
     cmake ..
-    make && sudo make install
+    make -j$CORES_NUMBER && sudo make install
+    cd $PROJECT_DIR
 
     
 }
@@ -150,7 +195,6 @@ installUbuntuDependencies()
     echo INSTAL install_dependencies?  $INSTALL_DEPENDENCIES $TRUE
     sudo apt-get update || $(echo "apt-get update failed" exit  )
     sudo apt install build-essential || echo "apt install build-essential failed" exit
-    sudo apt install libopencv-dev || echo "apt install opencv failed"  exit
     sudo apt install cmake || echo "apt install cmake failed" exit
     sudo apt install libpcl-dev || echo "apt install libpcl-dev failed"  exit
     sudo apt install libusb-1.0-0-dev || echo "apt install libusb-1.0-0-dev failed" exit
@@ -160,14 +204,17 @@ installUbuntuDependencies()
 
 ############# MAIN CODE #############
 main()
-{
-
+{ 
+    if [ ! -d $DEPENDENCIES_DIR ]; 
+    then
+    	mkdir $DEPENDENCIES_DIR
+    fi
     kernel_name=$(uname -s)
 
     checkVerboseFromUserInput "$@"
 
 
-    if [ $VERBOSE -eq $TRUE ];
+    if [ "$VERBOSE" -eq "$TRUE" ];
     then
         echo "Kernel Name: $kernel_name"
     fi
@@ -183,21 +230,26 @@ main()
             then 
                 getUbuntuVersion
                 
-                if [ $UBUNTU_MAJOR_VERSION -ge 20 -a $INSTALL_DEPENDENCIES -eq $TRUE ]; then
+                if [ $UBUNTU_MAJOR_VERSION -ge 18 -a $INSTALL_DEPENDENCIES -eq $TRUE ]; then
                     installUbuntuDependencies
                 fi
             else
-                echo "your Ubuntu Version ($UBUNTU_VERSION) is not compatible"
+                echo "your Ubuntu Version $UBUNTU_VERSION is not compatible"
                 exit
             fi
-
+	    
+	    if [ $BUILD_OPENCV -eq $TRUE ]; then
+                buildOpenCV
+            fi
+            
             if [ $BUILD_G2O -eq $TRUE ]; then
                 buildG2O
             fi
+            
             if [ $BUILD_ARUCO -eq $TRUE ]; then
-                echo UHUU
                 buildAruco
             fi
+
 
         elif [ $is_valid_distro -eq $FALSE ];
         then
