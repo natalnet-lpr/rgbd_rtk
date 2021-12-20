@@ -154,8 +154,8 @@ buildOpenCV()
 buildG2O()
 {
     cd $DEPENDENCIES_DIR
-    if [ ! -d 20201223_git ]; then
-	wget https://github.com/RainerKuemmerle/g2o/archive/refs/tags/20201223_git.tar.gz
+    if [ ! -d  g2o-20201223_git ]; then
+    	wget https://github.com/RainerKuemmerle/g2o/archive/refs/tags/20201223_git.tar.gz
     	tar -xf 20201223_git.tar.gz
     	rm 20201223_git.tar.gz
     fi
@@ -177,9 +177,11 @@ buildAruco()
     local filename=aruco-3.1.12.zip
     local aruco_dir=aruco-3.1.12
     echo COMPILING ARUCO...
-    wget hwget https://sourceforge.net/projects/aruco/files/$filename
-    unzip $filename
-    rm $filename
+    if [ ! -d $aruco_dir ]; then
+        wget hwget https://sourceforge.net/projects/aruco/files/$filename
+        unzip $filename
+        rm $filename
+    fi
     cd $aruco_dir
     mkdir build
     cd build
