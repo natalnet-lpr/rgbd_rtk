@@ -14,3 +14,7 @@
 	path = deps/pcl
 	url = https://github.com/PointCloudLibrary/pcl.git
 	branch = pcl-1.10.1
+[submodule "deps/g2o"]
+	path = deps/g2o
+	url = https://github.com/RainerKuemmerle/g2o.git
+	branch = 20200410_git
