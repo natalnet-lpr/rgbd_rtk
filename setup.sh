@@ -4,6 +4,7 @@ declare -r FALSE=0
 declare -r PROJECT_DIR=$PWD
 declare -r DEPENDENCIES_DIR="$PROJECT_DIR"/deps
 declare -r CORES_NUMBER=`nproc`
+declare -r INSTALL_DIR="~/Libraries/CPP/Installation"
 echo "CPU Cores :" $CORES_NUMBER
 splitString(){
 
@@ -127,45 +128,27 @@ checkVerboseFromUserInput()
     
 
 }
-
+updateGitSubmodules()
+{
+    cd $PROJECT_DIR
+    git submodule update --init --recursive	
+}
 buildOpenCV()
 {
-    cd $DEPENDENCIES_DIR
-    if [ ! -d "opencv_contrib" ];then
-        git clone https://github.com/opencv/opencv_contrib.git
-        cd opencv_contrib
-        git checkout 4.5.3
-        cd ..
-    fi
-    if [ ! -d "opencv" ];then
-        git clone https://github.com/opencv/opencv.git
-        cd opencv
-        git checkout 4.5.3
-        cd ..
-    fi
-    cd opencv
+    cd $DEPENDENCIES_DIR/opencv
     mkdir build
     cd build
-    cmake  -DOPENCV_EXTRA_MODULES_PATH=../../opencv_contrib/modules  -DCMAKE_CXX_FLAGS="--std=c++17" ..
+    cmake  -DOPENCV_EXTRA_MODULES_PATH=$DEPENDENCIES_DIR/opencv-contrib/modules -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR  -DCMAKE_CXX_FLAGS="--std=c++17" ..
     make -j$CORES_NUMBER
     sudo make install
+    cd $PROJECT_DIR
 }
 
 buildG2O()
 {
-    cd $DEPENDENCIES_DIR
-    if [ ! -d  g2o-20201223_git ]; then
-    	wget https://github.com/RainerKuemmerle/g2o/archive/refs/tags/20201223_git.tar.gz
-    	tar -xf 20201223_git.tar.gz
-    	rm 20201223_git.tar.gz
-    fi
-    echo COMPILING G2O...
-    cd g2o-20201223_git
-    if [ !-d build ]; then
-    	mkdir build
-    fi
+    cd $DEPENDENCIES_DIR/g2o
     cd build
-    cmake -DG2O_USE_CSPARSE=ON ..
+    cmake -DG2O_USE_CSPARSE=ON  -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR -DCMAKE_CXX_FLAGS="--std=c++17" ..
     make -j$CORES_NUMBER
     sudo make install
     cd $PROJECT_DIR
@@ -185,12 +168,23 @@ buildAruco()
     cd $aruco_dir
     mkdir build
     cd build
-    cmake ..
+    cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR ..
     make -j$CORES_NUMBER && sudo make install
     cd $PROJECT_DIR
 
     
 }
+
+buildPCL()
+{
+    cd $DEPENDENCIES_DIR/pcl
+    mkdir build
+    cd build
+    cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR ..
+    make -j$CORES_NUMBER && sudo make install
+    cd $PROJECT_DIR
+}
+
 
 installUbuntuDependencies()
 {   
@@ -201,6 +195,8 @@ installUbuntuDependencies()
     sudo apt install libpcl-dev || echo "apt install libpcl-dev failed"  exit
     sudo apt install libusb-1.0-0-dev || echo "apt install libusb-1.0-0-dev failed" exit
     sudo apt install libsuitesparse-dev || echo "apt install libsuitesparse-dev failed" exit
+    sudo apt install libboost-all-dev || echo "apt install libboost-all-dev failed" exit
+
 } 
 
 
@@ -223,6 +219,8 @@ main()
 
     if [ $kernel_name == "Linux" ];
     then    
+        updateGitSubmodules
+
         checkDistro "Ubuntu"
         is_valid_distro=$?
 
