@@ -10,3 +10,7 @@
 	path = deps/eigen
 	url = https://gitlab.com/libeigen/eigen.git
 	branch = 3.4
+[submodule "deps/pcl"]
+	path = deps/pcl
+	url = https://github.com/PointCloudLibrary/pcl.git
+	branch = pcl-1.10.1
