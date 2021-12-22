@@ -2,3 +2,7 @@
 	path = deps/opencv
 	url = https://github.com/opencv/opencv.git
 	branch = 4.5.4
+[submodule "deps/opencv-contrib"]
+	path = deps/opencv-contrib
+	url = https://github.com/opencv/opencv_contrib.git
+	branch = 4.5.4
