@@ -6,3 +6,7 @@
 	path = deps/opencv-contrib
 	url = https://github.com/opencv/opencv_contrib.git
 	branch = 4.5.4
+[submodule "deps/eigen"]
+	path = deps/eigen
+	url = https://gitlab.com/libeigen/eigen.git
+	branch = 3.4
