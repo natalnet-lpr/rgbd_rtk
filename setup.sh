@@ -189,7 +189,7 @@ buildOpenCV()
     mkdir build
     cd build
     cmake  -DOPENCV_EXTRA_MODULES_PATH=$DEPENDENCIES_DIR/opencv-contrib/modules -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR  -DCMAKE_CXX_FLAGS="--std=c++17" \
-    -DWITH_FREETYPE=ON -DOPENCV_ENABLE_NONFREE=ON  Eigen3_DIR=$INSTALL_DIR/share/eigen3/cmake ..
+    -DWITH_FREETYPE=ON -DOPENCV_ENABLE_NONFREE=ON  Eigen3_DIR=$INSTALL_DIR/share/eigen3/cmake -DWITH_GTK_2_X=ON ..
     make -j$CORES_NUMBER
     sudo make install
     cd $PROJECT_DIR
