@@ -4,7 +4,7 @@ declare -r FALSE=0
 declare -r PROJECT_DIR=$PWD
 declare -r DEPENDENCIES_DIR="$PROJECT_DIR"/deps
 declare CORES_NUMBER=`nproc`
-declare -r INSTALL_DIR="/usr/local/"
+declare -r INSTALL_DIR="/usr/local"
 declare -r SLEEP_FOR=2
 
 printIFVerbose()
@@ -178,7 +178,7 @@ buildEigen()
     mkdir build
     cd build
     cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR  -DCXX_STANDARD=17 ..
-    sudo make install
+    make install
 }
 buildOpenCV()
 {
@@ -191,7 +191,7 @@ buildOpenCV()
     cmake  -DOPENCV_EXTRA_MODULES_PATH=$DEPENDENCIES_DIR/opencv-contrib/modules -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR  -DCMAKE_CXX_FLAGS="--std=c++17" \
     -DWITH_FREETYPE=ON -DOPENCV_ENABLE_NONFREE=ON  Eigen3_DIR=$INSTALL_DIR/share/eigen3/cmake -DWITH_GTK_2_X=ON ..
     make -j$CORES_NUMBER
-    sudo make install
+    make install
     cd $PROJECT_DIR
 }
 
@@ -206,7 +206,7 @@ buildG2O()
     cmake -DG2O_USE_CSPARSE=ON  -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR -DCMAKE_CXX_FLAGS="--std=c++17" ..
     make -j$CORES_NUMBER
     
-    sudo make install
+    make install
     cd $PROJECT_DIR
 }
 
@@ -231,7 +231,7 @@ buildAruco()
     #      cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR -DOpenCV_DIR=$INSTALL_DIR/lib/cmake/opencv4 ..
     cmake  -DOpenCV_DIR=$INSTALL_DIR/lib/cmake/opencv4  ..
     make -j$CORES_NUMBER
-    sudo make install
+    make install
     cd $PROJECT_DIR
 
     
@@ -246,7 +246,7 @@ buildPCL()
     mkdir build
     cd build
     cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR  -DCMAKE_CXX_STANDARD=17 ..
-    make -j$CORES_NUMBER && sudo make install
+    make -j$CORES_NUMBER && make install
     cd $PROJECT_DIR
 }
 
@@ -256,14 +256,14 @@ installUbuntuDependencies()
     clear
     printIFVerbose "[INFO] Installing ubuntu dependencies"
     sleep $SLEEP_FOR
-    sudo apt-get update || $(echo "apt-get update failed" exit  )
-    sudo apt install -y build-essential || echo "apt install build-essential failed" exit
-    sudo apt install -y cmake || echo "apt install cmake failed" exit
-    sudo apt install -y libusb-1.0-0-dev || echo "apt install libusb-1.0-0-dev failed" exit
-    sudo apt install -y libsuitesparse-dev || echo "apt install libsuitesparse-dev failed" exit
-    sudo apt install -y libboost-all-dev || echo "apt install libboost-all-dev failed" exit
-    sudo apt install -y libvtk7-dev | echo "apt install libvtk7-dev failed" exit
-
+    apt-get update || $(echo "apt-get update failed" exit  )
+    apt install -y build-essential || echo "apt install build-essential failed" exit
+    apt install -y cmake || echo "apt install cmake failed" exit
+    apt install -y libusb-1.0-0-dev || echo "apt install libusb-1.0-0-dev failed" exit
+    apt install -y libsuitesparse-dev || echo "apt install libsuitesparse-dev failed" exit
+    apt install -y libboost-all-dev || echo "apt install libboost-all-dev failed" exit
+    apt install -y libvtk7-dev | echo "apt install libvtk7-dev failed" exit
+    apt install -y libflann-dev | echo "apt install libflann-dev failed" exit
 }
 buildRGBD_RTK()
 {
@@ -280,20 +280,27 @@ installGCC9()
 {
     	printIFVerbose "[INFO] Installing GCC and G++ version 9.4"
     	sleep $SLEEP_FOR
-	sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-	sudo apt-get update
-	sudo apt install gcc-9
-	sudo apt install g++-9
-	sudo unlink /usr/bin/g++
-	sudo unlink /usr/bin/gcc
-	sudo ln -sn /usr/bin/g++-9 /usr/bin/g++
-	sudo ln -sn /usr/bin/gcc-9 /usr/bin/gcc
+	add-apt-repository ppa:ubuntu-toolchain-r/test
+	apt-get update
+	apt install gcc-9
+	apt install g++-9
+	unlink /usr/bin/g++
+	unlink /usr/bin/gcc
+	ln -sn /usr/bin/g++-9 /usr/bin/g++
+	ln -sn /usr/bin/gcc-9 /usr/bin/gcc
 }
 
 
 ############# MAIN CODE #############
 main()
 { 
+    if [ `whoami` != "root" ];
+    then
+        printIFVerbose "[ERROR] YOU NEED ROOT PERMISSION TO RUN THIS SCRIPT"
+        exit 1
+
+    fi
+
     if [ ! -d $DEPENDENCIES_DIR ]; 
     then
     	mkdir $DEPENDENCIES_DIR
