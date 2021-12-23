@@ -4,7 +4,7 @@ declare -r FALSE=0
 declare -r PROJECT_DIR=$PWD
 declare -r DEPENDENCIES_DIR="$PROJECT_DIR"/deps
 declare CORES_NUMBER=`nproc`
-declare -r INSTALL_DIR="~/Libraries/CPP/Installation"
+declare -r INSTALL_DIR="/usr/local/"
 declare -r SLEEP_FOR=2
 
 printIFVerbose()
@@ -114,7 +114,6 @@ checkVerboseFromUserInput()
     do
         if [ $var == '-a' ];
         then
-            VERBOSE=$TRUEa
             BUILD_OPENCV=$TRUE
             BUILD_G2O=$TRUE
             BUILD_ARUCO=$TRUE
@@ -147,8 +146,8 @@ checkVerboseFromUserInput()
         then
             BUILD_PCL=$TRUE
             options="${options} -BUILD_PCL"
-        fi
         elif [ $var == "-BUILD_EIGEN" ];
+	then
             BUILD_EIGEN=$TRUE
             options="${options} -BUILD_EIGEN"
         fi
