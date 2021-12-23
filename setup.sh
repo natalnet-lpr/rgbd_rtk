@@ -108,7 +108,7 @@ checkVerboseFromUserInput()
     INSTALL_DEPENDENCIES=$FALSE
     BUILD_PCL=$FALSE
     BUILD_RGBD_RTK=$TRUE
-    
+    BUILD_EIGEN=$FALSE
     options=" "
     for var in "$@"
     do
@@ -121,6 +121,7 @@ checkVerboseFromUserInput()
             INSTALL_DEPENDENCIES=$TRUE
             BUILD_PCL=$TRUE
             BUILD_RGBD_RTK=$TRUE
+            BUILD_EIGEN=$TRUE
         fi
         if [ $var == "-v" ];
         then
@@ -142,10 +143,14 @@ checkVerboseFromUserInput()
         then
             BUILD_ARUCO=$TRUE
             options="${options} -BUILD_ARUCO"
- 	elif [ $var == "-BUILD_PCL" ];
+        elif [ $var == "-BUILD_PCL" ];
         then
             BUILD_PCL=$TRUE
             options="${options} -BUILD_PCL"
+        fi
+        elif [ $var == "-BUILD_EIGEN" ];
+            BUILD_EIGEN=$TRUE
+            options="${options} -BUILD_EIGEN"
         fi
     done
     if [ $VERBOSE -eq $FALSE ];then
@@ -332,7 +337,9 @@ main()
                 exit
             fi
 
-            buildEigen
+            if [ $BUILD_EIGEN -eq $TRUE ]; then
+                buildEigen
+            fi
 
 	        if [ $BUILD_OPENCV -eq $TRUE ]; then
                 buildOpenCV
