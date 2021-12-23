@@ -3,9 +3,34 @@ declare -r TRUE=1
 declare -r FALSE=0
 declare -r PROJECT_DIR=$PWD
 declare -r DEPENDENCIES_DIR="$PROJECT_DIR"/deps
-declare -r CORES_NUMBER=`nproc`
+declare CORES_NUMBER=`nproc`
 declare -r INSTALL_DIR="~/Libraries/CPP/Installation"
+declare -r SLEEP_FOR=2
+
+printIFVerbose()
+{
+    if [ $VERBOSE==$TRUE ];then
+        echo "$@"
+    fi
+}
+checkFreeRAM()
+{
+  freeRAM=`free -g |  awk '{print $NF}' | tr "\n" " " | awk '{print $2}'`
+}
+
+if [ $CORES_NUMBER -ge 4 ]; then
+    checkFreeRAM
+    printIFVerbose "[INFO] AVAILABLE RAM MEMORY: " $freeRAM "GB"
+    if [ $freeRAM -le 16 ]; then
+        CORES_NUMBER=2
+        printIFVerbose "[INFO] Insuficient RAM" 
+        printIFVerbose "[INFO] Setting up the number of used cores to: " $CORES_NUMBER
+
+    fi
+fi
+
 echo "CPU Cores :" $CORES_NUMBER
+
 splitString(){
 
     local string=$(echo "$1")    
@@ -56,10 +81,8 @@ checkDistro()
     local test=$target_distro
     # first get the complete distro name and split it into a string
     local distro_name=$(lsb_release -d)
-
-    if [ "$VERBOSE" -eq "$TRUE" ]; then
-        echo "Distro Name: " $distro_name
-    fi
+	
+    printIFVerbose "[INFO] Distro Name: " $distro_name
 
     local delimiter=' '
     splitString  "$distro_name"   "$delimiter"
@@ -68,10 +91,7 @@ checkDistro()
 
     if [ $?  -eq 1 ];
     then 
-        if [ "$VERBOSE" -eq "$TRUE" ];
-            then echo "DISTRO NAME: $target_distro"
-            echo $?
-        fi
+        printIFVerbose "[INFO] DISTRO NAME: $target_distro"
         TARGET_DISTRO=$target_distro
         return $TRUE
     else
@@ -86,6 +106,9 @@ checkVerboseFromUserInput()
     BUILD_G2O=$FALSE
     BUILD_ARUCO=$FALSE
     INSTALL_DEPENDENCIES=$FALSE
+    BUILD_PCL=$FALSE
+    BUILD_RGBD_RTK=$TRUE
+    
     options=" "
     for var in "$@"
     do
@@ -96,6 +119,8 @@ checkVerboseFromUserInput()
             BUILD_G2O=$TRUE
             BUILD_ARUCO=$TRUE
             INSTALL_DEPENDENCIES=$TRUE
+            BUILD_PCL=$TRUE
+            BUILD_RGBD_RTK=$TRUE
         fi
         if [ $var == "-v" ];
         then
@@ -117,28 +142,50 @@ checkVerboseFromUserInput()
         then
             BUILD_ARUCO=$TRUE
             options="${options} -BUILD_ARUCO"
+ 	elif [ $var == "-BUILD_PCL" ];
+        then
+            BUILD_PCL=$TRUE
+            options="${options} -BUILD_PCL"
         fi
     done
     if [ $VERBOSE -eq $FALSE ];then
         echo "VERBOSE MODE OFF"
     else
-        echo "VERBOSE MODE ON"
-        echo "ENABLED OPTIONS: $options"
+        printIFVerbose "[INFO] VERBOSE MODE ON"
+        printIFVerbose "[INFO] ENABLED OPTIONS: $options"
     fi
     
 
 }
+
 updateGitSubmodules()
 {
+    printIFVerbose "[INFO] updating git submobules"
+    sleep $SLEEP_FOR
     cd $PROJECT_DIR
     git submodule update --init --recursive	
 }
+buildEigen()
+{
+    clear
+    printIFVerbose "[INFO] building Eigen"
+    sleep $SLEEP_FOR
+    cd $DEPENDENCIES_DIR/eigen
+    mkdir build
+    cd build
+    cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR  -DCXX_STANDARD=17 ..
+    sudo make install
+}
 buildOpenCV()
 {
+    clear
+    printIFVerbose "[INFO] building OpenCV"
+    sleep $SLEEP_FOR
     cd $DEPENDENCIES_DIR/opencv
     mkdir build
     cd build
-    cmake  -DOPENCV_EXTRA_MODULES_PATH=$DEPENDENCIES_DIR/opencv-contrib/modules -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR  -DCMAKE_CXX_FLAGS="--std=c++17" ..
+    cmake  -DOPENCV_EXTRA_MODULES_PATH=$DEPENDENCIES_DIR/opencv-contrib/modules -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR  -DCMAKE_CXX_FLAGS="--std=c++17" \
+    -DWITH_FREETYPE=ON -DOPENCV_ENABLE_NONFREE=ON  Eigen3_DIR=$INSTALL_DIR/share/eigen3/cmake ..
     make -j$CORES_NUMBER
     sudo make install
     cd $PROJECT_DIR
@@ -146,16 +193,24 @@ buildOpenCV()
 
 buildG2O()
 {
+    clear
+    printIFVerbose "[INFO] building G2O"
+    sleep $SLEEP_FOR
     cd $DEPENDENCIES_DIR/g2o
+    mkdir build 
     cd build
     cmake -DG2O_USE_CSPARSE=ON  -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR -DCMAKE_CXX_FLAGS="--std=c++17" ..
     make -j$CORES_NUMBER
+    
     sudo make install
     cd $PROJECT_DIR
 }
 
 buildAruco()
 {
+    clear
+    printIFVerbose "[INFO] building Aruco"
+    sleep $SLEEP_FOR
     cd $DEPENDENCIES_DIR
     local filename=aruco-3.1.12.zip
     local aruco_dir=aruco-3.1.12
@@ -168,8 +223,11 @@ buildAruco()
     cd $aruco_dir
     mkdir build
     cd build
-    cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR ..
-    make -j$CORES_NUMBER && sudo make install
+    # this not work yet, the findAruco.cmake file is not compatible
+    #      cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR -DOpenCV_DIR=$INSTALL_DIR/lib/cmake/opencv4 ..
+    cmake  -DOpenCV_DIR=$INSTALL_DIR/lib/cmake/opencv4  ..
+    make -j$CORES_NUMBER
+    sudo make install
     cd $PROJECT_DIR
 
     
@@ -177,10 +235,13 @@ buildAruco()
 
 buildPCL()
 {
+    clear
+    printIFVerbose "[INFO] building PCL"
+    sleep $SLEEP_FOR
     cd $DEPENDENCIES_DIR/pcl
     mkdir build
     cd build
-    cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR ..
+    cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR  -DCMAKE_CXX_STANDARD=17 ..
     make -j$CORES_NUMBER && sudo make install
     cd $PROJECT_DIR
 }
@@ -188,16 +249,42 @@ buildPCL()
 
 installUbuntuDependencies()
 {   
-    echo INSTAL install_dependencies?  $INSTALL_DEPENDENCIES $TRUE
+    clear
+    printIFVerbose "[INFO] Installing ubuntu dependencies"
+    sleep $SLEEP_FOR
     sudo apt-get update || $(echo "apt-get update failed" exit  )
-    sudo apt install build-essential || echo "apt install build-essential failed" exit
-    sudo apt install cmake || echo "apt install cmake failed" exit
-    sudo apt install libpcl-dev || echo "apt install libpcl-dev failed"  exit
-    sudo apt install libusb-1.0-0-dev || echo "apt install libusb-1.0-0-dev failed" exit
-    sudo apt install libsuitesparse-dev || echo "apt install libsuitesparse-dev failed" exit
-    sudo apt install libboost-all-dev || echo "apt install libboost-all-dev failed" exit
+    sudo apt install -y build-essential || echo "apt install build-essential failed" exit
+    sudo apt install -y cmake || echo "apt install cmake failed" exit
+    sudo apt install -y libusb-1.0-0-dev || echo "apt install libusb-1.0-0-dev failed" exit
+    sudo apt install -y libsuitesparse-dev || echo "apt install libsuitesparse-dev failed" exit
+    sudo apt install -y libboost-all-dev || echo "apt install libboost-all-dev failed" exit
+    sudo apt install -y libvtk7-dev | echo "apt install libvtk7-dev failed" exit
 
+}
+buildRGBD_RTK()
+{
+    printIFVerbose "[INFO] building the project RGBD-RTK"
+    sleep $SLEEP_FOR
+    cd $PROJECT_DIR
+    mkdir build
+    cd build
+    echo $INSTALL_DIR/lib/cmake/g2o
+    cmake -DOpenCV_DIR=$INSTALL_DIR/lib/cmake/opencv4 -DG2O_DIR=$INSTALL_DIR ..
+    make
 } 
+installGCC9()
+{
+    	printIFVerbose "[INFO] Installing GCC and G++ version 9.4"
+    	sleep $SLEEP_FOR
+	sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+	sudo apt-get update
+	sudo apt install gcc-9
+	sudo apt install g++-9
+	sudo unlink /usr/bin/g++
+	sudo unlink /usr/bin/gcc
+	sudo ln -sn /usr/bin/g++-9 /usr/bin/g++
+	sudo ln -sn /usr/bin/gcc-9 /usr/bin/gcc
+}
 
 
 ############# MAIN CODE #############
@@ -212,10 +299,8 @@ main()
     checkVerboseFromUserInput "$@"
 
 
-    if [ "$VERBOSE" -eq "$TRUE" ];
-    then
-        echo "Kernel Name: $kernel_name"
-    fi
+
+    printIFVerbose "[INFO] Kernel Name: $kernel_name"
 
     if [ $kernel_name == "Linux" ];
     then    
@@ -232,13 +317,24 @@ main()
                 
                 if [ $UBUNTU_MAJOR_VERSION -ge 18 -a $INSTALL_DEPENDENCIES -eq $TRUE ]; then
                     installUbuntuDependencies
+                elif [ $INSTALL_DEPENDENCIES -eq $TRUE ]; then
+                	installGCC9
+                	installUbuntuDependencies
+                	echo "G++ and GCC upgraded"
+                	echo "missing:"
+                	echo "libboost (1.7+)"
+                	echo "cmake (3.16+)"
+                	
                 fi
+               
             else
-                echo "your Ubuntu Version $UBUNTU_VERSION is not compatible"
+                echo "your Distro is not compatible"
                 exit
             fi
-	    
-	    if [ $BUILD_OPENCV -eq $TRUE ]; then
+
+            buildEigen
+
+	        if [ $BUILD_OPENCV -eq $TRUE ]; then
                 buildOpenCV
             fi
             
@@ -249,8 +345,13 @@ main()
             if [ $BUILD_ARUCO -eq $TRUE ]; then
                 buildAruco
             fi
-
-
+            if [ $BUILD_PCL -eq $TRUE ]; then
+            	buildPCL
+            fi
+            
+            if [ $BUILD_RGBD_RTK -eq $TRUE ]; then
+               buildRGBD_RTK
+	        fi
         elif [ $is_valid_distro -eq $FALSE ];
         then
             echo "Invalid Distro"
