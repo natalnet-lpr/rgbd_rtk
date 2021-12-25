@@ -264,6 +264,8 @@ installUbuntuDependencies()
     apt install -y libboost-all-dev || echo "apt install libboost-all-dev failed" exit
     apt install -y libvtk7-dev | echo "apt install libvtk7-dev failed" exit
     apt install -y libflann-dev | echo "apt install libflann-dev failed" exit
+    apt install -y gtk-dev | echo "apt install libflann-dev failed" exit
+    apt install -y libgtk2.0-dev | echo "apt install libgtk2.0-dev failed" exit
 }
 buildRGBD_RTK()
 {
