@@ -273,7 +273,7 @@ buildRGBD_RTK()
     mkdir build
     cd build
     echo $INSTALL_DIR/lib/cmake/g2o
-    cmake -DOpenCV_DIR=$INSTALL_DIR/lib/cmake/opencv4 -DG2O_DIR=$INSTALL_DIR ..
+    cmake -DOpenCV_DIR=$INSTALL_DIR/lib/cmake/opencv4 -DG2O_DIR=$INSTALL_DIR  -DPCL_DIR=$INSTALL_DIR/share/pcl-1.10/ ..
     make
 } 
 installGCC9()
