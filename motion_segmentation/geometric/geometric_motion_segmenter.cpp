@@ -8,17 +8,17 @@
 
 GeometricMotionSegmenter::GeometricMotionSegmenter()
 {
-    dyna_pts_ = std::make_shared<vector<cv::Point2f>>();
+    dyna_pts_ = boost::make_shared<vector<cv::Point2f>>();
     initialized_ = false;
 }
 GeometricMotionSegmenter::GeometricMotionSegmenter(vector<Tracklet> * tracklets,
                                  const PointCloud<PointT>::Ptr curr_cloud,
                                  const PointCloud<PointT>::Ptr prev_cloud,
-                                 const shared_ptr<Eigen::Affine3f> & curr_cloud_relative_pose, 
+                                 const boost::shared_ptr<Eigen::Affine3f> & curr_cloud_relative_pose, 
                                  float threshold,uint8_t dynamic_range,
                                  float mask_point_radius)
 {
-    dyna_pts_ = std::make_shared<std::vector<cv::Point2f>>() ;
+    dyna_pts_ = boost::make_shared<std::vector<cv::Point2f>>() ;
     tracklets_ = tracklets;
     curr_dense_cloud_ = curr_cloud;
     prev_dense_cloud_ = prev_cloud;
@@ -77,7 +77,7 @@ bool GeometricMotionSegmenter::isDynamicPoint(const PointT & pt_from, const Poin
 }
 void GeometricMotionSegmenter::calculateDynamicPoints(const pcl::PointCloud<PointT> & sparse_cloud_from, 
             const pcl::PointCloud<PointT> & sparse_cloud_to,  const std::vector<cv::Point2f> & curr_pts,
-            const Eigen::Affine3f & clouds_relative_pose,std::vector<cv::Point2f> & dyna_pts, 
+            const Eigen::Affine3f & clouds_relative_pose,
             const float  threshold, const std::vector<int> & idxs_to)
 {
     // apply the relative transformation in the cloud
@@ -104,11 +104,14 @@ void GeometricMotionSegmenter::calculateDynamicPoints(const pcl::PointCloud<Poin
         {   
             if(k >= idxs_to.size() )
                 break;
-            dyna_pts.push_back((curr_pts)[idxs_to[k]]);
+            int idx = idxs_to[k];
+            if( idx_is_dyna_pts_map_.find(idx) == idx_is_dyna_pts_map_.end())
+            {
+                idx_is_dyna_pts_map_[idx] = 0;
+            }
+            idx_is_dyna_pts_map_[idx] += 1;
+            //dyna_pts.push_back((curr_pts)[idx]);
             k++;
-            
-
-            
         }
     }
 }
@@ -121,7 +124,7 @@ std::vector<cv::Point2f> createPointVectorFromTracklet
     // current points vector
     for(const auto & tracklet:tracklets_)
     {
-        auto it =  tracklet.pts2D_  .end()- reverse_idx;
+        auto it =  tracklet.pts2D_.end() - reverse_idx;
         points.push_back(*it);
     }
 
@@ -133,6 +136,7 @@ void GeometricMotionSegmenter::calculateDynamicPoints()
     dyna_pts_->clear();
     auto curr_pts = createPointVectorFromTracklet(*tracklets_);
     PointCloud<PointT> curr_sparse_cloud;
+    
     vector<int> point_idxs;
     
     //PointCloud<PointT>::Ptr prev_sparse_cloud(new  PointCloud<PointT>());
@@ -167,21 +171,38 @@ void GeometricMotionSegmenter::calculateDynamicPoints()
     {
         relative_poses_.erase(relative_poses_.begin());
     }
+    idx_is_dyna_pts_map_.clear();
 
-    calculateDynamicPoints(prev_sparse_cloud,curr_sparse_cloud,
-                           curr_pts, (relative_poses_.back()),
-                           (*dyna_pts_),threshold_,point_idxs);
+    for(uint8_t i = 1; i < relative_poses_.size(); i++)
+    {   
+        uint8_t prev_cloud_idx = i - 1;
+        auto prev_sparse_cloud = *(sparse_clouds_.begin() + prev_cloud_idx);
+        auto curr_sparse_cloud = *(sparse_clouds_.begin() + i);
+
+        calculateDynamicPoints(prev_sparse_cloud,curr_sparse_cloud,
+                           curr_pts, (relative_poses_[i-1]),
+                           threshold_,point_idxs);
+        
+    }
+    for(const auto & idx_counter:idx_is_dyna_pts_map_)
+    {
+        if(idx_counter.second)
+        {
+            dyna_pts_->push_back(curr_pts[idx_counter.first]);
+        }
+    }
+    
 }
 void GeometricMotionSegmenter::segment(const cv::Mat & in_img, cv::Mat & out_img)
 {
     calculateDynamicPoints();
 
-    cv::Mat output_mask(cv::Size(in_img.cols,in_img.rows),CV_8UC3,cv::Scalar(0));
+    cv::Mat output_mask(cv::Size(in_img.cols,in_img.rows),CV_8UC3,cv::Scalar(255,255,255));
 
     for(const auto & pt:*dyna_pts_)
     {
-        cv::circle(output_mask,pt,mask_point_radius_,cv::Scalar(255,255,255),-1);
-
+        cv::circle(output_mask,pt,mask_point_radius_,cv::Scalar(0,0,0),-1);
     }
+
     output_mask.copyTo(out_img);
 }
