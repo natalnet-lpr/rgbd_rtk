@@ -43,7 +43,6 @@
 #include <reconstruction_visualizer.h>
 #include <geometric/geometric_motion_segmenter.h>
 
-using namespace std;
 using namespace cv;
 
 /**
@@ -66,7 +65,7 @@ int main(int argc, char **argv)
 	string index_file;
 	float ransac_distance_threshold, ransac_inliers_ratio;
 	Eigen::Affine3f pose = Eigen::Affine3f::Identity();
-	std::shared_ptr<Eigen::Affine3f> trans = std::make_shared<Eigen::Affine3f>(Eigen::Affine3f::Identity());
+	boost::shared_ptr<Eigen::Affine3f> trans = boost::make_shared<Eigen::Affine3f>(Eigen::Affine3f::Identity());
 	pcl::PointCloud<PointT>::Ptr prev_cloud(new pcl::PointCloud<PointT>);
 	pcl::PointCloud<PointT>::Ptr curr_cloud(new pcl::PointCloud<PointT>);
 
