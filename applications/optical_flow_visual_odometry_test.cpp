@@ -137,6 +137,7 @@ int main(int argc, char** argv)
 			logger.print(EventLogger::L_INFO, "[optical_flow_visual_odometry_test.cpp] Exiting\n", argv[0]);
 			break;
 		}
+		vo.writePoseToFile(rgb_img_time_stamp);
 	}
 
 	visualizer.close();
