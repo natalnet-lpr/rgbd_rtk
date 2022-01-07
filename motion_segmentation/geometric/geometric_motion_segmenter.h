@@ -30,7 +30,7 @@ class GeometricMotionSegmenter : public MotionSegmenter{
         bool isDynamicPoint(const PointT & pt_from, const PointT & pt_to) const;
 
         void calculateDynamicPoints(const pcl::PointCloud<PointT> & sparse_cloud_from, 
-            const pcl::PointCloud<PointT> & sparse_cloud_to,  const std::vector<cv::Point2f> & curr_pts,
+            const pcl::PointCloud<PointT> & sparse_cloud_to,
             const Eigen::Affine3f & clouds_relative_pose,
             const float  threshold, const std::vector<int> & idxs_to);
                                             
@@ -39,8 +39,22 @@ class GeometricMotionSegmenter : public MotionSegmenter{
         inline boost::shared_ptr<vector<cv::Point2f>> getDynaPoints(){
             return dyna_pts_;
         };
+        inline boost::shared_ptr<vector<cv::Point2f>> getCurrStaticPoints()
+        {
+            return curr_static_pts_;
+        }
+        inline boost::shared_ptr<vector<cv::Point2f>> getPrevStaticPoints()
+        {
+            return prev_static_pts_;
+        }
+        std::vector<int> getStaticPointsIndex();
     protected:
         std::unordered_map<int,int> idx_is_dyna_pts_map_;
+        // current static points
+        boost::shared_ptr<vector<cv::Point2f>> curr_static_pts_;
+        // previous static points
+        boost::shared_ptr<vector<cv::Point2f>> prev_static_pts_;
+
         //  current dynamic points
         boost::shared_ptr<vector<cv::Point2f>> dyna_pts_;
 

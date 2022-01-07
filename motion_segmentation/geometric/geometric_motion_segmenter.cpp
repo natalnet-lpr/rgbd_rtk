@@ -4,10 +4,13 @@
 #include <pcl/common/transforms.h>
 #include <algorithm>
 #include <math.h>
+#include <algorithm>
 #include <opencv2/imgproc/imgproc.hpp>
 
 GeometricMotionSegmenter::GeometricMotionSegmenter()
 {
+    prev_static_pts_ = boost::make_shared<std::vector<cv::Point2f>>();
+    curr_static_pts_ = boost::make_shared<std::vector<cv::Point2f>>();
     dyna_pts_ = boost::make_shared<vector<cv::Point2f>>();
     initialized_ = false;
 }
@@ -18,6 +21,8 @@ GeometricMotionSegmenter::GeometricMotionSegmenter(vector<Tracklet> * tracklets,
                                  float threshold,uint8_t dynamic_range,
                                  float mask_point_radius)
 {
+    prev_static_pts_ = boost::make_shared<std::vector<cv::Point2f>>();
+    curr_static_pts_ = boost::make_shared<std::vector<cv::Point2f>>();
     dyna_pts_ = boost::make_shared<std::vector<cv::Point2f>>() ;
     tracklets_ = tracklets;
     curr_dense_cloud_ = curr_cloud;
@@ -34,10 +39,6 @@ void featureVector2SparseCloud(const pcl::PointCloud<PointT>::Ptr dense_cloud,  
 pcl::PointCloud<PointT> & sparse_cloud,vector<int> & idxs){
     
     idxs.clear();
-    vec.erase(
-        std::remove_if(vec.begin(),vec.end(),[&](const cv::Point2f & pt2d){
-            return (is_valid(get3Dfrom2D(pt2d,dense_cloud)) == false);
-    }),vec.end());
 
     int idx = 0;
 
@@ -49,8 +50,8 @@ pcl::PointCloud<PointT> & sparse_cloud,vector<int> & idxs){
         {   
             sparse_cloud.push_back(pt3d);
             idxs.push_back(idx);
-            idx ++;
         }     
+        idx ++;
     }
 }
 
@@ -66,7 +67,7 @@ bool GeometricMotionSegmenter::isDynamicPoint(const PointT & pt_from, const Poin
     constexpr float max_distance = 2.5f;
     if(isnan(dist) || isinf(dist) || dist > max_distance)
     {
-        return false;
+        return true;
     }
   
     return  dist > threshold;
@@ -76,7 +77,7 @@ bool GeometricMotionSegmenter::isDynamicPoint(const PointT & pt_from, const Poin
     return GeometricMotionSegmenter::isDynamicPoint(pt_from, pt_to, threshold_);
 }
 void GeometricMotionSegmenter::calculateDynamicPoints(const pcl::PointCloud<PointT> & sparse_cloud_from, 
-            const pcl::PointCloud<PointT> & sparse_cloud_to,  const std::vector<cv::Point2f> & curr_pts,
+            const pcl::PointCloud<PointT> & sparse_cloud_to,
             const Eigen::Affine3f & clouds_relative_pose,
             const float  threshold, const std::vector<int> & idxs_to)
 {
@@ -88,44 +89,48 @@ void GeometricMotionSegmenter::calculateDynamicPoints(const pcl::PointCloud<Poin
     auto it_from = transformed_cloud_from.begin();
     auto it_to = sparse_cloud_to.begin(); 
 
-    int k = 0;
-
-    for(int i=0; i < sparse_cloud_from.size(); i++)
+    for(int i=0; i < std::min( sparse_cloud_from.size(), sparse_cloud_to.size()); i++)
     {
         const auto pt_from = (transformed_cloud_from)[i];
         const auto pt_to = (sparse_cloud_to)[i];
         // this is a test to discard nan points like this:
         // PointXYZ: x-> nan, y-> nan, z->nan;
-        if(!is_valid(pt_from) && !is_valid(pt_from))
+        if(!is_valid(pt_from) || !is_valid(pt_from))
         {
+            std::cout << i <<"\n";
             continue;
         }
+        else
+        {
+            if(i >= idxs_to.size() )
+                break;
+        }
+
+        int idx = i;
+        if( idx_is_dyna_pts_map_.find(idx) == idx_is_dyna_pts_map_.end())
+        {
+            idx_is_dyna_pts_map_[idx] = 0;
+        }
+
         if(isDynamicPoint(pt_from,pt_to,threshold))
         {   
-            if(k >= idxs_to.size() )
-                break;
-            int idx = idxs_to[k];
-            if( idx_is_dyna_pts_map_.find(idx) == idx_is_dyna_pts_map_.end())
-            {
-                idx_is_dyna_pts_map_[idx] = 0;
-            }
             idx_is_dyna_pts_map_[idx] += 1;
-            //dyna_pts.push_back((curr_pts)[idx]);
-            k++;
         }
+        
     }
 }
 std::vector<cv::Point2f> createPointVectorFromTracklet
     (const std::vector<Tracklet> & tracklets_, uint reverse_idx = 0)
 {
     vector<cv::Point2f> points;
-    reverse_idx++;
+
     // store the last track value to build the
     // current points vector
-    for(const auto & tracklet:tracklets_)
+    // prev -> 0  <- curr 
+    for(auto tracklet_it = tracklets_.rbegin(); tracklet_it != tracklets_.rend(); ++tracklet_it )
     {
-        auto it =  tracklet.pts2D_.end() - reverse_idx;
-        points.push_back(*it);
+        auto point_it =  tracklet_it->pts2D_.rbegin() + reverse_idx;
+        points.push_back(*point_it);
     }
 
     return points;
@@ -134,27 +139,30 @@ std::vector<cv::Point2f> createPointVectorFromTracklet
 void GeometricMotionSegmenter::calculateDynamicPoints()
 {
     dyna_pts_->clear();
+    curr_static_pts_->clear();
+    prev_static_pts_->clear();
+
     auto curr_pts = createPointVectorFromTracklet(*tracklets_);
+    auto prev_pts = createPointVectorFromTracklet(*tracklets_,1);
+
+    if (curr_pts.empty())
+        return;
+
     PointCloud<PointT> curr_sparse_cloud;
     
     vector<int> point_idxs;
     
-    //PointCloud<PointT>::Ptr prev_sparse_cloud(new  PointCloud<PointT>());
     PointCloud<PointT> prev_sparse_cloud;
 
     if(!initialized_)
     {
-        //prev_sparse_cloud = pcl::makeShared();
-        auto prev_pts = createPointVectorFromTracklet(*tracklets_,1);
-        featureVector2SparseCloud(prev_dense_cloud_,prev_pts,prev_sparse_cloud,point_idxs);
+        featureVector2SparseCloud(curr_dense_cloud_,curr_pts,prev_sparse_cloud,point_idxs);
         sparse_clouds_.push_back(prev_sparse_cloud);
         initialized_ = true;
         return;
     }
     else{
-        constexpr uint8_t prev_cloud_idx = 1;
-        auto prev_sparse_cloud_it = sparse_clouds_.end() - prev_cloud_idx;
-        prev_sparse_cloud = *prev_sparse_cloud_it;
+        prev_sparse_cloud = sparse_clouds_.back();
     }
     
     
@@ -175,20 +183,26 @@ void GeometricMotionSegmenter::calculateDynamicPoints()
 
     for(uint8_t i = 1; i < relative_poses_.size(); i++)
     {   
-        uint8_t prev_cloud_idx = i - 1;
-        auto prev_sparse_cloud = *(sparse_clouds_.begin() + prev_cloud_idx);
-        auto curr_sparse_cloud = *(sparse_clouds_.begin() + i);
+        auto prev_sparse_cloud = *(sparse_clouds_.rbegin() + i );
+        auto curr_sparse_cloud = *(sparse_clouds_.rbegin() + i - 1);
 
         calculateDynamicPoints(prev_sparse_cloud,curr_sparse_cloud,
-                           curr_pts, (relative_poses_[i-1]),
+                            (relative_poses_[i-1]),
                            threshold_,point_idxs);
         
     }
+    
     for(const auto & idx_counter:idx_is_dyna_pts_map_)
     {
-        if(idx_counter.second)
+        int idx = idx_counter.first;
+        int counter = idx_counter.second;
+        if(counter)
         {
-            dyna_pts_->push_back(curr_pts[idx_counter.first]);
+            dyna_pts_->push_back(curr_pts[idx]);
+        }
+        else{
+            curr_static_pts_->push_back(curr_pts[idx]);
+            prev_static_pts_->push_back(prev_pts[idx]);
         }
     }
     
@@ -197,12 +211,28 @@ void GeometricMotionSegmenter::segment(const cv::Mat & in_img, cv::Mat & out_img
 {
     calculateDynamicPoints();
 
-    cv::Mat output_mask(cv::Size(in_img.cols,in_img.rows),CV_8UC3,cv::Scalar(255,255,255));
+    cv::Mat output_mask(cv::Size(in_img.cols,in_img.rows),CV_8UC1,cv::Scalar(255));
 
     for(const auto & pt:*dyna_pts_)
     {
-        cv::circle(output_mask,pt,mask_point_radius_,cv::Scalar(0,0,0),-1);
+        cv::circle(output_mask,pt,mask_point_radius_,cv::Scalar(0),-1);
     }
 
     output_mask.copyTo(out_img);
+}
+std::vector<int> GeometricMotionSegmenter::getStaticPointsIndex()
+{
+    std::vector<int> idxs;
+    for(const auto & idx_counter:idx_is_dyna_pts_map_)
+    {
+        int idx = idx_counter.first;
+        int counter = idx_counter.second;
+
+        if(counter)
+        {
+            idxs.push_back(idx);
+        }
+    }
+
+    return idxs;
 }
