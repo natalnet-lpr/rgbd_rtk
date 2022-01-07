@@ -41,7 +41,7 @@ void DNNMotionSegmenter::postProcess(const Mat & in_img,Mat & out_img, const std
     Mat detections = outputs[0];
     Mat masks = outputs[1];
     // this will be copyed to out_img
-    Mat output_mask(in_img.rows,in_img.cols,CV_8UC1);
+    Mat output_mask(in_img.rows,in_img.cols,CV_8UC1,cv::Scalar(255,255,255));
 
     // Output size of masks is NxCxHxW where
 	// N - number of detected boxes
@@ -95,23 +95,13 @@ void DNNMotionSegmenter::postProcess(const Mat & in_img,Mat & out_img, const std
 
                 // convert the mask to a binary image
                 mask = mask > threshold;
+                cv::bitwise_not(mask,mask);
 
                 Mat mask_roi = output_mask(roi);
 
                 mask.copyTo(mask_roi);
-
             }
-
-            /*Mat colored_roi = (0.7*Scalar(255,178,50) + 0.6*in_img(box));
-            colored_roi.convertTo(colored_roi, CV_8UC3);
-            
-            
-            colored_roi.copyTo(frame(box),mask);*/
-            
-           
-        }
-
-        
+        }    
     }
 
     output_mask.copyTo(out_img);
