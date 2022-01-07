@@ -51,10 +51,10 @@ using namespace cv;
  * #####################################################
  */
 
-void WideBaselineTracker::detect_keypoints()
+void WideBaselineTracker::detect_keypoints(const cv::Mat& mask)
 {
     curr_kpts_.clear();
-    feature_detector_->detect(curr_frame_gray_, curr_kpts_);
+    feature_detector_->detect(curr_frame_gray_, curr_kpts_, mask);
     descriptor_extractor_->compute(curr_frame_gray_, curr_kpts_, curr_descriptors_);
     
     MLOG_DEBUG(EventLogger::M_TRACKING, "@WideBaselineTracker::detect_keypoints: detecting keypoints...\n");
@@ -349,7 +349,7 @@ void WideBaselineTracker::getGoodMatches(const double &threshold)
     }
 }
 
-bool WideBaselineTracker::track(const cv::Mat &img)
+bool WideBaselineTracker::track(const cv::Mat &img, const cv::Mat& mask)
 {
     bool is_keyframe = false;
 
@@ -372,7 +372,7 @@ bool WideBaselineTracker::track(const cv::Mat &img)
     update_buffers();
 
     // Detect KeyPoints and extract descriptors on the current frame
-    detect_keypoints();
+    detect_keypoints(mask);
 
     if (!initialized_)
     {

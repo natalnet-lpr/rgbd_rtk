@@ -50,11 +50,11 @@ using namespace cv;
  * #####################################################
  */
 
-void KLTTracker::detect_keypoints()
+void KLTTracker::detect_keypoints(const cv::Mat& mask)
 {
     // Detect Shi-Tomasi keypoints and add them to a temporary buffer.
     // The buffer is erased at the end of add_keypoints()
-    goodFeaturesToTrack(curr_frame_gray_, added_pts_, max_pts_, 0.01, 10.0, Mat(), 3, false, 0.04);
+    goodFeaturesToTrack(curr_frame_gray_, added_pts_, max_pts_, 0.01, 10.0, mask, 3, false, 0.04);
     
     MLOG_DEBUG(EventLogger::M_TRACKING, "@KLTTracker::detect_keypoints: detecting keypoints...\n");
     MLOG_DEBUG(EventLogger::M_TRACKING, "@KLTTracker::detect_keypoints: detected pts.: %lu\n",
@@ -108,7 +108,7 @@ KLTTracker::KLTTracker(const FeatureTracker::Parameters& param):
 {
 }
 
-bool KLTTracker::track(const Mat &curr_frame)
+bool KLTTracker::track(const Mat &curr_frame, const cv::Mat& mask)
 {
     bool is_keyframe = false;
 
@@ -137,7 +137,7 @@ bool KLTTracker::track(const Mat &curr_frame)
     if (!initialized_)
     {
         // Initialize tracker
-        detect_keypoints();
+        detect_keypoints(mask);
         initialized_ = true;
         is_keyframe = true;
     }
@@ -163,8 +163,10 @@ bool KLTTracker::track(const Mat &curr_frame)
         int tracked_pts = 0;
         for (size_t i = 0; i < curr_pts_.size(); i++)
         {
+            int val = (int) mask.at<uchar>(curr_pts_[i].y,curr_pts_[i].x);
+
             if (!status[i] || curr_pts_[i].x < 0 || curr_pts_[i].y < 0 ||
-                curr_pts_[i].x >= prev_frame_gray_.cols || curr_pts_[i].y >= prev_frame_gray_.rows)
+                curr_pts_[i].x >= prev_frame_gray_.cols || curr_pts_[i].y >= prev_frame_gray_.rows || val == 0)
             {
                 continue;
             }
@@ -192,7 +194,7 @@ bool KLTTracker::track(const Mat &curr_frame)
         if (tracked_pts < min_pts_)
         {
             // Detect new features, hold them and add them to the tracker in the next frame
-            detect_keypoints();
+            detect_keypoints(mask);
             // Make the current frame a new keyframe
             is_keyframe = true;
         }

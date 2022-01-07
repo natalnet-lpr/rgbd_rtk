@@ -70,7 +70,7 @@ bool is_inside_any_window(const vector<Point2f> &tracked_pts, const Point2f &pt,
  * #####################################################
  */
 
-void KLTATCWTracker::detect_keypoints()
+void KLTATCWTracker::detect_keypoints(const cv::Mat& mask)
 {
     // Detect Shi-Tomasi keypoints and add them to a temporary buffer.
     // The buffer is erased at the end of add_keypoints()
@@ -202,7 +202,7 @@ KLTATCWTracker::KLTATCWTracker(const int &min_pts, const int &max_pts, const flo
 {
 }
 
-bool KLTATCWTracker::track(const Mat &curr_frame)
+bool KLTATCWTracker::track(const Mat &curr_frame, const cv::Mat& mask)
 {
     // Make a grayscale copy of the current frame if it is in color
     if (curr_frame.channels() > 1)
@@ -229,7 +229,7 @@ bool KLTATCWTracker::track(const Mat &curr_frame)
     if (!initialized_)
     {
         // Initialize tracker
-        detect_keypoints();
+        detect_keypoints(mask);
         initialized_ = true;
     }
     // Tracker is initialized: track keypoints
@@ -282,7 +282,7 @@ bool KLTATCWTracker::track(const Mat &curr_frame)
 
         // Detect new features at every frame, hold them and add them to the tracker in the next
         // frame
-        detect_keypoints();
+        detect_keypoints(mask);
     }
 
     // print_track_info();

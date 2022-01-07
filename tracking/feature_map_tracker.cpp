@@ -72,11 +72,11 @@ void FeatureMapTracker::add_keypoints()
         map_tracklets_[0].inverted_indices_.size());
 }
 
-void FeatureMapTracker::detect_keypoints()
+void FeatureMapTracker::detect_keypoints(const cv::Mat& mask)
 {
     curr_kpts_.clear();
 
-    feature_detector_->detect(curr_frame_gray_, curr_kpts_);
+    feature_detector_->detect(curr_frame_gray_, curr_kpts_,mask);
     descriptor_extractor_->compute(curr_frame_gray_, curr_kpts_, curr_descriptors_);
     MLOG_DEBUG(EventLogger::M_TRACKING, "@FeatureMapTracker::detect_keypoints: detecting keypoints...\n");
     MLOG_DEBUG(
@@ -444,7 +444,7 @@ FeatureMapTracker::FeatureMapTracker(
     keyframe_threshold_ = keyframe_threshold;
 }
 
-bool FeatureMapTracker::track(const cv::Mat& img)
+bool FeatureMapTracker::track(const cv::Mat& img, const cv::Mat& mask)
 {
     bool is_keyframe = false;
 
@@ -466,7 +466,7 @@ bool FeatureMapTracker::track(const cv::Mat& img)
     MLOG_DEBUG(EventLogger::M_TRACKING, "@FeatureMapTracker::track: tracking frame%i\n", frame_idx_);
 
     // Detect KeyPoints and extract descriptors on the current frame
-    detect_keypoints();
+    detect_keypoints(mask);
 
     if (!initialized_)
     {

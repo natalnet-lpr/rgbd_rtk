@@ -109,7 +109,7 @@ protected:
     bool write_heatmap_info();
 
     // Detects keypoints in the current frame
-    virtual void detect_keypoints() = 0;
+    virtual void detect_keypoints(const cv::Mat& mask) = 0;
 
     // Adds keypoints detected in the previous frame to the tracker
     virtual void add_keypoints() = 0;
@@ -196,7 +196,7 @@ public:
      * @param img rgb image
      * @return boolean true if the current frame is a keyframe.
      */
-    virtual bool track(const cv::Mat &img) = 0;
+    virtual bool track(const cv::Mat &img, const cv::Mat& mask = cv::Mat()) = 0;
 
     /**
      * Converts a string to its equivalent tracker type

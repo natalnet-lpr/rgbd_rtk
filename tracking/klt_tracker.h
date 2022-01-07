@@ -60,7 +60,7 @@ protected:
     /**
      * Detects keypoints in the current frame
      */
-    void detect_keypoints();
+    void detect_keypoints(const cv::Mat& mask);
     /**
     * Adds keypoints detected in the previous frame to the tracker
     */
@@ -95,7 +95,7 @@ public:
      * @param img rgb image
      * @return boolean true if the current frame is a keyframe.
      */
-    bool track(const cv::Mat &img);
+    bool track(const cv::Mat &img, const cv::Mat& mask = cv::Mat());
 };
 
 #endif /* INCLUDE_KLT_TRACKER_H_ */
