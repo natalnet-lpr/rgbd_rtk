@@ -43,6 +43,8 @@
 #include <reconstruction_visualizer.h>
 #include <geometric/geometric_motion_segmenter.h>
 
+
+
 using namespace cv;
 
 /**
@@ -87,7 +89,7 @@ int main(int argc, char **argv)
 	std::vector<cv::Point2f> * curr_pts_ptr = &tracker.curr_pts_;
 
 	std::vector<Tracklet> * tracklet_ptr = &tracker.tracklets_;
-	constexpr float threshold = 1.1f;
+	constexpr float threshold = 0.4f;
 	constexpr uint8_t dynamic_range = 5;
 	constexpr float mask_point_radius = 3.0f;
 
@@ -98,6 +100,11 @@ int main(int argc, char **argv)
 									   threshold,
 									   dynamic_range,
 									   mask_point_radius);
+	std::vector<Point2f> curr_static_pts;
+	std::vector<Point2f> prev_static_pts;
+
+	cv::Mat mask;
+
 	//Track points on each image
 	for(int i = 0; i < loader.num_images_; i++)
 	{	
@@ -106,22 +113,53 @@ int main(int argc, char **argv)
 		*curr_cloud = getPointCloud(frame, depth, intr);
 		//Track feature points in the current frame
 		tracker.track(frame);
+		
 
 		//Estimate motion between the current and the previous frame/point clouds
 		if(i > 0)
 		{
 			*trans = motion_estimator.estimate(tracker.prev_pts_, prev_cloud,
-				                              tracker.curr_pts_, curr_cloud);
+				                              tracker.curr_pts_, curr_cloud);	
+			
+			auto staticPointIdxs = segmenter.getStaticPointsIndex();
+			prev_static_pts.clear();
+			curr_static_pts.clear();
+			
+			segmenter.segment(frame,mask);
+
+			for(const auto & idx:staticPointIdxs)
+			{
+				prev_static_pts.push_back(tracker.prev_pts_[idx]);
+				curr_static_pts.push_back(tracker.curr_pts_[idx]);
+
+			}
+
+			if(!curr_static_pts.empty() && !prev_static_pts.empty())
+			{
+				for(const auto & pt:curr_static_pts)
+					cv::circle(frame,pt,mask_point_radius,cv::Scalar(147,0,147),-1);
+				try
+				{
+					auto refined_trans = motion_estimator.estimate(prev_static_pts, prev_cloud,
+												curr_static_pts , curr_cloud);
+					*trans *= refined_trans;
+				}
+				catch(const std::exception & e)
+				{
+					logger.print(EventLogger::L_ERROR, "[motion_image_geometric_segmentation.cpp] Error: %s\n", e.what());
+				}
+			}
 			pose = pose*(*trans);
 		}
+		
 
 		//View tracked points
 		for(size_t k = 0; k < tracker.curr_pts_.size(); k++)
 		{
 			Point2i pt1 = tracker.prev_pts_[k];
 			Point2i pt2 = tracker.curr_pts_[k];
-			circle(frame, pt1, 1, CV_RGB(255,0,0), -1);
-			circle(frame, pt2, 3, CV_RGB(0,0,255), -1);
+			//circle(frame, pt1, 1, CV_RGB(255,0,0), -1);
+			//circle(frame, pt2, 3, CV_RGB(0,0,255), -1);
 			//line(frame, pt1, pt2, CV_RGB(0,0,255));
 		}
 
@@ -133,18 +171,11 @@ int main(int argc, char **argv)
 
 		visualizer.spinOnce();
 
-		cv::Mat mask;
-		segmenter.segment(frame,mask);
-
-		auto dyna_pts = segmenter.getDynaPoints();
-
-		for(const auto & pt:*dyna_pts)
-			cv::circle(frame,pt,mask_point_radius,cv::Scalar(255,255,255),-1);
-
 		//Show RGB-D image
 		imshow("Image view", frame);
 		imshow("Depth view", depth);
-		imshow("Mask view",  mask);
+		if(!mask.empty())
+			imshow("Mask view, black points = dynamic points",  mask);
 
 		char key = waitKey(1);
 		if(key == 27 || key == 'q' || key == 'Q')
