@@ -61,9 +61,10 @@ private:
      * Writes the last computed visual odometry pose to file.
      * @param time_stamp, the time that the pose was computed. 
      */
-    void writePoseToFile(const std::string& time_stamp);
 
 public:
+    void writePoseToFile(const std::string& time_stamp);
+
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     // Previous dense point cloud
