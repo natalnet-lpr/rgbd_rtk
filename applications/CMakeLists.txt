@@ -175,11 +175,11 @@ if(WITH_IO AND WITH_VISUALIZATION)
         endif()
     endif()
     if(RGBD_RTK_MOTION_SEGMENTATION)
-        add_executable(motion_image_dnn_segmentation motion_image_dnn_segmentation.cpp)
-        target_link_libraries(motion_image_dnn_segmentation ${RGBD_RTK_MOTION_SEGMENTATION} ${RGBD_RTK_IO} )
-             
+        add_executable(dynamic_image_dnn_segmentation dynamic_image_dnn_segmentation.cpp)
+        target_link_libraries(dynamic_image_dnn_segmentation ${RGBD_RTK_MOTION_SEGMENTATION} ${RGBD_RTK_IO} )
+        
         install(
-            TARGETS motion_image_dnn_segmentation
+            TARGETS dynamic_image_dnn_segmentation
             EXPORT rgbd_rtkTargets
             RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin)
 
@@ -188,6 +188,13 @@ if(WITH_IO AND WITH_VISUALIZATION)
             
         install(
             TARGETS motion_image_geometric_segmentation
+            EXPORT rgbd_rtkTargets
+            RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin)
+        
+         add_executable(motion_image_dnn_segmentation motion_image_dnn_segmentation.cpp)
+        target_link_libraries(motion_image_dnn_segmentation ${RGBD_RTK_MOTION_ESTIMATION}  ${RGBD_RTK_VISUALIZATION} ${RGBD_RTK_MOTION_SEGMENTATION} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING})
+        install(
+            TARGETS motion_image_dnn_segmentation
             EXPORT rgbd_rtkTargets
             RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin)
     endif()
