@@ -34,6 +34,7 @@
 #include <pcl/common/transforms.h>
 #include <pcl/sample_consensus/ransac.h>
 #include <pcl/sample_consensus/sac_model_registration.h>
+#include <algorithm>
 
 #include <event_logger.h>
 #include <geometry.h>
@@ -63,7 +64,7 @@ void MotionEstimatorRANSAC::setDataFromCorrespondences(
     // clouds
     // A correspondence is removed if any of the 3D points is invalid
     size_t valid_points = 0;
-    for (size_t k = 0; k < src_points.size(); k++)
+    for (size_t k = 0; k < min(src_points.size(), tgt_points.size()); k++)
     {
         PointT tpt = get3Dfrom2D(tgt_points[k], tgt_dense_cloud);
         PointT spt = get3Dfrom2D(src_points[k], src_dense_cloud);
@@ -159,6 +160,11 @@ Eigen::Matrix4f MotionEstimatorRANSAC::estimate(const vector<cv::Point2f> &tgt_p
         is_inlier_[idx] = 1;
     }
     num_inliers_ = inl.size();
+
+    if( !num_inliers_ ) 
+    {
+        throw std::length_error("Empty inliers set\n");
+    }
 
     float inl_ratio = float(inl.size()) / N;
     MLOG_DEBUG(EventLogger::M_MOTION_ESTIMATION, "@MotionEstimatorRANSAC::estimate: \
