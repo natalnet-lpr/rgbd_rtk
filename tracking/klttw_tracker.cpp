@@ -235,9 +235,11 @@ bool KLTTWTracker::track(const Mat &curr_frame, const cv::Mat& mask)
         // Update internal data according to the tracking result
         // Additional tests have to be applied to discard points outside the image boundaries.
         int tracked_pts = 0;
+        int val = -1;
         for (size_t i = 0; i < curr_pts_.size(); i++)
         {
-            int val = (int) mask.at<uchar>(curr_pts_[i].y,curr_pts_[i].x);
+            if(!mask.empty())
+                val = (int) mask.at<uchar>(curr_pts_[i].y,curr_pts_[i].x);
 
             if (!status[i] || curr_pts_[i].x < 0 || curr_pts_[i].y < 0 ||
                 curr_pts_[i].x >= prev_frame_gray_.cols || curr_pts_[i].y >= prev_frame_gray_.rows || val == 0)
