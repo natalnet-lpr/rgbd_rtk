@@ -41,7 +41,14 @@
 #include <motion_estimator_ransac.h>
 
 using namespace std;
-
+void printPoint2d(const cv::Point2d&  pt)
+{
+    std::cout << pt.x <<", "<< pt.y << "\n";
+}
+void printPoint3d(const PointT& pt)
+{
+    std::cout << pt.x <<", "<< pt.y << ", " << pt.z <<"\n";
+}
 void MotionEstimatorRANSAC::setDataFromCorrespondences(
     const std::vector<cv::Point2f> &tgt_points, const pcl::PointCloud<PointT>::Ptr &tgt_dense_cloud,
     const std::vector<cv::Point2f> &src_points, const pcl::PointCloud<PointT>::Ptr &src_dense_cloud)
@@ -64,31 +71,43 @@ void MotionEstimatorRANSAC::setDataFromCorrespondences(
     // clouds
     // A correspondence is removed if any of the 3D points is invalid
     size_t valid_points = 0;
-    for (size_t k = 0; k < min(src_points.size(), tgt_points.size()); k++)
-    {
+    
+    mapper_2d_3d_.clear();
+    
+    auto isValid2dPoint = [](const cv::Point2f& pt)
+                          {
+                              return pt.x > 0 && pt.y>0;
+                          };
+
+    for (size_t k = 0; k < src_points.size(); k++)
+    {            
         PointT tpt = get3Dfrom2D(tgt_points[k], tgt_dense_cloud);
-        PointT spt = get3Dfrom2D(src_points[k], src_dense_cloud);
+        PointT spt = get3Dfrom2D(src_points[k], src_dense_cloud);  
 
         if (is_valid(tpt) && is_valid(spt))
         {
             /*
             logger.print(EventLogger::L_DEBUG, "[MotionEstimatorRANSAC] DEBUG: [%lu]: (%f,%f) <->
             (%f,%f) [(%f,%f,%f) <-> (%f,%f,%f)]:\n",
-                                                  k, src_points[k].x, src_points[k].y,
-                                                  tgt_points[k].x, tgt_points[k].y,
-                                                  spt.x, spt.y, spt.z,
-                                                  spt.x, spt.y, spt.z,
-                                                  spt.x, spt.y, spt.z,
-                                                  tpt.x, tpt.y, tpt.z);
+                                                k, src_points[k].x, src_points[k].y,
+                                                tgt_points[k].x, tgt_points[k].y,
+                                                spt.x, spt.y, spt.z,
+                                                spt.x, spt.y, spt.z,
+                                                spt.x, spt.y, spt.z,
+                                                tpt.x, tpt.y, tpt.z);
             */
-
             tgt_cloud_->push_back(tpt);
             src_cloud_->push_back(spt);
+            
+            mapper_2d_3d_.push_back(std::make_pair<int,int>(valid_points,k));
+            
             // tgt_cloud_->points[valid_points] = tpt;
             // src_cloud_->points[valid_points] = spt;
             valid_points++;
         }
-    }
+    
+    }    
+    
     // tgt_cloud_->points.resize(valid_points);
     // src_cloud_->points.resize(valid_points);
     MLOG_DEBUG(EventLogger::M_MOTION_ESTIMATION, "@MotionEstimatorRANSAC::setDataFromCorrespondences: \
@@ -131,7 +150,6 @@ Eigen::Matrix4f MotionEstimatorRANSAC::estimate(const vector<cv::Point2f> &tgt_p
 {
     // Fill data buffers with the supplied data
     setDataFromCorrespondences(tgt_points, tgt_dense_cloud, src_points, src_dense_cloud);
-
     long unsigned N = src_cloud_->points.size();
 
     MLOG_DEBUG(EventLogger::M_MOTION_ESTIMATION, "@MotionEstimatorRANSAC::estimate: RANSAC motion estimation: %lu <-> %lu\n",
@@ -161,9 +179,10 @@ Eigen::Matrix4f MotionEstimatorRANSAC::estimate(const vector<cv::Point2f> &tgt_p
     }
     num_inliers_ = inl.size();
 
-    if( !num_inliers_ ) 
+    if( inl.size() < min_inliers_number_) 
     {
-        throw std::length_error("Empty inliers set\n");
+        const std::string msg = "input size is less than the minimum inliers number";
+        throw std::length_error(msg.c_str());
     }
 
     float inl_ratio = float(inl.size()) / N;

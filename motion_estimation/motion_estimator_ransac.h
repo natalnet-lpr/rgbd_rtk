@@ -43,6 +43,7 @@
 #include <pcl/correspondence.h>
 #include <pcl/point_cloud.h>
 #include <vector>
+#include <unordered_map>
 
 #include <common_types.h>
 
@@ -63,6 +64,7 @@ protected:
                                     const pcl::PointCloud<PointT>::Ptr &src_dense_cloud);
 
 public:
+
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     // DEBUG
@@ -89,6 +91,13 @@ public:
     // Vector telling if each correspondence is an inlier or not
     std::vector<unsigned char> is_inlier_;
 
+    // Store the current point tracker index and also it 2d point and 3d point
+    // this is useful to retrive the information of the 3d point inside 
+    // of point cloud
+    std::vector<std::pair<int,int>> mapper_2d_3d_;
+
+    int min_inliers_number_ = 4;
+
     /**
      * Default constructor
      */
@@ -112,6 +121,11 @@ public:
                              const pcl::PointCloud<PointT>::Ptr &tgt_dense_cloud,
                              const std::vector<cv::Point2f> &src_points,
                              const pcl::PointCloud<PointT>::Ptr &src_dense_cloud);
+    inline void setMinInliersNumber(const int min_inliers_number)
+    {
+        min_inliers_number_ = min_inliers_number;
+    };
+    
 };
 
 #endif /* INCLUDE_MOTION_ESTIMATOR_RANSAC_H_ */
