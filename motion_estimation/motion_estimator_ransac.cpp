@@ -99,8 +99,7 @@ void MotionEstimatorRANSAC::setDataFromCorrespondences(
             tgt_cloud_->push_back(tpt);
             src_cloud_->push_back(spt);
             
-            mapper_2d_3d_.push_back(std::make_pair<int,int>(valid_points,k));
-            
+            mapper_2d_3d_.push_back(k);
             // tgt_cloud_->points[valid_points] = tpt;
             // src_cloud_->points[valid_points] = spt;
             valid_points++;

@@ -94,7 +94,7 @@ public:
     // Store the current point tracker index and also it 2d point and 3d point
     // this is useful to retrive the information of the 3d point inside 
     // of point cloud
-    std::vector<std::pair<int,int>> mapper_2d_3d_;
+    std::vector<int> mapper_2d_3d_;
 
     int min_inliers_number_ = 4;
 
