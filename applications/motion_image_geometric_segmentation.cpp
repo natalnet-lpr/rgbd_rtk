@@ -33,6 +33,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <fstream>
 
 #include <geometry.h>
 #include <config_loader.h>
@@ -43,8 +44,6 @@
 #include <reconstruction_visualizer.h>
 #include <geometric/geometric_motion_segmenter.h>
 
-
-
 using namespace cv;
 
 /**
@@ -52,9 +51,33 @@ using namespace cv;
  * KLT keypoint tracking and RANSAC.
  * @param .yml config. file (from which index_file is used)
  */
+
+void writePoseToFile(ofstream &poses_file_, Eigen::Affine3f pose_, const std::string &time_stamp)
+{
+	Eigen::Matrix3f Rot;
+	Rot(0, 0) = pose_(0, 0);
+	Rot(0, 1) = pose_(0, 1);
+	Rot(0, 2) = pose_(0, 2);
+	Rot(1, 0) = pose_(1, 0);
+	Rot(1, 1) = pose_(1, 1);
+	Rot(1, 2) = pose_(1, 2);
+	Rot(2, 0) = pose_(2, 0);
+	Rot(2, 1) = pose_(2, 1);
+	Rot(2, 2) = pose_(2, 2);
+
+	Eigen::Quaternionf q(Rot);
+
+	poses_file_ << time_stamp << " " << pose_(0, 3) << " "
+				<< pose_(1, 3) << " "
+				<< pose_(2, 3) << " "
+				<< q.x() << " "
+				<< q.y() << " "
+				<< q.z() << " "
+				<< q.w() << "\n";
+}
 int main(int argc, char **argv)
 {
-	EventLogger& logger = EventLogger::getInstance();
+	EventLogger &logger = EventLogger::getInstance();
 	logger.setVerbosityLevel(EventLogger::L_DEBUG);
 
 	RGBDLoader loader;
@@ -70,91 +93,108 @@ int main(int argc, char **argv)
 	boost::shared_ptr<Eigen::Affine3f> trans = boost::make_shared<Eigen::Affine3f>(Eigen::Affine3f::Identity());
 	pcl::PointCloud<PointT>::Ptr prev_cloud(new pcl::PointCloud<PointT>);
 	pcl::PointCloud<PointT>::Ptr curr_cloud(new pcl::PointCloud<PointT>);
-
-	if(argc != 2)
+	std::ofstream file("poses.txt");
+	if (argc != 2)
 	{
 		logger.print(EventLogger::L_INFO, "[motion_image_geometric_segmentation.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
 	}
+
 	ConfigLoader param_loader(argv[1]);
 	param_loader.checkAndGetString("index_file", index_file);
+
 	param_loader.checkAndGetFloat("ransac_distance_threshold", ransac_distance_threshold);
 	param_loader.checkAndGetFloat("ransac_inliers_ratio", ransac_inliers_ratio);
+
 	loader.processFile(index_file);
 
 	MotionEstimatorRANSAC motion_estimator(intr, ransac_distance_threshold,
-											ransac_inliers_ratio);
+										   ransac_inliers_ratio);
+	motion_estimator.setMinInliersNumber(10);
 
-	std::vector<cv::Point2f> * prev_pts_ptr = &tracker.prev_pts_;
-	std::vector<cv::Point2f> * curr_pts_ptr = &tracker.curr_pts_;
+	std::vector<cv::Point2f> *prev_pts_ptr = &tracker.prev_pts_;
+	std::vector<cv::Point2f> *curr_pts_ptr = &tracker.curr_pts_;
 
-	std::vector<Tracklet> * tracklet_ptr = &tracker.tracklets_;
-	constexpr float threshold = 0.4f;
-	constexpr uint8_t dynamic_range = 5;
+	std::vector<Tracklet> *tracklet_ptr = &tracker.tracklets_;
+	constexpr float threshold = 0.7f;
+	constexpr uint8_t dynamic_range = 10;
 	constexpr float mask_point_radius = 3.0f;
 
 	GeometricMotionSegmenter segmenter(tracklet_ptr,
-									   curr_cloud,
-									   prev_cloud,
+									   motion_estimator.src_cloud_,
+									   motion_estimator.tgt_cloud_,
 									   trans,
+									   &motion_estimator.mapper_2d_3d_,
 									   threshold,
 									   dynamic_range,
 									   mask_point_radius);
+	segmenter.setIntrinsics(intr);
 	std::vector<Point2f> curr_static_pts;
 	std::vector<Point2f> prev_static_pts;
 
 	cv::Mat mask;
+	std::string rgb_img_time_stamp;
 
 	//Track points on each image
-	for(int i = 0; i < loader.num_images_; i++)
-	{	
-		//Load RGB-D image and point cloud 
+	for (int i = 0; i < loader.num_images_; i++)
+	{
+		//Load RGB-D image and point cloud
 		loader.getNextImage(frame, depth);
+		rgb_img_time_stamp = loader.getNextRgbImageTimeStamp();
+
 		*curr_cloud = getPointCloud(frame, depth, intr);
 		//Track feature points in the current frame
 		tracker.track(frame);
-		
 
 		//Estimate motion between the current and the previous frame/point clouds
-		if(i > 0)
+		if (i > 0)
 		{
-			*trans = motion_estimator.estimate(tracker.prev_pts_, prev_cloud,
-				                              tracker.curr_pts_, curr_cloud);	
-			
+			try
+			{
+				auto estimated_trans = motion_estimator.estimate(tracker.prev_pts_, prev_cloud,
+																 tracker.curr_pts_, curr_cloud);
+				*trans = estimated_trans;
+			}
+			catch (const std::exception &e)
+			{
+				*trans = Eigen::Affine3f::Identity();
+
+				logger.print(EventLogger::L_ERROR, "[motion_image_geometric_segmentation.cpp] Error: %s\n", e.what());
+			}
+
 			auto staticPointIdxs = segmenter.getStaticPointsIndex();
 			prev_static_pts.clear();
 			curr_static_pts.clear();
-			
-			segmenter.segment(frame,mask);
 
-			for(const auto & idx:staticPointIdxs)
+			segmenter.segment(frame, mask);
+
+			for (const auto &idx : staticPointIdxs)
 			{
 				prev_static_pts.push_back(tracker.prev_pts_[idx]);
 				curr_static_pts.push_back(tracker.curr_pts_[idx]);
-
 			}
-
-			if(!curr_static_pts.empty() && !prev_static_pts.empty())
+			if (!curr_static_pts.empty() && !prev_static_pts.empty())
 			{
-				for(const auto & pt:curr_static_pts)
-					cv::circle(frame,pt,mask_point_radius,cv::Scalar(147,0,147),-1);
+				std::cout << "total de pontos estaticos " << curr_static_pts.size() << "\n";
+				for (const auto &pt : curr_static_pts)
+					cv::circle(frame, pt, mask_point_radius, cv::Scalar(147, 0, 147), -1);
 				try
 				{
 					auto refined_trans = motion_estimator.estimate(prev_static_pts, prev_cloud,
-												curr_static_pts , curr_cloud);
-					*trans *= refined_trans;
+																   curr_static_pts, curr_cloud);
+					*trans = refined_trans;
 				}
-				catch(const std::exception & e)
+				catch (const std::exception &e)
 				{
+					*trans = Eigen::Affine3f::Identity();
 					logger.print(EventLogger::L_ERROR, "[motion_image_geometric_segmentation.cpp] Error: %s\n", e.what());
 				}
 			}
-			pose = pose*(*trans);
+			pose = pose * (*trans);
 		}
-		
 
 		//View tracked points
-		for(size_t k = 0; k < tracker.curr_pts_.size(); k++)
+		for (size_t k = 0; k < tracker.curr_pts_.size(); k++)
 		{
 			Point2i pt1 = tracker.prev_pts_[k];
 			Point2i pt2 = tracker.curr_pts_[k];
@@ -163,7 +203,8 @@ int main(int argc, char **argv)
 			//line(frame, pt1, pt2, CV_RGB(0,0,255));
 		}
 
-		if(i == 0) visualizer.addReferenceFrame(pose, "origin");
+		if (i == 0)
+			visualizer.addReferenceFrame(pose, "origin");
 		//visualizer.addQuantizedPointCloud(curr_cloud, 0.3, pose);
 		visualizer.viewReferenceFrame(pose);
 		//visualizer.viewPointCloud(curr_cloud, pose);
@@ -171,24 +212,24 @@ int main(int argc, char **argv)
 
 		visualizer.spinOnce();
 
+		writePoseToFile(file, pose, rgb_img_time_stamp);
 		//Show RGB-D image
 		imshow("Image view", frame);
 		imshow("Depth view", depth);
-		if(!mask.empty())
-			imshow("Mask view, black points = dynamic points",  mask);
+		//if (!mask.empty())
+		//	imshow("Mask view, black points = dynamic points", mask);
 
 		char key = waitKey(1);
-		if(key == 27 || key == 'q' || key == 'Q')
+		if (key == 27 || key == 'q' || key == 'Q')
 		{
 			logger.print(EventLogger::L_INFO, "[motion_image_geometric_segmentation.cpp] Exiting\n", argv[0]);
 			break;
 		}
 		//Let the prev. cloud in the next frame be the current cloud
 		*prev_cloud = *curr_cloud;
-
-	}   
+	}
 
 	visualizer.close();
-
+	file.close();
 	return 0;
 }
