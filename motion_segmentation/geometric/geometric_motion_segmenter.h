@@ -20,7 +20,7 @@ class GeometricMotionSegmenter : public MotionSegmenter{
                                  const PointCloud<PointT>::Ptr curr_sparse_cloud,
                                  const PointCloud<PointT>::Ptr prev_saparse_cloud,
                                  const boost::shared_ptr<Eigen::Affine3f> & curr_cloud_relative_pose, 
-                                 std::vector<std::pair<int,int>> * mapper_2d_3d,
+                                 std::vector<int> * mapper_2d_3d,
                                  float threshold, 
                                  uint8_t dynamic_range=5,
                                  float mask_point_radius=4.0f);
@@ -32,6 +32,7 @@ class GeometricMotionSegmenter : public MotionSegmenter{
         void calculateDynamicPoints(const pcl::PointCloud<PointT> & sparse_cloud_from, 
             const pcl::PointCloud<PointT> & sparse_cloud_to,
             const Eigen::Affine3f & clouds_relative_pose,
+            const std::vector<int>& mappers_2d_3d,
             const float  threshold);
                                             
         void calculateDynamicPoints();
@@ -62,7 +63,9 @@ class GeometricMotionSegmenter : public MotionSegmenter{
         Intrinsics cameraIntrinsic_;
 
         std::unordered_map<int,int> idx_is_dyna_pts_map_;
-        std::vector<std::pair<int,int>> * mapper_2d_3d_;
+        std::vector<int> * mapper_2d_3d_;
+        std::vector<std::vector<int>>  mappers_2d_3d_;
+
         // current static points
         boost::shared_ptr<vector<cv::Point2f>> curr_static_pts_;
         // previous static points
