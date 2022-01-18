@@ -177,7 +177,7 @@ buildEigen()
     cd $DEPENDENCIES_DIR/eigen
     mkdir build
     cd build
-    cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR  -DCXX_STANDARD=17 ..
+    cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR  -DCMAKE_CXX_STANDARD=17 ..
     make install
 }
 buildOpenCV()
@@ -280,8 +280,8 @@ buildRGBD_RTK()
 } 
 installGCC9()
 {
-    	printIFVerbose "[INFO] Installing GCC and G++ version 9.4"
-    	sleep $SLEEP_FOR
+    printIFVerbose "[INFO] Installing GCC and G++ version 9.4"
+    sleep $SLEEP_FOR
 	add-apt-repository ppa:ubuntu-toolchain-r/test
 	apt-get update
 	apt install gcc-9
