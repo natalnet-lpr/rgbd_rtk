@@ -11,16 +11,16 @@
 
 using pcl::PointCloud;
 using std::vector;
-
+// so I s
 class GeometricMotionSegmenter : public MotionSegmenter
 {
 public:
-    GeometricMotionSegmenter();
-    GeometricMotionSegmenter(std::vector<Tracklet> *tracklets,
+    GeometricMotionSegmenter(const vector<cv::Point2f> &curr_pts,
+                             const vector<cv::Point2f> &prev_pts,
                              const PointCloud<PointT>::Ptr curr_sparse_cloud,
                              const PointCloud<PointT>::Ptr prev_saparse_cloud,
                              const boost::shared_ptr<Eigen::Affine3f> &curr_cloud_relative_pose,
-                             std::vector<int> *mapper_2d_3d,
+                             vector<int> &mapper_2d_3d,
                              float threshold,
                              uint8_t dynamic_range = 5,
                              float mask_point_radius = 4.0f);
@@ -49,8 +49,6 @@ public:
     {
         return prev_static_pts_;
     }
-    std::vector<int> getStaticPointsIndex();
-    std::vector<int> getDynamicPointsIndex();
 
     inline void setIntrinsics(Intrinsics &cameraIntrinsic)
     {
@@ -58,6 +56,8 @@ public:
     }
 
 protected:
+    std::vector<int> getStaticPointsIndex();
+    std::vector<int> getDynamicPointsIndex();
     float max_kinect_depth_ = 3.5f;
     int static_threshold_ = 3;
     int dynamic_threshold_ = -6;
@@ -66,8 +66,12 @@ protected:
     Intrinsics cameraIntrinsic_;
 
     std::unordered_map<int, int> idx_is_dyna_pts_map_;
-    std::vector<int> *mapper_2d_3d_;
+    std::vector<int> &mapper_2d_3d_;
     std::vector<std::vector<int>> mappers_2d_3d_;
+    // current points
+    const vector<cv::Point2f> &curr_pts_;
+    // previous points
+    const vector<cv::Point2f> &prev_pts_;
 
     // current static points
     boost::shared_ptr<vector<cv::Point2f>> curr_static_pts_;
@@ -96,6 +100,4 @@ protected:
     // store the clouds in pairs
     typedef std::pair<PointCloud<PointT>, PointCloud<PointT>> sparseCloudsPair;
     std::vector<sparseCloudsPair> sparse_clouds_pairs_;
-
-    std::vector<Tracklet> *tracklets_;
 };
