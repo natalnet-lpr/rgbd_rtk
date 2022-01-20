@@ -42,7 +42,7 @@
 #include <klt_tracker.h>
 #include <motion_estimator_ransac.h>
 #include <reconstruction_visualizer.h>
-#include <geometric/geometric_motion_segmenter.h>
+#include <factory_motion_segmenter.h>
 
 using namespace cv;
 
@@ -115,22 +115,20 @@ int main(int argc, char **argv)
 	std::vector<cv::Point2f> *prev_pts_ptr = &tracker.prev_pts_;
 	std::vector<cv::Point2f> *curr_pts_ptr = &tracker.curr_pts_;
 
-	std::vector<Tracklet> *tracklet_ptr = &tracker.tracklets_;
 	constexpr float threshold = 0.7f;
-	constexpr uint8_t dynamic_range = 10;
+	constexpr uint8_t dynamic_range = 40;
 	constexpr float mask_point_radius = 3.0f;
 
-	GeometricMotionSegmenter segmenter(tracklet_ptr,
-									   motion_estimator.src_cloud_,
-									   motion_estimator.tgt_cloud_,
-									   trans,
-									   &motion_estimator.mapper_2d_3d_,
-									   threshold,
-									   dynamic_range,
-									   mask_point_radius);
-	segmenter.setIntrinsics(intr);
-	std::vector<Point2f> curr_static_pts;
-	std::vector<Point2f> prev_static_pts;
+	auto segmenter = FactoryMotionSegmenter::create<GeometricMotionSegmenter>(&tracker.tracklets_,
+																			  motion_estimator.src_cloud_,
+																			  motion_estimator.tgt_cloud_,
+																			  trans,
+																			  &motion_estimator.mapper_2d_3d_,
+																			  threshold,
+																			  dynamic_range,
+																			  mask_point_radius);
+
+	segmenter->setIntrinsics(intr);
 
 	cv::Mat mask;
 	std::string rgb_img_time_stamp;
@@ -162,26 +160,26 @@ int main(int argc, char **argv)
 				logger.print(EventLogger::L_ERROR, "[motion_image_geometric_segmentation.cpp] Error: %s\n", e.what());
 			}
 
-			auto staticPointIdxs = segmenter.getStaticPointsIndex();
-			prev_static_pts.clear();
-			curr_static_pts.clear();
+			segmenter->segment(frame, mask);
 
-			segmenter.segment(frame, mask);
+			auto prev_static_pts = segmenter->getPrevStaticPoints();
+			auto curr_static_pts = segmenter->getCurrStaticPoints();
 
-			for (const auto &idx : staticPointIdxs)
+			if (!curr_static_pts->empty() && !prev_static_pts->empty())
 			{
-				prev_static_pts.push_back(tracker.prev_pts_[idx]);
-				curr_static_pts.push_back(tracker.curr_pts_[idx]);
-			}
-			if (!curr_static_pts.empty() && !prev_static_pts.empty())
-			{
-				std::cout << "total de pontos estaticos " << curr_static_pts.size() << "\n";
-				for (const auto &pt : curr_static_pts)
-					cv::circle(frame, pt, mask_point_radius, cv::Scalar(147, 0, 147), -1);
+				for (size_t k = 0; k < curr_static_pts->size(); k++)
+				{
+					Point2i pt1 = (*curr_static_pts)[k];
+					Point2i pt2 = (*prev_static_pts)[k];
+
+					cv::circle(frame, pt1, 1, cv::Scalar(147, 0, 147), -1);
+					cv::circle(frame, pt2, 3, cv::Scalar(147, 0, 147), -1);
+					line(frame, pt1, pt2, CV_RGB(0, 0, 255));
+				}
 				try
 				{
-					auto refined_trans = motion_estimator.estimate(prev_static_pts, prev_cloud,
-																   curr_static_pts, curr_cloud);
+					auto refined_trans = motion_estimator.estimate(*prev_static_pts, prev_cloud,
+																   *curr_static_pts, curr_cloud);
 					*trans = refined_trans;
 				}
 				catch (const std::exception &e)
