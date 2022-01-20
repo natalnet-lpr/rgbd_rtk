@@ -12,9 +12,9 @@ GeometricMotionSegmenter::GeometricMotionSegmenter()
     prev_static_pts_ = boost::make_shared<std::vector<cv::Point2f>>();
     curr_static_pts_ = boost::make_shared<std::vector<cv::Point2f>>();
     dyna_pts_ = boost::make_shared<vector<cv::Point2f>>();
-    initialized_ = false;
+    tracklets_ = nullptr;
 }
-GeometricMotionSegmenter::GeometricMotionSegmenter(vector<Tracklet> *tracklets,
+GeometricMotionSegmenter::GeometricMotionSegmenter(std::vector<Tracklet> *tracklets,
                                                    const PointCloud<PointT>::Ptr curr_sparse_cloud,
                                                    const PointCloud<PointT>::Ptr prev_sparse_cloud,
                                                    const boost::shared_ptr<Eigen::Affine3f> &curr_cloud_relative_pose,
@@ -22,16 +22,16 @@ GeometricMotionSegmenter::GeometricMotionSegmenter(vector<Tracklet> *tracklets,
                                                    float threshold, uint8_t dynamic_range,
                                                    float mask_point_radius)
 {
+    tracklets_ = tracklets;
+
     prev_static_pts_ = boost::make_shared<std::vector<cv::Point2f>>();
     curr_static_pts_ = boost::make_shared<std::vector<cv::Point2f>>();
     dyna_pts_ = boost::make_shared<std::vector<cv::Point2f>>();
-    tracklets_ = tracklets;
     curr_sparse_cloud_ = curr_sparse_cloud;
     prev_sparse_cloud_ = prev_sparse_cloud;
     curr_cloud_relative_pose_ = curr_cloud_relative_pose;
     mapper_2d_3d_ = mapper_2d_3d;
     threshold_ = threshold;
-    initialized_ = false;
     dynamic_range_ = dynamic_range;
     mask_point_radius_ = mask_point_radius;
 }
@@ -139,7 +139,7 @@ void GeometricMotionSegmenter::calculateDynamicPoints(const pcl::PointCloud<Poin
         nearest_idx = saved_idx;
     }
 }
-std::vector<cv::Point2f> creqatePointVectorFromTracklet(const std::vector<Tracklet> &tracklets_, uint reverse_idx = 0)
+std::vector<cv::Point2f> createPointVectorFromTracklet(const std::vector<Tracklet> &tracklets_, uint reverse_idx = 0)
 {
     vector<cv::Point2f> points;
 
@@ -158,7 +158,7 @@ void GeometricMotionSegmenter::calculateDynamicPoints()
 {
     // clear the data
     dyna_pts_->clear();
-    *prev_static_pts_ = *curr_static_pts_;
+    prev_static_pts_->clear();
     curr_static_pts_->clear();
     idx_is_dyna_pts_map_.clear();
 
@@ -195,6 +195,21 @@ void GeometricMotionSegmenter::calculateDynamicPoints()
         auto relative_pose = relative_poses_[i];
         calculateDynamicPoints(src_cloud, tgt_cloud, relative_pose, mappers_2d_3d_[i], threshold_);
     }
+    // current 2d feature vector
+    *curr_static_pts_ = createPointVectorFromTracklet(*tracklets_, 0);
+    // previous 2d feature vector
+    *prev_static_pts_ = createPointVectorFromTracklet(*tracklets_, 1);
+
+    // loop over the points and remove the dynamic ones
+    int removed_counter = 0;
+    auto dyna_pts_idxs = getDynamicPointsIndex();
+    for (auto idx : dyna_pts_idxs)
+    {
+        idx = idx - removed_counter++;
+
+        curr_static_pts_->erase(curr_static_pts_->begin() + idx);
+        prev_static_pts_->erase(prev_static_pts_->begin() + idx);
+    }
 }
 void GeometricMotionSegmenter::segment(const cv::Mat &in_img, cv::Mat &out_img)
 {
@@ -221,7 +236,7 @@ std::vector<int> GeometricMotionSegmenter::getStaticPointsIndex()
             idxs.push_back(idx);
         }
     }
-    std::cout << "total de pontos estaticos " << idxs.size() << "\n";
+
     std::sort(idxs.begin(), idxs.end());
 
     return idxs;
