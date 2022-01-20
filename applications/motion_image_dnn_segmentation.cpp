@@ -44,27 +44,32 @@
 #include <motion_estimator_ransac.h>
 #include <reconstruction_visualizer.h>
 #include <factory_motion_segmenter.h>
-
-
+#include <common/constants.h>
 using namespace std;
 using namespace cv;
 
-void writePoseToFile(ofstream & file, Eigen::Affine3f & pose, string & timestamp)
+void writePoseToFile(ofstream &file, Eigen::Affine3f &pose, string &timestamp)
 {
 	Eigen::Matrix3f Rot;
-	Rot(0,0) = pose(0,0); Rot(0,1) = pose(0,1); Rot(0,2) = pose(0,2);
-	Rot(1,0) = pose(1,0); Rot(1,1) = pose(1,1); Rot(1,2) = pose(1,2);
-	Rot(2,0) = pose(2,0); Rot(2,1) = pose(2,1); Rot(2,2) = pose(2,2);
+	Rot(0, 0) = pose(0, 0);
+	Rot(0, 1) = pose(0, 1);
+	Rot(0, 2) = pose(0, 2);
+	Rot(1, 0) = pose(1, 0);
+	Rot(1, 1) = pose(1, 1);
+	Rot(1, 2) = pose(1, 2);
+	Rot(2, 0) = pose(2, 0);
+	Rot(2, 1) = pose(2, 1);
+	Rot(2, 2) = pose(2, 2);
 
 	Eigen::Quaternionf q(Rot);
 
-	file << timestamp <<  " "  << pose(0,3) << " "
-										<< pose(1,3) << " "
-										<< pose(2,3) << " "
-										<< q.x() << " "
-										<< q.y() << " "
-										<< q.z() << " "
-										<< q.w() << "\n";
+	file << timestamp << " " << pose(0, 3) << " "
+		 << pose(1, 3) << " "
+		 << pose(2, 3) << " "
+		 << q.x() << " "
+		 << q.y() << " "
+		 << q.z() << " "
+		 << q.w() << "\n";
 }
 
 /**
@@ -74,7 +79,7 @@ void writePoseToFile(ofstream & file, Eigen::Affine3f & pose, string & timestamp
  */
 int main(int argc, char **argv)
 {
-	EventLogger& logger = EventLogger::getInstance();
+	EventLogger &logger = EventLogger::getInstance();
 	logger.setVerbosityLevel(EventLogger::L_DEBUG);
 
 	RGBDLoader loader;
@@ -93,7 +98,7 @@ int main(int argc, char **argv)
 	pcl::PointCloud<PointT>::Ptr prev_cloud(new pcl::PointCloud<PointT>);
 	pcl::PointCloud<PointT>::Ptr curr_cloud(new pcl::PointCloud<PointT>);
 
-	if(argc != 2)
+	if (argc != 2)
 	{
 		logger.print(EventLogger::L_INFO, "[motion_estimation_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
 		exit(0);
@@ -105,80 +110,77 @@ int main(int argc, char **argv)
 	loader.processFile(index_file);
 
 	MotionEstimatorRANSAC motion_estimator(intr, ransac_distance_threshold,
-											ransac_inliers_ratio);
+										   ransac_inliers_ratio);
 
-	std::string model_path;  
-    param_loader.checkAndGetString("dnn_model_path",model_path);
-    std::string config_file; 
-    param_loader.checkAndGetString("dnn_config_file_path",config_file);
-
-	auto segmenter = FactoryMotionSegmenter::create<DNNMotionSegmenter>(model_path,
-                            config_file,classMap({{0,"person"},{2,"car"},{62,"chair"}}));
-    segmenter->setThreshold(0.3);
+	auto segmenter = FactoryMotionSegmenter::create<DNNMotionSegmenter>(Constants::mask_rcnn_model_path,
+																		Constants::mask_rcnn_pbtxt_path, classMap({{0, "person"}, {2, "car"}, {62, "chair"}}));
+	segmenter->setThreshold(0.3);
 
 	ofstream file("poses.txt");
-	if(!file.is_open())
+	if (!file.is_open())
 	{
-		std::cout <<"could not create the output file\n";
+		std::cout << "could not create the output file\n";
 		exit(0);
-	}	
+	}
 	string rgb_img_time_stamp;
 	constexpr int dilation_size = 15;
 	cv::Mat kernel = getStructuringElement(cv::MORPH_ELLIPSE,
-                                           cv::Size( 2*dilation_size + 1, 2*dilation_size+1 ),
-                                           cv::Point( dilation_size, dilation_size ) );
+										   cv::Size(2 * dilation_size + 1, 2 * dilation_size + 1),
+										   cv::Point(dilation_size, dilation_size));
 	//Track points on each image
-	for(int i = 0; i < loader.num_images_; i++)
+	for (int i = 0; i < loader.num_images_; i++)
 	{
 		std::string timestamp;
 
-		//Load RGB-D image and point cloud 
+		//Load RGB-D image and point cloud
 		loader.getNextImage(frame, depth);
 		*curr_cloud = getPointCloud(frame, depth, intr);
-		
+
 		cv::Mat mask;
 
 		segmenter->segment(frame, mask);
 
 		// dilate image to ignore corner points
-		
+
 		cv::Mat dilated_mask;
 
-		cv::erode(mask,dilated_mask, kernel);
-		
+		cv::erode(mask, dilated_mask, kernel);
+
 		//mask =  dilated_mask - mask;
 
 		//Track feature points in the current frame
 		tracker.track(frame, dilated_mask);
 
 		//Estimate motion between the current and the previous frame/point clouds
-		if(i > 0)
+		if (i > 0)
 		{
-			try{
+			try
+			{
 				trans = motion_estimator.estimate(tracker.prev_pts_, prev_cloud,
-												tracker.curr_pts_, curr_cloud);
-				pose = pose*trans;
+												  tracker.curr_pts_, curr_cloud);
+				pose = pose * trans;
 			}
-			catch(std::exception & e)
+			catch (std::exception &e)
 			{
 				continue;
 			}
 		}
 		rgb_img_time_stamp = loader.getNextRgbImageTimeStamp();
 
-		writePoseToFile(file,pose,rgb_img_time_stamp);
-		
+		writePoseToFile(file, pose, rgb_img_time_stamp);
+
 		//View tracked points
-		for(size_t k = 0; k < tracker.curr_pts_.size(); k++)
+		for (size_t k = 0; k < tracker.curr_pts_.size(); k++)
 		{
 			Point2i pt1 = tracker.prev_pts_[k];
 			Point2i pt2 = tracker.curr_pts_[k];
-			circle(frame, pt1, 1, CV_RGB(255,0,0), -1);
-			circle(frame, pt2, 3, CV_RGB(0,0,255), -1);
-			line(frame, pt1, pt2, CV_RGB(0,0,255));
+			circle(frame, pt1, 1, CV_RGB(255, 0, 0), -1);
+			circle(frame, pt2, 3, CV_RGB(0, 0, 255), -1);
+			line(frame, pt1, pt2, CV_RGB(0, 0, 255));
 		}
 
-		if(i == 0) visualizer.addReferenceFrame(pose, "origin");
+		if (i == 0)
+			visualizer.addReferenceFrame(pose, "origin");
 		//visualizer.addQuantizedPointCloud(curr_cloud, 0.3, pose);
 		visualizer.viewReferenceFrame(pose);
 		//visualizer.viewPointCloud(curr_cloud, pose);
@@ -193,7 +195,7 @@ int main(int argc, char **argv)
 		imshow("Dilated Mask view", dilated_mask);
 
 		char key = waitKey(1);
-		if(key == 27 || key == 'q' || key == 'Q')
+		if (key == 27 || key == 'q' || key == 'Q')
 		{
 			logger.print(EventLogger::L_INFO, "[motion_estimator_test.cpp] Exiting\n", argv[0]);
 			break;

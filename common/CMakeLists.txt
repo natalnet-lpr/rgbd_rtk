@@ -21,3 +21,6 @@ install(TARGETS rgbd_rtk_common
     	  COMPONENT dev)
 
 install(FILES ${RGBD_RTK_COMMON_INCLUDES} DESTINATION include)
+
+set(PROJECT_DIR ${CMAKE_SOURCE_DIR})
+configure_file( constants.h.in ${CMAKE_SOURCE_DIR}/common/constants.h @ONLY)
