@@ -6,7 +6,7 @@ declare -r DEPENDENCIES_DIR="$PROJECT_DIR"/deps
 declare CORES_NUMBER=`nproc`
 declare -r INSTALL_DIR="/usr/local"
 declare -r SLEEP_FOR=2
-
+declare -r GREEN="\033[0;32m"
 printIFVerbose()
 {
     if [ $VERBOSE==$TRUE ];then
@@ -16,7 +16,6 @@ printIFVerbose()
 createDirectoryIfNotExists()
 {
     if [ ! -d $1 ]; then
-        echo "xd"
         mkdir $1
     fi
 }
@@ -40,8 +39,11 @@ checkFreeRAM()
 }
 
 if [ $CORES_NUMBER -ge 4 ]; then
+    echo -e "${GREEN}"
     checkFreeRAM
     printIFVerbose "[INFO] AVAILABLE RAM MEMORY: " $freeRAM "GB"
+    printIFVerbose "[INFO] CPU Cores :" $CORES_NUMBER
+
     if [ $freeRAM -le 16 ]; then
         CORES_NUMBER=2
         printIFVerbose "[INFO] Insuficient RAM" 
@@ -50,7 +52,6 @@ if [ $CORES_NUMBER -ge 4 ]; then
     fi
 fi
 
-echo "CPU Cores :" $CORES_NUMBER
 
 splitString(){
 
@@ -336,7 +337,12 @@ downloadMaskRCNNModel()
         tar -xf mask_rcnn_inception_v2_coco_2018_01_28.tar.gz
         rm mask_rcnn_inception_v2_coco_2018_01_28.tar.gz
         
+        cd mask_rcnn_inception_v2_coco_2018_01_28
+        wget https://raw.githubusercontent.com/vgaurav3011/Accident-Detection-System-using-Image-Segmentation-and-Machine-Learning/master/mask_rcnn_inception_v2_coco_2018_01_28.pbtxt
+
         printIFVerbose "Done!"
+        cd $PROJECT_DIR
+
     fi
     
 }
