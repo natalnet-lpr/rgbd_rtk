@@ -13,6 +13,27 @@ printIFVerbose()
         echo "$@"
     fi
 }
+createDirectoryIfNotExists()
+{
+    if [ ! -d $1 ]; then
+        echo "xd"
+        mkdir $1
+    fi
+}
+
+requireSudoPermission()
+{
+    sudo su
+}
+leaveSudoUser()
+{
+    if [ `whoami` == "root" ];
+    then
+        echo "Leaving sudo user"
+        exit
+    fi
+}
+
 checkFreeRAM()
 {
   freeRAM=`free -g |  awk '{print $NF}' | tr "\n" " " | awk '{print $2}'`
@@ -109,6 +130,7 @@ checkVerboseFromUserInput()
     BUILD_PCL=$FALSE
     BUILD_RGBD_RTK=$TRUE
     BUILD_EIGEN=$FALSE
+    DOWNLOAD_MODELS=$TRUE
     options=" "
     for var in "$@"
     do
@@ -175,10 +197,12 @@ buildEigen()
     printIFVerbose "[INFO] building Eigen"
     sleep $SLEEP_FOR
     cd $DEPENDENCIES_DIR/eigen
-    mkdir build
+    createDirectoryIfNotExists build
     cd build
     cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR  -DCMAKE_CXX_STANDARD=17 ..
+    requireSudoPermission
     make install
+    leaveSudoUser
 }
 buildOpenCV()
 {
@@ -186,12 +210,14 @@ buildOpenCV()
     printIFVerbose "[INFO] building OpenCV"
     sleep $SLEEP_FOR
     cd $DEPENDENCIES_DIR/opencv
-    mkdir build
+    createDirectoryIfNotExists build
     cd build
     cmake  -DOPENCV_EXTRA_MODULES_PATH=$DEPENDENCIES_DIR/opencv-contrib/modules -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR  -DCMAKE_CXX_FLAGS="--std=c++17" \
     -DWITH_FREETYPE=ON -DOPENCV_ENABLE_NONFREE=ON  Eigen3_DIR=$INSTALL_DIR/share/eigen3/cmake -DWITH_GTK_2_X=ON ..
     make -j$CORES_NUMBER
+    requireSudoPermission
     make install
+    leaveSudoUser    
     cd $PROJECT_DIR
 }
 
@@ -201,12 +227,14 @@ buildG2O()
     printIFVerbose "[INFO] building G2O"
     sleep $SLEEP_FOR
     cd $DEPENDENCIES_DIR/g2o
-    mkdir build 
+    createDirectoryIfNotExists build
     cd build
     cmake -DG2O_USE_CSPARSE=ON  -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR -DCMAKE_CXX_FLAGS="--std=c++17" ..
     make -j$CORES_NUMBER
     
+    requireSudoPermission
     make install
+    leaveSudoUser
     cd $PROJECT_DIR
 }
 
@@ -225,13 +253,15 @@ buildAruco()
         rm $filename
     fi
     cd $aruco_dir
-    mkdir build
+    createDirectoryIfNotExists build
     cd build
     # this not work yet, the findAruco.cmake file is not compatible
     #      cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR -DOpenCV_DIR=$INSTALL_DIR/lib/cmake/opencv4 ..
     cmake  -DOpenCV_DIR=$INSTALL_DIR/lib/cmake/opencv4  ..
     make -j$CORES_NUMBER
+    requireSudoPermission
     make install
+    leaveSudoUser
     cd $PROJECT_DIR
 
     
@@ -243,16 +273,19 @@ buildPCL()
     printIFVerbose "[INFO] building PCL"
     sleep $SLEEP_FOR
     cd $DEPENDENCIES_DIR/pcl
-    mkdir build
+    createDirectoryIfNotExists build
     cd build
     cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR  -DCMAKE_CXX_STANDARD=17 ..
-    make -j$CORES_NUMBER && make install
+    make -j$CORES_NUMBER
+    requireSudoPermission
+    make install
+    leaveSudoUser
     cd $PROJECT_DIR
 }
 
-
 installUbuntuDependencies()
 {   
+    requireSudoPermission
     clear
     printIFVerbose "[INFO] Installing ubuntu dependencies"
     sleep $SLEEP_FOR
@@ -266,13 +299,14 @@ installUbuntuDependencies()
     apt install -y libflann-dev | echo "apt install libflann-dev failed" exit
     apt install -y gtk-dev | echo "apt install libflann-dev failed" exit
     apt install -y libgtk2.0-dev | echo "apt install libgtk2.0-dev failed" exit
+    leaveSudoUser
 }
 buildRGBD_RTK()
 {
     printIFVerbose "[INFO] building the project RGBD-RTK"
     sleep $SLEEP_FOR
     cd $PROJECT_DIR
-    mkdir build
+    createDirectoryIfNotExists build
     cd build
     echo $INSTALL_DIR/lib/cmake/g2o
     cmake -DOpenCV_DIR=$INSTALL_DIR/lib/cmake/opencv4 -DG2O_DIR=$INSTALL_DIR  -DPCL_DIR=$INSTALL_DIR/share/pcl-1.10/ ..
@@ -280,6 +314,7 @@ buildRGBD_RTK()
 } 
 installGCC9()
 {
+    requireSudoPermission
     printIFVerbose "[INFO] Installing GCC and G++ version 9.4"
     sleep $SLEEP_FOR
 	add-apt-repository ppa:ubuntu-toolchain-r/test
@@ -290,28 +325,39 @@ installGCC9()
 	unlink /usr/bin/gcc
 	ln -sn /usr/bin/g++-9 /usr/bin/g++
 	ln -sn /usr/bin/gcc-9 /usr/bin/gcc
+    leaveSudoUser
+}
+downloadMaskRCNNModel()
+{
+    if [ ! -d mask_rcnn_inception_v2_coco_2018_01_28 ]; then
+        printIFVerbose "Downloading Mask RCNN Model"
+
+        wget http://download.tensorflow.org/models/object_detection/mask_rcnn_inception_v2_coco_2018_01_28.tar.gz
+        tar -xf mask_rcnn_inception_v2_coco_2018_01_28.tar.gz
+        rm mask_rcnn_inception_v2_coco_2018_01_28.tar.gz
+        
+        printIFVerbose "Done!"
+    fi
+    
+}
+downloadDNNModels()
+{
+    cd $PROJECT_DIR
+    createDirectoryIfNotExists models
+    cd models
+    downloadMaskRCNNModel
+
 }
 
 
 ############# MAIN CODE #############
 main()
 { 
-    if [ `whoami` != "root" ];
-    then
-        printIFVerbose "[ERROR] YOU NEED ROOT PERMISSION TO RUN THIS SCRIPT"
-        exit 1
+    createDirectoryIfNotExists $DEPENDENCIES_DIR
 
-    fi
-
-    if [ ! -d $DEPENDENCIES_DIR ]; 
-    then
-    	mkdir $DEPENDENCIES_DIR
-    fi
     kernel_name=$(uname -s)
 
     checkVerboseFromUserInput "$@"
-
-
 
     printIFVerbose "[INFO] Kernel Name: $kernel_name"
 
@@ -364,6 +410,10 @@ main()
             	buildPCL
             fi
             
+            if [ $DOWNLOAD_MODELS -eq $TRUE ]; then
+                downloadDNNModels
+            fi
+
             if [ $BUILD_RGBD_RTK -eq $TRUE ]; then
                buildRGBD_RTK
 	        fi
