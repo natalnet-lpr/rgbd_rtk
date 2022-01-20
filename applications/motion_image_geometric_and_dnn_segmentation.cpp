@@ -119,11 +119,12 @@ int main(int argc, char **argv)
     constexpr float dynamic_range = 40.0f;
     constexpr float mask_point_radius = 3.0f;
     constexpr float dynamic_point_threshold = 0.7f;
-    auto geometric_segmenter = FactoryMotionSegmenter::create<GeometricMotionSegmenter>(&tracker.tracklets_,
+    auto geometric_segmenter = FactoryMotionSegmenter::create<GeometricMotionSegmenter>(tracker.curr_pts_,
+                                                                                        tracker.prev_pts_,
                                                                                         motion_estimator.src_cloud_,
                                                                                         motion_estimator.tgt_cloud_,
                                                                                         trans,
-                                                                                        &motion_estimator.mapper_2d_3d_,
+                                                                                        motion_estimator.mapper_2d_3d_,
                                                                                         dynamic_point_threshold,
                                                                                         dynamic_range,
                                                                                         mask_point_radius);

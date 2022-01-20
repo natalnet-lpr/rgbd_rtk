@@ -112,18 +112,16 @@ int main(int argc, char **argv)
 										   ransac_inliers_ratio);
 	motion_estimator.setMinInliersNumber(10);
 
-	std::vector<cv::Point2f> *prev_pts_ptr = &tracker.prev_pts_;
-	std::vector<cv::Point2f> *curr_pts_ptr = &tracker.curr_pts_;
-
-	constexpr float threshold = 0.7f;
+	constexpr float threshold = 0.6f;
 	constexpr uint8_t dynamic_range = 40;
 	constexpr float mask_point_radius = 3.0f;
 
-	auto segmenter = FactoryMotionSegmenter::create<GeometricMotionSegmenter>(&tracker.tracklets_,
+	auto segmenter = FactoryMotionSegmenter::create<GeometricMotionSegmenter>(tracker.prev_pts_,
+																			  tracker.curr_pts_,
 																			  motion_estimator.src_cloud_,
 																			  motion_estimator.tgt_cloud_,
 																			  trans,
-																			  &motion_estimator.mapper_2d_3d_,
+																			  motion_estimator.mapper_2d_3d_,
 																			  threshold,
 																			  dynamic_range,
 																			  mask_point_radius);
@@ -151,43 +149,35 @@ int main(int argc, char **argv)
 			{
 				auto estimated_trans = motion_estimator.estimate(tracker.prev_pts_, prev_cloud,
 																 tracker.curr_pts_, curr_cloud);
+
 				*trans = estimated_trans;
-			}
-			catch (const std::exception &e)
-			{
-				*trans = Eigen::Affine3f::Identity();
 
-				logger.print(EventLogger::L_ERROR, "[motion_image_geometric_segmentation.cpp] Error: %s\n", e.what());
-			}
+				segmenter->segment(frame, mask);
+				auto prev_static_pts = segmenter->getPrevStaticPoints();
+				auto curr_static_pts = segmenter->getCurrStaticPoints();
 
-			segmenter->segment(frame, mask);
+				size_t size = std::min(curr_static_pts->size(), prev_static_pts->size());
 
-			auto prev_static_pts = segmenter->getPrevStaticPoints();
-			auto curr_static_pts = segmenter->getCurrStaticPoints();
-
-			if (!curr_static_pts->empty() && !prev_static_pts->empty())
-			{
-				for (size_t k = 0; k < curr_static_pts->size(); k++)
+				for (size_t k = 0; k < size; k++)
 				{
 					Point2i pt1 = (*curr_static_pts)[k];
 					Point2i pt2 = (*prev_static_pts)[k];
-
 					cv::circle(frame, pt1, 1, cv::Scalar(147, 0, 147), -1);
 					cv::circle(frame, pt2, 3, cv::Scalar(147, 0, 147), -1);
 					line(frame, pt1, pt2, CV_RGB(0, 0, 255));
 				}
-				try
-				{
-					auto refined_trans = motion_estimator.estimate(*prev_static_pts, prev_cloud,
-																   *curr_static_pts, curr_cloud);
-					*trans = refined_trans;
-				}
-				catch (const std::exception &e)
-				{
-					*trans = Eigen::Affine3f::Identity();
-					logger.print(EventLogger::L_ERROR, "[motion_image_geometric_segmentation.cpp] Error: %s\n", e.what());
-				}
+
+				auto refined_trans = motion_estimator.estimate(*prev_static_pts, prev_cloud,
+															   *curr_static_pts, curr_cloud);
+
+				*trans = refined_trans;
 			}
+			catch (const std::exception &e)
+			{
+				*trans = Eigen::Affine3f::Identity();
+				logger.print(EventLogger::L_ERROR, "[motion_image_geometric_segmentation.cpp] Error: %s\n", e.what());
+			}
+
 			pose = pose * (*trans);
 		}
 
@@ -214,8 +204,8 @@ int main(int argc, char **argv)
 		//Show RGB-D image
 		imshow("Image view", frame);
 		imshow("Depth view", depth);
-		//if (!mask.empty())
-		//	imshow("Mask view, black points = dynamic points", mask);
+		if (!mask.empty())
+			imshow("Mask view, black points = dynamic points", mask);
 
 		char key = waitKey(1);
 		if (key == 27 || key == 'q' || key == 'Q')
