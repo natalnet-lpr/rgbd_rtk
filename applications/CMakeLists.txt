@@ -55,7 +55,7 @@ if(WITH_STEREO)
 endif()
 
 if(WITH_MOTION_SEGMENTATION)
-    find_library(RGBD_RTK_MOTION_SEGMENTATION NAMES rgbd_rtk_motion_segmentation)
+    find_library(RGBD_RTK_SEGMENTATION NAMES rgbd_rtk_segmentation)
 endif()
 
 ##Install applications that only needs opencv
@@ -174,7 +174,7 @@ if(WITH_IO AND WITH_VISUALIZATION)
                 RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin)
         endif()
     endif()
-    if(RGBD_RTK_MOTION_SEGMENTATION)
+    if(RGBD_RTK_SEGMENTATION AND FALSE)
 
         add_executable(dynamic_image_dnn_segmentation dynamic_image_dnn_segmentation.cpp)
         add_executable(motion_image_geometric_segmentation motion_image_geometric_segmentation.cpp)
@@ -182,10 +182,10 @@ if(WITH_IO AND WITH_VISUALIZATION)
         add_executable(motion_image_geometric_and_dnn_segmentation motion_image_geometric_and_dnn_segmentation.cpp)
 
 
-        target_link_libraries(dynamic_image_dnn_segmentation ${RGBD_RTK_MOTION_SEGMENTATION} ${RGBD_RTK_IO} )
-        target_link_libraries(motion_image_geometric_segmentation ${RGBD_RTK_MOTION_ESTIMATION}   ${RGBD_RTK_VISUALIZATION} ${RGBD_RTK_MOTION_SEGMENTATION} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING})
-        target_link_libraries(motion_image_dnn_segmentation ${RGBD_RTK_MOTION_ESTIMATION}  ${RGBD_RTK_VISUALIZATION} ${RGBD_RTK_MOTION_SEGMENTATION} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING})
-        target_link_libraries(motion_image_geometric_and_dnn_segmentation ${RGBD_RTK_MOTION_ESTIMATION}  ${RGBD_RTK_VISUALIZATION} ${RGBD_RTK_MOTION_SEGMENTATION} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING})
+        target_link_libraries(dynamic_image_dnn_segmentation ${RGBD_RTK_SEGMENTATION} ${RGBD_RTK_IO} )
+        target_link_libraries(motion_image_geometric_segmentation ${RGBD_RTK_MOTION_ESTIMATION}   ${RGBD_RTK_VISUALIZATION} ${RGBD_RTK_SEGMENTATION} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING})
+        target_link_libraries(motion_image_dnn_segmentation ${RGBD_RTK_MOTION_ESTIMATION}  ${RGBD_RTK_VISUALIZATION} ${RGBD_RTK_SEGMENTATION} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING})
+        target_link_libraries(motion_image_geometric_and_dnn_segmentation ${RGBD_RTK_MOTION_ESTIMATION}  ${RGBD_RTK_VISUALIZATION} ${RGBD_RTK_SEGMENTATION} ${RGBD_RTK_IO} ${RGBD_RTK_TRACKING})
 
         install(
             TARGETS dynamic_image_dnn_segmentation
