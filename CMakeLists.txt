@@ -68,7 +68,7 @@ message(STATUS "CSparse Found: " ${CSPARSE_FOUND})
 include_directories(${OpenCV_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS}
                     ${EIGEN3_INCLUDE_DIR} ${G2O_INCLUDE_DIR} ${CSPARSE_INCLUDE_DIR}
                     common io tracking motion_estimation visualization visual_odometry
-                    quadtree stereo motion_segmentation)
+                    quadtree stereo segmentation)
 link_directories(${PCL_LIBRARY_DIRS})
 
 LIST(APPEND G2O_LIBS
@@ -91,10 +91,10 @@ option(WITH_STEREO "Build with stereo module" ON)
 option(WITH_VISUAL_ODOMETRY "Build with odometry module" ON)
 option(WITH_SLAM "Build with slam module" ON)
 
-if(${OpenCV_VERSION_MAJOR} GREATER_EQUAL 4 )
-	option(WITH_MOTION_SEGMENTATION "Build with motion segmentation module" ON)
+if(${OpenCV_VERSION_MAJOR} GREATER_EQUAL 3 )
+	option(WITH_SEGMENTATION "Build with motion segmentation module" ON)
 else()
-	option(WITH_MOTION_SEGMENTATION "Build with motion segmentation module" OFF)
+	option(WITH_SEGMENTATION "Build without motion segmentation module" OFF)
 endif()
 
 # Needed for every other module
@@ -178,10 +178,10 @@ if(WITH_SLAM)
 	endif()
 endif()
 
-if(WITH_MOTION_SEGMENTATION)
-	add_subdirectory(motion_segmentation)
-	set(RGBD_RTK_MOTION_SEGMENTATION rgbd_rtk_motion_segmentation)
-	export(TARGETS rgbd_rtk_motion_segmentation APPEND FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
+if(WITH_SEGMENTATION)
+	add_subdirectory(segmentation)
+	set(RGBD_RTK_SEGMENTATION rgbd_rtk_segmentation)
+	export(TARGETS rgbd_rtk_segmentation APPEND FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
 endif()
 
 add_subdirectory(applications)
