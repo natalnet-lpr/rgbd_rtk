@@ -2,6 +2,7 @@
 #include "dnn_based_ms.h"
 
 using namespace std;
+
 /**
  * @brief Do the instance segmentation task using the MaskRCNN model
  * @see https://arxiv.org/abs/1703.06870
@@ -10,7 +11,7 @@ using namespace std;
 class MaskRcnnDnnMS : public DnnBasedMS
 {
 public:
-  MaskRcnnDnnMS(uint8_t backend_id, uint8_t target_id);
+  MaskRcnnDnnMS(uint8_t backend_id, uint8_t target_id, unordered_map<uint8_t, string> valid_classes_map);
 
   virtual ~MaskRcnnDnnMS();
 
@@ -21,7 +22,7 @@ public:
    * @param[out] img_out  cv::Mat image which is a binary mask
    */
   virtual void segment(const Mat &img_in, Mat &img_out,
-                       float threshold) const override;
+                       float threshold) override;
 
   /**
    * @brief Perform object detection passing a image
@@ -29,7 +30,7 @@ public:
    * @param[in] img_in cv::Mat RGB image
    * @return ObjectDetected , @see "./object_detected.h"
    */
-  virtual ObjectDetected detect(const Mat &img_in, float threshold) const override;
+  virtual ObjectDetected detect(const Mat &img_in, float threshold) override;
 
 protected:
   /**
@@ -41,8 +42,8 @@ protected:
    * @param[in] dnn_guesses vector of Mat that represents a set of guesses returned by the neural network 
    * @param[in] threshold  this value'll be used to measure if the dnn_guess is good enough
    */
-  virtual void postProcessSegmentation(Mat &in_img, Mat &out_img,
-                                       const vector<Mat> dnn_guesses, float threshold) const;
+  virtual void postProcessSegmentation(const Mat &in_img, Mat &out_img,
+                                       const vector<Mat> dnn_guesses, const float threshold);
 
   /**
    * @brief After forward the image to the network, the nertwork'll return a bunch of guesses
@@ -53,7 +54,7 @@ protected:
    * @param[in] threshold  this float value that'll be used to measure if the dnn_guess is good enough
    * @return the detected object
    */
-  virtual ObjectDetected postProcessDetection(Mat &in_img,
+  virtual ObjectDetected postProcessDetection(const Mat &in_img,
                                               const std::vector<Mat> dnn_guesses,
-                                              float threshold) const;
+                                              const float threshold);
 };
