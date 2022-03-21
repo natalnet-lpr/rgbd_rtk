@@ -3,6 +3,7 @@
 #include "object_detected.h"
 #include <opencv2/dnn.hpp>
 #include <vector>
+#include <unordered_map>
 
 using namespace std;
 using namespace cv;
@@ -22,6 +23,7 @@ public:
 
   DnnBasedMS(const string &model, const string &config, const string &framework,
              const vector<string> output_layers_name,
+             const unordered_map<uint8_t /*class id*/, string /*class name*/> valid_classes_map,
              uint8_t backend_id = Backend::DNN_BACKEND_DEFAULT,
              uint8_t target_id = Target::DNN_TARGET_CPU);
 
@@ -33,7 +35,7 @@ public:
    * @param[in] img_in  cv::Mat RGB image
    * @param[out] img_out  cv::Mat image which is a binary mask
    */
-  virtual void segment(const Mat &img_in, Mat &img_out, float threshold) const = 0;
+  virtual void segment(const Mat &img_in, Mat &img_out, float threshold) = 0;
 
   /**
    * @brief Perform object detection passing a image
@@ -41,7 +43,7 @@ public:
    * @param[in] img_in cv::Mat RGB image
    * @return ObjectDetected , @see "./object_detected.h"
    */
-  virtual ObjectDetected detect(const Mat &img_in, float threshold) const = 0;
+  virtual ObjectDetected detect(const Mat &img_in, float threshold) = 0;
 
 protected:
   string model_;
@@ -51,5 +53,6 @@ protected:
   uint8_t target_id_;
   Net net_;
   vector<string> output_layers_name_;
+  unordered_map<uint8_t /*class id*/, string /*class name*/> valid_classes_map_;
   vector<Mat> dnn_output_;
 };
