@@ -47,6 +47,8 @@
 
 #include <common_types.h>
 
+using namespace std;
+
 class MotionEstimatorRANSAC
 {
 
@@ -58,13 +60,12 @@ protected:
      * only if neither of them are invalid.
      * @param tgt_points @param tgt_dense_cloud @param src_points @param src_dense_cloud
      */
-    void setDataFromCorrespondences(const std::vector<cv::Point2f> &tgt_points,
+    void setDataFromCorrespondences(const vector<cv::Point2f> &tgt_points,
                                     const pcl::PointCloud<PointT>::Ptr &tgt_dense_cloud,
-                                    const std::vector<cv::Point2f> &src_points,
+                                    const vector<cv::Point2f> &src_points,
                                     const pcl::PointCloud<PointT>::Ptr &src_dense_cloud);
 
 public:
-
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     // DEBUG
@@ -89,14 +90,19 @@ public:
     float inliers_ratio_;
 
     // Vector telling if each correspondence is an inlier or not
-    std::vector<unsigned char> is_inlier_;
+    vector<unsigned char> is_inlier_;
 
-    // Store the current point tracker index and also it 2d point and 3d point
-    // this is useful to retrive the information of the 3d point inside 
-    // of point cloud
-    std::vector<int> mapper_2d_3d_;
+    // Vector of vectors that stores the index of the point inside of the PointCloud
+    // for each new frame
+    vector<vector<int>> mappers_2d_3d_;
 
-    int min_inliers_number_ = 4;
+    vector<pair<pcl::PointCloud<PointT>, pcl::PointCloud<PointT>>> sparsePointCloudPairs_;
+
+    // Store a copy of the relative poses between
+    // the source and the target PointCloud
+    vector<Eigen::Matrix4f> relative_poses_;
+
+    int min_inliers_number_ = 10;
 
     /**
      * Default constructor
@@ -117,15 +123,14 @@ public:
      * 2D points, from which the corresponding 3D points are extracted.
      * @param tgt_points @param tgt_dense_cloud @param src_points @param src_dense_cloud
      */
-    Eigen::Matrix4f estimate(const std::vector<cv::Point2f> &tgt_points,
+    Eigen::Matrix4f estimate(const vector<cv::Point2f> &tgt_points,
                              const pcl::PointCloud<PointT>::Ptr &tgt_dense_cloud,
-                             const std::vector<cv::Point2f> &src_points,
+                             const vector<cv::Point2f> &src_points,
                              const pcl::PointCloud<PointT>::Ptr &src_dense_cloud);
     inline void setMinInliersNumber(const int min_inliers_number)
     {
         min_inliers_number_ = min_inliers_number;
     };
-    
 };
 
 #endif /* INCLUDE_MOTION_ESTIMATOR_RANSAC_H_ */

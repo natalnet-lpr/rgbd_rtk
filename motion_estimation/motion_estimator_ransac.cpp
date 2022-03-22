@@ -41,13 +41,13 @@
 #include <motion_estimator_ransac.h>
 
 using namespace std;
-void printPoint2d(const cv::Point2d&  pt)
+void printPoint2d(const cv::Point2d &pt)
 {
-    std::cout << pt.x <<", "<< pt.y << "\n";
+    std::cout << pt.x << ", " << pt.y << "\n";
 }
-void printPoint3d(const PointT& pt)
+void printPoint3d(const PointT &pt)
 {
-    std::cout << pt.x <<", "<< pt.y << ", " << pt.z <<"\n";
+    std::cout << pt.x << ", " << pt.y << ", " << pt.z << "\n";
 }
 void MotionEstimatorRANSAC::setDataFromCorrespondences(
     const std::vector<cv::Point2f> &tgt_points, const pcl::PointCloud<PointT>::Ptr &tgt_dense_cloud,
@@ -71,18 +71,13 @@ void MotionEstimatorRANSAC::setDataFromCorrespondences(
     // clouds
     // A correspondence is removed if any of the 3D points is invalid
     size_t valid_points = 0;
-    
-    mapper_2d_3d_.clear();
-    
-    auto isValid2dPoint = [](const cv::Point2f& pt)
-                          {
-                              return pt.x > 0 && pt.y>0;
-                          };
+
+    mappers_2d_3d_.push_back(vector<int>());
 
     for (size_t k = 0; k < src_points.size(); k++)
-    {            
+    {
         PointT tpt = get3Dfrom2D(tgt_points[k], tgt_dense_cloud);
-        PointT spt = get3Dfrom2D(src_points[k], src_dense_cloud);  
+        PointT spt = get3Dfrom2D(src_points[k], src_dense_cloud);
 
         if (is_valid(tpt) && is_valid(spt))
         {
@@ -98,20 +93,19 @@ void MotionEstimatorRANSAC::setDataFromCorrespondences(
             */
             tgt_cloud_->push_back(tpt);
             src_cloud_->push_back(spt);
-            
-            mapper_2d_3d_.push_back(k);
+
+            mappers_2d_3d_.back().push_back(k);
             // tgt_cloud_->points[valid_points] = tpt;
             // src_cloud_->points[valid_points] = spt;
             valid_points++;
         }
-    
-    }    
-    
+    }
+
     // tgt_cloud_->points.resize(valid_points);
     // src_cloud_->points.resize(valid_points);
     MLOG_DEBUG(EventLogger::M_MOTION_ESTIMATION, "@MotionEstimatorRANSAC::setDataFromCorrespondences: \
                                                   valid points (with depth)/total points: %lu/%lu\n",
-                                                  valid_points, src_points.size());
+               valid_points, src_points.size());
 }
 MotionEstimatorRANSAC::MotionEstimatorRANSAC()
 {
@@ -178,7 +172,7 @@ Eigen::Matrix4f MotionEstimatorRANSAC::estimate(const vector<cv::Point2f> &tgt_p
     }
     num_inliers_ = inl.size();
 
-    if( inl.size() < min_inliers_number_) 
+    if (inl.size() < min_inliers_number_)
     {
         const std::string msg = "input size is less than the minimum inliers number";
         throw std::length_error(msg.c_str());
@@ -187,7 +181,7 @@ Eigen::Matrix4f MotionEstimatorRANSAC::estimate(const vector<cv::Point2f> &tgt_p
     float inl_ratio = float(inl.size()) / N;
     MLOG_DEBUG(EventLogger::M_MOTION_ESTIMATION, "@MotionEstimatorRANSAC::estimate: \
                                                   inlier ratio is %f\n",
-                                                  inl_ratio);
+               inl_ratio);
 
     // Optimize registration transformation using all inlier correspondences
     sac_model->optimizeModelCoefficients(inl, coeffs, opt_coeffs);
@@ -229,5 +223,10 @@ Eigen::Matrix4f MotionEstimatorRANSAC::estimate(const vector<cv::Point2f> &tgt_p
        is_inlier_[i], xc, yc, x, y, err);
         }
     */
+    // probabily we should to change this to do not make copies
+    sparsePointCloudPairs_.push_back(pair<pcl::PointCloud<PointT>, pcl::PointCloud<PointT>>(*src_cloud_, *tgt_cloud_));
+
+    relative_poses_.push_back(trans);
+
     return trans;
 }
