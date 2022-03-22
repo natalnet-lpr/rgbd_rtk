@@ -11,7 +11,9 @@ using namespace std;
 class MaskRcnnDnnMS : public DnnBasedMS
 {
 public:
-  MaskRcnnDnnMS(uint8_t backend_id, uint8_t target_id, unordered_map<uint8_t, string> valid_classes_map);
+  MaskRcnnDnnMS(Backend backend_id,
+                Target target_id,
+                unordered_map<uint8_t, string> valid_classes_map);
 
   virtual ~MaskRcnnDnnMS();
 
@@ -42,8 +44,9 @@ protected:
    * @param[in] dnn_guesses vector of Mat that represents a set of guesses returned by the neural network 
    * @param[in] threshold  this value'll be used to measure if the dnn_guess is good enough
    */
-  virtual void postProcessSegmentation(const Mat &in_img, Mat &out_img,
-                                       const vector<Mat> dnn_guesses, const float threshold);
+
+  void postProcessSegmentation(const Mat &in_img, Mat &out_img,
+                               const vector<Mat> dnn_guesses, const float threshold);
 
   /**
    * @brief After forward the image to the network, the nertwork'll return a bunch of guesses
@@ -54,7 +57,7 @@ protected:
    * @param[in] threshold  this float value that'll be used to measure if the dnn_guess is good enough
    * @return the detected object
    */
-  virtual ObjectDetected postProcessDetection(const Mat &in_img,
-                                              const std::vector<Mat> dnn_guesses,
-                                              const float threshold);
+  ObjectDetected postProcessDetection(const Mat &in_img,
+                                      const std::vector<Mat> dnn_guesses,
+                                      const float threshold);
 };
