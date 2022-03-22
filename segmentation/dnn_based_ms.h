@@ -24,8 +24,8 @@ public:
   DnnBasedMS(const string &model, const string &config, const string &framework,
              const vector<string> output_layers_name,
              const unordered_map<uint8_t /*class id*/, string /*class name*/> valid_classes_map,
-             uint8_t backend_id = Backend::DNN_BACKEND_DEFAULT,
-             uint8_t target_id = Target::DNN_TARGET_CPU);
+             Backend backend_id = Backend::DNN_BACKEND_DEFAULT,
+             Target target_id = Target::DNN_TARGET_CPU);
 
   virtual ~DnnBasedMS();
 
@@ -49,8 +49,8 @@ protected:
   string model_;
   string config_;
   string framework_;
-  uint8_t backend_id_;
-  uint8_t target_id_;
+  Backend backend_id_;
+  Target target_id_;
   Net net_;
   vector<string> output_layers_name_;
   unordered_map<uint8_t /*class id*/, string /*class name*/> valid_classes_map_;
