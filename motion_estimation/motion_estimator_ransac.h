@@ -42,12 +42,15 @@
 #include <opencv2/core/core.hpp>
 #include <pcl/correspondence.h>
 #include <pcl/point_cloud.h>
+#include <pcl/sample_consensus/ransac.h>
+#include <pcl/sample_consensus/sac_model_registration.h>
+
 #include <vector>
 #include <unordered_map>
 
 #include <common_types.h>
 
-using namespace std;
+typedef std::pair<pcl::PointCloud<PointT>, pcl::PointCloud<PointT>> Point3DCloudPairs;
 
 class MotionEstimatorRANSAC
 {
@@ -60,10 +63,20 @@ protected:
      * only if neither of them are invalid.
      * @param tgt_points @param tgt_dense_cloud @param src_points @param src_dense_cloud
      */
-    void setDataFromCorrespondences(const vector<cv::Point2f> &tgt_points,
+    void setDataFromCorrespondences(const std::vector<cv::Point2f> &tgt_points,
                                     const pcl::PointCloud<PointT>::Ptr &tgt_dense_cloud,
-                                    const vector<cv::Point2f> &src_points,
+                                    const std::vector<cv::Point2f> &src_points,
                                     const pcl::PointCloud<PointT>::Ptr &src_dense_cloud);
+    /**
+     * @brief Create a And Compute Ransac Model object
+     * 
+     * @param[out] sac_model
+     * @param[out] ransac 
+     */
+    void createAndComputeRansacModel(pcl::SampleConsensusModelRegistration<PointT>::Ptr &sac_model,
+                                     pcl::RandomSampleConsensus<PointT>::Ptr &ransac);
+
+    Eigen::Matrix4f createTransMatrixFromOptimizedCoefficients(const Eigen::VectorXf &opt_coeffs);
 
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -90,17 +103,20 @@ public:
     float inliers_ratio_;
 
     // Vector telling if each correspondence is an inlier or not
-    vector<unsigned char> is_inlier_;
+    std::vector<unsigned char> is_inlier_;
 
     // Vector of vectors that stores the index of the point inside of the PointCloud
     // for each new frame
-    vector<vector<int>> mappers_2d_3d_;
+    std::vector<std::vector<int>> mappers_2d_3d_;
 
-    vector<pair<pcl::PointCloud<PointT>, pcl::PointCloud<PointT>>> sparsePointCloudPairs_;
+    // vector of point cloud pairs
+    // the first is the target/previous cloud
+    // the second is the source/current cloud
+    std::vector<Point3DCloudPairs> sparsePointCloudPairs_;
 
     // Store a copy of the relative poses between
     // the source and the target PointCloud
-    vector<Eigen::Matrix4f> relative_poses_;
+    std::vector<Eigen::Matrix4f> relative_poses_;
 
     int min_inliers_number_ = 10;
 
@@ -123,9 +139,9 @@ public:
      * 2D points, from which the corresponding 3D points are extracted.
      * @param tgt_points @param tgt_dense_cloud @param src_points @param src_dense_cloud
      */
-    Eigen::Matrix4f estimate(const vector<cv::Point2f> &tgt_points,
+    Eigen::Matrix4f estimate(const std::vector<cv::Point2f> &tgt_points,
                              const pcl::PointCloud<PointT>::Ptr &tgt_dense_cloud,
-                             const vector<cv::Point2f> &src_points,
+                             const std::vector<cv::Point2f> &src_points,
                              const pcl::PointCloud<PointT>::Ptr &src_dense_cloud);
     inline void setMinInliersNumber(const int min_inliers_number)
     {
