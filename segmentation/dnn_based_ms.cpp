@@ -1,6 +1,8 @@
 #include "dnn_based_ms.h"
 
 using namespace std;
+using namespace cv;
+using namespace cv::dnn;
 
 DnnBasedMS::DnnBasedMS(const string &model, const string &config, const string &framework,
                        const vector<string> output_layers_name,

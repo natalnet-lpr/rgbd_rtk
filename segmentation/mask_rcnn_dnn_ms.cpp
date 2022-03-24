@@ -3,6 +3,9 @@
 #include "mask_rcnn_dnn_ms.h"
 #include "../common/constants.h"
 
+using namespace std;
+using namespace cv;
+using namespace cv::dnn;
 using namespace Constants;
 
 MaskRcnnDnnMS::MaskRcnnDnnMS(Backend backend_id,
