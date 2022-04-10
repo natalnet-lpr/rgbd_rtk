@@ -43,8 +43,8 @@
 #include <klttw_tracker.h>
 #include <motion_estimator_ransac.h>
 #include <reconstruction_visualizer.h>
-#include <factory_motion_segmenter.h>
 #include <common/constants.h>
+#include <segmentation/scored_mask_rcnnmt.h>
 using namespace std;
 using namespace cv;
 
@@ -104,6 +104,7 @@ int main(int argc, char **argv)
         logger.print(EventLogger::L_INFO, "[motion_estimation_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
         exit(0);
     }
+
     ConfigLoader param_loader(argv[1]);
     param_loader.checkAndGetString("index_file", index_file);
     param_loader.checkAndGetFloat("ransac_distance_threshold", ransac_distance_threshold);
@@ -112,39 +113,29 @@ int main(int argc, char **argv)
 
     MotionEstimatorRANSAC motion_estimator(intr, ransac_distance_threshold,
                                            ransac_inliers_ratio);
-
-    auto dnn_segmenter = FactoryMotionSegmenter::create<DNNMotionSegmenter>(Constants::mask_rcnn_model_path,
-                                                                            Constants::mask_rcnn_pbtxt_path, classMap({{0, "person"}, {2, "car"}, {62, "chair"}}));
-    dnn_segmenter->setThreshold(0.3);
-    constexpr float dynamic_range = 40.0f;
-    constexpr float mask_point_radius = 3.0f;
-    constexpr float dynamic_point_threshold = 0.7f;
-    auto geometric_segmenter = FactoryMotionSegmenter::create<GeometricMotionSegmenter>(tracker.curr_pts_,
-                                                                                        tracker.prev_pts_,
-                                                                                        motion_estimator.src_cloud_,
-                                                                                        motion_estimator.tgt_cloud_,
-                                                                                        trans,
-                                                                                        motion_estimator.mapper_2d_3d_,
-                                                                                        dynamic_point_threshold,
-                                                                                        dynamic_range,
-                                                                                        mask_point_radius);
-
-    geometric_segmenter->setIntrinsics(intr);
-
     ofstream file("poses.txt");
+
     if (!file.is_open())
     {
         std::cout << "could not create the output file\n";
         exit(0);
     }
+
     string rgb_img_time_stamp;
+
+    ScoredMaskRcnnMT motion_treater;
+
+    vector<MaskRcnnClass> mask_rcnn_classes;
+    mask_rcnn_classes.push_back(MaskRcnnClass::Person);
+    mask_rcnn_classes.push_back(MaskRcnnClass::Car);
+
+    motion_treater.initializeMaskRcnnDnnMT(cv::dnn::Backend::DNN_BACKEND_DEFAULT, cv::dnn::Target::DNN_TARGET_CPU, mask_rcnn_classes);
+    motion_treater.initializeScoredFBMT(&motion_estimator, 0.6, 2);
+
     constexpr int dilation_size = 15;
     cv::Mat kernel = getStructuringElement(cv::MORPH_ELLIPSE,
                                            cv::Size(2 * dilation_size + 1, 2 * dilation_size + 1),
                                            cv::Point(dilation_size, dilation_size));
-
-    boost::shared_ptr<std::vector<cv::Point2f>> curr_static_pts = nullptr;
-    boost::shared_ptr<std::vector<cv::Point2f>> prev_static_pts = nullptr;
 
     //Track points on each image
     for (int i = 0; i < loader.num_images_; i++)
@@ -157,7 +148,7 @@ int main(int argc, char **argv)
 
         cv::Mat mask;
 
-        dnn_segmenter->segment(frame, mask);
+        motion_treater.segment(frame, mask, 0.7);
 
         // dilate image to ignore corner points
 
@@ -171,25 +162,38 @@ int main(int argc, char **argv)
         //Estimate motion between the current and the previous frame/point clouds
         if (i > 0)
         {
-            bool estimated = false;
             try
             {
                 *trans = motion_estimator.estimate(tracker.prev_pts_, prev_cloud,
                                                    tracker.curr_pts_, curr_cloud);
-                estimated = true;
-                geometric_segmenter->segment(frame, mask);
 
-                curr_static_pts = geometric_segmenter->getCurrStaticPoints();
-                prev_static_pts = geometric_segmenter->getPrevStaticPoints();
+                vector<int> static_pts_idxs = motion_treater.getStaticPointsIndexes(tracker.curr_pts_);
 
-                *refined_trans = motion_estimator.estimate(*prev_static_pts, prev_cloud,
-                                                           *curr_static_pts, curr_cloud);
+                vector<cv::Point2f> curr_static_pts;
+                vector<cv::Point2f> prev_static_pts;
+
+                for (size_t k = 0; k < static_pts_idxs.size(); k++)
+                {
+                    const int &idx = static_pts_idxs[k];
+                    const cv::Point2f &pt1 = tracker.curr_pts_[idx];
+                    const cv::Point2f &pt2 = tracker.prev_pts_[idx];
+
+                    curr_static_pts.push_back(pt1);
+                    prev_static_pts.push_back(pt2);
+
+                    circle(frame, pt1, 1, CV_RGB(147, 0, 147), -1);
+                    circle(frame, pt2, 3, CV_RGB(0, 255, 0), -1);
+                    line(frame, pt1, pt2, CV_RGB(0, 0, 255));
+                }
+
+                *refined_trans = motion_estimator.estimate(prev_static_pts, prev_cloud,
+                                                           curr_static_pts, curr_cloud);
                 *trans = *refined_trans;
             }
             catch (std::exception &e)
             {
-                if (!estimated)
-                    *trans = Eigen::Affine3f::Identity();
+
+                *trans = Eigen::Affine3f::Identity();
 
                 logger.print(EventLogger::L_ERROR, "[motion_image_geometric_and_dnn_segmentation.cpp] Error: %s\n", e.what());
             }
@@ -199,18 +203,6 @@ int main(int argc, char **argv)
         rgb_img_time_stamp = loader.getNextRgbImageTimeStamp();
 
         writePoseToFile(file, pose, rgb_img_time_stamp);
-        if (prev_static_pts != nullptr && curr_static_pts != nullptr)
-        {
-            //View tracked points used to calculate the refined pose
-            for (size_t k = 0; k < curr_static_pts->size(); k++)
-            {
-                Point2i pt1 = (*prev_static_pts)[k];
-                Point2i pt2 = (*curr_static_pts)[k];
-                circle(frame, pt1, 1, CV_RGB(147, 0, 147), -1);
-                circle(frame, pt2, 3, CV_RGB(0, 255, 0), -1);
-                line(frame, pt1, pt2, CV_RGB(0, 0, 255));
-            }
-        }
 
         if (i == 0)
             visualizer.addReferenceFrame(pose, "origin");

@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 2.6)
 
 message(STATUS ">>> motion_segmentation subdirectory")
 
-set(SRC_FILES dnn_based_ms.cpp mask_rcnn_dnn_ms.cpp)
-set(INCLUDE_FILES motion_segmenter.h dnn_based_ms.h mask_rcnn_dnn_ms.h)
+set(SRC_FILES dnn_based_mt.cpp mask_rcnn_dnn_mt.cpp feature_based_mt.cpp score_fbmt.cpp scored_mask_rcnnmt.cpp)
+set(INCLUDE_FILES motion_segmenter.h dnn_based_mt.h mask_rcnn_dnn_mt.h feature_based_mt.h score_fbmt.h scored_mask_rcnnmt.h)
 
 set(RGBD_RTK_SEGMENTATION_SRC ${SRC_FILES})
 set(RGBD_RTK_SEGMENTATION_INCLUDES ${INCLUDE_FILES}) 

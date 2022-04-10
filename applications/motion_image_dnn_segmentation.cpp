@@ -43,8 +43,9 @@
 #include <klttw_tracker.h>
 #include <motion_estimator_ransac.h>
 #include <reconstruction_visualizer.h>
-#include <factory_motion_segmenter.h>
+#include <mask_rcnn_dnn_mt.h>
 #include <common/constants.h>
+
 using namespace std;
 using namespace cv;
 
@@ -64,12 +65,12 @@ void writePoseToFile(ofstream &file, Eigen::Affine3f &pose, string &timestamp)
 	Eigen::Quaternionf q(Rot);
 
 	file << timestamp << " " << pose(0, 3) << " "
-		 << pose(1, 3) << " "
-		 << pose(2, 3) << " "
-		 << q.x() << " "
-		 << q.y() << " "
-		 << q.z() << " "
-		 << q.w() << "\n";
+			 << pose(1, 3) << " "
+			 << pose(2, 3) << " "
+			 << q.x() << " "
+			 << q.y() << " "
+			 << q.z() << " "
+			 << q.w() << "\n";
 }
 
 /**
@@ -110,23 +111,27 @@ int main(int argc, char **argv)
 	loader.processFile(index_file);
 
 	MotionEstimatorRANSAC motion_estimator(intr, ransac_distance_threshold,
-										   ransac_inliers_ratio);
+																				 ransac_inliers_ratio);
 
-	auto segmenter = FactoryMotionSegmenter::create<DNNMotionSegmenter>(Constants::mask_rcnn_model_path,
-																		Constants::mask_rcnn_pbtxt_path, classMap({{0, "person"}, {2, "car"}, {62, "chair"}}));
-	segmenter->setThreshold(0.3);
+	vector<MaskRcnnClass> mask_rcnn_classes;
+	mask_rcnn_classes.push_back(MaskRcnnClass::Person);
+	mask_rcnn_classes.push_back(MaskRcnnClass::Car);
+	MaskRcnnDnnMT mask_rcnn(cv::dnn::Backend::DNN_BACKEND_DEFAULT, cv::dnn::Target::DNN_TARGET_CPU, mask_rcnn_classes);
 
 	ofstream file("poses.txt");
+
 	if (!file.is_open())
 	{
 		std::cout << "could not create the output file\n";
 		exit(0);
 	}
+
 	string rgb_img_time_stamp;
 	constexpr int dilation_size = 15;
 	cv::Mat kernel = getStructuringElement(cv::MORPH_ELLIPSE,
-										   cv::Size(2 * dilation_size + 1, 2 * dilation_size + 1),
-										   cv::Point(dilation_size, dilation_size));
+																				 cv::Size(2 * dilation_size + 1, 2 * dilation_size + 1),
+																				 cv::Point(dilation_size, dilation_size));
+
 	//Track points on each image
 	for (int i = 0; i < loader.num_images_; i++)
 	{
@@ -138,7 +143,7 @@ int main(int argc, char **argv)
 
 		cv::Mat mask;
 
-		segmenter->segment(frame, mask);
+		mask_rcnn.segment(frame, mask, 0.7);
 
 		// dilate image to ignore corner points
 
@@ -157,7 +162,7 @@ int main(int argc, char **argv)
 			try
 			{
 				trans = motion_estimator.estimate(tracker.prev_pts_, prev_cloud,
-												  tracker.curr_pts_, curr_cloud);
+																					tracker.curr_pts_, curr_cloud);
 				pose = pose * trans;
 			}
 			catch (std::exception &e)

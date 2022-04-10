@@ -30,6 +30,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <Eigen/Geometry>
+
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -42,7 +43,7 @@
 #include <klt_tracker.h>
 #include <motion_estimator_ransac.h>
 #include <reconstruction_visualizer.h>
-#include <factory_motion_segmenter.h>
+#include <segmentation/scored_fbmt.h>
 
 using namespace cv;
 
@@ -68,12 +69,12 @@ void writePoseToFile(ofstream &poses_file_, Eigen::Affine3f pose_, const std::st
 	Eigen::Quaternionf q(Rot);
 
 	poses_file_ << time_stamp << " " << pose_(0, 3) << " "
-				<< pose_(1, 3) << " "
-				<< pose_(2, 3) << " "
-				<< q.x() << " "
-				<< q.y() << " "
-				<< q.z() << " "
-				<< q.w() << "\n";
+							<< pose_(1, 3) << " "
+							<< pose_(2, 3) << " "
+							<< q.x() << " "
+							<< q.y() << " "
+							<< q.z() << " "
+							<< q.w() << "\n";
 }
 int main(int argc, char **argv)
 {
@@ -109,28 +110,16 @@ int main(int argc, char **argv)
 	loader.processFile(index_file);
 
 	MotionEstimatorRANSAC motion_estimator(intr, ransac_distance_threshold,
-										   ransac_inliers_ratio);
+																				 ransac_inliers_ratio);
 	motion_estimator.setMinInliersNumber(10);
 
-	constexpr float threshold = 0.6f;
-	constexpr uint8_t dynamic_range = 40;
-	constexpr float mask_point_radius = 3.0f;
-
-	auto segmenter = FactoryMotionSegmenter::create<GeometricMotionSegmenter>(tracker.prev_pts_,
-																			  tracker.curr_pts_,
-																			  motion_estimator.src_cloud_,
-																			  motion_estimator.tgt_cloud_,
-																			  trans,
-																			  motion_estimator.mapper_2d_3d_,
-																			  threshold,
-																			  dynamic_range,
-																			  mask_point_radius);
-
-	segmenter->setIntrinsics(intr);
+	ScoredFBMT segmenter(&motion_estimator, 0.1, 2);
 
 	cv::Mat mask;
 	std::string rgb_img_time_stamp;
 
+	vector<Point2f> prev_static_pts;
+	vector<Point2f> curr_static_pts;
 	//Track points on each image
 	for (int i = 0; i < loader.num_images_; i++)
 	{
@@ -148,29 +137,39 @@ int main(int argc, char **argv)
 			try
 			{
 				auto estimated_trans = motion_estimator.estimate(tracker.prev_pts_, prev_cloud,
-																 tracker.curr_pts_, curr_cloud);
+																												 tracker.curr_pts_, curr_cloud);
 
 				*trans = estimated_trans;
 
-				segmenter->segment(frame, mask);
-				auto prev_static_pts = segmenter->getPrevStaticPoints();
-				auto curr_static_pts = segmenter->getCurrStaticPoints();
+				vector<int> static_pt_idxs = segmenter.getStaticPointsIndexes(tracker.curr_pts_);
 
-				size_t size = std::min(curr_static_pts->size(), prev_static_pts->size());
+				curr_static_pts.clear();
+				prev_static_pts.clear();
 
-				for (size_t k = 0; k < size; k++)
+				for (int i = 0; i < static_pt_idxs.size(); i++)
 				{
-					Point2i pt1 = (*curr_static_pts)[k];
-					Point2i pt2 = (*prev_static_pts)[k];
-					cv::circle(frame, pt1, 1, cv::Scalar(147, 0, 147), -1);
-					cv::circle(frame, pt2, 3, cv::Scalar(147, 0, 147), -1);
-					line(frame, pt1, pt2, CV_RGB(0, 0, 255));
+					const int &idx = static_pt_idxs[i];
+					curr_static_pts.push_back(tracker.curr_pts_[idx]);
+					prev_static_pts.push_back(tracker.prev_pts_[idx]);
 				}
 
-				auto refined_trans = motion_estimator.estimate(*prev_static_pts, prev_cloud,
-															   *curr_static_pts, curr_cloud);
+				size_t size = std::min(curr_static_pts.size(), prev_static_pts.size());
 
-				*trans = refined_trans;
+				if (size > 0)
+				{
+					for (size_t k = 0; k < size; k++)
+					{
+						Point2i pt1 = (curr_static_pts)[k];
+						Point2i pt2 = (prev_static_pts)[k];
+						cv::circle(frame, pt1, 1, cv::Scalar(147, 0, 147), -1);
+						cv::circle(frame, pt2, 3, cv::Scalar(147, 0, 147), -1);
+						line(frame, pt1, pt2, CV_RGB(0, 0, 255));
+					}
+
+					auto refined_trans = motion_estimator.estimate(prev_static_pts, prev_cloud,
+																												 curr_static_pts, curr_cloud);
+					*trans = refined_trans;
+				}
 			}
 			catch (const std::exception &e)
 			{

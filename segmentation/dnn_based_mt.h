@@ -1,11 +1,36 @@
 #pragma once
-#include "motion_segmenter.h"
+#include "motion_treater.h"
 #include "object_detected.h"
 #include <opencv2/dnn.hpp>
 #include <vector>
 #include <unordered_map>
 
-class DnnBasedMS : public MotionSegmenter
+class DnnObjectClass
+{
+public:
+  DnnObjectClass(std::string name, uint8_t code) : name_(name), code_(code)
+  {
+  }
+
+  DnnObjectClass(const DnnObjectClass &dnn_obj_class) : name_(dnn_obj_class.name_), code_(dnn_obj_class.code_)
+  {
+  }
+
+  bool operator==(const DnnObjectClass &other)
+  {
+    return (other.code_ == code_ && other.name_ == name_);
+  }
+
+  bool operator==(uint8_t code)
+  {
+    return (code_ == code);
+  }
+
+  std::string name_;
+  uint8_t code_;
+};
+
+class DnnBasedMT : public MotionTreater
 {
 public:
   /**
@@ -17,13 +42,13 @@ public:
    * @param[in] target_id an integer that represents the id of the target device @see cv::dnn::Target
    */
 
-  DnnBasedMS(const std::string &model, const std::string &config, const std::string &framework,
+  DnnBasedMT(const std::string &model, const std::string &config, const std::string &framework,
              const std::vector<std::string> output_layers_name,
-             const std::unordered_map<uint8_t /*class id*/, std::string /*class name*/> valid_classes_map,
+             const std::vector<DnnObjectClass> valid_classes,
              cv::dnn::Backend backend_id = cv::dnn::Backend::DNN_BACKEND_DEFAULT,
              cv::dnn::Target target_id = cv::dnn::Target::DNN_TARGET_CPU);
 
-  virtual ~DnnBasedMS();
+  virtual ~DnnBasedMT();
 
   /**
    * @brief This function should perform the instance segmentation task
@@ -49,6 +74,6 @@ protected:
   cv::dnn::Target target_id_;
   cv::dnn::Net net_;
   std::vector<std::string> output_layers_name_;
-  std::unordered_map<uint8_t /*class id*/, std::string /*class name*/> valid_classes_map_;
+  std::vector<DnnObjectClass> valid_classes_;
   std::vector<cv::Mat> dnn_output_;
 };

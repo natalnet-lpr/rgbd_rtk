@@ -11,4 +11,12 @@ struct ObjectDetected
   std::string class_name;
   uint8_t class_id;
   cv::Rect b_box;
+
+  /**
+  * @brief Check if the object belongs to the same class
+  */
+  virtual bool operator==(const ObjectDetected &other)
+  {
+    return (other.class_id == class_id);
+  }
 };

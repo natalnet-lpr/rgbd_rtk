@@ -63,7 +63,14 @@ void MotionEstimatorRANSAC::setDataFromCorrespondences(
     // A correspondence is removed if any of the 3D points is invalid
     size_t valid_points = 0;
 
-    mappers_2d_3d_.push_back(vector<int>());
+    if (relative_poses_.size() >= number_poses_saved_)
+    {
+        relative_poses_.erase(relative_poses_.begin());
+        sparse_point_cloud_pairs_.erase(sparse_point_cloud_pairs_.begin());
+        mappers_2d_3d_.erase(mappers_2d_3d_.begin());
+    }
+
+    mappers_2d_3d_.push_back(map<int, int>());
 
     for (size_t k = 0; k < src_points.size(); k++)
     {
@@ -75,7 +82,7 @@ void MotionEstimatorRANSAC::setDataFromCorrespondences(
             tgt_cloud_->push_back(tpt);
             src_cloud_->push_back(spt);
 
-            mappers_2d_3d_.back().push_back(k);
+            mappers_2d_3d_.back()[k] = valid_points;
 
             valid_points++;
         }
@@ -196,6 +203,7 @@ Eigen::Matrix4f MotionEstimatorRANSAC::estimate(const vector<cv::Point2f> &tgt_p
         // if the estimation is invalid based on the number of inliers
         // we should remove the last added mapper from the mappers vector
         mappers_2d_3d_.erase(mappers_2d_3d_.end() - 1);
+
         const std::string msg = "input size is less than the minimum inliers number";
         throw std::length_error(msg.c_str());
     }
@@ -210,7 +218,7 @@ Eigen::Matrix4f MotionEstimatorRANSAC::estimate(const vector<cv::Point2f> &tgt_p
     sac_model->optimizeModelCoefficients(inl, coeffs, opt_coeffs);
 
     // probabily we should to change this to do not make copies
-    sparsePointCloudPairs_.push_back(pair<pcl::PointCloud<PointT>, pcl::PointCloud<PointT>>(*tgt_cloud_, *src_cloud_));
+    sparse_point_cloud_pairs_.push_back(pair<pcl::PointCloud<PointT>, pcl::PointCloud<PointT>>(*tgt_cloud_, *src_cloud_));
 
     Eigen::Matrix4f trans = createTransMatrixFromOptimizedCoefficients(opt_coeffs);
 

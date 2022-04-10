@@ -1,19 +1,107 @@
 #pragma once
-#include "dnn_based_ms.h"
+
+#include "dnn_based_mt.h"
+
+enum class MaskRcnnClass : uint8_t
+{
+  Person = 0,
+  Bicycle,
+  Car,
+  Motorcycle,
+  Airplane,
+  Bus,
+  Train,
+  Truck,
+  Boat,
+  TrafficLight,
+  FireHydrant,
+  StopSign,
+  ParkingMeter,
+  Bench,
+  Bird,
+  Cat,
+  Dog,
+  Horse,
+  Sheep,
+  Cow,
+  Elephant,
+  Bear,
+  Zebra,
+  Giraffe,
+  Backpack,
+  Umbrella,
+  Handbag,
+  Tie,
+  Suitcase,
+  Frisbee,
+  Skis,
+  Snowboard,
+  SportsBall,
+  Kite,
+  BaseballBat,
+  BaseballGlove,
+  Skateboard,
+  Surfboard,
+  TennisRacket,
+  Bottle,
+  WineGlass,
+  Cup,
+  Fork,
+  Knife,
+  Spoon,
+  Bowl,
+  Banana,
+  Apple,
+  Sandwich,
+  Orange,
+  Broccoli,
+  Carrot,
+  HotDog,
+  Pizza,
+  Donut,
+  Cake,
+  Chair,
+  Couch,
+  PottedPlant,
+  Bed,
+  DiningTable,
+  Toilet,
+  Tv,
+  Laptop,
+  Mouse,
+  Remote,
+  Keyboard,
+  CellPhone,
+  Microwave,
+  Oven,
+  Toaster,
+  Sink,
+  Refrigerator,
+  Book,
+  Clock,
+  Vase,
+  Scissors,
+  TeddyBear,
+  HairDrier,
+  Toothbrush,
+
+  InvalidClass = 254
+
+};
 
 /**
  * @brief Do the instance segmentation task using the MaskRCNN model
  * @see https://arxiv.org/abs/1703.06870
  * 
  */
-class MaskRcnnDnnMS : public DnnBasedMS
+class MaskRcnnDnnMT : public DnnBasedMT
 {
 public:
-  MaskRcnnDnnMS(cv::dnn::Backend backend_id,
+  MaskRcnnDnnMT(cv::dnn::Backend backend_id,
                 cv::dnn::Target target_id,
-                std::unordered_map<uint8_t, std::string> valid_classes_map);
+                std::vector<MaskRcnnClass> valid_classes);
 
-  virtual ~MaskRcnnDnnMS();
+  virtual ~MaskRcnnDnnMT();
 
   /**
    * @brief This function should perform the instance segmentation task
@@ -58,4 +146,8 @@ protected:
   ObjectDetected postProcessDetection(const cv::Mat &in_img,
                                       const std::vector<cv::Mat> dnn_guesses,
                                       const float threshold);
+
+  std::vector<DnnObjectClass> parseMaskRcnnClasses(const std::vector<MaskRcnnClass> &mask_rcnn_classes) const;
+
+  DnnObjectClass parseMaskRcnnClass(const MaskRcnnClass &mask_rcnn_class) const;
 };

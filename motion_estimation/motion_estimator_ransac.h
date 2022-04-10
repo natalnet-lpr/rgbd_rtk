@@ -105,20 +105,22 @@ public:
     // Vector telling if each correspondence is an inlier or not
     std::vector<unsigned char> is_inlier_;
 
-    // Vector of vectors that stores the index of the point inside of the PointCloud
-    // for each new frame
-    std::vector<std::vector<int>> mappers_2d_3d_;
+    // Vector of maps that stores maps the index of the tracker
+    // with the index inside of the cloud
+    std::vector<std::map<int, int>> mappers_2d_3d_;
 
     // vector of point cloud pairs
     // the first is the target/previous cloud
     // the second is the source/current cloud
-    std::vector<Point3DCloudPairs> sparsePointCloudPairs_;
+    std::vector<Point3DCloudPairs> sparse_point_cloud_pairs_;
 
     // Store a copy of the relative poses between
     // the source and the target PointCloud
     std::vector<Eigen::Matrix4f> relative_poses_;
 
     int min_inliers_number_ = 10;
+
+    uint8_t number_poses_saved_ = 5;
 
     /**
      * Default constructor
