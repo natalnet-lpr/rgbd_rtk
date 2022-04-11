@@ -24,9 +24,9 @@ void ScoredMaskRcnnMT::initializeMaskRcnnDnnMT(cv::dnn::Backend backend_id,
   motion_treater_map_[MT_Types::MaskRcnnDnnMt] = static_cast<MotionTreater *>(new MaskRcnnDnnMT(backend_id, target_id, valid_classes_));
 }
 
-void ScoredMaskRcnnMT::initializeScoredFBMT(MotionEstimatorRANSAC *motion_estimator, float dist_threshold, int score_threshold)
+void ScoredMaskRcnnMT::initializeScoredFBMT(MotionEstimatorRANSAC *motion_estimator, const Intrinsics &intrinsics, float dist_threshold, int score_threshold)
 {
-  motion_treater_map_[MT_Types::ScoredFbmt] = static_cast<MotionTreater *>(new ScoredFBMT(motion_estimator, dist_threshold, score_threshold));
+  motion_treater_map_[MT_Types::ScoredFbmt] = static_cast<MotionTreater *>(new ScoredFBMT(motion_estimator, intrinsics, dist_threshold, score_threshold));
 }
 
 void ScoredMaskRcnnMT::segment(const cv::Mat &img_in, cv::Mat &img_out,
@@ -42,7 +42,7 @@ void ScoredMaskRcnnMT::segment(const cv::Mat &img_in, cv::Mat &img_out,
   ptr->segment(img_in, img_out, threshold);
 }
 
-std::vector<int> ScoredMaskRcnnMT::getStaticPointsIndexes(const std::vector<cv::Point2f> &curr_pts)
+std::vector<int> ScoredMaskRcnnMT::estimateStaticPointsIndexes(const std::vector<cv::Point2f> &curr_pts)
 {
   if (!motion_treater_map_[MT_Types::ScoredFbmt])
   {
@@ -51,5 +51,5 @@ std::vector<int> ScoredMaskRcnnMT::getStaticPointsIndexes(const std::vector<cv::
 
   ScoredFBMT *ptr = static_cast<ScoredFBMT *>(motion_treater_map_[MT_Types::ScoredFbmt]);
 
-  return ptr->getStaticPointsIndexes(curr_pts);
+  return ptr->estimateStaticPointsIndexes(curr_pts);
 }

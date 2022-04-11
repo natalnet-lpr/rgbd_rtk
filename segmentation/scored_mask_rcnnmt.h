@@ -22,12 +22,12 @@ public:
                                cv::dnn::Target target_id,
                                std::vector<MaskRcnnClass> valid_classes);
 
-  void initializeScoredFBMT(MotionEstimatorRANSAC *motion_estimator, float dist_threshold, int score_threshold);
+  void initializeScoredFBMT(MotionEstimatorRANSAC *motion_estimator, const Intrinsics &intrinsics, float dist_threshold, int score_threshold);
 
   void segment(const cv::Mat &img_in, cv::Mat &img_out,
                float threshold);
 
-  std::vector<int> getStaticPointsIndexes(const std::vector<cv::Point2f> &curr_pts);
+  std::vector<int> estimateStaticPointsIndexes(const std::vector<cv::Point2f> &curr_pts);
 
 private:
   std::map<MT_Types, MotionTreater *> motion_treater_map_;

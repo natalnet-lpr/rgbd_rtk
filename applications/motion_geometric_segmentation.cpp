@@ -113,7 +113,7 @@ int main(int argc, char **argv)
 																				 ransac_inliers_ratio);
 	motion_estimator.setMinInliersNumber(10);
 
-	ScoredFBMT segmenter(&motion_estimator, 0.1, 2);
+	ScoredFBMT segmenter(&motion_estimator, intr, 0.1, 2);
 
 	cv::Mat mask;
 	std::string rgb_img_time_stamp;
@@ -141,7 +141,7 @@ int main(int argc, char **argv)
 
 				*trans = estimated_trans;
 
-				vector<int> static_pt_idxs = segmenter.getStaticPointsIndexes(tracker.curr_pts_);
+				vector<int> static_pt_idxs = segmenter.estimateStaticPointsIndexes(tracker.curr_pts_);
 
 				curr_static_pts.clear();
 				prev_static_pts.clear();

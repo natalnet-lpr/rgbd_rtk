@@ -15,7 +15,7 @@ public:
    * @param curr_pts, vector of 2d points
    * @return set of static points indexes
    */
-  virtual std::vector<int> getStaticPointsIndexes(const std::vector<cv::Point2f> &curr_pts) = 0;
+  virtual std::vector<int> estimateStaticPointsIndexes(const std::vector<cv::Point2f> &curr_pts) = 0;
 
 protected:
   MotionEstimatorRANSAC *motion_estimator_;

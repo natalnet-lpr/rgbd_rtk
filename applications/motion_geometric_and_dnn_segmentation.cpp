@@ -130,7 +130,7 @@ int main(int argc, char **argv)
     mask_rcnn_classes.push_back(MaskRcnnClass::Car);
 
     motion_treater.initializeMaskRcnnDnnMT(cv::dnn::Backend::DNN_BACKEND_DEFAULT, cv::dnn::Target::DNN_TARGET_CPU, mask_rcnn_classes);
-    motion_treater.initializeScoredFBMT(&motion_estimator, 0.6, 2);
+    motion_treater.initializeScoredFBMT(&motion_estimator, intr, 0.6, 2);
 
     constexpr int dilation_size = 15;
     cv::Mat kernel = getStructuringElement(cv::MORPH_ELLIPSE,
@@ -167,7 +167,7 @@ int main(int argc, char **argv)
                 *trans = motion_estimator.estimate(tracker.prev_pts_, prev_cloud,
                                                    tracker.curr_pts_, curr_cloud);
 
-                vector<int> static_pts_idxs = motion_treater.getStaticPointsIndexes(tracker.curr_pts_);
+                vector<int> static_pts_idxs = motion_treater.estimateStaticPointsIndexes(tracker.curr_pts_);
 
                 vector<cv::Point2f> curr_static_pts;
                 vector<cv::Point2f> prev_static_pts;
