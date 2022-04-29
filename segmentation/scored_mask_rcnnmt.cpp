@@ -1,6 +1,10 @@
 #include "scored_mask_rcnnmt.h"
 #include <exception>
 
+using namespace std;
+using namespace cv;
+using namespace cv::dnn;
+
 ScoredMaskRcnnMT::ScoredMaskRcnnMT()
 {
   motion_treater_map_[MT_Types::MaskRcnnDnnMt] = nullptr;
@@ -9,7 +13,7 @@ ScoredMaskRcnnMT::ScoredMaskRcnnMT()
 
 ScoredMaskRcnnMT::~ScoredMaskRcnnMT()
 {
-  std::map<MT_Types, MotionTreater *>::iterator it;
+  map<MT_Types, MotionTreater *>::iterator it;
 
   for (it = motion_treater_map_.begin(); it != motion_treater_map_.end(); it++)
   {
@@ -17,9 +21,9 @@ ScoredMaskRcnnMT::~ScoredMaskRcnnMT()
   }
 }
 
-void ScoredMaskRcnnMT::initializeMaskRcnnDnnMT(cv::dnn::Backend backend_id,
-                                               cv::dnn::Target target_id,
-                                               std::vector<MaskRcnnClass> valid_classes_)
+void ScoredMaskRcnnMT::initializeMaskRcnnDnnMT(Backend backend_id,
+                                               Target target_id,
+                                               vector<MaskRcnnClass> valid_classes_)
 {
   motion_treater_map_[MT_Types::MaskRcnnDnnMt] = static_cast<MotionTreater *>(new MaskRcnnDnnMT(backend_id, target_id, valid_classes_));
 }
@@ -29,12 +33,12 @@ void ScoredMaskRcnnMT::initializeScoredFBMT(MotionEstimatorRANSAC *motion_estima
   motion_treater_map_[MT_Types::ScoredFbmt] = static_cast<MotionTreater *>(new ScoredFBMT(motion_estimator, intrinsics, dist_threshold, score_threshold));
 }
 
-void ScoredMaskRcnnMT::segment(const cv::Mat &img_in, cv::Mat &img_out,
+void ScoredMaskRcnnMT::segment(const Mat &img_in, Mat &img_out,
                                float threshold)
 {
   if (!motion_treater_map_[MT_Types::MaskRcnnDnnMt])
   {
-    throw std::logic_error("You must to call initializeMaskRcnnDnnMT() first");
+    throw logic_error("You must to call initializeMaskRcnnDnnMT() first");
   }
 
   MaskRcnnDnnMT *ptr = static_cast<MaskRcnnDnnMT *>(motion_treater_map_[MT_Types::MaskRcnnDnnMt]);
@@ -42,11 +46,11 @@ void ScoredMaskRcnnMT::segment(const cv::Mat &img_in, cv::Mat &img_out,
   ptr->segment(img_in, img_out, threshold);
 }
 
-std::vector<int> ScoredMaskRcnnMT::estimateStaticPointsIndexes(const std::vector<cv::Point2f> &curr_pts)
+vector<int> ScoredMaskRcnnMT::estimateStaticPointsIndexes(const vector<Point2f> &curr_pts)
 {
   if (!motion_treater_map_[MT_Types::ScoredFbmt])
   {
-    throw std::logic_error("You must to call initializeMaskRcnnDnnMT() first");
+    throw logic_error("You must to call initializeMaskRcnnDnnMT() first");
   }
 
   ScoredFBMT *ptr = static_cast<ScoredFBMT *>(motion_treater_map_[MT_Types::ScoredFbmt]);

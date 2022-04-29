@@ -1,93 +1,7 @@
 #pragma once
 
 #include "dnn_based_mt.h"
-
-enum class MaskRcnnClass : uint8_t
-{
-  Person = 0,
-  Bicycle,
-  Car,
-  Motorcycle,
-  Airplane,
-  Bus,
-  Train,
-  Truck,
-  Boat,
-  TrafficLight,
-  FireHydrant,
-  StopSign,
-  ParkingMeter,
-  Bench,
-  Bird,
-  Cat,
-  Dog,
-  Horse,
-  Sheep,
-  Cow,
-  Elephant,
-  Bear,
-  Zebra,
-  Giraffe,
-  Backpack,
-  Umbrella,
-  Handbag,
-  Tie,
-  Suitcase,
-  Frisbee,
-  Skis,
-  Snowboard,
-  SportsBall,
-  Kite,
-  BaseballBat,
-  BaseballGlove,
-  Skateboard,
-  Surfboard,
-  TennisRacket,
-  Bottle,
-  WineGlass,
-  Cup,
-  Fork,
-  Knife,
-  Spoon,
-  Bowl,
-  Banana,
-  Apple,
-  Sandwich,
-  Orange,
-  Broccoli,
-  Carrot,
-  HotDog,
-  Pizza,
-  Donut,
-  Cake,
-  Chair,
-  Couch,
-  PottedPlant,
-  Bed,
-  DiningTable,
-  Toilet,
-  Tv,
-  Laptop,
-  Mouse,
-  Remote,
-  Keyboard,
-  CellPhone,
-  Microwave,
-  Oven,
-  Toaster,
-  Sink,
-  Refrigerator,
-  Book,
-  Clock,
-  Vase,
-  Scissors,
-  TeddyBear,
-  HairDrier,
-  Toothbrush,
-
-  InvalidClass = 254
-
-};
+#include "mask_rcnn_classes.h"
 
 /**
  * @brief Do the instance segmentation task using the MaskRCNN model
@@ -97,6 +11,11 @@ enum class MaskRcnnClass : uint8_t
 class MaskRcnnDnnMT : public DnnBasedMT
 {
 public:
+  /**
+   * @param[in] backend_id, @see OpenCV documentation
+   * @param[in] target_id, @see OpenCV documentation
+   * @param[in] valid_classes, Vector with the valid classes to be segmented or detected in scene
+   */
   MaskRcnnDnnMT(cv::dnn::Backend backend_id,
                 cv::dnn::Target target_id,
                 std::vector<MaskRcnnClass> valid_classes);
@@ -130,7 +49,6 @@ protected:
    * @param[in] dnn_guesses vector of Mat that represents a set of guesses returned by the neural network 
    * @param[in] threshold  this value'll be used to measure if the dnn_guess is good enough
    */
-
   void postProcessSegmentation(const cv::Mat &in_img, cv::Mat &out_img,
                                const std::vector<cv::Mat> dnn_guesses, const float threshold);
 
@@ -148,6 +66,4 @@ protected:
                                       const float threshold);
 
   std::vector<DnnObjectClass> parseMaskRcnnClasses(const std::vector<MaskRcnnClass> &mask_rcnn_classes) const;
-
-  DnnObjectClass parseMaskRcnnClass(const MaskRcnnClass &mask_rcnn_class) const;
 };

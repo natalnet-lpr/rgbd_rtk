@@ -1,33 +1,32 @@
 #pragma once
+
 #include "motion_treater.h"
 #include "object_detected.h"
+
 #include <opencv2/dnn.hpp>
 #include <vector>
 #include <unordered_map>
 
-class DnnObjectClass
+class DnnObjectClass : public ObjectDetected
 {
 public:
-  DnnObjectClass(std::string name, uint8_t code) : name_(name), code_(code)
+  DnnObjectClass(std::string name, uint8_t code) : ObjectDetected(name, code, cv::Rect())
   {
   }
 
-  DnnObjectClass(const DnnObjectClass &dnn_obj_class) : name_(dnn_obj_class.name_), code_(dnn_obj_class.code_)
+  DnnObjectClass(const DnnObjectClass &dnn_obj_class) : DnnObjectClass(dnn_obj_class.class_name, dnn_obj_class.class_id)
   {
   }
 
   bool operator==(const DnnObjectClass &other)
   {
-    return (other.code_ == code_ && other.name_ == name_);
+    return (other.class_id == class_id && other.class_name == class_name);
   }
 
   bool operator==(uint8_t code)
   {
-    return (code_ == code);
+    return (class_id == code);
   }
-
-  std::string name_;
-  uint8_t code_;
 };
 
 class DnnBasedMT : public MotionTreater
@@ -41,12 +40,11 @@ public:
    * @param[in] backend_id an integer that represents the id of the backend API @see cv::dnn::Backend
    * @param[in] target_id an integer that represents the id of the target device @see cv::dnn::Target
    */
-
   DnnBasedMT(const std::string &model, const std::string &config, const std::string &framework,
              const std::vector<std::string> output_layers_name,
              const std::vector<DnnObjectClass> valid_classes,
-             cv::dnn::Backend backend_id = cv::dnn::Backend::DNN_BACKEND_DEFAULT,
-             cv::dnn::Target target_id = cv::dnn::Target::DNN_TARGET_CPU);
+             const cv::dnn::Backend backend_id = cv::dnn::Backend::DNN_BACKEND_DEFAULT,
+             const cv::dnn::Target target_id = cv::dnn::Target::DNN_TARGET_CPU);
 
   virtual ~DnnBasedMT();
 

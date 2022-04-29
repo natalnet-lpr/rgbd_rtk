@@ -1,9 +1,11 @@
 #include "scored_fbmt.h"
+
 #include <pcl/common/transforms.h>
 
 using namespace std;
 using namespace cv;
 using namespace pcl;
+using namespace Eigen;
 
 ScoredFBMT::ScoredFBMT(MotionEstimatorRANSAC *motion_estimator, const Intrinsics &intrisics, float dist_threshold, int score_threshold)
     : FeatureBasedMT(motion_estimator),
@@ -57,23 +59,23 @@ vector<int> ScoredFBMT::estimateStaticPointsIndexes(const vector<Point2f> &curr_
 {
   vector<Point3DCloudPairs> *point_cloud_pairs = &motion_estimator_->sparse_point_cloud_pairs_;
   vector<map<int, int>> *mapper_2d_3d = &motion_estimator_->mappers_2d_3d_;
-  vector<Eigen::Matrix4f> *relative_poses = &motion_estimator_->relative_poses_;
+  vector<Matrix4f> *relative_poses = &motion_estimator_->relative_poses_;
 
-  vector<int> static_points;
-
-  if (mapper_2d_3d->size() < 2)
+  // Should have at least 2 poses inside of the motion estimator
+  if (relative_poses->size() < 2)
   {
-    return static_points;
+    return {};
   }
 
   Point3DCloudPairs *curr_cloud_pair = &(point_cloud_pairs->back());
   map<int, int> curr_map = *(mapper_2d_3d->rbegin());
   map<int, int> prev_map = *(mapper_2d_3d->rbegin() + 1);
 
-  Eigen::Matrix4f &curr_relative_pose = relative_poses->back();
+  Matrix4f &curr_relative_pose = relative_poses->back();
 
   point_scores_.clear();
-  // for each point inside of the point set
+
+  // For each point inside of the point set
   //     get the correspondences in the cloud
   //    and calculate the distance between then;
   for (int pt_idx = 0; pt_idx < curr_pts.size(); pt_idx++)
@@ -84,7 +86,7 @@ vector<int> ScoredFBMT::estimateStaticPointsIndexes(const vector<Point2f> &curr_
 
     PointCloud<PointT> curr_trans_cloud;
 
-    pcl::transformPointCloud(*curr_cloud, curr_trans_cloud, curr_relative_pose);
+    transformPointCloud(*curr_cloud, curr_trans_cloud, curr_relative_pose);
 
     if (mapContains(curr_map, pt_idx) && mapContains(prev_map, pt_idx))
     {
@@ -107,6 +109,13 @@ vector<int> ScoredFBMT::estimateStaticPointsIndexes(const vector<Point2f> &curr_
     }
   }
 
+  return getStaticPointIndexes(curr_pts);
+}
+
+vector<int> ScoredFBMT::getStaticPointIndexes(const vector<Point2f> &curr_pts)
+{
+  vector<int> static_points;
+
   for (int pt_idx = 0; pt_idx < curr_pts.size(); pt_idx++)
   {
     if (mapContains(point_scores_, pt_idx))
@@ -117,6 +126,4 @@ vector<int> ScoredFBMT::estimateStaticPointsIndexes(const vector<Point2f> &curr_
       }
     }
   }
-
-  return static_points;
 }

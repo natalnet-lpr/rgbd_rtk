@@ -1,5 +1,5 @@
 #pragma once
-#include <iostream>
+
 #include "motion_segmenter.h"
 #include "dnn/dnn_motion_segmenter.h"
 #include "geometric/geometric_motion_segmenter.h"

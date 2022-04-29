@@ -1,5 +1,7 @@
 #pragma once
+
 #include "motion_treater.h"
+
 #include <vector>
 #include <opencv2/opencv.hpp>
 #include <motion_estimation/motion_estimator_ransac.h>
@@ -12,7 +14,7 @@ public:
   /**
    * @brief From a mixed features set, calculate the static ones and return's it indexes
    * 
-   * @param curr_pts, vector of 2d points
+   * @param[in] curr_pts, vector of 2d points
    * @return set of static points indexes
    */
   virtual std::vector<int> estimateStaticPointsIndexes(const std::vector<cv::Point2f> &curr_pts) = 0;

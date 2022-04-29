@@ -2,11 +2,8 @@ cmake_minimum_required(VERSION 2.6)
 
 message(STATUS ">>> motion_segmentation subdirectory")
 
-set(SRC_FILES dnn_based_mt.cpp mask_rcnn_dnn_mt.cpp feature_based_mt.cpp score_fbmt.cpp scored_mask_rcnnmt.cpp)
-set(INCLUDE_FILES motion_segmenter.h dnn_based_mt.h mask_rcnn_dnn_mt.h feature_based_mt.h score_fbmt.h scored_mask_rcnnmt.h)
-
-set(RGBD_RTK_SEGMENTATION_SRC ${SRC_FILES})
-set(RGBD_RTK_SEGMENTATION_INCLUDES ${INCLUDE_FILES}) 
+file(GLOB RGBD_RTK_SEGMENTATION_SRC ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
+file(GLOB RGBD_RTK_SEGMENTATION_INCLUDES ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
 
 add_library(rgbd_rtk_segmentation SHARED ${RGBD_RTK_SEGMENTATION_SRC})
 target_link_libraries(rgbd_rtk_segmentation PUBLIC ${RGBD_RTK_COMMON} ${OpenCV_LIBS})

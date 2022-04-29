@@ -1,5 +1,7 @@
 #include "dnn_based_mt.h"
+
 #include <algorithm>
+
 using namespace std;
 using namespace cv;
 using namespace cv::dnn;
