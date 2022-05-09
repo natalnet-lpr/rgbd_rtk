@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2022, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -25,6 +25,7 @@
  *  Author:
  *
  *  Bruno Silva
+ *  Luiz Correia
  */
 
 #include <cstdio>
@@ -39,38 +40,17 @@
 #include <config_loader.h>
 #include <rgbd_loader.h>
 #include <event_logger.h>
-#include <klt_tracker.h>
 #include <klttw_tracker.h>
 #include <motion_estimator_ransac.h>
 #include <reconstruction_visualizer.h>
 #include <common/constants.h>
 #include <segmentation/scored_mask_rcnnmt.h>
+
 using namespace std;
 using namespace cv;
+using namespace pcl;
 
-void writePoseToFile(ofstream &file, Eigen::Affine3f &pose, string &timestamp)
-{
-    Eigen::Matrix3f Rot;
-    Rot(0, 0) = pose(0, 0);
-    Rot(0, 1) = pose(0, 1);
-    Rot(0, 2) = pose(0, 2);
-    Rot(1, 0) = pose(1, 0);
-    Rot(1, 1) = pose(1, 1);
-    Rot(1, 2) = pose(1, 2);
-    Rot(2, 0) = pose(2, 0);
-    Rot(2, 1) = pose(2, 1);
-    Rot(2, 2) = pose(2, 2);
 
-    Eigen::Quaternionf q(Rot);
-
-    file << timestamp << " " << pose(0, 3) << " "
-         << pose(1, 3) << " "
-         << pose(2, 3) << " "
-         << q.x() << " "
-         << q.y() << " "
-         << q.z() << " "
-         << q.w() << "\n";
-}
 
 /**
  * This program shows the use of camera motion estimation based on
@@ -93,11 +73,11 @@ int main(int argc, char **argv)
     string index_file;
     float ransac_distance_threshold, ransac_inliers_ratio;
     Eigen::Affine3f pose = Eigen::Affine3f::Identity();
-    boost::shared_ptr<Eigen::Affine3f> trans = boost::make_shared<Eigen::Affine3f>(Eigen::Affine3f::Identity());
-    boost::shared_ptr<Eigen::Affine3f> refined_trans = boost::make_shared<Eigen::Affine3f>(Eigen::Affine3f::Identity());
+    Eigen::Affine3f trans = Eigen::Affine3f::Identity();
+    Eigen::Affine3f refined_trans = Eigen::Affine3f::Identity();
 
-    pcl::PointCloud<PointT>::Ptr prev_cloud(new pcl::PointCloud<PointT>);
-    pcl::PointCloud<PointT>::Ptr curr_cloud(new pcl::PointCloud<PointT>);
+    PointCloud<PointT>::Ptr prev_cloud(new PointCloud<PointT>);
+    PointCloud<PointT>::Ptr curr_cloud(new PointCloud<PointT>);
 
     if (argc != 2)
     {
@@ -113,29 +93,15 @@ int main(int argc, char **argv)
 
     MotionEstimatorRANSAC motion_estimator(intr, ransac_distance_threshold,
                                            ransac_inliers_ratio);
-    ofstream file("poses.txt");
-
-    if (!file.is_open())
-    {
-        std::cout << "could not create the output file\n";
-        exit(0);
-    }
-
-    string rgb_img_time_stamp;
-
     ScoredMaskRcnnMT motion_treater;
 
     vector<MaskRcnnClass> mask_rcnn_classes;
     mask_rcnn_classes.push_back(MaskRcnnClass::Person);
     mask_rcnn_classes.push_back(MaskRcnnClass::Car);
 
-    motion_treater.initializeMaskRcnnDnnMT(cv::dnn::Backend::DNN_BACKEND_DEFAULT, cv::dnn::Target::DNN_TARGET_CPU, mask_rcnn_classes);
+    motion_treater.initializeMaskRcnnDnnMT(cv::dnn::Backend::DNN_BACKEND_DEFAULT,
+                                           cv::dnn::Target::DNN_TARGET_CPU, mask_rcnn_classes);
     motion_treater.initializeScoredFBMT(&motion_estimator, intr, 0.6, 2);
-
-    constexpr int dilation_size = 15;
-    cv::Mat kernel = getStructuringElement(cv::MORPH_ELLIPSE,
-                                           cv::Size(2 * dilation_size + 1, 2 * dilation_size + 1),
-                                           cv::Point(dilation_size, dilation_size));
 
     //Track points on each image
     for (int i = 0; i < loader.num_images_; i++)
@@ -146,25 +112,19 @@ int main(int argc, char **argv)
         loader.getNextImage(frame, depth);
         *curr_cloud = getPointCloud(frame, depth, intr);
 
-        cv::Mat mask;
+        Mat mask;
 
         motion_treater.segment(frame, mask, 0.7);
 
-        // dilate image to ignore corner points
-
-        cv::Mat dilated_mask;
-
-        cv::erode(mask, dilated_mask, kernel);
-
         //Track feature points in the current frame
-        tracker.track(frame, dilated_mask);
+        tracker.track(frame, mask);
 
         //Estimate motion between the current and the previous frame/point clouds
         if (i > 0)
         {
             try
             {
-                *trans = motion_estimator.estimate(tracker.prev_pts_, prev_cloud,
+                trans = motion_estimator.estimate(tracker.prev_pts_, prev_cloud,
                                                    tracker.curr_pts_, curr_cloud);
 
                 vector<int> static_pts_idxs = motion_treater.estimateStaticPointsIndexes(tracker.curr_pts_);
@@ -186,23 +146,20 @@ int main(int argc, char **argv)
                     line(frame, pt1, pt2, CV_RGB(0, 0, 255));
                 }
 
-                *refined_trans = motion_estimator.estimate(prev_static_pts, prev_cloud,
+                refined_trans = motion_estimator.estimate(prev_static_pts, prev_cloud,
                                                            curr_static_pts, curr_cloud);
-                *trans = *refined_trans;
+                trans = refined_trans;
             }
             catch (std::exception &e)
             {
 
-                *trans = Eigen::Affine3f::Identity();
+                trans = Eigen::Affine3f::Identity();
 
                 logger.print(EventLogger::L_ERROR, "[motion_image_geometric_and_dnn_segmentation.cpp] Error: %s\n", e.what());
             }
 
-            pose = pose * (*trans);
+            pose = pose * (trans);
         }
-        rgb_img_time_stamp = loader.getNextRgbImageTimeStamp();
-
-        writePoseToFile(file, pose, rgb_img_time_stamp);
 
         if (i == 0)
             visualizer.addReferenceFrame(pose, "origin");
@@ -217,7 +174,6 @@ int main(int argc, char **argv)
         imshow("Image view", frame);
         imshow("Depth view", depth);
         imshow("Mask view", mask);
-        imshow("Dilated Mask view", dilated_mask);
 
         char key = waitKey(1);
         if (key == 27 || key == 'q' || key == 'Q')
@@ -229,7 +185,6 @@ int main(int argc, char **argv)
         //Let the prev. cloud in the next frame be the current cloud
         *prev_cloud = *curr_cloud;
     }
-    file.close();
 
     visualizer.close();
 

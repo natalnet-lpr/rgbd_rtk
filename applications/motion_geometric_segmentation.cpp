@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2022, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -25,16 +25,15 @@
  *  Author:
  *
  *  Bruno Silva
+ *  Luiz Correia
  */
 
 #include <cstdio>
-#include <cstdlib>
 #include <Eigen/Geometry>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-#include <fstream>
 
 #include <geometry.h>
 #include <config_loader.h>
@@ -52,30 +51,6 @@ using namespace cv;
  * KLT keypoint tracking and RANSAC.
  * @param .yml config. file (from which index_file is used)
  */
-
-void writePoseToFile(ofstream &poses_file_, Eigen::Affine3f pose_, const std::string &time_stamp)
-{
-	Eigen::Matrix3f Rot;
-	Rot(0, 0) = pose_(0, 0);
-	Rot(0, 1) = pose_(0, 1);
-	Rot(0, 2) = pose_(0, 2);
-	Rot(1, 0) = pose_(1, 0);
-	Rot(1, 1) = pose_(1, 1);
-	Rot(1, 2) = pose_(1, 2);
-	Rot(2, 0) = pose_(2, 0);
-	Rot(2, 1) = pose_(2, 1);
-	Rot(2, 2) = pose_(2, 2);
-
-	Eigen::Quaternionf q(Rot);
-
-	poses_file_ << time_stamp << " " << pose_(0, 3) << " "
-							<< pose_(1, 3) << " "
-							<< pose_(2, 3) << " "
-							<< q.x() << " "
-							<< q.y() << " "
-							<< q.z() << " "
-							<< q.w() << "\n";
-}
 int main(int argc, char **argv)
 {
 	EventLogger &logger = EventLogger::getInstance();
@@ -91,15 +66,9 @@ int main(int argc, char **argv)
 	string index_file;
 	float ransac_distance_threshold, ransac_inliers_ratio;
 	Eigen::Affine3f pose = Eigen::Affine3f::Identity();
-	boost::shared_ptr<Eigen::Affine3f> trans = boost::make_shared<Eigen::Affine3f>(Eigen::Affine3f::Identity());
+	Eigen::Affine3f trans = Eigen::Affine3f::Identity();
 	pcl::PointCloud<PointT>::Ptr prev_cloud(new pcl::PointCloud<PointT>);
 	pcl::PointCloud<PointT>::Ptr curr_cloud(new pcl::PointCloud<PointT>);
-	std::ofstream file("poses.txt");
-	if (argc != 2)
-	{
-		logger.print(EventLogger::L_INFO, "[motion_image_geometric_segmentation.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
-		exit(0);
-	}
 
 	ConfigLoader param_loader(argv[1]);
 	param_loader.checkAndGetString("index_file", index_file);
@@ -116,7 +85,6 @@ int main(int argc, char **argv)
 	ScoredFBMT segmenter(&motion_estimator, intr, 0.1, 2);
 
 	cv::Mat mask;
-	std::string rgb_img_time_stamp;
 
 	vector<Point2f> prev_static_pts;
 	vector<Point2f> curr_static_pts;
@@ -125,7 +93,6 @@ int main(int argc, char **argv)
 	{
 		//Load RGB-D image and point cloud
 		loader.getNextImage(frame, depth);
-		rgb_img_time_stamp = loader.getNextRgbImageTimeStamp();
 
 		*curr_cloud = getPointCloud(frame, depth, intr);
 		//Track feature points in the current frame
@@ -139,7 +106,7 @@ int main(int argc, char **argv)
 				auto estimated_trans = motion_estimator.estimate(tracker.prev_pts_, prev_cloud,
 																												 tracker.curr_pts_, curr_cloud);
 
-				*trans = estimated_trans;
+				trans = estimated_trans;
 
 				vector<int> static_pt_idxs = segmenter.estimateStaticPointsIndexes(tracker.curr_pts_);
 
@@ -168,26 +135,16 @@ int main(int argc, char **argv)
 
 					auto refined_trans = motion_estimator.estimate(prev_static_pts, prev_cloud,
 																												 curr_static_pts, curr_cloud);
-					*trans = refined_trans;
+					trans = refined_trans;
 				}
 			}
 			catch (const std::exception &e)
 			{
-				*trans = Eigen::Affine3f::Identity();
+				trans = Eigen::Affine3f::Identity();
 				logger.print(EventLogger::L_ERROR, "[motion_image_geometric_segmentation.cpp] Error: %s\n", e.what());
 			}
 
-			pose = pose * (*trans);
-		}
-
-		//View tracked points
-		for (size_t k = 0; k < tracker.curr_pts_.size(); k++)
-		{
-			Point2i pt1 = tracker.prev_pts_[k];
-			Point2i pt2 = tracker.curr_pts_[k];
-			//circle(frame, pt1, 1, CV_RGB(255,0,0), -1);
-			//circle(frame, pt2, 3, CV_RGB(0,0,255), -1);
-			//line(frame, pt1, pt2, CV_RGB(0,0,255));
+			pose = pose * (trans);
 		}
 
 		if (i == 0)
@@ -199,7 +156,6 @@ int main(int argc, char **argv)
 
 		visualizer.spinOnce();
 
-		writePoseToFile(file, pose, rgb_img_time_stamp);
 		//Show RGB-D image
 		imshow("Image view", frame);
 		imshow("Depth view", depth);
@@ -217,6 +173,5 @@ int main(int argc, char **argv)
 	}
 
 	visualizer.close();
-	file.close();
 	return 0;
 }

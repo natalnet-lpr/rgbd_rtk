@@ -1,7 +1,7 @@
 /* 
  *  Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016-2019, Natalnet Laboratory for Perceptual Robotics
+ *  Copyright (c) 2016-2022, Natalnet Laboratory for Perceptual Robotics
  *  All rights reserved.
  *  Redistribution and use in source and binary forms, with or without modification, are permitted provided
  *  that the following conditions are met:
@@ -25,6 +25,7 @@
  *  Author:
  *
  *  Bruno Silva
+ *  Luiz Correia
  */
 
 #include <cstdio>
@@ -33,14 +34,12 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-#include <fstream>
 
 #include <geometry.h>
 #include <config_loader.h>
 #include <rgbd_loader.h>
 #include <event_logger.h>
 #include <klt_tracker.h>
-#include <klttw_tracker.h>
 #include <motion_estimator_ransac.h>
 #include <reconstruction_visualizer.h>
 #include <mask_rcnn_dnn_mt.h>
@@ -48,30 +47,6 @@
 
 using namespace std;
 using namespace cv;
-
-void writePoseToFile(ofstream &file, Eigen::Affine3f &pose, string &timestamp)
-{
-	Eigen::Matrix3f Rot;
-	Rot(0, 0) = pose(0, 0);
-	Rot(0, 1) = pose(0, 1);
-	Rot(0, 2) = pose(0, 2);
-	Rot(1, 0) = pose(1, 0);
-	Rot(1, 1) = pose(1, 1);
-	Rot(1, 2) = pose(1, 2);
-	Rot(2, 0) = pose(2, 0);
-	Rot(2, 1) = pose(2, 1);
-	Rot(2, 2) = pose(2, 2);
-
-	Eigen::Quaternionf q(Rot);
-
-	file << timestamp << " " << pose(0, 3) << " "
-			 << pose(1, 3) << " "
-			 << pose(2, 3) << " "
-			 << q.x() << " "
-			 << q.y() << " "
-			 << q.z() << " "
-			 << q.w() << "\n";
-}
 
 /**
  * This program shows the use of camera motion estimation based on
@@ -113,24 +88,9 @@ int main(int argc, char **argv)
 	MotionEstimatorRANSAC motion_estimator(intr, ransac_distance_threshold,
 																				 ransac_inliers_ratio);
 
-	vector<MaskRcnnClass> mask_rcnn_classes;
-	mask_rcnn_classes.push_back(MaskRcnnClass::Person);
-	mask_rcnn_classes.push_back(MaskRcnnClass::Car);
-	MaskRcnnDnnMT mask_rcnn(cv::dnn::Backend::DNN_BACKEND_DEFAULT, cv::dnn::Target::DNN_TARGET_CPU, mask_rcnn_classes);
-
-	ofstream file("poses.txt");
-
-	if (!file.is_open())
-	{
-		std::cout << "could not create the output file\n";
-		exit(0);
-	}
-
-	string rgb_img_time_stamp;
-	constexpr int dilation_size = 15;
-	cv::Mat kernel = getStructuringElement(cv::MORPH_ELLIPSE,
-																				 cv::Size(2 * dilation_size + 1, 2 * dilation_size + 1),
-																				 cv::Point(dilation_size, dilation_size));
+	vector<MaskRcnnClass> mask_rcnn_classes{MaskRcnnClass::Person,MaskRcnnClass::Car};
+	MaskRcnnDnnMT mask_rcnn(cv::dnn::Backend::DNN_BACKEND_DEFAULT,
+                                cv::dnn::Target::DNN_TARGET_CPU, mask_rcnn_classes);
 
 	//Track points on each image
 	for (int i = 0; i < loader.num_images_; i++)
@@ -145,16 +105,8 @@ int main(int argc, char **argv)
 
 		mask_rcnn.segment(frame, mask, 0.7);
 
-		// dilate image to ignore corner points
-
-		cv::Mat dilated_mask;
-
-		cv::erode(mask, dilated_mask, kernel);
-
-		//mask =  dilated_mask - mask;
-
 		//Track feature points in the current frame
-		tracker.track(frame, dilated_mask);
+		tracker.track(frame, mask);
 
 		//Estimate motion between the current and the previous frame/point clouds
 		if (i > 0)
@@ -170,9 +122,6 @@ int main(int argc, char **argv)
 				continue;
 			}
 		}
-		rgb_img_time_stamp = loader.getNextRgbImageTimeStamp();
-
-		writePoseToFile(file, pose, rgb_img_time_stamp);
 
 		//View tracked points
 		for (size_t k = 0; k < tracker.curr_pts_.size(); k++)
@@ -197,7 +146,6 @@ int main(int argc, char **argv)
 		imshow("Image view", frame);
 		imshow("Depth view", depth);
 		imshow("Mask view", mask);
-		imshow("Dilated Mask view", dilated_mask);
 
 		char key = waitKey(1);
 		if (key == 27 || key == 'q' || key == 'Q')
@@ -209,7 +157,6 @@ int main(int argc, char **argv)
 		//Let the prev. cloud in the next frame be the current cloud
 		*prev_cloud = *curr_cloud;
 	}
-	file.close();
 
 	visualizer.close();
 

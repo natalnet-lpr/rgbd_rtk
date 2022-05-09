@@ -1,3 +1,40 @@
+/*
+*  Software License Agreement (BSD License)
+*
+*  Copyright (c) 2016-2022, Natalnet Laboratory for Perceptual Robotics
+*  All rights reserved.
+*  Redistribution and use in source and binary forms, with or without modification, are permitted
+* provided
+*  that the following conditions are met:
+*
+*  1. Redistributions of source code must retain the above copyright notice, this list of
+* conditions and
+*     the following disclaimer.
+*
+*  2. Redistributions in binary form must reproduce the above copyright notice, this list of
+* conditions and
+*     the following disclaimer in the documentation and/or other materials provided with the
+* distribution.
+*
+*  3. Neither the name of the copyright holder nor the names of its contributors may be used to
+* endorse or
+*     promote products derived from this software without specific prior written permission.
+*
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
+* IMPLIED WARRANTIES, *  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+* AND FITNESS FOR A PARTICULAR PURPOSE ARE
+*  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+* INDIRECT, INCIDENTAL,
+*  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+* SUBSTITUTE GOODS OR
+*  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+* THEORY OF LIABILITY,
+*  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+* ANY WAY OUT OF THE
+*  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*
+*/
+
 #pragma once
 
 enum class MaskRcnnClass : uint8_t
@@ -81,10 +118,7 @@ enum class MaskRcnnClass : uint8_t
   Scissors,
   TeddyBear,
   HairDrier,
-  Toothbrush,
-
-  InvalidClass = 254
-
+  Toothbrush
 };
 
 inline DnnObjectClass parseMaskRcnnClass(const MaskRcnnClass &mask_rcnn_class)
@@ -95,331 +129,169 @@ inline DnnObjectClass parseMaskRcnnClass(const MaskRcnnClass &mask_rcnn_class)
     return static_cast<uint8_t>(mask_rcnn_class);
   };
 
-  DnnObjectClass dnn_class("Invalid", toUint8(MaskRcnnClass::InvalidClass));
-
   switch (mask_rcnn_class)
   {
   case MaskRcnnClass::Person:
-    dnn_class.class_name = "Person";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Person);
-    break;
+    return {"Person",toUint8(MaskRcnnClass::Person)};
   case MaskRcnnClass::Bicycle:
-    dnn_class.class_name = "Bicycle";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Bicycle);
-    break;
+    return {"Bicycle",toUint8(MaskRcnnClass::Bicycle)};
   case MaskRcnnClass::Car:
-    dnn_class.class_name = "Car";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Car);
-    break;
+    return {"Car",toUint8(MaskRcnnClass::Car)};
   case MaskRcnnClass::Motorcycle:
-    dnn_class.class_name = "Motorcycle";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Motorcycle);
-    break;
+    return {"Motorcycle",toUint8(MaskRcnnClass::Motorcycle)};
   case MaskRcnnClass::Airplane:
-    dnn_class.class_name = "Airplane";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Airplane);
-    break;
+    return {"Airplane",toUint8(MaskRcnnClass::Airplane)};
   case MaskRcnnClass::Bus:
-    dnn_class.class_name = "Bus";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Bus);
-    break;
+    return {"Bus",toUint8(MaskRcnnClass::Bus)};
   case MaskRcnnClass::Train:
-    dnn_class.class_name = "Train";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Train);
-    break;
+    return {"Train",toUint8(MaskRcnnClass::Train)};
   case MaskRcnnClass::Truck:
-    dnn_class.class_name = "Truck";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Truck);
-    break;
+    return {"Truck",toUint8(MaskRcnnClass::Truck)};
   case MaskRcnnClass::Boat:
-    dnn_class.class_name = "Boat";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Boat);
-    break;
+    return {"Boat",toUint8(MaskRcnnClass::Boat)};
   case MaskRcnnClass::TrafficLight:
-    dnn_class.class_name = "TrafficLight";
-    dnn_class.class_id = toUint8(MaskRcnnClass::TrafficLight);
-    break;
+    return {"TrafficLight",toUint8(MaskRcnnClass::TrafficLight)};
   case MaskRcnnClass::FireHydrant:
-    dnn_class.class_name = "FireHydrant";
-    dnn_class.class_id = toUint8(MaskRcnnClass::FireHydrant);
-    break;
+    return {"FireHydrant",toUint8(MaskRcnnClass::FireHydrant)};
   case MaskRcnnClass::StopSign:
-    dnn_class.class_name = "StopSign";
-    dnn_class.class_id = toUint8(MaskRcnnClass::StopSign);
-    break;
+    return {"StopSign",toUint8(MaskRcnnClass::StopSign)};
   case MaskRcnnClass::ParkingMeter:
-    dnn_class.class_name = "ParkingMeter";
-    dnn_class.class_id = toUint8(MaskRcnnClass::ParkingMeter);
-    break;
+    return {"ParkingMeter",toUint8(MaskRcnnClass::ParkingMeter)};
   case MaskRcnnClass::Bench:
-    dnn_class.class_name = "Bench";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Bench);
-    break;
+    return {"Bench",toUint8(MaskRcnnClass::Bench)};
   case MaskRcnnClass::Bird:
-    dnn_class.class_name = "Bird";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Bird);
-    break;
+    return {"Bird",toUint8(MaskRcnnClass::Bird)};
   case MaskRcnnClass::Cat:
-    dnn_class.class_name = "Cat";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Cat);
-    break;
+    return {"Cat",toUint8(MaskRcnnClass::Cat)};
   case MaskRcnnClass::Dog:
-    dnn_class.class_name = "Dog";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Dog);
-    break;
+    return {"Dog",toUint8(MaskRcnnClass::Dog)};
   case MaskRcnnClass::Horse:
-    dnn_class.class_name = "Horse";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Horse);
-    break;
+    return {"Horse",toUint8(MaskRcnnClass::Horse)};
   case MaskRcnnClass::Sheep:
-    dnn_class.class_name = "Sheep";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Sheep);
-    break;
+    return {"Sheep",toUint8(MaskRcnnClass::Sheep)};
   case MaskRcnnClass::Cow:
-    dnn_class.class_name = "Cow";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Cow);
-    break;
+    return {"Cow",toUint8(MaskRcnnClass::Cow)};
   case MaskRcnnClass::Elephant:
-    dnn_class.class_name = "Elephant";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Elephant);
-    break;
+    return {"Elephant",toUint8(MaskRcnnClass::Elephant)};
   case MaskRcnnClass::Bear:
-    dnn_class.class_name = "Bear";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Bear);
-    break;
+    return {"Bear",toUint8(MaskRcnnClass::Bear)};
   case MaskRcnnClass::Zebra:
-    dnn_class.class_name = "Zebra";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Zebra);
-    break;
+    return {"Zebra",toUint8(MaskRcnnClass::Zebra)};
   case MaskRcnnClass::Giraffe:
-    dnn_class.class_name = "Giraffe";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Giraffe);
-    break;
+    return {"Giraffe",toUint8(MaskRcnnClass::Giraffe)};
   case MaskRcnnClass::Backpack:
-    dnn_class.class_name = "Backpack";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Backpack);
-    break;
+    return {"Backpack",toUint8(MaskRcnnClass::Backpack)};
   case MaskRcnnClass::Umbrella:
-    dnn_class.class_name = "Umbrella";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Umbrella);
-    break;
+    return {"Umbrella",toUint8(MaskRcnnClass::Umbrella)};
   case MaskRcnnClass::Handbag:
-    dnn_class.class_name = "Handbag";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Handbag);
-    break;
+    return {"Handbag",toUint8(MaskRcnnClass::Handbag)};
   case MaskRcnnClass::Tie:
-    dnn_class.class_name = "Tie";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Tie);
-    break;
+    return {"Tie",toUint8(MaskRcnnClass::Tie)};
   case MaskRcnnClass::Suitcase:
-    dnn_class.class_name = "Suitcase";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Suitcase);
-    break;
+    return {"Suitcase",toUint8(MaskRcnnClass::Suitcase)};
   case MaskRcnnClass::Frisbee:
-    dnn_class.class_name = "Frisbee";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Frisbee);
-    break;
+    return {"Frisbee",toUint8(MaskRcnnClass::Frisbee)};
   case MaskRcnnClass::Skis:
-    dnn_class.class_name = "Skis";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Skis);
-    break;
+    return {"Skis",toUint8(MaskRcnnClass::Skis)};
   case MaskRcnnClass::Snowboard:
-    dnn_class.class_name = "Snowboard";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Snowboard);
-    break;
+    return {"Snowboard",toUint8(MaskRcnnClass::Snowboard)};
   case MaskRcnnClass::SportsBall:
-    dnn_class.class_name = "SportsBall";
-    dnn_class.class_id = toUint8(MaskRcnnClass::SportsBall);
-    break;
+    return {"SportsBall",toUint8(MaskRcnnClass::SportsBall)};
   case MaskRcnnClass::Kite:
-    dnn_class.class_name = "Kite";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Kite);
-    break;
+    return {"Kite",toUint8(MaskRcnnClass::Kite)};
   case MaskRcnnClass::BaseballBat:
-    dnn_class.class_name = "BaseballBat";
-    dnn_class.class_id = toUint8(MaskRcnnClass::BaseballBat);
-    break;
+    return {"BaseballBat",toUint8(MaskRcnnClass::BaseballBat)};
   case MaskRcnnClass::BaseballGlove:
-    dnn_class.class_name = "BaseballGlove";
-    dnn_class.class_id = toUint8(MaskRcnnClass::BaseballGlove);
-    break;
+    return {"BaseballGlove",toUint8(MaskRcnnClass::BaseballGlove)};
   case MaskRcnnClass::Skateboard:
-    dnn_class.class_name = "Skateboard";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Skateboard);
-    break;
+    return {"Skateboard",toUint8(MaskRcnnClass::Skateboard)};
   case MaskRcnnClass::Surfboard:
-    dnn_class.class_name = "Surfboard";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Surfboard);
-    break;
+    return {"Surfboard",toUint8(MaskRcnnClass::Surfboard)};
   case MaskRcnnClass::TennisRacket:
-    dnn_class.class_name = "TennisRacket";
-    dnn_class.class_id = toUint8(MaskRcnnClass::TennisRacket);
-    break;
+    return {"TennisRacket",toUint8(MaskRcnnClass::TennisRacket)};
   case MaskRcnnClass::Bottle:
-    dnn_class.class_name = "Bottle";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Bottle);
-    break;
+    return {"Bottle",toUint8(MaskRcnnClass::Bottle)};
   case MaskRcnnClass::WineGlass:
-    dnn_class.class_name = "WineGlass";
-    dnn_class.class_id = toUint8(MaskRcnnClass::WineGlass);
-    break;
+    return {"WineGlass",toUint8(MaskRcnnClass::WineGlass)};
   case MaskRcnnClass::Cup:
-    dnn_class.class_name = "Cup";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Cup);
-    break;
+    return {"Cup",toUint8(MaskRcnnClass::Cup)};
   case MaskRcnnClass::Fork:
-    dnn_class.class_name = "Fork";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Fork);
-    break;
+    return {"Fork",toUint8(MaskRcnnClass::Fork)};
   case MaskRcnnClass::Knife:
-    dnn_class.class_name = "Knife";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Knife);
-    break;
+    return {"Knife",toUint8(MaskRcnnClass::Knife)};
   case MaskRcnnClass::Spoon:
-    dnn_class.class_name = "Spoon";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Spoon);
-    break;
+    return {"Spoon",toUint8(MaskRcnnClass::Spoon)};
   case MaskRcnnClass::Bowl:
-    dnn_class.class_name = "Bowl";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Bowl);
-    break;
+    return {"Bowl",toUint8(MaskRcnnClass::Bowl)};
   case MaskRcnnClass::Banana:
-    dnn_class.class_name = "Banana";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Banana);
-    break;
+    return {"Banana",toUint8(MaskRcnnClass::Banana)};
   case MaskRcnnClass::Apple:
-    dnn_class.class_name = "Apple";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Apple);
-    break;
+    return {"Apple",toUint8(MaskRcnnClass::Apple)};
   case MaskRcnnClass::Sandwich:
-    dnn_class.class_name = "Sandwich";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Sandwich);
-    break;
+    return {"Sandwich",toUint8(MaskRcnnClass::Sandwich)};
   case MaskRcnnClass::Orange:
-    dnn_class.class_name = "Orange";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Orange);
-    break;
+    return {"Orange",toUint8(MaskRcnnClass::Orange)};
   case MaskRcnnClass::Broccoli:
-    dnn_class.class_name = "Broccoli";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Broccoli);
-    break;
+    return {"Broccoli",toUint8(MaskRcnnClass::Broccoli)};
   case MaskRcnnClass::Carrot:
-    dnn_class.class_name = "Carrot";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Carrot);
-    break;
+    return {"Carrot",toUint8(MaskRcnnClass::Carrot)};
   case MaskRcnnClass::HotDog:
-    dnn_class.class_name = "HotDog";
-    dnn_class.class_id = toUint8(MaskRcnnClass::HotDog);
-    break;
+    return {"HotDog",toUint8(MaskRcnnClass::HotDog)};
   case MaskRcnnClass::Pizza:
-    dnn_class.class_name = "Pizza";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Pizza);
-    break;
+    return {"Pizza",toUint8(MaskRcnnClass::Pizza)};
   case MaskRcnnClass::Donut:
-    dnn_class.class_name = "Donut";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Donut);
-    break;
+    return {"Donut",toUint8(MaskRcnnClass::Donut)};
   case MaskRcnnClass::Cake:
-    dnn_class.class_name = "Cake";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Cake);
-    break;
+    return {"Cake",toUint8(MaskRcnnClass::Cake)};
   case MaskRcnnClass::Chair:
-    dnn_class.class_name = "Chair";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Chair);
-    break;
+    return {"Chair",toUint8(MaskRcnnClass::Chair)};
   case MaskRcnnClass::Couch:
-    dnn_class.class_name = "Couch";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Couch);
-    break;
+    return {"Couch",toUint8(MaskRcnnClass::Couch)};
   case MaskRcnnClass::PottedPlant:
-    dnn_class.class_name = "PottedPlant";
-    dnn_class.class_id = toUint8(MaskRcnnClass::PottedPlant);
-    break;
+    return {"PottedPlant",toUint8(MaskRcnnClass::PottedPlant)};
   case MaskRcnnClass::Bed:
-    dnn_class.class_name = "Bed";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Bed);
-    break;
+    return {"Bed",toUint8(MaskRcnnClass::Bed)};
   case MaskRcnnClass::DiningTable:
-    dnn_class.class_name = "DiningTable";
-    dnn_class.class_id = toUint8(MaskRcnnClass::DiningTable);
-    break;
+    return {"DiningTable",toUint8(MaskRcnnClass::DiningTable)};
   case MaskRcnnClass::Toilet:
-    dnn_class.class_name = "Toilet";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Toilet);
-    break;
+    return {"Toilet",toUint8(MaskRcnnClass::Toilet)};
   case MaskRcnnClass::Tv:
-    dnn_class.class_name = "Tv";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Tv);
-    break;
+    return {"Tv",toUint8(MaskRcnnClass::Tv)};
   case MaskRcnnClass::Laptop:
-    dnn_class.class_name = "Laptop";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Laptop);
-    break;
+    return {"Laptop",toUint8(MaskRcnnClass::Laptop)};
   case MaskRcnnClass::Mouse:
-    dnn_class.class_name = "Mouse";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Mouse);
-    break;
+    return {"Mouse",toUint8(MaskRcnnClass::Mouse)};
   case MaskRcnnClass::Remote:
-    dnn_class.class_name = "Remote";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Remote);
-    break;
+    return {"Remote",toUint8(MaskRcnnClass::Remote)};
   case MaskRcnnClass::Keyboard:
-    dnn_class.class_name = "Keyboard";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Keyboard);
-    break;
+    return {"Keyboard",toUint8(MaskRcnnClass::Keyboard)};
   case MaskRcnnClass::CellPhone:
-    dnn_class.class_name = "CellPhone";
-    dnn_class.class_id = toUint8(MaskRcnnClass::CellPhone);
-    break;
+    return {"CellPhone",toUint8(MaskRcnnClass::CellPhone)};
   case MaskRcnnClass::Microwave:
-    dnn_class.class_name = "Microwave";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Microwave);
-    break;
+    return {"Microwave",toUint8(MaskRcnnClass::Microwave)};
   case MaskRcnnClass::Oven:
-    dnn_class.class_name = "Oven";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Oven);
-    break;
+    return {"Oven",toUint8(MaskRcnnClass::Oven)};
   case MaskRcnnClass::Toaster:
-    dnn_class.class_name = "Toaster";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Toaster);
-    break;
+    return {"Toaster",toUint8(MaskRcnnClass::Toaster)};
   case MaskRcnnClass::Sink:
-    dnn_class.class_name = "Sink";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Sink);
-    break;
+    return {"Sink",toUint8(MaskRcnnClass::Sink)};
   case MaskRcnnClass::Refrigerator:
-    dnn_class.class_name = "Refrigerator";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Refrigerator);
-    break;
+    return {"Refrigerator",toUint8(MaskRcnnClass::Refrigerator)};
   case MaskRcnnClass::Book:
-    dnn_class.class_name = "Book";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Book);
-    break;
+    return {"Book",toUint8(MaskRcnnClass::Book)};
   case MaskRcnnClass::Clock:
-    dnn_class.class_name = "Clock";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Clock);
-    break;
+    return {"Clock",toUint8(MaskRcnnClass::Clock)};
   case MaskRcnnClass::Vase:
-    dnn_class.class_name = "Vase";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Vase);
-    break;
+    return {"Vase",toUint8(MaskRcnnClass::Vase)};
   case MaskRcnnClass::Scissors:
-    dnn_class.class_name = "Scissors";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Scissors);
-    break;
+    return {"Scissors",toUint8(MaskRcnnClass::Scissors)};
   case MaskRcnnClass::TeddyBear:
-    dnn_class.class_name = "TeddyBear";
-    dnn_class.class_id = toUint8(MaskRcnnClass::TeddyBear);
-    break;
+    return {"TeddyBear",toUint8(MaskRcnnClass::TeddyBear)};
   case MaskRcnnClass::HairDrier:
-    dnn_class.class_name = "HairDrier";
-    dnn_class.class_id = toUint8(MaskRcnnClass::HairDrier);
-    break;
+    return {"HairDrier",toUint8(MaskRcnnClass::HairDrier)};
   case MaskRcnnClass::Toothbrush:
-    dnn_class.class_name = "Toothbrush";
-    dnn_class.class_id = toUint8(MaskRcnnClass::Toothbrush);
-    break;
+    return {"Toothbrush",toUint8(MaskRcnnClass::Toothbrush)};
   }
 
-  return dnn_class;
+  throw std::invalid_argument("Invalid Mask Rcnn Class");
 }

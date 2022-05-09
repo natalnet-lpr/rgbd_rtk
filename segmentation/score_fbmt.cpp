@@ -1,3 +1,32 @@
+/*
+*  Software License Agreement (BSD License)
+*
+*  Copyright (c) 2016-2022, Natalnet Laboratory for Perceptual Robotics
+*  All rights reserved.
+*  Redistribution and use in source and binary forms, with or without modification, are permitted provided
+*  that the following conditions are met:
+*
+*  1. Redistributions of source code must retain the above copyright notice, this list of conditions and
+*     the following disclaimer.
+*
+*  2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and
+*     the following disclaimer in the documentation and/or other materials provided with the distribution.
+*
+*  3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or
+*     promote products derived from this software without specific prior written permission.
+*
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, *  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+*  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+*  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+*  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+*  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+*  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*
+*  Authors:
+*
+*  Luiz Correia
+*/
+
 #include "scored_fbmt.h"
 
 #include <pcl/common/transforms.h>
@@ -18,10 +47,11 @@ ScoredFBMT::ScoredFBMT(MotionEstimatorRANSAC *motion_estimator, const Intrinsics
 }
 
 template <class T, class V>
-bool mapContains(const map<T, V> &m, const T &val)
+bool mapContains(const map<T, V> &m, const T &key)
 {
-  auto it = m.find(val);
-  return it != m.end();
+  auto it = m.find(key);
+  bool containsKey = (it != m.end());
+  return containsKey;
 }
 
 double euclidianDistance(const Point2f &pt0, const Point2f &pt1)
@@ -64,6 +94,13 @@ vector<int> ScoredFBMT::estimateStaticPointsIndexes(const vector<Point2f> &curr_
   // Should have at least 2 poses inside of the motion estimator
   if (relative_poses->size() < 2)
   {
+
+    MLOG_DEBUG(EventLogger::M_SEGMENTATION, "@ScoredFBMT::estimateStaticPointsIndexes:"
+                                            "MotionEstimation should "
+                                            "have at least 2 poses stored,"
+                                            "current amout of poses: %ld",
+               relative_poses->size());
+
     return {};
   }
 
@@ -126,4 +163,11 @@ vector<int> ScoredFBMT::getStaticPointIndexes(const vector<Point2f> &curr_pts)
       }
     }
   }
+
+  MLOG_DEBUG(EventLogger::M_SEGMENTATION, "@ScoredFBMT::getStaticPointIndexes:"
+                                          "total of static points %dl/%dl",
+             static_points.size(),
+             curr_pts.size());
+
+  return static_points;
 }
