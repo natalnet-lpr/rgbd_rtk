@@ -1,8 +1,0 @@
-%YAML:1.0
-# source image/video path
-src_path: "/home/luiz/Videos/drive_miami.mp4"
-is_video: true
-resize_src: true
-# dnn models path
-dnn_model_path: "/home/luiz/Faculdade/TCC/ImageSegmentationPOC/mask_rcnn_inception_v2_coco_2018_01_28/frozen_inference_graph.pb"
-dnn_config_file_path: "/home/luiz/Faculdade/TCC/ImageSegmentationPOC/mask_rcnn_inception_v2_coco_2018_01_28/mscoco.pbtxt"
