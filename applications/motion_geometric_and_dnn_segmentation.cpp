@@ -28,38 +28,36 @@
  *  Luiz Correia
  */
 
+#include <Eigen/Geometry>
 #include <cstdio>
 #include <cstdlib>
-#include <Eigen/Geometry>
+#include <fstream>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-#include <fstream>
 
-#include <geometry.h>
+#include <common/constants.h>
 #include <config_loader.h>
-#include <rgbd_loader.h>
 #include <event_logger.h>
+#include <geometry.h>
 #include <klttw_tracker.h>
 #include <motion_estimator_ransac.h>
 #include <reconstruction_visualizer.h>
-#include <common/constants.h>
+#include <rgbd_loader.h>
 #include <segmentation/scored_mask_rcnnmt.h>
 
 using namespace std;
 using namespace cv;
 using namespace pcl;
 
-
-
 /**
  * This program shows the use of camera motion estimation based on
  * KLT keypoint tracking and RANSAC.
  * @param .yml config. file (from which index_file is used)
  */
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
-    EventLogger &logger = EventLogger::getInstance();
+    EventLogger& logger = EventLogger::getInstance();
     logger.setVerbosityLevel(EventLogger::L_DEBUG);
 
     RGBDLoader loader;
@@ -67,7 +65,6 @@ int main(int argc, char **argv)
     KLTTWTracker tracker(600, 5000, sz, 0);
     Intrinsics intr(3);
     ReconstructionVisualizer visualizer;
-    //PCLVisualizerPtr test_viewer;
 
     Mat frame, depth;
     string index_file;
@@ -81,7 +78,8 @@ int main(int argc, char **argv)
 
     if (argc != 2)
     {
-        logger.print(EventLogger::L_INFO, "[motion_estimation_test.cpp] Usage: %s <path/to/config_file.yaml>\n", argv[0]);
+        logger.print(EventLogger::L_INFO, "[motion_estimation_test.cpp] Usage: %s <path/to/config_file.yaml>\n",
+                     argv[0]);
         exit(0);
     }
 
@@ -91,16 +89,15 @@ int main(int argc, char **argv)
     param_loader.checkAndGetFloat("ransac_inliers_ratio", ransac_inliers_ratio);
     loader.processFile(index_file);
 
-    MotionEstimatorRANSAC motion_estimator(intr, ransac_distance_threshold,
-                                           ransac_inliers_ratio);
+    MotionEstimatorRANSAC motion_estimator(intr, ransac_distance_threshold, ransac_inliers_ratio);
     ScoredMaskRcnnMT motion_treater;
 
     vector<MaskRcnnClass> mask_rcnn_classes;
     mask_rcnn_classes.push_back(MaskRcnnClass::Person);
     mask_rcnn_classes.push_back(MaskRcnnClass::Car);
 
-    motion_treater.initializeMaskRcnnDnnMT(cv::dnn::Backend::DNN_BACKEND_DEFAULT,
-                                           cv::dnn::Target::DNN_TARGET_CPU, mask_rcnn_classes);
+    motion_treater.initializeMaskRcnnDnnMT(cv::dnn::Backend::DNN_BACKEND_DEFAULT, cv::dnn::Target::DNN_TARGET_CPU,
+                                           mask_rcnn_classes);
     motion_treater.initializeScoredFBMT(&motion_estimator, intr, 0.6, 2);
 
     //Track points on each image
@@ -124,8 +121,7 @@ int main(int argc, char **argv)
         {
             try
             {
-                trans = motion_estimator.estimate(tracker.prev_pts_, prev_cloud,
-                                                   tracker.curr_pts_, curr_cloud);
+                trans = motion_estimator.estimate(tracker.prev_pts_, prev_cloud, tracker.curr_pts_, curr_cloud);
 
                 vector<int> static_pts_idxs = motion_treater.estimateStaticPointsIndexes(tracker.curr_pts_);
 
@@ -134,9 +130,9 @@ int main(int argc, char **argv)
 
                 for (size_t k = 0; k < static_pts_idxs.size(); k++)
                 {
-                    const int &idx = static_pts_idxs[k];
-                    const cv::Point2f &pt1 = tracker.curr_pts_[idx];
-                    const cv::Point2f &pt2 = tracker.prev_pts_[idx];
+                    const int& idx = static_pts_idxs[k];
+                    const cv::Point2f& pt1 = tracker.curr_pts_[idx];
+                    const cv::Point2f& pt2 = tracker.prev_pts_[idx];
 
                     curr_static_pts.push_back(pt1);
                     prev_static_pts.push_back(pt2);
@@ -146,16 +142,15 @@ int main(int argc, char **argv)
                     line(frame, pt1, pt2, CV_RGB(0, 0, 255));
                 }
 
-                refined_trans = motion_estimator.estimate(prev_static_pts, prev_cloud,
-                                                           curr_static_pts, curr_cloud);
+                refined_trans = motion_estimator.estimate(prev_static_pts, prev_cloud, curr_static_pts, curr_cloud);
                 trans = refined_trans;
             }
-            catch (std::exception &e)
+            catch (std::exception& e)
             {
-
                 trans = Eigen::Affine3f::Identity();
 
-                logger.print(EventLogger::L_ERROR, "[motion_image_geometric_and_dnn_segmentation.cpp] Error: %s\n", e.what());
+                logger.print(EventLogger::L_ERROR, "[motion_image_geometric_and_dnn_segmentation.cpp] Error: %s\n",
+                             e.what());
             }
 
             pose = pose * (trans);

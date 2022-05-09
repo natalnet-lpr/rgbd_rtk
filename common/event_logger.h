@@ -73,7 +73,8 @@ public:
         M_STEREO = 4,
         M_VISUALIZATION = 5,
         M_VISUAL_ODOMETRY = 6,
-        M_SLAM = 7
+        M_SLAM = 7,
+        M_SEGMENTATION = 8
     };
 
     /**
@@ -304,6 +305,7 @@ private:
         active_modules_.insert(M_VISUALIZATION);
         active_modules_.insert(M_VISUAL_ODOMETRY);
         active_modules_.insert(M_SLAM);
+        active_modules_.insert(M_SEGMENTATION);
 
         // Initialize map with the name of each module
         modules_names_[M_IO] = "IO";
@@ -314,6 +316,7 @@ private:
         modules_names_[M_VISUALIZATION] = "Visualization";
         modules_names_[M_VISUAL_ODOMETRY] = "VisualOdometry";
         modules_names_[M_SLAM] = "SLAM";
+        modules_names_[M_SEGMENTATION] = "SEGMENTATION";
     }
 
     // Set of active modules
