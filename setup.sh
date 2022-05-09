@@ -7,6 +7,7 @@ declare CORES_NUMBER=`nproc`
 declare -r INSTALL_DIR="/usr/local"
 declare -r SLEEP_FOR=2
 declare -r GREEN="\033[0;32m"
+
 printIFVerbose()
 {
     if [ $VERBOSE==$TRUE ];then
@@ -22,7 +23,10 @@ createDirectoryIfNotExists()
 
 requireSudoPermission()
 {
-    sudo su
+   if [ `whoami` != "root" ];
+   then
+       sudo su
+   fi
 }
 leaveSudoUser()
 {
@@ -79,7 +83,9 @@ containsElement () {
 }
 getUbuntuVersion()
 {
-    local distro_name=$(lsb_release -d)
+    local distro_name=$(cat /etc/lsb-release | grep DISTRIB_DESCRIPTION=)
+    distro_name=`echo $distro_name | tr -d "\"" `
+    distro_name=`echo $distro_name | cut -d "=" -f 2`
 
     local delimiter=' '
     splitString  "$distro_name"   "$delimiter"
@@ -94,7 +100,6 @@ getUbuntuVersion()
             return $MAJOR_VERSION
         fi
     done
-    echo "vish"
     return 0
 }
 checkDistro()
@@ -318,14 +323,14 @@ installGCC9()
     requireSudoPermission
     printIFVerbose "[INFO] Installing GCC and G++ version 9.4"
     sleep $SLEEP_FOR
-	add-apt-repository ppa:ubuntu-toolchain-r/test
-	apt-get update
-	apt install gcc-9
-	apt install g++-9
-	unlink /usr/bin/g++
-	unlink /usr/bin/gcc
-	ln -sn /usr/bin/g++-9 /usr/bin/g++
-	ln -sn /usr/bin/gcc-9 /usr/bin/gcc
+    add-apt-repository ppa:ubuntu-toolchain-r/test
+    apt-get update
+    apt install gcc-9
+    apt install g++-9
+    unlink /usr/bin/g++
+    unlink /usr/bin/gcc
+    ln -sn /usr/bin/g++-9 /usr/bin/g++
+    ln -sn /usr/bin/gcc-9 /usr/bin/gcc
     leaveSudoUser
 }
 downloadMaskRCNNModel()
