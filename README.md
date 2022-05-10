@@ -28,29 +28,25 @@ Building On Ubuntu 20.04
 First, get the newest version of this repository by using the follwing command on your working directory.
 
 ```bash
-cd /my_working _directory 
+git clone https://github.com/natalnet-lpr/rgbd_rtk.git
 ```
 
-Execute our setup script to install all dependencies and build the G2O library
+Go to the project folder
 
-
-```
-bash setup.sh -v -BUILD_G2O -install_dependencies
-```
-
-Create a directory called build, and change directory to it.
-
-```
-mkdir build
-cd build
+```bash
+cd rgb_rtk
 ```
 
-Build the project passing the G2O install directory 
+The fastest way to build the project and it requirements is using our `setup` script.
 
+```bash
+bash setup.sh -a -v
 ```
-cmake -DG2O_DIR=$PWD/../g2o-20201223_git/install ..
-make
-```
+
+This gonna take a while (some hours depending on your computer settings).
+
+After this, you must be able to execute the program files at the `build/bin` folder
+
 Others Distros
 ------------
 
