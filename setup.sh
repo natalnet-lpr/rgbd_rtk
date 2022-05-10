@@ -7,6 +7,7 @@ declare CORES_NUMBER=`nproc`
 declare -r INSTALL_DIR="/usr/local"
 declare -r SLEEP_FOR=2
 declare -r GREEN="\033[0;32m"
+declare -r MY_USERNAME=`whoami`
 
 printIFVerbose()
 {
@@ -33,7 +34,7 @@ leaveSudoUser()
     if [ `whoami` == "root" ];
     then
         echo "Leaving sudo user"
-        exit
+        sudo su $MY_USERNAME
     fi
 }
 
@@ -252,11 +253,11 @@ buildAruco()
     cd $DEPENDENCIES_DIR
     local filename=aruco-3.1.12.zip
     local aruco_dir=aruco-3.1.12
-    echo COMPILING ARUCO...
     if [ ! -d $aruco_dir ]; then
-        wget hwget https://sourceforge.net/projects/aruco/files/$filename
+        wget https://sourceforge.net/projects/aruco/files/$filename
         unzip $filename
         rm $filename
+    	printIFVerbose "[INFO] DOWNLOADED ARUCO..."
     fi
     cd $aruco_dir
     createDirectoryIfNotExists build
@@ -296,15 +297,17 @@ installUbuntuDependencies()
     printIFVerbose "[INFO] Installing ubuntu dependencies"
     sleep $SLEEP_FOR
     apt-get update || $(echo "apt-get update failed" exit  )
-    apt install -y build-essential || echo "apt install build-essential failed" exit
-    apt install -y cmake || echo "apt install cmake failed" exit
-    apt install -y libusb-1.0-0-dev || echo "apt install libusb-1.0-0-dev failed" exit
-    apt install -y libsuitesparse-dev || echo "apt install libsuitesparse-dev failed" exit
-    apt install -y libboost-all-dev || echo "apt install libboost-all-dev failed" exit
-    apt install -y libvtk7-dev | echo "apt install libvtk7-dev failed" exit
-    apt install -y libflann-dev | echo "apt install libflann-dev failed" exit
-    apt install -y gtk-dev | echo "apt install libflann-dev failed" exit
-    apt install -y libgtk2.0-dev | echo "apt install libgtk2.0-dev failed" exit
+    apt-get install -y build-essential || echo "apt-get install build-essential failed" exit 0 
+    apt-get install -y cmake || echo "apt-get install cmake failed" exit 0
+    apt-get install -y libusb-1.0-0-dev || echo "apt-get install libusb-1.0-0-dev failed" exit 0
+    apt-get install -y libsuitesparse-dev || echo "apt-get install libsuitesparse-dev failed" exit 0
+    apt-get install -y libboost-all-dev || echo "apt-get install libboost-all-dev failed" exit 0
+    apt-get install -y libvtk7-dev || echo "apt-get install libvtk7-dev failed" exit 0
+    apt-get install -y libflann-dev || echo "apt-get install libflann-dev failed" exit 0
+    apt-get install -y gtk-dev || echo "apt-get install libflann-dev failed" exit 0
+    apt-get install -y libgtk2.0-dev || echo "apt-get install libgtk2.0-dev failed" exit 0
+    apt-get install -y wget || echo "apt-get install wget failed" exit 0
+    apt-get install -y unzip || echo "apt-get install unzip failed" exit 0
     leaveSudoUser
 }
 buildRGBD_RTK()
@@ -359,7 +362,6 @@ downloadDNNModels()
     downloadMaskRCNNModel
 
 }
-
 
 ############# MAIN CODE #############
 main()
