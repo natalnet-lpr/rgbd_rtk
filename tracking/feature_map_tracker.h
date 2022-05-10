@@ -67,7 +67,7 @@ protected:
     /**
      * Detect KeyPoints and extract descriptors using this function
      */
-    void detect_keypoints();
+    void detect_keypoints(const cv::Mat& mask);
 
     /**
      * Adds keypoints detected in the first frame to the tracker
@@ -247,7 +247,7 @@ public:
      * @param img rgb image
      * @return boolean
      */
-    bool track(const cv::Mat& img);
+    bool track(const cv::Mat& img, const cv::Mat& mask = cv::Mat());
 
     /**
      * Clear all data about tracked points

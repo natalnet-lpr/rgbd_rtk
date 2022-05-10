@@ -6,7 +6,7 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wextra -fsanitize=address -fsanitize=leak")
+set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra ")#-fsanitize=address -fsanitize=leak")
 set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3") # WITH -march=native: seg_fault. on Mac OS
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}" )
@@ -68,7 +68,7 @@ message(STATUS "CSparse Found: " ${CSPARSE_FOUND})
 include_directories(${OpenCV_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS}
                     ${EIGEN3_INCLUDE_DIR} ${G2O_INCLUDE_DIR} ${CSPARSE_INCLUDE_DIR}
                     common io tracking motion_estimation visualization visual_odometry
-                    quadtree stereo)
+                    quadtree stereo segmentation)
 link_directories(${PCL_LIBRARY_DIRS})
 
 LIST(APPEND G2O_LIBS
@@ -90,6 +90,12 @@ option(WITH_MOTION_ESTIMATION "Build with motion estimation module" ON)
 option(WITH_STEREO "Build with stereo module" ON)
 option(WITH_VISUAL_ODOMETRY "Build with odometry module" ON)
 option(WITH_SLAM "Build with slam module" ON)
+
+if(${OpenCV_VERSION_MAJOR} GREATER_EQUAL 3 )
+	option(WITH_SEGMENTATION "Build with motion segmentation module" ON)
+else()
+	option(WITH_SEGMENTATION "Build without motion segmentation module" OFF)
+endif()
 
 # Needed for every other module
 add_subdirectory(common)
@@ -170,6 +176,12 @@ if(WITH_SLAM)
 	else()
 		message(WARNING "ARUCO NOT FOUND")
 	endif()
+endif()
+
+if(WITH_SEGMENTATION)
+	add_subdirectory(segmentation)
+	set(RGBD_RTK_SEGMENTATION rgbd_rtk_segmentation)
+	export(TARGETS rgbd_rtk_segmentation APPEND FILE "${PROJECT_BINARY_DIR}/rgbd_rtkTargets.cmake")
 endif()
 
 add_subdirectory(applications)

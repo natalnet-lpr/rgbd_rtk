@@ -70,15 +70,19 @@ bool is_filled_with_black(const cv::Mat &mask, float threshold)
         return false;
 }
 
-void KLTQTTracker::detect_keypoints()
+void KLTQTTracker::detect_keypoints(const cv::Mat& mask)
 {
     if (quality_level_ >= 1 || quality_level_ <= 0) quality_level_ = 0.01;
 
     // Detect Shi-Tomasi keypoints and add them to a temporary buffer.
     // The buffer is erased at the end of add_keypoints()
-    goodFeaturesToTrack(curr_frame_gray_, added_pts_, max_pts_, quality_level_, 10.0, mask_, 3,
+    if(mask.empty())
+        goodFeaturesToTrack(curr_frame_gray_, added_pts_, max_pts_, quality_level_, 10.0, mask_, 3,
                         false, 0.04);
-
+    else
+        goodFeaturesToTrack(curr_frame_gray_, added_pts_, max_pts_, quality_level_, 10.0, mask, 3,
+                        false, 0.04);
+                        
     MLOG_DEBUG(EventLogger::M_TRACKING, "@KLTQTTracker::detect_keypoints: detecting keypoints...\n");
     MLOG_DEBUG(EventLogger::M_TRACKING, "@KLTQTTracker::detect_keypoints: detected pts.: %lu\n",
                added_pts_.size());
@@ -118,11 +122,17 @@ KLTQTTracker::KLTQTTracker(const int &min_pts, const int &max_pts, const bool &l
 {
 }
 
-bool KLTQTTracker::track(const Mat &curr_frame)
+bool KLTQTTracker::track(const Mat &curr_frame, const cv::Mat& mask)
 {
     // Make a grayscale copy of the current frame if it is in color
     if (curr_frame.channels() > 1)
-        cvtColor(curr_frame, curr_frame_gray_, CV_BGR2GRAY);
+    {
+        #if CV_MAJOR_VERSION < 4
+            cvtColor(curr_frame, curr_frame_gray_, CV_BGR2GRAY);
+        #else
+            cvtColor(curr_frame, curr_frame_gray_, COLOR_BGR2GRAY);
+        #endif    
+    }
     else
         curr_frame.copyTo(curr_frame_gray_);
 
@@ -139,7 +149,7 @@ bool KLTQTTracker::track(const Mat &curr_frame)
     if (!initialized_)
     {
         // Initialize tracker
-        detect_keypoints();
+        detect_keypoints(mask);
         initialized_ = true;
 
         Mat aux(curr_frame.rows, curr_frame.cols, CV_8UC1);
@@ -153,7 +163,11 @@ bool KLTQTTracker::track(const Mat &curr_frame)
         vector<uchar> status;
         vector<float> err;
         Size win_size(53, 53); // def is 31x31
-        TermCriteria crit(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, 0.03);
+        #if CV_MAJOR_VERSION < 4
+            TermCriteria crit(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, 0.03);
+        #else
+            TermCriteria crit(TermCriteria::MAX_ITER | TermCriteria::EPS, 20, 0.03);
+        #endif
 
         calcOpticalFlowPyrLK(prev_frame_gray_, curr_frame_gray_, prev_pts_, curr_pts_, status, err,
                              win_size, 3, crit, 0, 0.00001);
@@ -191,7 +205,7 @@ bool KLTQTTracker::track(const Mat &curr_frame)
         // Detect new features at every frame, hold them and add them to the tracker in the next
         // frame
         if (tracked_pts <= FeatureTracker::min_pts_ || !is_filled_with_black(mask_, 0.4))
-            detect_keypoints();
+            detect_keypoints(mask);
 
         // check if the image has too many points
         // if it is the case, we need to decrease the quantity of points improving the quality level

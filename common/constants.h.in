@@ -1,0 +1,15 @@
+#ifndef INCLUDE_CONSTANTS_H_
+#define INCLUDE_CONSTANTS_H_
+#include <string>
+namespace Constants
+{
+#ifndef PROJECT_DIR
+#define PROJECT_DIR "@CMAKE_SOURCE_DIR@"
+#endif
+#ifdef PROJECT_DIR
+    const std::string project_dir = PROJECT_DIR;
+    const std::string mask_rcnn_model_path = project_dir + std::string("/models/mask_rcnn_inception_v2_coco_2018_01_28/frozen_inference_graph.pb");
+    const std::string mask_rcnn_pbtxt_path = project_dir + std::string("/models/mask_rcnn_inception_v2_coco_2018_01_28/mask_rcnn_inception_v2_coco_2018_01_28.pbtxt");
+#endif
+}
+#endif

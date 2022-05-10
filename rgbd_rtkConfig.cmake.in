@@ -41,6 +41,9 @@ endif()
 if(TARGET rgbd_rtk_visual_odometry)
 	list(APPEND rgbd_rtk rgbd_rtk_visual_odometry)
 endif()
+if(TARGET rgbd_rtk_motion_segmentation)
+	list(APPEND rgbd_rtk rgbd_rtk_motion_segmentation)
+endif()
 
 set(RGBD_RTK_LIBRARIES ${rgbd_rtk})
 

@@ -82,8 +82,14 @@ void RGBDLoader::getNextImage(cv::Mat& rgb_img, cv::Mat& depth_img)
     {
         string rgb_img_name = path_ + rgb_img_names_[curr_img_];
         string depth_img_name = path_ + depth_img_names_[curr_img_];
-        rgb_img = imread(rgb_img_name, CV_LOAD_IMAGE_UNCHANGED);
-        depth_img = imread(depth_img_name, CV_LOAD_IMAGE_UNCHANGED);
+        #if CV_MAJOR_VERSION < 4
+			rgb_img = imread(rgb_img_name, CV_LOAD_IMAGE_UNCHANGED);
+            depth_img = imread(depth_img_name, CV_LOAD_IMAGE_UNCHANGED);
+		#else
+			rgb_img = imread(rgb_img_name, IMREAD_UNCHANGED);
+            depth_img = imread(depth_img_name, IMREAD_UNCHANGED);
+		#endif
+        
         if (rgb_img.empty())
         {
             MLOG_ERROR(EventLogger::M_IO, "@RGBDLoader::getNextImage: Image file %s not found.\n.\n", rgb_img_name.c_str());

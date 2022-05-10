@@ -42,9 +42,15 @@
 #include <opencv2/core/core.hpp>
 #include <pcl/correspondence.h>
 #include <pcl/point_cloud.h>
+#include <pcl/sample_consensus/ransac.h>
+#include <pcl/sample_consensus/sac_model_registration.h>
+
 #include <vector>
+#include <unordered_map>
 
 #include <common_types.h>
+
+typedef std::pair<pcl::PointCloud<PointT>, pcl::PointCloud<PointT>> Point3DCloudPairs;
 
 class MotionEstimatorRANSAC
 {
@@ -61,6 +67,22 @@ protected:
                                     const pcl::PointCloud<PointT>::Ptr &tgt_dense_cloud,
                                     const std::vector<cv::Point2f> &src_points,
                                     const pcl::PointCloud<PointT>::Ptr &src_dense_cloud);
+    /**
+     * @brief Create a And Compute Ransac Model object
+     * 
+     * @param[out] sac_model
+     * @param[out] ransac 
+     */
+    void createAndComputeRansacModel(pcl::SampleConsensusModelRegistration<PointT>::Ptr &sac_model,
+                                     pcl::RandomSampleConsensus<PointT>::Ptr &ransac);
+
+    /**
+     * @brief Help function to create the Trans matrix using the Optimized Coefficients Vector
+     * 
+     * @param[in] opt_coeffs 
+     * @return Eigen::Matrix4f 
+     */
+    Eigen::Matrix4f createTransMatrixFromOptimizedCoefficients(const Eigen::VectorXf &opt_coeffs);
 
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -89,6 +111,26 @@ public:
     // Vector telling if each correspondence is an inlier or not
     std::vector<unsigned char> is_inlier_;
 
+    // Vector of maps. Each map refers to a frame which holds multiple int keys,
+    // each key is the index of the point inside the tracker.
+    // At each position of the map in the specified key,
+    // it store a value which is the index of the point inside of the point cloud.
+    //      mappers_2d_3d_[PointTrackerIndex] -> PointTCloudIndex
+    std::vector<std::map<int, int>> mappers_2d_3d_;
+
+    // Vector of point cloud pairs
+    // the first is the target/previous cloud
+    // the second is the source/current cloud
+    std::vector<Point3DCloudPairs> sparse_point_cloud_pairs_;
+
+    // Store a copy of the relative poses between
+    // the source and the target PointCloud
+    std::vector<Eigen::Matrix4f> relative_poses_;
+
+    uint16_t min_inliers_number_;
+
+    uint16_t number_poses_saved_;
+
     /**
      * Default constructor
      */
@@ -100,7 +142,7 @@ public:
      * @param inliers_ratio
      */
     MotionEstimatorRANSAC(const Intrinsics &intr, const float &distance_threshold,
-                          const float &inliers_ratio);
+                          const float &inliers_ratio, const uint16_t &min_inliers_number = 10, const uint16_t &number_poses_saved = 5);
     /**
      * Main member function: estimates the motion between two point clouds as the registration
      * transformation
@@ -112,6 +154,16 @@ public:
                              const pcl::PointCloud<PointT>::Ptr &tgt_dense_cloud,
                              const std::vector<cv::Point2f> &src_points,
                              const pcl::PointCloud<PointT>::Ptr &src_dense_cloud);
+
+    /**
+     *  Set the minimum number of inliers
+     * 
+     * @param[in] min_inliers_number 
+     */
+    inline void setMinInliersNumber(const int min_inliers_number)
+    {
+        min_inliers_number_ = min_inliers_number;
+    };
 };
 
 #endif /* INCLUDE_MOTION_ESTIMATOR_RANSAC_H_ */

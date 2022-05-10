@@ -1,0 +1,20 @@
+[submodule "deps/opencv"]
+	path = deps/opencv
+	url = https://github.com/opencv/opencv.git
+	branch = 4.5.4
+[submodule "deps/opencv-contrib"]
+	path = deps/opencv-contrib
+	url = https://github.com/opencv/opencv_contrib.git
+	branch = 4.5.4
+[submodule "deps/eigen"]
+	path = deps/eigen
+	url = https://gitlab.com/libeigen/eigen.git
+	branch = 3.4
+[submodule "deps/pcl"]
+	path = deps/pcl
+	url = https://github.com/PointCloudLibrary/pcl.git
+	branch = pcl-1.10.1
+[submodule "deps/g2o"]
+	path = deps/g2o
+	url = https://github.com/RainerKuemmerle/g2o.git
+	branch = 20200410_git

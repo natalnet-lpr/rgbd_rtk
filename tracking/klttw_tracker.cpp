@@ -72,11 +72,11 @@ bool is_inside_any_window(const vector<Point2f> &tracked_pts, const Point2f &pt,
  * #####################################################
  */
 
-void KLTTWTracker::detect_keypoints()
+void KLTTWTracker::detect_keypoints(const cv::Mat& mask)
 {
     // Detect Shi-Tomasi keypoints and add them to a temporary buffer.
     // The buffer is erased at the end of add_keypoints()
-    goodFeaturesToTrack(curr_frame_gray_, added_pts_, max_pts_, 0.01, 10.0, Mat(), 3, false, 0.04);
+    goodFeaturesToTrack(curr_frame_gray_, added_pts_, max_pts_, 0.01, 10.0, mask, 3, false, 0.04);
     
     MLOG_DEBUG(EventLogger::M_TRACKING, "@KLTTWTracker::detect_keypoints: detecting keypoints...\n");
     MLOG_DEBUG(EventLogger::M_TRACKING, "@KLTTWTracker::detect_keypoints: detected pts.: %lu\n",
@@ -185,11 +185,17 @@ KLTTWTracker::KLTTWTracker(const FeatureTracker::Parameters& param):
 {
 }
 
-bool KLTTWTracker::track(const Mat &curr_frame)
+bool KLTTWTracker::track(const Mat &curr_frame, const cv::Mat& mask)
 {
     // Make a grayscale copy of the current frame if it is in color
     if (curr_frame.channels() > 1)
-        cvtColor(curr_frame, curr_frame_gray_, CV_BGR2GRAY);
+    {
+        #if CV_MAJOR_VERSION < 4
+            cvtColor(curr_frame, curr_frame_gray_, CV_BGR2GRAY);
+        #else
+            cvtColor(curr_frame, curr_frame_gray_, COLOR_BGR2GRAY);
+        #endif    
+    }
     else
         curr_frame.copyTo(curr_frame_gray_);
 
@@ -206,7 +212,7 @@ bool KLTTWTracker::track(const Mat &curr_frame)
     if (!initialized_)
     {
         // Initialize tracker
-        detect_keypoints();
+        detect_keypoints(mask);
         initialized_ = true;
     }
     // Tracker is initialized: track keypoints
@@ -216,18 +222,27 @@ bool KLTTWTracker::track(const Mat &curr_frame)
         vector<uchar> status;
         vector<float> err;
         Size win_size(53, 53); // def is 31x31
-        TermCriteria crit(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, 0.03);
-
+        
+        #if CV_MAJOR_VERSION < 4
+            TermCriteria crit(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, 0.03);
+        #else
+            TermCriteria crit(TermCriteria::MAX_ITER | TermCriteria::EPS, 20, 0.03);
+        #endif
+        
         calcOpticalFlowPyrLK(prev_frame_gray_, curr_frame_gray_, prev_pts_, curr_pts_, status, err,
                              win_size, 3, crit, 0, 0.00001);
 
         // Update internal data according to the tracking result
         // Additional tests have to be applied to discard points outside the image boundaries.
         int tracked_pts = 0;
+        int val = -1;
         for (size_t i = 0; i < curr_pts_.size(); i++)
         {
+            if(!mask.empty())
+                val = (int) mask.at<uchar>(curr_pts_[i].y,curr_pts_[i].x);
+
             if (!status[i] || curr_pts_[i].x < 0 || curr_pts_[i].y < 0 ||
-                curr_pts_[i].x >= prev_frame_gray_.cols || curr_pts_[i].y >= prev_frame_gray_.rows)
+                curr_pts_[i].x >= prev_frame_gray_.cols || curr_pts_[i].y >= prev_frame_gray_.rows || val == 0)
             {
                 continue;
             }
@@ -246,14 +261,16 @@ bool KLTTWTracker::track(const Mat &curr_frame)
         prev_pts_.resize(tracked_pts);
         curr_pts_.resize(tracked_pts);
         tracklets_.resize(tracked_pts);
-        
+
+       
+            
         MLOG_DEBUG(EventLogger::M_TRACKING, "@KLTTWTracker::track: \
                                              tracked points/max_points:  %i/%i\n",
                                              tracked_pts, max_pts_);
 
         // Detect new features at every frame, hold them and add them to the tracker in the next
         // frame
-        detect_keypoints();
+        detect_keypoints(mask);
     }
 
     // print_track_info();

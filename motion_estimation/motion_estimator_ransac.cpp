@@ -32,37 +32,69 @@
 #include <cstdlib>
 #include <pcl/common/transforms.h>
 #include <pcl/common/transforms.h>
-#include <pcl/sample_consensus/ransac.h>
-#include <pcl/sample_consensus/sac_model_registration.h>
+#include <algorithm>
 
 #include <event_logger.h>
 #include <geometry.h>
 #include <motion_estimator_ransac.h>
 
 using namespace std;
+using namespace cv;
+using namespace pcl;
+
+MotionEstimatorRANSAC::MotionEstimatorRANSAC() : distance_threshold_(0.008),
+                                                 inliers_ratio_(0.8),
+                                                 num_inliers_(0),
+                                                 intr_(Intrinsics(0))
+{
+    tgt_cloud_ = PointCloud<PointT>::Ptr(new PointCloud<PointT>);
+    src_cloud_ = PointCloud<PointT>::Ptr(new PointCloud<PointT>);
+}
+
+MotionEstimatorRANSAC::MotionEstimatorRANSAC(const Intrinsics &intr,
+                                             const float &distance_threshold,
+                                             const float &inliers_ratio,
+                                             const uint16_t &min_inliers_number,
+                                             const uint16_t &number_poses_saved)
+    : intr_(intr),
+      distance_threshold_(distance_threshold),
+      inliers_ratio_(inliers_ratio),
+      num_inliers_(0),
+      min_inliers_number_(min_inliers_number),
+      number_poses_saved_(number_poses_saved)
+{
+    tgt_cloud_ = PointCloud<PointT>::Ptr(new PointCloud<PointT>);
+    src_cloud_ = PointCloud<PointT>::Ptr(new PointCloud<PointT>);
+
+    MLOG_INFO(EventLogger::M_MOTION_ESTIMATION, "@MotionEstimatorRANSAC: loading intrinsics...\n");
+    MLOG_INFO(EventLogger::M_MOTION_ESTIMATION, "@MotionEstimatorRANSAC: %f %f %f %f %f\n",
+              intr.fx_, intr.fy_, intr.cx_, intr.cy_, intr.scale_);
+}
 
 void MotionEstimatorRANSAC::setDataFromCorrespondences(
-    const std::vector<cv::Point2f> &tgt_points, const pcl::PointCloud<PointT>::Ptr &tgt_dense_cloud,
-    const std::vector<cv::Point2f> &src_points, const pcl::PointCloud<PointT>::Ptr &src_dense_cloud)
+    const vector<Point2f> &tgt_points, const PointCloud<PointT>::Ptr &tgt_dense_cloud,
+    const vector<Point2f> &src_points, const PointCloud<PointT>::Ptr &src_dense_cloud)
 {
-    // Reset sparse src cloud buffer
+    // Reset sparse src and tgt cloud buffer
     src_cloud_->clear();
     src_cloud_->is_dense = true;
-    // src_cloud_->width = src_points.size();
-    // src_cloud_->height = 1;
-    // src_cloud_->points.resize(src_cloud_->width*src_cloud_->height);
 
     // Reset sparse tgt cloud buffer
     tgt_cloud_->clear();
     tgt_cloud_->is_dense = true;
-    // tgt_cloud_->width = tgt_points.size();
-    // tgt_cloud_->height = 1;
-    // tgt_cloud_->points.resize(tgt_cloud_->width*tgt_cloud_->height);
 
-    // For each correspondence, get both points and their corresponding 3D points in the dense 3D
-    // clouds
-    // A correspondence is removed if any of the 3D points is invalid
+    // resize the stored informations if it reach the
+    // maximum size
+    if (relative_poses_.size() >= number_poses_saved_)
+    {
+        relative_poses_.erase(relative_poses_.begin());
+        sparse_point_cloud_pairs_.erase(sparse_point_cloud_pairs_.begin());
+        mappers_2d_3d_.erase(mappers_2d_3d_.begin());
+    }
+
+    mappers_2d_3d_.push_back(map<int, int>());
     size_t valid_points = 0;
+
     for (size_t k = 0; k < src_points.size(); k++)
     {
         PointT tpt = get3Dfrom2D(tgt_points[k], tgt_dense_cloud);
@@ -70,63 +102,61 @@ void MotionEstimatorRANSAC::setDataFromCorrespondences(
 
         if (is_valid(tpt) && is_valid(spt))
         {
-            /*
-            logger.print(EventLogger::L_DEBUG, "[MotionEstimatorRANSAC] DEBUG: [%lu]: (%f,%f) <->
-            (%f,%f) [(%f,%f,%f) <-> (%f,%f,%f)]:\n",
-                                                  k, src_points[k].x, src_points[k].y,
-                                                  tgt_points[k].x, tgt_points[k].y,
-                                                  spt.x, spt.y, spt.z,
-                                                  spt.x, spt.y, spt.z,
-                                                  spt.x, spt.y, spt.z,
-                                                  tpt.x, tpt.y, tpt.z);
-            */
-
             tgt_cloud_->push_back(tpt);
             src_cloud_->push_back(spt);
-            // tgt_cloud_->points[valid_points] = tpt;
-            // src_cloud_->points[valid_points] = spt;
+
+            mappers_2d_3d_.back()[k] = valid_points;
+
             valid_points++;
         }
     }
-    // tgt_cloud_->points.resize(valid_points);
-    // src_cloud_->points.resize(valid_points);
+
     MLOG_DEBUG(EventLogger::M_MOTION_ESTIMATION, "@MotionEstimatorRANSAC::setDataFromCorrespondences: \
                                                   valid points (with depth)/total points: %lu/%lu\n",
-                                                  valid_points, src_points.size());
+               valid_points, src_points.size());
 }
-MotionEstimatorRANSAC::MotionEstimatorRANSAC()
+
+void MotionEstimatorRANSAC::createAndComputeRansacModel(SampleConsensusModelRegistration<PointT>::Ptr &sac_model,
+                                                        RandomSampleConsensus<PointT>::Ptr &ransac)
 {
-    distance_threshold_ = 0.008;
-    inliers_ratio_ = 0.8;
-    num_inliers_ = 0;
-    tgt_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
-    src_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
+    sac_model.reset(new SampleConsensusModelRegistration<PointT>(src_cloud_));
+    sac_model->setInputTarget(tgt_cloud_);
 
-    // Initialize intrinsics with Kinect default values
-    intr_ = Intrinsics(0);
+    ransac.reset(new RandomSampleConsensus<PointT>(sac_model));
+    ransac->setDistanceThreshold(distance_threshold_);
+    ransac->computeModel();
 }
 
-MotionEstimatorRANSAC::MotionEstimatorRANSAC(const Intrinsics &intr,
-                                             const float &distance_threshold,
-                                             const float &inliers_ratio)
+Eigen::Matrix4f MotionEstimatorRANSAC::createTransMatrixFromOptimizedCoefficients(const Eigen::VectorXf &opt_coeffs)
 {
-    distance_threshold_ = distance_threshold;
-    inliers_ratio_ = inliers_ratio;
-    num_inliers_ = 0;
-    tgt_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
-    src_cloud_ = pcl::PointCloud<PointT>::Ptr(new pcl::PointCloud<PointT>);
+    // Set the transf. matrix data from the coeff. param. and return it
+    Eigen::Matrix4f trans = Eigen::Matrix4f::Identity();
 
-    // Initialize intrinsics with the given values
-    intr_ = intr;
-    MLOG_INFO(EventLogger::M_MOTION_ESTIMATION, "@MotionEstimatorRANSAC: loading intrinsics...\n");
-    MLOG_INFO(EventLogger::M_MOTION_ESTIMATION, "@MotionEstimatorRANSAC: %f %f %f %f %f\n",
-              intr.fx_, intr.fy_, intr.cx_, intr.cy_, intr.scale_);
+    uint8_t numb_of_elements = 4 * 4; // -> a Matrix of 4 dimmentions have 4x4 elements
+    uint8_t cols = 0;
+    uint8_t rows = 0;
+
+    for (uint8_t i = 0; i < numb_of_elements; i++)
+    {
+        // Eigen::Matrix4f trans
+        //
+        //      |  0  1  2  3 | -> row 0
+        //      |  4  5  6  7 | -> row 1
+        //      |  8  9 10 11 | -> row 2
+        //      | 12 13 14 15 | -> row 3
+        rows = i / 4;
+        cols = i % 4;
+
+        trans(rows, cols) = opt_coeffs[i];
+    }
+
+    return trans;
 }
 
-Eigen::Matrix4f MotionEstimatorRANSAC::estimate(const vector<cv::Point2f> &tgt_points,
-                                                const pcl::PointCloud<PointT>::Ptr &tgt_dense_cloud,
-                                                const vector<cv::Point2f> &src_points,
-                                                const pcl::PointCloud<PointT>::Ptr &src_dense_cloud)
+Eigen::Matrix4f MotionEstimatorRANSAC::estimate(const vector<Point2f> &tgt_points,
+                                                const PointCloud<PointT>::Ptr &tgt_dense_cloud,
+                                                const vector<Point2f> &src_points,
+                                                const PointCloud<PointT>::Ptr &src_dense_cloud)
 {
     // Fill data buffers with the supplied data
     setDataFromCorrespondences(tgt_points, tgt_dense_cloud, src_points, src_dense_cloud);
@@ -135,22 +165,20 @@ Eigen::Matrix4f MotionEstimatorRANSAC::estimate(const vector<cv::Point2f> &tgt_p
 
     MLOG_DEBUG(EventLogger::M_MOTION_ESTIMATION, "@MotionEstimatorRANSAC::estimate: RANSAC motion estimation: %lu <-> %lu\n",
                tgt_cloud_->size(), src_cloud_->size());
-    // Build a RANSAC registration model to estimate the rigid transformation
-    pcl::SampleConsensusModelRegistration<PointT>::Ptr sac_model(
-        new pcl::SampleConsensusModelRegistration<PointT>(src_cloud_));
-    sac_model->setInputTarget(tgt_cloud_);
-    pcl::RandomSampleConsensus<PointT> ransac(sac_model);
-    ransac.setDistanceThreshold(distance_threshold_);
-    ransac.computeModel();
+
+    RandomSampleConsensus<PointT>::Ptr ransac;
+    SampleConsensusModelRegistration<PointT>::Ptr sac_model;
+    createAndComputeRansacModel(sac_model, ransac);
 
     // Get the model estimated by RANSAC
     Eigen::VectorXf coeffs, opt_coeffs;
-    ransac.getModelCoefficients(coeffs);
+
+    ransac->getModelCoefficients(coeffs);
 
     // Get info from RANSAC data and set 0 for outlier and 1 for inlier in each position of the
     // vector
     vector<int> inl;
-    ransac.getInliers(inl);
+    ransac->getInliers(inl);
     is_inlier_.resize(N, 0);
 
     for (size_t i = 0; i < inl.size(); i++)
@@ -158,52 +186,33 @@ Eigen::Matrix4f MotionEstimatorRANSAC::estimate(const vector<cv::Point2f> &tgt_p
         int idx = inl[i];
         is_inlier_[idx] = 1;
     }
+
     num_inliers_ = inl.size();
 
+    if (inl.size() < min_inliers_number_)
+    {
+        // if the estimation is invalid based on the number of inliers
+        // we should remove the last added mapper from the mappers vector
+        mappers_2d_3d_.erase(mappers_2d_3d_.end() - 1);
+
+        const string msg = "input size is less than the minimum inliers number";
+        throw length_error(msg.c_str());
+    }
+
     float inl_ratio = float(inl.size()) / N;
+
     MLOG_DEBUG(EventLogger::M_MOTION_ESTIMATION, "@MotionEstimatorRANSAC::estimate: \
                                                   inlier ratio is %f\n",
-                                                  inl_ratio);
+               inl_ratio);
 
     // Optimize registration transformation using all inlier correspondences
     sac_model->optimizeModelCoefficients(inl, coeffs, opt_coeffs);
 
-    // Set the transf. matrix data from the coeff. param. and return it
-    Eigen::Matrix4f trans = Eigen::Matrix4f::Identity();
-    trans(0, 0) = opt_coeffs[0];
-    trans(0, 1) = opt_coeffs[1];
-    trans(0, 2) = opt_coeffs[2];
-    trans(0, 3) = opt_coeffs[3];
-    trans(1, 0) = opt_coeffs[4];
-    trans(1, 1) = opt_coeffs[5];
-    trans(1, 2) = opt_coeffs[6];
-    trans(1, 3) = opt_coeffs[7];
-    trans(2, 0) = opt_coeffs[8];
-    trans(2, 1) = opt_coeffs[9];
-    trans(2, 2) = opt_coeffs[10];
-    trans(2, 3) = opt_coeffs[11];
-    trans(3, 0) = opt_coeffs[12];
-    trans(3, 1) = opt_coeffs[13];
-    trans(3, 2) = opt_coeffs[14];
-    trans(3, 3) = opt_coeffs[15];
-    /*
-        //DEBUG: estimate repr. error
-        pcl::PointCloud<PointT>::Ptr tmp_cloud = pcl::PointCloud<PointT>::Ptr(new
-       pcl::PointCloud<PointT>);
-        pcl::transformPointCloud(*src_cloud_, *tmp_cloud, trans);
-        for(size_t i = 0; i < N; i++)
-        {
-            float X = tmp_cloud->points[i].x;
-            float Y = tmp_cloud->points[i].y;
-            float Z = tmp_cloud->points[i].z;
-            float x = intr_.fx_*X/Z + intr_.cx_;
-            float y = intr_.fy_*Y/Z + intr_.cy_;
-            float xc = tgt_points[i].x;
-            float yc = tgt_points[i].y;
-            float err = sqrt((x - xc)*(x - xc) + (y - yc)*(y - yc));
-            printf("Point %lu: inlier(%i), pos(%f, %f), repr(%f, %f), error: %f\n", i,
-       is_inlier_[i], xc, yc, x, y, err);
-        }
-    */
+    // TODO: Probabily we should to change this to do not make copies
+    sparse_point_cloud_pairs_.push_back(pair<PointCloud<PointT>, PointCloud<PointT>>(*tgt_cloud_, *src_cloud_));
+
+    Eigen::Matrix4f trans = createTransMatrixFromOptimizedCoefficients(opt_coeffs);
+    relative_poses_.push_back(trans);
+
     return trans;
 }

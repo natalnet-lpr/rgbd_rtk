@@ -96,9 +96,15 @@ int main(int argc, char **argv)
 
         tracker.tree = new QuadTree(Rect(0, 0, frame.cols, frame.cols), 5, max_density);
 
-        double el_time = (double)cvGetTickCount();
-        bool is_kf = tracker.track(frame);
-        el_time = ((double)cvGetTickCount() - el_time) / (cvGetTickFrequency() * 1000.0);
+        #if CV_MAJOR_VERSION < 4
+			double el_time = (double) cvGetTickCount();
+			bool is_kf = tracker.track(frame);
+			el_time = ((double) cvGetTickCount() - el_time)/(cvGetTickFrequency()*1000.0);
+		#else
+			double el_time = (double) getTickCount();
+			bool is_kf = tracker.track(frame);
+			el_time = ((double) getTickCount() - el_time)/(getTickFrequency()*1000.0);
+		#endif
 
         tracker.tree->drawTree(frame);
 

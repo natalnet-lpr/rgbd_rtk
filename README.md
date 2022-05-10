@@ -23,7 +23,31 @@ It is recommended to install both dependencies from source. The following two li
 
 > [Compiling PCL from source on Linux](http://pointclouds.org/documentation/tutorials/compiling_pcl_posix.php)
 
-Building
+Building On Ubuntu 20.04
+------------
+First, get the newest version of this repository by using the follwing command on your working directory.
+
+```bash
+git clone https://github.com/natalnet-lpr/rgbd_rtk.git
+```
+
+Go to the project folder
+
+```bash
+cd rgb_rtk
+```
+
+The fastest way to build the project and it requirements is using our `setup` script.
+
+```bash
+bash setup.sh -a -v
+```
+
+This gonna take a while (some hours depending on your computer settings).
+
+After this, you must be able to execute the program files at the `build/bin` folder
+
+Others Distros
 ------------
 
 First, get the newest version of this repository by using the follwing command on your working directory.

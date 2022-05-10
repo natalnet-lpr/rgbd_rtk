@@ -80,9 +80,15 @@ int main(int argc, char **argv)
 	{
 		loader.getNextImage(frame, depth);
 
-		double el_time = (double) cvGetTickCount();
-		bool is_kf = tracker.track(frame);
-		el_time = ((double) cvGetTickCount() - el_time)/(cvGetTickFrequency()*1000.0);
+		  #if CV_MAJOR_VERSION < 4
+			double el_time = (double) cvGetTickCount();
+			bool is_kf = tracker.track(frame);
+			el_time = ((double) cvGetTickCount() - el_time)/(cvGetTickFrequency()*1000.0);
+		#else
+			double el_time = (double) getTickCount();
+			bool is_kf = tracker.track(frame);
+			el_time = ((double) getTickCount() - el_time)/(getTickFrequency()*1000.0);
+		#endif
 		logger.print(EventLogger::L_INFO,"[klttw_tracker_test.cpp] INFO: Tracking time: %f ms\n", el_time);
 		
 		draw_last_track(frame, tracker.prev_pts_, tracker.curr_pts_, tracker.window_size_, is_kf);

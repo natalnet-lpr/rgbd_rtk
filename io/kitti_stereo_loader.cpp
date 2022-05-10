@@ -133,7 +133,11 @@ Mat KITTIStereoLoader::getNextLeftImage(const bool& use_color)
     else
     {
         path = prefix_path_ + "/image_0/" + left_image_names_[next_left_];
-        left_img = imread(path, CV_LOAD_IMAGE_UNCHANGED);
+        #if CV_MAJOR_VERSION < 4
+            left_img = imread(path, CV_LOAD_IMAGE_UNCHANGED);
+        #else
+            left_img = imread(path, IMREAD_UNCHANGED);
+        #endif
     }
 
     next_left_++;
@@ -153,7 +157,11 @@ Mat KITTIStereoLoader::getNextRightImage(const bool& use_color)
     else
     {
         path = prefix_path_ + "/image_1/" + right_image_names_[next_right_];
-        right_img = imread(path, CV_LOAD_IMAGE_UNCHANGED);
+        #if CV_MAJOR_VERSION < 4
+            right_img = imread(path, CV_LOAD_IMAGE_UNCHANGED);
+        #else
+            right_img = imread(path, IMREAD_UNCHANGED);
+        #endif
     }
 
     next_right_++;

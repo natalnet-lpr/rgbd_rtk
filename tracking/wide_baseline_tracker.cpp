@@ -51,10 +51,10 @@ using namespace cv;
  * #####################################################
  */
 
-void WideBaselineTracker::detect_keypoints()
+void WideBaselineTracker::detect_keypoints(const cv::Mat& mask)
 {
     curr_kpts_.clear();
-    feature_detector_->detect(curr_frame_gray_, curr_kpts_);
+    feature_detector_->detect(curr_frame_gray_, curr_kpts_, mask);
     descriptor_extractor_->compute(curr_frame_gray_, curr_kpts_, curr_descriptors_);
     
     MLOG_DEBUG(EventLogger::M_TRACKING, "@WideBaselineTracker::detect_keypoints: detecting keypoints...\n");
@@ -135,7 +135,13 @@ void WideBaselineTracker::setFeatureDetector(const std::string &feature_detector
     else if (upper_feature_detector == "SURF")
         feature_detector_ = cv::xfeatures2d::SURF::create();
     else if (upper_feature_detector == "SIFT")
-        feature_detector_ = cv::xfeatures2d::SIFT::create();
+    {
+        #if CV_MAJOR_VERSION < 4
+            feature_detector_ = cv::xfeatures2d::SIFT::create();
+        #else
+            feature_detector_ = cv::SIFT::create();  
+        #endif
+    }
     else
     {
         MLOG_ERROR(EventLogger::M_TRACKING, "@WideBaselineTracker::setFeatureDetector:  \
@@ -165,7 +171,13 @@ void WideBaselineTracker::setDescriptorExtractor(const std::string &descriptor_e
     else if (upper_descriptor_extractor == "SURF")
         descriptor_extractor_ = cv::xfeatures2d::SURF::create();
     else if (upper_descriptor_extractor == "SIFT")
-        descriptor_extractor_ = cv::xfeatures2d::SIFT::create();
+    {
+        #if CV_MAJOR_VERSION < 4
+            descriptor_extractor_ = cv::xfeatures2d::SIFT::create();
+        #else
+            descriptor_extractor_ = cv::SIFT::create();  
+        #endif
+    }
     else
     {
         MLOG_ERROR(EventLogger::M_TRACKING, "@WideBaselineTracker::setDescriptorExtractor:  \
@@ -337,13 +349,19 @@ void WideBaselineTracker::getGoodMatches(const double &threshold)
     }
 }
 
-bool WideBaselineTracker::track(const cv::Mat &img)
+bool WideBaselineTracker::track(const cv::Mat &img, const cv::Mat& mask)
 {
     bool is_keyframe = false;
 
     // Make a grayscale copy of the current frame if it is in color
     if (img.channels() > 1)
-        cvtColor(img, curr_frame_gray_, CV_BGR2GRAY);
+    {
+        #if CV_MAJOR_VERSION < 4
+            cvtColor(img, curr_frame_gray_, CV_BGR2GRAY);
+        #else
+            cvtColor(img, curr_frame_gray_, COLOR_BGR2GRAY);
+        #endif
+    }
     else
         img.copyTo(curr_frame_gray_);
 
@@ -354,7 +372,7 @@ bool WideBaselineTracker::track(const cv::Mat &img)
     update_buffers();
 
     // Detect KeyPoints and extract descriptors on the current frame
-    detect_keypoints();
+    detect_keypoints(mask);
 
     if (!initialized_)
     {

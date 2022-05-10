@@ -72,11 +72,11 @@ void FeatureMapTracker::add_keypoints()
         map_tracklets_[0].inverted_indices_.size());
 }
 
-void FeatureMapTracker::detect_keypoints()
+void FeatureMapTracker::detect_keypoints(const cv::Mat& mask)
 {
     curr_kpts_.clear();
 
-    feature_detector_->detect(curr_frame_gray_, curr_kpts_);
+    feature_detector_->detect(curr_frame_gray_, curr_kpts_,mask);
     descriptor_extractor_->compute(curr_frame_gray_, curr_kpts_, curr_descriptors_);
     MLOG_DEBUG(EventLogger::M_TRACKING, "@FeatureMapTracker::detect_keypoints: detecting keypoints...\n");
     MLOG_DEBUG(
@@ -292,7 +292,13 @@ void FeatureMapTracker::setFeatureDetector(const std::string& feature_detector)
     else if (upper_feature_detector == "SURF")
         feature_detector_ = cv::xfeatures2d::SURF::create();
     else if (upper_feature_detector == "SIFT")
-        feature_detector_ = cv::xfeatures2d::SIFT::create();
+    {
+        #if CV_MAJOR_VERSION < 4
+            feature_detector_ = cv::xfeatures2d::SIFT::create();
+        #else
+            feature_detector_ = cv::SIFT::create();  
+        #endif
+    }
     else
     {
         MLOG_ERROR(
@@ -325,7 +331,13 @@ void FeatureMapTracker::setDescriptorExtractor(const std::string& descriptor_ext
     else if (upper_descriptor_extractor == "SURF")
         descriptor_extractor_ = cv::xfeatures2d::SURF::create();
     else if (upper_descriptor_extractor == "SIFT")
-        descriptor_extractor_ = cv::xfeatures2d::SIFT::create();
+    {
+        #if CV_MAJOR_VERSION < 4
+            descriptor_extractor_ = cv::xfeatures2d::SIFT::create();
+        #else
+            descriptor_extractor_ = cv::SIFT::create();  
+        #endif
+    }
     else
     {
         MLOG_ERROR(
@@ -432,7 +444,7 @@ FeatureMapTracker::FeatureMapTracker(
     keyframe_threshold_ = keyframe_threshold;
 }
 
-bool FeatureMapTracker::track(const cv::Mat& img)
+bool FeatureMapTracker::track(const cv::Mat& img, const cv::Mat& mask)
 {
     bool is_keyframe = false;
 
@@ -440,7 +452,11 @@ bool FeatureMapTracker::track(const cv::Mat& img)
     if (img.channels() > 1)
     {
         MLOG_DEBUG(EventLogger::M_TRACKING, "@FeatureMapTracker::track: converting to a grayscale image...\n");
-        cvtColor(img, curr_frame_gray_, CV_BGR2GRAY);
+        #if CV_MAJOR_VERSION < 4
+            cvtColor(img, curr_frame_gray_, CV_BGR2GRAY);
+        #else
+            cvtColor(img, curr_frame_gray_, COLOR_BGR2GRAY);
+        #endif
     }
     else
     {
@@ -450,7 +466,7 @@ bool FeatureMapTracker::track(const cv::Mat& img)
     MLOG_DEBUG(EventLogger::M_TRACKING, "@FeatureMapTracker::track: tracking frame%i\n", frame_idx_);
 
     // Detect KeyPoints and extract descriptors on the current frame
-    detect_keypoints();
+    detect_keypoints(mask);
 
     if (!initialized_)
     {
@@ -469,10 +485,15 @@ bool FeatureMapTracker::track(const cv::Mat& img)
         MLOG_DEBUG(EventLogger::M_TRACKING, "@FeatureMapTracker::track: inicial map size: %i\n", map_descriptors_.rows);
 
         MLOG_DEBUG(EventLogger::M_TRACKING, "@FeatureMapTracker::track: building the Index object...\n");
-
-        double el_time = (double)cvGetTickCount();
-        index_->build(map_descriptors_, cv::flann::KDTreeIndexParams(), cvflann::FLANN_DIST_EUCLIDEAN);
-        el_time = ((double)cvGetTickCount() - el_time) / (cvGetTickFrequency() * 1000.0);
+        #if CV_MAJOR_VERSION < 4
+            double el_time = (double)cvGetTickCount();
+            index_->build(map_descriptors_, cv::flann::KDTreeIndexParams(), cvflann::FLANN_DIST_EUCLIDEAN);
+            el_time = ((double)cvGetTickCount() - el_time) / (cvGetTickFrequency() * 1000.0);
+        #else
+            double el_time = (double)getTickCount();
+            index_->build(map_descriptors_, cv::flann::KDTreeIndexParams(), cvflann::FLANN_DIST_EUCLIDEAN);
+            el_time = ((double)getTickCount() - el_time) / (getTickFrequency() * 1000.0);
+        #endif
 
         MLOG_DEBUG(EventLogger::M_TRACKING, "@FeatureMapTracker::track: build index time: %f ms\n", el_time);
 

@@ -77,7 +77,11 @@ Mat SequenceLoader::getNextImage()
 	if(curr_img_ < num_images_)
 	{
 		string file_name = path_ + img_names_[curr_img_++];
-		Mat img = imread(file_name, CV_LOAD_IMAGE_UNCHANGED);
+		#if CV_MAJOR_VERSION < 4
+			Mat img = imread(file_name, CV_LOAD_IMAGE_UNCHANGED);
+		#else
+			Mat img = imread(file_name, IMREAD_UNCHANGED);
+		#endif
 		if(img.empty())
 		{
 			MLOG_ERROR(EventLogger::M_IO, "@SequenceLoader::getNextImage: Image file %s not found.\n", file_name.c_str());
