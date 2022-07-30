@@ -94,7 +94,7 @@ int main(int argc, char **argv)
 
         if (i == 0) max_density = max_pts / float(frame.cols * frame.rows);
 
-        tracker.tree = new QuadTree(Rect(0, 0, frame.cols, frame.cols), 5, max_density);
+        tracker.tree = make_unique<QuadTree>(Rect(0, 0, frame.cols, frame.cols), 5, max_density);
 
         #if CV_MAJOR_VERSION < 4
 			double el_time = (double) cvGetTickCount();
@@ -122,6 +122,7 @@ int main(int argc, char **argv)
             printf("Exiting.\n");
             break;
         }
+
     }
 
     return 0;

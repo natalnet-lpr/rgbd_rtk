@@ -52,6 +52,28 @@ using namespace cv;
 
 EventLogger &logger = EventLogger::getInstance();
 
+QuadTree::QuadTree() : capacity_(4), divided_(false), allocated_(false), max_density_(0.0)
+{
+}
+
+QuadTree::QuadTree(const cv::Rect &boundary, const int &capacity, const float &max_density)  : divided_(false), allocated_(false)
+{
+    boundary_ = boundary;
+    capacity_ = capacity;
+    max_density_ = max_density;
+    topLeft_ = std::make_unique<QuadTree>();
+    topRight_ = std::make_unique<QuadTree>();
+    botLeft_ = std::make_unique<QuadTree>();
+    botRight_ = std::make_unique<QuadTree>();
+
+    int x = boundary_.x;
+    int y = boundary_.y;
+    int h = boundary_.height;
+    int w = boundary_.width;
+
+    printf("[QuadTree::insert] DEBUG: building node (%i,%i) <-> (%i,%i)\n", x, y, h, w);
+}
+
 void QuadTree::insert(const Point2f &new_point)
 {
     int x = boundary_.x;
@@ -113,25 +135,25 @@ void QuadTree::subdivide()
     logger.print(EventLogger::L_DEBUG,
                  "[QuadTree::insert] DEBUG: creating top left tree (%i,%i) <-> (%i,%i)\n", x, y,
                  x + h / 2, y + w / 2);
-    topLeft_ = new QuadTree(TL_boundary, capacity_, max_density_);
+    topLeft_ =  make_unique<QuadTree>(TL_boundary, capacity_, max_density_);
 
     Rect TR_boundary(x + w / 2, y, h / 2, w / 2);
     logger.print(EventLogger::L_DEBUG,
                  "[QuadTree::insert] DEBUG: creating top right tree (%i,%i) <-> (%i,%i)\n",
                  x + w / 2, y, x + w / 2 + h / 2, y + w / 2);
-    topRight_ = new QuadTree(TR_boundary, capacity_, max_density_);
+    topRight_ = make_unique<QuadTree>(TR_boundary, capacity_, max_density_);
 
     Rect BR_boundary(x + w / 2, y + h / 2, h / 2, w / 2);
     logger.print(EventLogger::L_DEBUG,
                  "[QuadTree::insert] DEBUG: creating bottom right tree (%i,%i) <-> (%i,%i)\n",
                  x + w / 2, y + h / 2, x + w / 2 + h / 2, y + h / 2 + w / 2);
-    botRight_ = new QuadTree(BR_boundary, capacity_, max_density_);
+    botRight_ = make_unique<QuadTree>(BR_boundary, capacity_, max_density_);
 
     Rect BL_boundary(x, y + h / 2, h / 2, w / 2);
     logger.print(EventLogger::L_DEBUG,
-                 "[QuadTree::insert] DEBUG: creating bottom left tree (%i,%i) <-> (%i,%i)\n", x,
+                "[QuadTree::insert] DEBUG: creating bottom left tree (%i,%i) <-> (%i,%i)\n", x,
                  y + h / 2, x + h / 2, y + h / 2 + w / 2);
-    botLeft_ = new QuadTree(BL_boundary, capacity_, max_density_);
+    botLeft_ = make_unique<QuadTree>(BL_boundary, capacity_, max_density_);
 
     divided_ = true;
 }
