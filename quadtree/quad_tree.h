@@ -42,7 +42,7 @@
 #include <opencv2/core/core.hpp>
 #include <vector>
 
-#include <iostream>
+#include <memory>
 
 /*
  * Quad tree data structure to store image keypoints
@@ -55,7 +55,7 @@ public:
     cv::Rect boundary_;
 
     // Maximum number of keypoints in a node of the quadtree
-    int capacity_;
+    std::size_t capacity_;
 
     // Flag used to check if the current node is subdived
     bool divided_;
@@ -67,10 +67,10 @@ public:
     std::vector<cv::Point2f> pts_;
 
     // Quadtree subdivisions
-    QuadTree *topLeft_;
-    QuadTree *topRight_;
-    QuadTree *botLeft_;
-    QuadTree *botRight_;
+    std::unique_ptr<QuadTree> topLeft_;
+    std::unique_ptr<QuadTree> topRight_;
+    std::unique_ptr<QuadTree> botLeft_;
+    std::unique_ptr<QuadTree> botRight_;
 
     // This variable helps in the task of marking the mask.
     // If some region have at least max_density points,
@@ -81,7 +81,7 @@ public:
     /**
      * Default constructor
      */
-    QuadTree() : capacity_(4), divided_(false), allocated_(false), max_density_(0.0) {}
+    QuadTree();
 
     /**
      * Constructor
@@ -89,24 +89,7 @@ public:
      * @param capacity
      * @param max_density default is 0
      */
-    QuadTree(const cv::Rect &boundary, const int &capacity, const float &max_density = 0)
-        : divided_(false), allocated_(false)
-    {
-        boundary_ = boundary;
-        capacity_ = capacity;
-        max_density_ = max_density;
-        topLeft_ = new QuadTree();
-        topRight_ = new QuadTree();
-        botLeft_ = new QuadTree();
-        botRight_ = new QuadTree();
-
-        int x = boundary_.x;
-        int y = boundary_.y;
-        int h = boundary_.height;
-        int w = boundary_.width;
-
-        printf("[QuadTree::insert] DEBUG: building node (%i,%i) <-> (%i,%i)\n", x, y, h, w);
-    }
+    QuadTree(const cv::Rect &boundary, const int &capacity, const float &max_density = 0);
 
     /**
      * Inserts a point in region
