@@ -87,7 +87,7 @@ protected:
 
 public:
     // Quadtree data structure
-    QuadTree *tree;
+    std::unique_ptr<QuadTree> tree;
 
     // Debug
     std::vector<cv::Point2f> rejected_points_;
